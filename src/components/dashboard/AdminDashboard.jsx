@@ -175,7 +175,7 @@ export default function AdminDashboard({ user, profile }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-800/50">
                 <tr>
-                  {["Username", "Email", "Type", "Verified", "Revenue", "Joined"].map(h => (
+                  {["Username", "Email", "Type", "Payment", "Verified", "Revenue", "Joined"].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
                   ))}
                 </tr>
@@ -189,6 +189,15 @@ export default function AdminDashboard({ user, profile }) {
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${u.account_type === "business" ? "bg-green-900/50 text-green-400" : u.account_type === "digital_creator" ? "bg-purple-900/50 text-purple-400" : "bg-blue-900/50 text-blue-400"}`}>
                         {u.account_type}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {u.payout_method ? (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${u.payout_method === "stripe" ? "bg-blue-900/50 text-blue-400" : "bg-indigo-900/50 text-indigo-400"}`}>
+                          {u.payout_method === "stripe" ? "💳 Card" : "🅿️ PayPal"}
+                        </span>
+                      ) : (
+                        <span className="text-gray-600 text-xs">Not set</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {u.is_verified ? <CheckCircle className="w-4 h-4 text-green-400" /> : <XCircle className="w-4 h-4 text-gray-600" />}

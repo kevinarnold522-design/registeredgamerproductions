@@ -8,6 +8,7 @@ import LeaderboardTab from "./LeaderboardTab";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import PaymentMethodsTab from "./PaymentMethodsTab";
 import PayPalConnect from "@/components/payments/PayPalConnect";
+import PaymentSettingsTab from "./PaymentSettingsTab";
 
 export default function SellerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -46,8 +47,7 @@ export default function SellerDashboard({ user, profile }) {
     { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
     { id: "videos", label: "📹 Video Tools", icon: Youtube },
     { id: "leaderboard", label: "🏆 Leaderboard", icon: DollarSign },
-    { id: "payouts", label: "Payouts & Banking", icon: CreditCard },
-    { id: "paypal", label: "🅿️ PayPal Connect", icon: CreditCard },
+    { id: "payouts", label: "💳 Payment Settings", icon: CreditCard },
     { id: "verification", label: isVerified ? "✅ Verified" : "Get Verified", icon: CheckCircle },
   ];
 
@@ -238,26 +238,9 @@ export default function SellerDashboard({ user, profile }) {
         <VerificationTab profile={profile} accountType={profile?.account_type} />
       )}
 
-      {/* Payouts */}
+      {/* Payment Settings - New Unified Tab */}
       {tab === "payouts" && (
-        <PaymentMethodsTab profile={profile} />
-      )}
-
-      {/* PayPal Connect */}
-      {tab === "paypal" && (
-        <div className="max-w-lg mx-auto">
-          <h3 className="text-white font-black text-xl mb-4">Connect PayPal for Automatic Payouts</h3>
-          <p className="text-gray-400 text-sm mb-6">
-            Link your PayPal account to receive automatic payouts from your sales. 
-            You'll receive 90% of each sale, with 10% platform commission.
-          </p>
-          <PayPalConnect 
-            profile={profile} 
-            onConnect={(data) => {
-              console.log("PayPal connected:", data);
-            }} 
-          />
-        </div>
+        <PaymentSettingsTab profile={profile} user={user} />
       )}
 
       </main>
