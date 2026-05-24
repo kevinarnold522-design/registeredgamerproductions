@@ -199,6 +199,17 @@ export default function PaymentSettingsTab({ profile, user }) {
             </p>
           </div>
 
+          {/* Link to PayPal Button */}
+          <a
+            href="https://www.paypal.com/myaccount/settings/notifications"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 font-bold text-sm hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 mb-4"
+          >
+            <Wallet className="w-4 h-4" />
+            Link to PayPal Account Settings →
+          </a>
+
           <div className="mb-4 space-y-2">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-400" />
@@ -242,12 +253,13 @@ export default function PaymentSettingsTab({ profile, user }) {
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-blue-300 text-xs font-bold mb-2">How PayPal Connection Works</p>
+                <p className="text-blue-300 text-xs font-bold mb-2">How to Link Your PayPal Account</p>
                 <ol className="text-gray-400 text-xs leading-relaxed space-y-1">
-                  <li>1. Click "Connect PayPal to My Account" above</li>
-                  <li>2. Log in to your PayPal account in the popup</li>
-                  <li>3. Your PayPal email will be automatically saved and linked</li>
-                  <li>4. You'll be verified as a seller instantly</li>
+                  <li>1. Click "Link to PayPal Account Settings" above to open PayPal</li>
+                  <li>2. Log in and verify your email address in PayPal settings</li>
+                  <li>3. Enter the same email in the field above</li>
+                  <li>4. Click "Connect PayPal to My Account" to save it</li>
+                  <li>5. You'll be verified as a seller instantly</li>
                 </ol>
                 <p className="text-gray-500 text-[10px] mt-3">
                   Your PayPal email is securely stored and used for all transactions. You can change it anytime.
