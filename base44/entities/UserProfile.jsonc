@@ -84,6 +84,25 @@
     "paypal_email": {
       "type": "string"
     },
+    "paypal_account_name": {
+      "type": "string",
+      "description": "PayPal account holder name"
+    },
+    "paypal_account_type": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "business"
+      ],
+      "description": "PayPal account type"
+    },
+    "paypal_country": {
+      "type": "string",
+      "description": "PayPal account country"
+    },
+    "paypal_merchant_id": {
+      "type": "string"
+    },
     "business_name": {
       "type": "string"
     },

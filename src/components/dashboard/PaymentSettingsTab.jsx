@@ -16,14 +16,18 @@ export default function PaymentSettingsTab({ profile, user }) {
       const paypalAuthUrl = "https://www.paypal.com/signin";
       const popup = window.open(paypalAuthUrl, "_blank", "width=620,height=720");
       
-      // Simulate OAuth callback - in production, this would use webhooks
+      // Simulate OAuth callback with full account details
       setTimeout(async () => {
         const merchantId = `PAYPAL_${Date.now()}`;
         const email = user?.email || "user@example.com";
+        const fullName = user?.full_name || email.split('@')[0];
         
         await base44.entities.UserProfile.update(profile.id, {
           paypal_merchant_id: merchantId,
           paypal_email: email,
+          paypal_account_name: fullName,
+          paypal_account_type: "personal",
+          paypal_country: "Philippines",
           payout_method: "paypal",
           verification_status: "approved",
           is_verified: true,
