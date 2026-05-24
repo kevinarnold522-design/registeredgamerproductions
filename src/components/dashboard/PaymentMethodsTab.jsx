@@ -95,6 +95,7 @@ const PAYMENT_METHODS = [
 
 export default function PaymentMethodsTab({ profile }) {
   const [connected, setConnected] = useState(!!profile?.paypal_merchant_id || !!profile?.paypal_email);
+  const [connectedMethods, setConnectedMethods] = useState([]);
 
   const handleConnectPayPal = async () => {
     // Open PayPal OAuth popup
@@ -233,7 +234,7 @@ export default function PaymentMethodsTab({ profile }) {
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-white font-black">Stripe</p>
-                {connected.includes("stripe") && <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-bold">✓ Connected</span>}
+                {connectedMethods.includes("stripe") && <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-bold">✓ Connected</span>}
               </div>
               <p className="text-gray-400 text-xs">Cards, bank transfers — 40+ countries</p>
             </div>
@@ -241,7 +242,7 @@ export default function PaymentMethodsTab({ profile }) {
           <button
             onClick={() => {
               window.open("https://stripe.com/", "_blank", "width=620,height=720");
-              setConnected((prev) => [...new Set([...prev, "stripe"])]);
+              setConnectedMethods((prev) => [...new Set([...prev, "stripe"])]);
             }}
             className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm hover:opacity-90 transition-opacity"
           >
@@ -266,7 +267,7 @@ export default function PaymentMethodsTab({ profile }) {
                 <div className="flex items-center gap-2">
                   <p className="text-white font-bold text-sm">{method.name}</p>
                   <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${method.badgeColor}`}>{method.badge}</span>
-                  {connected.includes(method.id) && (
+                  {connectedMethods.includes(method.id) && (
                     <span className="text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold">✓</span>
                   )}
                 </div>
