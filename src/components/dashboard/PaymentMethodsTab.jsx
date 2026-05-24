@@ -124,7 +124,7 @@ export default function PaymentMethodsTab({ profile }) {
       </p>
 
       {/* PayPal — primary */}
-      {connected && profile?.paypal_email ? (
+      {connected && (profile?.paypal_email || profile?.paypal_merchant_id) ? (
         <div className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-5 mb-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center font-black text-white text-sm">✓</div>
@@ -133,30 +133,16 @@ export default function PaymentMethodsTab({ profile }) {
                 <p className="text-white font-black">PayPal Connected</p>
                 <span className="text-[10px] bg-green-500/20 border border-green-500/30 text-green-400 px-2 py-0.5 rounded-full font-bold">Active</span>
               </div>
-              <p className="text-gray-300 text-xs font-semibold">{profile.paypal_email}</p>
+              <p className="text-gray-300 text-xs font-semibold">{profile?.paypal_email || "Linked Account"}</p>
             </div>
           </div>
           
-          {/* What Happens Next */}
-          <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-green-400 text-[10px] font-bold">✓</span>
-              </div>
-              <div>
-                <p className="text-green-300 text-xs font-bold mb-2">✅ You're All Set! Here's What Happens Now:</p>
-                <ul className="text-gray-400 text-xs leading-relaxed space-y-1">
-                  <li>• <strong className="text-green-400">Ready to Sell:</strong> You can now create listings and receive payments</li>
-                  <li>• <strong className="text-green-400">Automatic Payouts:</strong> 90% of sales sent to this PayPal automatically</li>
-                  <li>• <strong className="text-green-400">Verified Badge:</strong> Your profile shows the verified seller badge</li>
-                  <li>• <strong className="text-green-400">Ready to Buy:</strong> You can make secure purchases on the platform</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          {/* Account Details Grid */}
+          {/* Account Details Grid - Non-editable */}
           <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">PayPal Email</p>
+              <p className="text-white text-sm font-semibold">{profile?.paypal_email || "Linked"}</p>
+            </div>
             <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
               <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Account Name</p>
               <p className="text-white text-sm font-semibold">{profile?.paypal_account_name || "Verified Account"}</p>
@@ -169,12 +155,8 @@ export default function PaymentMethodsTab({ profile }) {
               <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Country</p>
               <p className="text-white text-sm font-semibold">{profile?.paypal_country || "Global"}</p>
             </div>
-            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
-              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Status</p>
-              <p className="text-white text-sm font-semibold">✓ Verified</p>
-            </div>
           </div>
-
+          
           <div className="flex items-start gap-2 mb-4 p-3 bg-green-900/20 border border-green-700/30 rounded-xl">
             <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
               <span className="text-white text-xs font-bold">✓</span>
