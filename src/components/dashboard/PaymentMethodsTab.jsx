@@ -182,9 +182,25 @@ export default function PaymentMethodsTab({ profile }) {
               <p className="text-gray-400 text-xs">Receive earnings + sales payouts worldwide</p>
             </div>
           </div>
-          <p className="text-gray-500 text-xs mb-4">
-            ⚠️ Not connected yet. Click below to connect your PayPal account.
-          </p>
+          
+          {/* How to Connect Instructions */}
+          <div className="bg-blue-900/30 border border-blue-700/40 rounded-xl p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-blue-400 text-[10px] font-bold">!</span>
+              </div>
+              <div>
+                <p className="text-blue-300 text-xs font-bold mb-2">How to Link Your PayPal Account</p>
+                <ol className="text-gray-400 text-xs leading-relaxed space-y-1">
+                  <li>1. Click "Link to PayPal Account Settings" to open PayPal</li>
+                  <li>2. Log in and verify your email address in PayPal settings</li>
+                  <li>3. Enter the same email in the field below</li>
+                  <li>4. Click "Connect to PayPal" to save it</li>
+                  <li>5. You'll be verified as a seller instantly</li>
+                </ol>
+              </div>
+            </div>
+          </div>
           
           {/* Link to PayPal Button */}
           <a
