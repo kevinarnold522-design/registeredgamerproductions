@@ -48,7 +48,7 @@ export default function Home() {
           }
         }
       } catch (e) {
-        // User not authenticated
+        // User not authenticated - stay on home page (public)
       }
     };
     initAuth();

@@ -191,9 +191,17 @@ export default function Dashboard() {
     </div>
   );
 
+  // Don't redirect - Dashboard is accessed via navigation from AuthNavbar
+  // If user somehow reaches here without auth, show empty state
   if (!user) {
-    window.location.href = "/login";
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400 mb-4">Please sign in to access the dashboard</p>
+          <button onClick={() => base44.auth.redirectToLogin()} className="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold">Sign In</button>
+        </div>
+      </div>
+    );
   }
 
   // Only block if user exists in system but has no profile AND no pending registration
