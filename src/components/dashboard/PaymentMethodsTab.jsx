@@ -94,7 +94,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function PaymentMethodsTab({ profile }) {
-  const [connected, setConnected] = useState(!!profile?.paypal_email);
+  const [connected, setConnected] = useState(!!profile?.paypal_merchant_id || !!profile?.paypal_email);
 
   const handleConnectPayPal = async () => {
     // Open PayPal OAuth popup
