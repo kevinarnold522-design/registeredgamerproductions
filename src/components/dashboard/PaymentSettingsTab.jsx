@@ -89,7 +89,7 @@ export default function PaymentSettingsTab({ profile, user }) {
           </div>
 
           {/* Greyed out connection info */}
-          <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-4 opacity-60">
+          <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-4 opacity-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Wallet className="w-5 h-5 text-blue-400" />
@@ -99,6 +99,36 @@ export default function PaymentSettingsTab({ profile, user }) {
                 </div>
               </div>
               <span className="text-green-400 text-xs font-bold">✓ Connected</span>
+            </div>
+          </div>
+
+          {/* Setup Requirements */}
+          <div className="bg-yellow-900/20 border border-yellow-600/40 rounded-xl p-4 mt-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-yellow-300 text-xs font-bold mb-2">⚠️ Additional Setup Required for Live Payments</p>
+                <p className="text-gray-400 text-xs mb-3">
+                  Your PayPal is connected, but to process real transactions you need:
+                </p>
+                <ul className="space-y-2 text-xs">
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-400 font-bold">1.</span>
+                    <span className="text-gray-300">Upgrade to <strong>PayPal Business Account</strong> (free)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-400 font-bold">2.</span>
+                    <span className="text-gray-300">Get <strong>PayPal API Credentials</strong> (Client ID & Secret)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-400 font-bold">3.</span>
+                    <span className="text-gray-300">Enable <strong>Payouts API</strong> for automatic seller payments</span>
+                  </li>
+                </ul>
+                <p className="text-gray-500 text-[10px] mt-3">
+                  Contact admin to configure PayPal API keys in platform settings.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -124,7 +154,7 @@ export default function PaymentSettingsTab({ profile, user }) {
           </div>
         </motion.div>
       ) : (
-        /* Connect PayPal */}
+        /* Connect PayPal */
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
