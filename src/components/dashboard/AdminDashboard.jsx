@@ -3,11 +3,12 @@ import { motion } from "framer-motion";
 import {
   Shield, Users, BarChart2, TrendingUp, DollarSign,
   Store, Eye, Package, CheckCircle, XCircle, AlertCircle,
-  MessageSquare, Play
+  MessageSquare, Play, Mail
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ReviewsTab from "./ReviewsTab";
 import VideoManagementTab from "./VideoManagementTab";
+import EmailHeaderEditor from "./EmailHeaderEditor";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -64,6 +65,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "verifications", label: `Verifications${pendingVerifications.length > 0 ? ` (${pendingVerifications.length})` : ""}`, icon: CheckCircle },
     { id: "reviews", label: "Reviews", icon: MessageSquare },
     { id: "videos", label: "Videos", icon: Play },
+    { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" /></div>;
@@ -238,6 +240,13 @@ export default function AdminDashboard({ user, profile }) {
 
       {/* Videos */}
       {tab === "videos" && <VideoManagementTab />}
+
+      {/* Email Settings */}
+      {tab === "email_settings" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <EmailHeaderEditor />
+        </div>
+      )}
 
       {/* Orders full tab */}
       {tab === "orders" && (

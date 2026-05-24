@@ -1,0 +1,33 @@
+{
+  "name": "SiteSettings",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Settings key identifier (e.g. 'welcome_email')"
+    },
+    "email_header_title": {
+      "type": "string",
+      "default": "Welcome to GAMER Productions!"
+    },
+    "email_header_subtitle": {
+      "type": "string",
+      "default": "The #1 Gaming Hub Community"
+    },
+    "email_header_tagline": {
+      "type": "string",
+      "default": "Level Up. Connect. Dominate."
+    },
+    "email_banner_color_start": {
+      "type": "string",
+      "default": "#7c3aed"
+    },
+    "email_banner_color_end": {
+      "type": "string",
+      "default": "#ec4899"
+    }
+  },
+  "required": [
+    "key"
+  ]
+}
