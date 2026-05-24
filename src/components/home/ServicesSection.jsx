@@ -12,20 +12,20 @@ const services = [
 
 const features = [
   {
-    icon: "🎮",
-    title: "We compare the best deals across Steam, Epic, GOG, PlayStation Store & Xbox",
+    icon: "🔧",
+    title: "Modding Community — Upload, share and sell mods for WWE2K, GTA, FIFA, NBA2K, PPSSPP, PS2 & more",
   },
   {
-    icon: "📍",
-    title: "Recommendations tailored to your platform — PC, PS5, Xbox, Nintendo Switch & Mobile",
+    icon: "🛒",
+    title: "Marketplace — Buy and sell gaming accounts, items, mods, and gear directly from community members",
   },
   {
-    icon: "⭐",
-    title: "Community ratings aggregated from Metacritic, OpenCritic, Steam & all major platforms",
+    icon: "🎬",
+    title: "Share gaming videos, content, streams and highlights with the community",
   },
   {
     icon: "🕹️",
-    title: "Built for Gamers — by a Gamer",
+    title: "Built for Gamers — by a Gamer. Founded by Kevin Roberto in 2026.",
   },
 ];
 
@@ -69,8 +69,8 @@ export default function ServicesSection() {
               {/* Center */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-5xl mb-1">🕹️</span>
-                <span className="text-xs text-purple-400 font-bold uppercase tracking-widest">CYCLE</span>
-                <span className="text-sm text-white font-bold">1 MARKET</span>
+                <span className="text-xs text-purple-400 font-bold uppercase tracking-widest">GAMER</span>
+                <span className="text-sm text-white font-bold">PRODUCTIONS</span>
               </div>
               {/* Orbit icons */}
               {[

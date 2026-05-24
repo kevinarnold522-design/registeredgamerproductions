@@ -2,66 +2,15 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 
 const categories = [
-  {
-    icon: "🎮",
-    title: "Games",
-    sub: "PC, Console & Mobile Titles",
-    back: "Browse Games",
-    suit: "♠",
-    rank: "A",
-    color: "from-purple-900 to-purple-700",
-    borderColor: "border-purple-500/50",
-  },
-  {
-    icon: "🖥️",
-    title: "Gaming Gear",
-    sub: "Keyboards, Mice & Monitors",
-    back: "Shop Gear",
-    suit: "♥",
-    rank: "K",
-    color: "from-pink-900 to-pink-700",
-    borderColor: "border-pink-500/50",
-  },
-  {
-    icon: "🛒",
-    title: "Buy & Sell",
-    sub: "Accounts, Items & Skins",
-    back: "Trade Now",
-    suit: "♦",
-    rank: "Q",
-    color: "from-yellow-900 to-yellow-700",
-    borderColor: "border-yellow-500/50",
-  },
-  {
-    icon: "🏆",
-    title: "Tournaments",
-    sub: "Esports & Competitions",
-    back: "Join Event",
-    suit: "♣",
-    rank: "J",
-    color: "from-green-900 to-green-700",
-    borderColor: "border-green-500/50",
-  },
-  {
-    icon: "🎬",
-    title: "Content",
-    sub: "Streaming, Videos & Clips",
-    back: "Watch Now",
-    suit: "♠",
-    rank: "10",
-    color: "from-blue-900 to-blue-700",
-    borderColor: "border-blue-500/50",
-  },
-  {
-    icon: "💼",
-    title: "Gaming Jobs",
-    sub: "QA, Dev, Community & More",
-    back: "Find Jobs",
-    suit: "♦",
-    rank: "9",
-    color: "from-red-900 to-red-700",
-    borderColor: "border-red-500/50",
-  },
+  { icon: "🎮", title: "Games", sub: "PC, Console & Mobile Titles", back: "Browse Games", suit: "♠", rank: "A", color: "from-purple-900 to-purple-700", borderColor: "border-purple-500/50", href: "/?cat=games" },
+  { icon: "🖥️", title: "Gaming Gear", sub: "Keyboards, Mice & Monitors", back: "Shop Gear", suit: "♥", rank: "K", color: "from-pink-900 to-pink-700", borderColor: "border-pink-500/50", href: "/?cat=gear" },
+  { icon: "🔧", title: "Modding Community", sub: "WWE2K, GTA, FIFA, PES & More", back: "Browse Mods", suit: "♣", rank: "M", color: "from-orange-900 to-orange-700", borderColor: "border-orange-500/50", href: "/?cat=modding" },
+  { icon: "🛒", title: "Buy & Sell", sub: "Accounts, Items, Premium Mods", back: "Trade Now", suit: "♦", rank: "Q", color: "from-yellow-900 to-yellow-700", borderColor: "border-yellow-500/50", href: "/?cat=buy_sell" },
+  { icon: "🏆", title: "Tournaments", sub: "Esports & Competitions", back: "Join Event", suit: "♣", rank: "J", color: "from-green-900 to-green-700", borderColor: "border-green-500/50", href: "/?cat=tournaments" },
+  { icon: "🎬", title: "Content", sub: "Gaming Videos, Streams & Clips", back: "Watch Now", suit: "♠", rank: "10", color: "from-blue-900 to-blue-700", borderColor: "border-blue-500/50", href: "/?cat=content" },
+  { icon: "💼", title: "Gaming Jobs", sub: "QA, Dev, Community & More", back: "Find Jobs", suit: "♦", rank: "9", color: "from-red-900 to-red-700", borderColor: "border-red-500/50", href: "/?cat=jobs" },
+  { icon: "🍔", title: "Food", sub: "Gaming Cafes & Food Delivery", back: "Explore Food", suit: "♥", rank: "8", color: "from-amber-900 to-amber-700", borderColor: "border-amber-500/50", href: "/food" },
+  { icon: "✈️", title: "Travel", sub: "Gaming Events & Destinations", back: "Explore Travel", suit: "♠", rank: "7", color: "from-sky-900 to-sky-700", borderColor: "border-sky-500/50", href: "/travel" },
 ];
 
 function FlipCard({ cat }) {
@@ -111,9 +60,9 @@ function FlipCard({ cat }) {
         >
           <div className="text-4xl">{cat.icon}</div>
           <div className="text-white font-bold text-lg">{cat.title}</div>
-          <button className="px-5 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+          <a href={cat.href || "#categories"} className="px-5 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity">
             {cat.back}
-          </button>
+          </a>
           <p className="text-gray-500 text-xs">Tap to explore</p>
         </div>
       </motion.div>

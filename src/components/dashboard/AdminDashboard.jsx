@@ -49,6 +49,10 @@ export default function AdminDashboard({ user, profile }) {
     setAllListings(prev => prev.map(l => l.id === listingId ? { ...l, status: "removed" } : l));
   };
 
+  const totalModDownloads = allListings
+    .filter(l => l.category === "modding")
+    .reduce((s, l) => s + (l.views || 0), 0);
+
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart2 },
     { id: "users", label: "Users", icon: Users },
@@ -85,13 +89,19 @@ export default function AdminDashboard({ user, profile }) {
       {/* Overview */}
       {tab === "overview" && (
         <div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          {/* Live indicator */}
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-green-400 text-xs font-semibold">LIVE DATA — Real-time platform stats</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
             {[
-              { label: "Total Users", value: stats.users, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
+              { label: "Registered Users", value: stats.users, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
               { label: "Active Listings", value: stats.listings, icon: Store, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
               { label: "Total Orders", value: stats.orders, icon: Package, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
               { label: "Total Revenue", value: `₱${stats.revenue.toLocaleString()}`, icon: DollarSign, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
               { label: "Commission (10%)", value: `₱${stats.commission.toLocaleString()}`, icon: TrendingUp, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
+              { label: "Mod Downloads", value: totalModDownloads, icon: BarChart2, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
             ].map((s, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                 className={`rounded-2xl p-4 border ${s.bg}`}>

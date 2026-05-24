@@ -1,6 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Gamepad2, Zap, Users, Star } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+
+function LiveStats() {
+  const [stats, setStats] = useState({ users: 0, listings: 0 });
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [profiles, listings] = await Promise.all([
+          base44.entities.UserProfile.list(),
+          base44.entities.Listing.list(),
+        ]);
+        setStats({ users: profiles.length, listings: listings.filter(l => l.status === "active").length });
+      } catch {}
+    };
+    load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+      className="flex flex-wrap justify-center gap-8 mb-16 text-center">
+      <div>
+        <div className="text-2xl font-black text-white">{stats.users > 0 ? stats.users.toLocaleString() : "—"}</div>
+        <div className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">Registered Gamers</div>
+      </div>
+      <div>
+        <div className="text-2xl font-black text-white">{stats.listings > 0 ? stats.listings.toLocaleString() : "—"}</div>
+        <div className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">Active Listings</div>
+      </div>
+      <div>
+        <div className="flex items-center gap-1 justify-center"><span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block"></span><span className="text-2xl font-black text-white">LIVE</span></div>
+        <div className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">Platform Status</div>
+      </div>
+    </motion.div>
+  );
+}
 
 const quickLinks = [
   { icon: "🎮", label: "Looking for Games?", sub: "PC, Console & Mobile" },
@@ -58,7 +94,7 @@ export default function HeroSection() {
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black leading-tight">
             <span className="text-white">Welcome to </span>
             <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-              1 Market
+              GAMER Productions
             </span>
           </h1>
           <p className="mt-4 text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
@@ -100,25 +136,8 @@ export default function HeroSection() {
           </a>
         </motion.div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex flex-wrap justify-center gap-8 mb-16 text-center"
-        >
-          {[
-            { value: "50K+", label: "Gamers" },
-            { value: "10K+", label: "Games Listed" },
-            { value: "500+", label: "Gear Brands" },
-            { value: "4.9★", label: "Community Rating" },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <div className="text-2xl font-black text-white">{stat.value}</div>
-              <div className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
+        {/* Live Stats */}
+        <LiveStats />
 
         {/* Quick Links */}
         <motion.div

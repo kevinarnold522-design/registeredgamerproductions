@@ -5,6 +5,7 @@ import HeroSection from "@/components/home/HeroSection";
 import MarqueeTicker from "@/components/home/MarqueeTicker";
 import ServicesSection from "@/components/home/ServicesSection";
 import CategoryCards from "@/components/home/CategoryCards";
+import ModdingSection from "@/components/home/ModdingSection";
 import FeaturedGames from "@/components/home/FeaturedGames";
 import TopGamingGear from "@/components/home/TopGamingGear";
 import CommunitySection from "@/components/home/CommunitySection";
@@ -23,6 +24,7 @@ export default function Home() {
           <MarqueeTicker />
           <ServicesSection />
           <CategoryCards />
+          <ModdingSection />
           <FeaturedGames />
           <TopGamingGear />
           <CommunitySection />

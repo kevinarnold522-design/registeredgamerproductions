@@ -1,22 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { base44 } from "@/api/base44Client";
 
-const items = [
-  "🎮 Elden Ring DLC — $29.99",
-  "🖥️ ASUS ROG Monitor 240Hz — $349",
-  "🏆 Valorant Champions Tour 2026",
-  "✈️ Tokyo Game Show — Register Now",
-  "🎧 HyperX Cloud III — $79.99",
-  "💻 RTX 5090 Gaming PC — $2,499",
-  "🛒 Steam Sale — Up to 90% Off",
-  "🎬 Join Free — Be Part of the Community",
-  "🔥 Call of Duty Season 5 Live Now",
-  "🎮 PlayStation 6 Pre-Order Open",
-  "🏅 Esports League Registration Open",
-  "🖱️ Logitech G Pro X Superlight 2 — $159",
+const defaultItems = [
+  "🎮 Welcome to GAMER Productions",
+  "🔧 Modding Community — Upload & Share Your Mods",
+  "🏆 Join the Community — 1 Mindset · 1 Goal",
+  "🛒 Buy & Sell Gaming Products",
+  "🎬 Share Your Gaming Videos & Content",
+  "⚡ Sign Up Free — No Credit Card Required",
 ];
 
 export default function MarqueeTicker() {
+  const [items, setItems] = useState(defaultItems);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const listings = await base44.entities.Listing.list("-created_date", 10);
+        const liveItems = listings
+          .filter(l => l.status === "active" && l.title)
+          .map(l => `${l.category === "modding" ? "🔧" : l.category === "games" ? "🎮" : l.category === "gear" ? "🖥️" : "🛒"} ${l.title} — ₱${l.price?.toLocaleString()}`);
+        if (liveItems.length > 0) {
+          setItems([...defaultItems.slice(0, 3), ...liveItems]);
+        }
+      } catch {}
+    };
+    load();
+  }, []);
+
   const doubled = [...items, ...items];
 
   return (
@@ -24,7 +36,7 @@ export default function MarqueeTicker() {
       <motion.div
         className="flex gap-8 whitespace-nowrap"
         animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
       >
         {doubled.map((item, i) => (
           <span key={i} className="text-sm text-purple-200 font-medium flex-shrink-0">

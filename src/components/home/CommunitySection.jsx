@@ -20,29 +20,7 @@ const steps = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "AceGamer_PH",
-    role: "Esports Player",
-    text: "RegisteredGamerProductions helped me find the best gear deals and connect with teammates. Best gaming hub out there!",
-    rating: 5,
-    avatar: "🎯",
-  },
-  {
-    name: "PixelQueen22",
-    role: "Content Creator",
-    text: "I found all my streaming equipment here at the best prices. The community is super helpful too!",
-    rating: 5,
-    avatar: "🎬",
-  },
-  {
-    name: "ProSniper99",
-    role: "FPS Competitor",
-    text: "Best place to compare game prices. I saved $40 on my last purchase by using their deal comparison!",
-    rating: 5,
-    avatar: "🎯",
-  },
-];
+// Testimonials removed — only real user reviews will be shown
 
 export default function CommunitySection() {
   return (
@@ -105,11 +83,11 @@ export default function CommunitySection() {
           <h3 className="text-2xl md:text-3xl font-black text-white mb-2">
               Join{" "}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                50,000+ Gamers
+                GAMER Productions
               </span>
             </h3>
             <p className="text-gray-400 mb-6 text-sm">
-              Sign up free — no credit card required
+              Sign up free — no credit card required. Be part of the gaming community.
             </p>
             <a
               href="/register"
@@ -120,35 +98,16 @@ export default function CommunitySection() {
           </a>
         </motion.div>
 
-        {/* Testimonials */}
-        <div className="grid md:grid-cols-3 gap-5">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="bg-gray-900 rounded-2xl p-6 border border-gray-800"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-900/50 border border-purple-700/50 flex items-center justify-center text-xl">
-                  {t.avatar}
-                </div>
-                <div>
-                  <p className="text-white font-bold text-sm">{t.name}</p>
-                  <p className="text-gray-500 text-xs">{t.role}</p>
-                </div>
-                <div className="ml-auto flex gap-0.5">
-                  {Array.from({ length: t.rating }).map((_, si) => (
-                    <Star key={si} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed">"{t.text}"</p>
-            </motion.div>
-          ))}
-        </div>
+        {/* Community message */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="text-center bg-gray-900/60 rounded-2xl border border-gray-800 p-8">
+          <div className="text-4xl mb-3">🎮</div>
+          <h3 className="text-white font-black text-xl mb-2">Be the First to Leave a Review</h3>
+          <p className="text-gray-500 text-sm">Reviews from real community members will appear here. Join GAMER Productions and share your experience!</p>
+          <a href="/register" className="inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
+            Join Now & Share Your Experience
+          </a>
+        </motion.div>
       </div>
     </section>
   );
