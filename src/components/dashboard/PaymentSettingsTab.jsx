@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export default function PaymentSettingsTab({ profile, user }) {
   const [connecting, setConnecting] = useState(false);
   const [paypalConnected, setPaypalConnected] = useState(!!profile?.paypal_merchant_id);
-  const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || "");
+  const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || profile?.seller_paypal_email || "");
 
   const handleConnectPayPal = async () => {
     setConnecting(true);

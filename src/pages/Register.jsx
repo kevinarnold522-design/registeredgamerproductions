@@ -168,9 +168,9 @@ export default function Register() {
               <div className="flex flex-col items-center gap-3 mt-6">
                 <p className="text-gray-500 text-sm">
                   Already have an account?{" "}
-                  <button onClick={() => base44.auth.redirectToLogin("/dashboard")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
+                  <button onClick={() => base44.auth.redirectToLogin("/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
                 </p>
-                <button onClick={() => base44.auth.redirectToLogin("/dashboard")}
+                <button onClick={() => base44.auth.redirectToLogin("/")}
                   className="w-full py-3 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-sm hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
                   🔐 Sign In to Existing Account
                 </button>
