@@ -316,7 +316,7 @@ export default function Navbar() {
                       </a>
                     ) : (
                       <button
-                        onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/dashboard"); }}
+                        onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/"); }}
                         className="flex items-center gap-1 text-[10px] bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2.5 py-1.5 rounded-lg hover:bg-purple-900/60 transition-colors font-semibold whitespace-nowrap"
                       >
                         Sign In →
