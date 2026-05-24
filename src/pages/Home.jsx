@@ -35,6 +35,16 @@ export default function Home() {
           const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
           if (profiles.length > 0) {
             setProfile(profiles[0]);
+          } else {
+            // Auto-create minimal profile for existing users
+            const newProfile = await base44.entities.UserProfile.create({
+              user_email: me.email,
+              username: me.full_name || me.email.split('@')[0],
+              display_name: me.full_name || me.email.split('@')[0],
+              account_type: "regular",
+              joined_date: new Date().toISOString(),
+            });
+            setProfile(newProfile);
           }
         }
       } catch (e) {
@@ -53,7 +63,7 @@ export default function Home() {
           <ShootingStars />
 
           <div className="relative z-10">
-            {user && profile ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
+            {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
             <VideoHeroBanner />
             <HeroSection />
             <MarqueeTicker />

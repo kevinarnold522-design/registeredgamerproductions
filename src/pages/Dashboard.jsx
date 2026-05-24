@@ -196,33 +196,22 @@ export default function Dashboard() {
     return null;
   }
 
-  // Block users who signed in but have no profile/username set up yet
-  if (!profile || !profile.username) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-        <div className="bg-gray-900 border border-yellow-600/40 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
-          <div className="text-5xl mb-4">⚠️</div>
-          <h2 className="text-white font-black text-xl mb-2">No Account Found</h2>
-          <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-            You've signed in with <strong className="text-yellow-400">{user.email}</strong>, but we couldn't find a GAMER Productions account linked to this email.
-            <br /><br />
-            Please <strong className="text-purple-400">create an account first</strong> to access your dashboard.
-          </p>
-          <a
-            href="/register"
-            className="block w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-sm hover:opacity-90 transition-opacity mb-3"
-          >
-            🎮 Create Account
-          </a>
-          <button
-            onClick={() => base44.auth.logout("/")}
-            className="block w-full py-2.5 rounded-xl border border-gray-700 text-gray-400 font-semibold text-sm hover:text-white hover:border-gray-500 transition-colors"
-          >
-            Sign Out
-          </button>
-        </div>
-      </div>
-    );
+  // Only block if user exists in system but has no profile AND no pending registration
+  // Users with email in the system are already registered - don't block them
+  if (!profile) {
+    const pending = localStorage.getItem("pending_profile");
+    if (!pending) {
+      // No profile and no pending setup - create minimal profile automatically
+      base44.entities.UserProfile.create({
+        user_email: user.email,
+        username: user.full_name || user.email.split('@')[0],
+        display_name: user.full_name || user.email.split('@')[0],
+        account_type: "regular",
+        joined_date: new Date().toISOString(),
+      }).then((newProfile) => {
+        setProfile(newProfile);
+      }).catch(console.error);
+    }
   }
 
   const userIsAdmin = isAdmin(user.email);
