@@ -120,19 +120,49 @@ export default function PaymentMethodsTab({ profile }) {
       </p>
 
       {/* PayPal — primary */}
-      {connected ? (
+      {connected && profile?.paypal_email ? (
         <div className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-5 mb-4">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center font-black text-white text-sm">✓</div>
-            <div className="flex-1">
+            <div>
               <div className="flex items-center gap-2">
                 <p className="text-white font-black">PayPal Connected</p>
                 <span className="text-[10px] bg-green-500/20 border border-green-500/30 text-green-400 px-2 py-0.5 rounded-full font-bold">Active</span>
               </div>
-              <p className="text-gray-300 text-xs font-semibold mt-1">{profile?.paypal_email}</p>
-              <p className="text-green-400 text-xs mt-2">✓ Ready to make payments and receive payouts</p>
+              <p className="text-gray-300 text-xs font-semibold">{profile.paypal_email}</p>
             </div>
           </div>
+          
+          {/* Account Details Grid */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Account Name</p>
+              <p className="text-white text-sm font-semibold">{profile?.paypal_account_name || "Verified Account"}</p>
+            </div>
+            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Account Type</p>
+              <p className="text-white text-sm font-semibold">{profile?.paypal_account_type === "business" ? "🏢 Business" : "👤 Personal"}</p>
+            </div>
+            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Country</p>
+              <p className="text-white text-sm font-semibold">{profile?.paypal_country || "Global"}</p>
+            </div>
+            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Status</p>
+              <p className="text-white text-sm font-semibold">✓ Verified</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 mb-4 p-3 bg-green-900/20 border border-green-700/30 rounded-xl">
+            <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-white text-xs font-bold">✓</span>
+            </div>
+            <div>
+              <p className="text-green-300 text-xs font-bold">Ready for Transactions</p>
+              <p className="text-green-400/80 text-[10px] mt-0.5">You can receive payouts and make secure purchases on the platform</p>
+            </div>
+          </div>
+
           <button
             onClick={handleConnectPayPal}
             className="w-full py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 font-bold text-sm hover:bg-gray-700 transition-colors"
