@@ -41,6 +41,7 @@ export default function CreateListing() {
     video_url: "",
     game_name: "",
     game_platform: "",
+    paypal_email: "",
   });
 
   useEffect(() => {
@@ -104,15 +105,18 @@ export default function CreateListing() {
     e.preventDefault();
     setSaving(true);
     const ytId = extractYouTubeId(form.youtube_url);
+    const priceVal = parseFloat(form.price) || 0;
     const data = {
       ...form,
-      price: parseFloat(form.price) || 0,
+      price: priceVal,
+      is_free: priceVal === 0,
       stock: parseInt(form.stock) || 1,
       tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
       images,
       youtube_video_id: ytId || undefined,
       seller_email: user.email,
       seller_username: profile?.username || user.full_name,
+      seller_paypal_email: form.paypal_email || undefined,
     };
     if (editId) {
       await base44.entities.Listing.update(editId, data);
@@ -239,17 +243,49 @@ export default function CreateListing() {
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm resize-none" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Price (₱) *</label>
-                <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required placeholder="0.00 (0 = Free)"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+            {/* Free / Paid Toggle */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Pricing</label>
+              <div className="flex gap-3 mb-3">
+                <button type="button" onClick={() => setForm({ ...form, price: "0" })}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${form.price === "0" || form.price === 0 ? "bg-green-900/40 border-2 border-green-500/70 text-green-400" : "bg-gray-800 border border-gray-700 text-gray-400"}`}>
+                  🆓 FREE
+                </button>
+                <button type="button" onClick={() => setForm(f => ({ ...f, price: f.price === "0" || f.price === 0 ? "" : f.price }))}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${form.price !== "0" && form.price !== 0 && form.price !== "" ? "bg-purple-900/40 border-2 border-purple-500/70 text-purple-400" : "bg-gray-800 border border-gray-700 text-gray-400"}`}>
+                  💰 SET PRICE
+                </button>
               </div>
-              <div>
-                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Stock</label>
-                <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} min={1}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-              </div>
+              {(form.price !== "0" && form.price !== 0) && (
+                <div className="space-y-3">
+                  <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder="Enter price in ₱"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+                  {/* Commission notice */}
+                  <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-4">
+                    <p className="text-blue-300 font-bold text-xs mb-1">💳 Payment & Commission Info</p>
+                    <p className="text-gray-400 text-xs leading-relaxed">
+                      A <strong className="text-white">10% platform commission</strong> is automatically deducted from each sale and transferred to GAMER Productions' PayPal (<span className="text-blue-300">kevinjersey2019@gmail.com</span>). You receive <strong className="text-green-400">90%</strong> of the sale price. Payments are processed via PayPal.
+                    </p>
+                    {form.price && parseFloat(form.price) > 0 && (
+                      <div className="mt-2 flex gap-3 text-xs">
+                        <span className="text-white font-bold">List: ₱{parseFloat(form.price).toLocaleString()}</span>
+                        <span className="text-red-400">Platform fee: ₱{(parseFloat(form.price) * 0.1).toFixed(2)}</span>
+                        <span className="text-green-400 font-bold">You earn: ₱{(parseFloat(form.price) * 0.9).toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Your PayPal Email (to receive payments)</label>
+                    <input value={form.paypal_email || ""} onChange={e => setForm({ ...form, paypal_email: e.target.value })} placeholder="your@paypal.com"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Stock</label>
+              <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} min={1}
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
             </div>
           </div>
 

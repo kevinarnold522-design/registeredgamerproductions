@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio, Mic, Video, Settings, Copy, Check, Music, AlertTriangle, ChevronRight, Zap, Eye } from "lucide-react";
+import LiveStreamStudio from "@/components/streaming/LiveStreamStudio";
 
 const FREE_MUSIC = [
   { title: "No Copyright Gaming Beat", artist: "Chillpill", source: "YouTube Audio Library", genre: "Electronic", link: "https://studio.youtube.com/channel/music" },
@@ -23,6 +24,7 @@ const STREAMING_TOOLS = [
 export default function LiveStreamSection() {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("tools");
+  const [showStudio, setShowStudio] = useState(false);
   const mockKey = "gprod-live-xxxxxx-stream-key";
 
   const handleCopy = () => {
@@ -49,11 +51,29 @@ export default function LiveStreamSection() {
           <h2 className="text-3xl md:text-5xl font-black text-white mb-3">
             Go <span className="bg-gradient-to-r from-red-400 to-purple-400 bg-clip-text text-transparent">Live</span> on GAMER
           </h2>
-          <p className="text-gray-400 text-base max-w-2xl mx-auto">
+          <p className="text-gray-400 text-base max-w-2xl mx-auto mb-5">
             Stream your gameplay, tournaments, and content directly on GAMER Productions.
             Grow your audience, earn from views, and build your community — all in one place.
           </p>
+          <motion.button
+            onClick={() => setShowStudio(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-white text-base"
+            style={{ background: "linear-gradient(90deg, #dc2626, #be123c)", boxShadow: "0 0 25px rgba(220,38,38,0.5)" }}
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+            <Radio className="w-5 h-5" />
+            STREAM NOW — Go Live on GAMER
+          </motion.button>
         </motion.div>
+
+        {/* Live Studio Modal */}
+        <AnimatePresence>
+          {showStudio && (
+            <LiveStreamStudio user={null} profile={null} onClose={() => setShowStudio(false)} />
+          )}
+        </AnimatePresence>
 
         {/* Copyright Warning Banner */}
         <motion.div initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}

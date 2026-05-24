@@ -3,7 +3,10 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Heart, ShoppingCart, CheckCircle, Grid, Upload } from "lucide-react";
+import { Grid, Upload, Radio } from "lucide-react";
+import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
+import { AnimatePresence } from "framer-motion";
+import LiveStreamStudio from "@/components/streaming/LiveStreamStudio";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -11,6 +14,7 @@ export default function Profile() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
+  const [showStudio, setShowStudio] = useState(false);
 
   const params = new URLSearchParams(window.location.search);
   const targetEmail = params.get("email");
@@ -50,10 +54,18 @@ export default function Profile() {
   };
 
   const admin = isAdmin(user?.email);
+  const followers = profile?.followers_count || 0;
 
   return (
     <div className="min-h-screen bg-gray-950">
       {user && <AuthNavbar user={user} profile={profile} />}
+      
+      <AnimatePresence>
+        {showStudio && (
+          <LiveStreamStudio user={user} profile={profile} onClose={() => setShowStudio(false)} />
+        )}
+      </AnimatePresence>
+
       <div className={user ? "pt-16" : ""}>
         {/* Banner */}
         <div className="relative h-48 md:h-64 bg-gradient-to-r from-purple-900 via-pink-900 to-gray-900 overflow-hidden">
@@ -82,6 +94,7 @@ export default function Profile() {
                 <h1 className="text-2xl font-black text-white">{profile?.username || user?.full_name}</h1>
                 {profile?.is_verified && <span className="text-blue-400 text-lg">✅</span>}
                 {admin && isOwnProfile && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold">⚡ ADMIN</span>}
+                <FollowerRankBadge followers={followers} size="md" />
               </div>
               <p className={`text-sm font-semibold ${accountColors[profile?.account_type] || "text-gray-400"}`}>
                 {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : profile?.account_type === "business" ? "🏢 Business" : "👤 Gamer"}
@@ -89,24 +102,61 @@ export default function Profile() {
               {profile?.bio && <p className="text-gray-400 text-sm mt-1">{profile.bio}</p>}
               {profile?.location && <p className="text-gray-600 text-xs mt-1">📍 {profile.location}</p>}
             </div>
-            {isOwnProfile && (
-              <a href="/settings" className="px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
-                Edit Profile
-              </a>
-            )}
+            <div className="flex flex-col gap-2">
+              {isOwnProfile && (
+                <motion.button
+                  onClick={() => setShowStudio(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white"
+                  style={{ background: "linear-gradient(90deg, #dc2626, #be123c)", boxShadow: "0 0 15px rgba(220,38,38,0.4)" }}
+                >
+                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                  <Radio className="w-4 h-4" /> Go Live
+                </motion.button>
+              )}
+              {isOwnProfile && (
+                <a href="/settings" className="px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors text-center">
+                  Edit Profile
+                </a>
+              )}
+            </div>
           </div>
+
+          {/* Rank progress banner */}
+          {(() => {
+            const rankInfo = [
+              { min: 0, next: 1000, label: "Supreme Digital Creator 💎", color: "#00d4ff" },
+              { min: 1000, next: 10000, label: "Gaming Guru 🌟", color: "#a855f7" },
+              { min: 10000, next: 100000, label: "Gaming God/Goddess ⚡👑", color: "#ffd700" },
+            ];
+            const current = rankInfo.slice().reverse().find(r => followers >= r.min) || rankInfo[0];
+            if (followers >= 100000) return null;
+            const progress = Math.min(((followers - current.min) / (current.next - current.min)) * 100, 100);
+            return (
+              <div className="mb-6 p-4 rounded-2xl bg-gray-900 border border-gray-800">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-white text-xs font-bold">Next rank: <span style={{ color: current.color }}>{current.label}</span></p>
+                  <p className="text-gray-400 text-xs">{followers.toLocaleString()} / {current.next.toLocaleString()} followers</p>
+                </div>
+                <div className="h-2 rounded-full bg-gray-800">
+                  <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%`, background: current.color, boxShadow: `0 0 8px ${current.color}` }} />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Stats */}
           <div className="flex gap-6 mb-8 text-center">
             <div><p className="text-white font-black text-xl">{listings.length}</p><p className="text-gray-500 text-xs">Listings</p></div>
-            <div><p className="text-white font-black text-xl">{profile?.followers_count || 0}</p><p className="text-gray-500 text-xs">Followers</p></div>
+            <div><p className="text-white font-black text-xl">{followers.toLocaleString()}</p><p className="text-gray-500 text-xs">Followers</p></div>
             <div><p className="text-white font-black text-xl">{profile?.following_count || 0}</p><p className="text-gray-500 text-xs">Following</p></div>
             {(profile?.account_type !== "regular") && (
               <div><p className="text-white font-black text-xl">{profile?.total_sales || 0}</p><p className="text-gray-500 text-xs">Sales</p></div>
             )}
           </div>
 
-          {/* Listings grid — TikTok style */}
+          {/* Listings grid */}
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Grid className="w-4 h-4 text-gray-400" />
@@ -136,7 +186,7 @@ export default function Profile() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="absolute bottom-2 left-2 right-2">
                         <p className="text-white text-xs font-bold truncate">{l.title}</p>
-                        <p className="text-purple-400 text-xs font-black">₱{l.price?.toLocaleString()}</p>
+                        <p className="text-purple-400 text-xs font-black">{l.price === 0 ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
                       </div>
                     </div>
                     {l.is_premium && <span className="absolute top-1.5 right-1.5 text-xs bg-yellow-500/90 text-black font-bold px-1.5 py-0.5 rounded-md">⭐</span>}
