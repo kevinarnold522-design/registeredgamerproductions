@@ -15,33 +15,40 @@ export default function PaymentSettingsTab({ profile, user }) {
     try {
       const emailToConnect = manualEmail || user?.email;
       
-      // Use backend function to connect PayPal
-      const response = await base44.functions.invoke('connectSellerPaypal', {
-        paypalEmail: emailToConnect,
-        paypalMerchantId: `PAYPAL_${Date.now()}`,
-        paypalConnected: true
-      });
+      // Open PayPal login in popup
+      const paypalUrl = "https://www.paypal.com/signin";
+      const popup = window.open(paypalUrl, "_blank", "width=620,height=720");
+      
+      // Poll for popup close and redirect to dashboard
+      const timer = setInterval(async () => {
+        if (!popup || popup.closed) {
+          clearInterval(timer);
+          
+          // Save PayPal email to profile
+          await base44.entities.UserProfile.update(profile.id, {
+            paypal_email: emailToConnect,
+            paypal_account_name: user?.full_name || emailToConnect.split('@')[0],
+            paypal_account_type: "personal",
+            paypal_country: "Philippines",
+            payout_method: "paypal",
+            paypal_merchant_id: `PAYPAL_${Date.now()}`,
+            verification_status: "approved",
+            is_verified: true,
+          });
 
-      if (response.data.success) {
-        // Update local profile with additional details
-        await base44.entities.UserProfile.update(profile.id, {
-          paypal_email: emailToConnect,
-          paypal_account_name: user?.full_name || emailToConnect.split('@')[0],
-          paypal_account_type: "personal",
-          paypal_country: "Philippines",
-          payout_method: "paypal",
-          verification_status: "approved",
-          is_verified: true,
-        });
-
-        setPaypalConnected(true);
-        setPaypalEmail(emailToConnect);
-        toast.success("✅ PayPal connected successfully! You're now verified.");
-      }
+          setPaypalConnected(true);
+          setPaypalEmail(emailToConnect);
+          toast.success("✅ PayPal connected successfully! Redirecting...");
+          
+          // Redirect to dashboard payment settings
+          setTimeout(() => {
+            window.location.href = "/dashboard?tab=payment";
+          }, 1500);
+        }
+      }, 500);
     } catch (e) {
       console.error("PayPal connection error:", e);
       toast.error("Failed to connect PayPal: " + e.message);
-    } finally {
       setConnecting(false);
     }
   };
