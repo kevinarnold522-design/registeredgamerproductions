@@ -92,6 +92,12 @@ export default function HeroSection() {
             <Users className="w-5 h-5" />
             Join Community
           </a>
+          <a
+            href="/register"
+            className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold text-base hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          >
+            Sign Up Now & Be Part of the Community
+          </a>
         </motion.div>
 
         {/* Stats */}

@@ -1,0 +1,111 @@
+{
+  "name": "Listing",
+  "type": "object",
+  "properties": {
+    "seller_email": {
+      "type": "string"
+    },
+    "seller_username": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "PHP"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "games",
+        "gear",
+        "buy_sell",
+        "tournaments",
+        "content",
+        "jobs",
+        "modding",
+        "food",
+        "travel",
+        "services"
+      ]
+    },
+    "subcategory": {
+      "type": "string"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "platform": {
+      "type": "string"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "new",
+        "like_new",
+        "good",
+        "fair",
+        "digital"
+      ],
+      "default": "digital"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "sold",
+        "pending",
+        "removed"
+      ],
+      "default": "active"
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false
+    },
+    "location": {
+      "type": "string"
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "stock": {
+      "type": "number",
+      "default": 1
+    },
+    "download_url": {
+      "type": "string"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "seller_email",
+    "title",
+    "price",
+    "category"
+  ]
+}

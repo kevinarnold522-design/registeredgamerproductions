@@ -1,0 +1,69 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "buyer_email": {
+      "type": "string"
+    },
+    "seller_email": {
+      "type": "string"
+    },
+    "listing_id": {
+      "type": "string"
+    },
+    "listing_title": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "commission": {
+      "type": "number"
+    },
+    "seller_payout": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "PHP"
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "order_status": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "processing"
+    },
+    "transaction_id": {
+      "type": "string"
+    },
+    "receipt_url": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "buyer_email",
+    "seller_email",
+    "listing_id",
+    "amount"
+  ]
+}

@@ -39,9 +39,9 @@ export default function Navbar() {
               <Gamepad2 className="w-5 h-5 text-white" />
             </div>
             <div className="hidden sm:block">
-              <span className="font-black text-white text-sm">Registered</span>
+              <span className="font-black text-white text-sm">GAMER</span>
               <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">
-                GamerProductions
+                Productions
               </span>
             </div>
           </a>
@@ -69,8 +69,8 @@ export default function Navbar() {
               className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             >
               <Zap className="w-4 h-4" />
-              Join Now
-            </a>
+              Sign Up Now
+              </a>
             <button
               className="md:hidden p-2 text-gray-400"
               onClick={() => setMenuOpen(!menuOpen)}

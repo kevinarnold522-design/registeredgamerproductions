@@ -56,7 +56,7 @@ export default function CommunitySection() {
             viewport={{ once: true }}
           >
             <p className="text-cyan-400 text-sm font-semibold uppercase tracking-wider mb-2">
-              1Community
+              1 Community · 1 Mindset · 1 Goal
             </p>
             <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
               One Platform.{" "}
@@ -65,7 +65,7 @@ export default function CommunitySection() {
               </span>
             </h2>
             <p className="text-gray-400 max-w-xl mx-auto text-base">
-              RegisteredGamerProductions — Est. 2026
+              GAMER Productions — Est. 2026
             </p>
           </motion.div>
         </div>
@@ -103,16 +103,16 @@ export default function CommunitySection() {
           }}
         >
           <h3 className="text-2xl md:text-3xl font-black text-white mb-2">
-            Join{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              50,000+ Gamers
-            </span>
-          </h3>
-          <p className="text-gray-400 mb-6 text-sm">
-            Sign up free — no credit card required
-          </p>
-          <a
-            href="#"
+              Join{" "}
+              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                50,000+ Gamers
+              </span>
+            </h3>
+            <p className="text-gray-400 mb-6 text-sm">
+              Sign up free — no credit card required
+            </p>
+            <a
+              href="/register"
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base hover:opacity-90 transition-opacity"
           >
             <Zap className="w-5 h-5" />

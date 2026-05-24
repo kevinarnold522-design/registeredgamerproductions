@@ -29,14 +29,14 @@ export default function Footer() {
                 <Gamepad2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <span className="font-black text-white text-sm block">Registered</span>
+                <span className="font-black text-white text-sm block">GAMER</span>
                 <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">
-                  GamerProductions
+                  Productions
                 </span>
               </div>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed mb-5">
-              Your one-stop gaming hub. Games, gear, community, and esports — all in one place.
+              GAMER Productions — your one-stop gaming hub. Games, gear, community, and esports — all in one place.
             </p>
             <div className="flex gap-3">
               {socials.map((s) => (
@@ -75,10 +75,10 @@ export default function Footer() {
         {/* Divider */}
         <div className="border-t border-gray-900 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-600 text-sm">
-            © 2026 RegisteredGamerProductions · Founded by Kevin Roberto · Built for Gamers
+            © 2026 GAMER Productions · Founded by Kevin Roberto · Built for Gamers
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-gray-700 text-xs">🎮 Proud Gaming Community</span>
+            <span className="text-gray-700 text-xs">🎮 1 Community · 1 Mindset · 1 Goal</span>
             <span className="text-gray-700 text-xs">·</span>
             <span className="text-gray-700 text-xs">Humbly Growing Thanks to You, Gamer!</span>
           </div>

@@ -1,0 +1,125 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "regular",
+        "digital_creator",
+        "business"
+      ],
+      "default": "regular"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "banner_url": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "none"
+    },
+    "verification_docs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "followers_count": {
+      "type": "number",
+      "default": 0
+    },
+    "following_count": {
+      "type": "number",
+      "default": 0
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0
+    },
+    "total_revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "payment_methods": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "payout_method": {
+      "type": "string"
+    },
+    "payout_details": {
+      "type": "object"
+    },
+    "business_name": {
+      "type": "string"
+    },
+    "business_registration": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "social_links": {
+      "type": "object"
+    },
+    "joined_date": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "preferred_otp_method": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms"
+      ],
+      "default": "email"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "saved_addresses": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "required": [
+    "user_email",
+    "username",
+    "account_type"
+  ]
+}

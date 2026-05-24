@@ -127,7 +127,7 @@ export default function CategoryCards() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <p className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-2">
-            RegisteredGamerProductions
+            GAMER Productions
           </p>
           <h2 className="text-3xl md:text-4xl font-black text-white">
             Browse by{" "}

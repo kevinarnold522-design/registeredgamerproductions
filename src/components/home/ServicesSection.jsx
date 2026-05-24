@@ -105,7 +105,7 @@ export default function ServicesSection() {
             viewport={{ once: true }}
           >
             <p className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-3">
-              RegisteredGamerProductions
+              GAMER Productions
             </p>
             <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
               SERVICES: ALL-IN-ONE{" "}
@@ -114,7 +114,7 @@ export default function ServicesSection() {
               </span>
             </h2>
             <p className="text-gray-400 mb-8 leading-relaxed">
-              Local gaming community, real connections. We bring you the best deals, reviews,
+              GAMER Productions — local gaming community, real connections. We bring you the best deals, reviews,
               and esports content — all in one place.
             </p>
             <div className="space-y-4">
