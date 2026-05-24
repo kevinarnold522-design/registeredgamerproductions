@@ -191,12 +191,19 @@ export default function AdminDashboard({ user, profile }) {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {u.payout_method ? (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${u.payout_method === "stripe" ? "bg-blue-900/50 text-blue-400" : "bg-indigo-900/50 text-indigo-400"}`}>
-                          {u.payout_method === "stripe" ? "💳 Card" : "🅿️ PayPal"}
+                      {u.paypal_email ? (
+                        <div className="flex flex-col">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-900/50 text-indigo-400 w-fit mb-1">
+                            🅿️ PayPal Connected
+                          </span>
+                          <span className="text-gray-500 text-[10px] truncate max-w-[150px]">{u.paypal_email}</span>
+                        </div>
+                      ) : u.payout_method === "stripe" ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-900/50 text-blue-400">
+                          💳 Stripe
                         </span>
                       ) : (
-                        <span className="text-gray-600 text-xs">Not set</span>
+                        <span className="text-gray-600 text-xs">Not connected</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
