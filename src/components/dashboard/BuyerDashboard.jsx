@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ShoppingCart, Heart, ClipboardList, Settings, User, CreditCard, Youtube } from "lucide-react";
+import { Heart, ClipboardList, User, CreditCard, Youtube, LogOut, Settings } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
+import PaymentMethodsTab from "./PaymentMethodsTab";
 
 export default function BuyerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -36,14 +37,22 @@ export default function BuyerDashboard({ user, profile }) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl overflow-hidden">
-          {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl overflow-hidden">
+            {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-white">{profile?.username || user?.full_name}</h1>
+            <p className="text-blue-400 text-sm font-semibold">👤 Regular Account · {user?.email}</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-black text-white">{profile?.username || user?.full_name}</h1>
-          <p className="text-blue-400 text-sm font-semibold">👤 Regular Account</p>
-        </div>
+        <button
+          onClick={() => base44.auth.logout("/")}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-semibold hover:bg-red-900/40 transition-colors"
+        >
+          <LogOut className="w-4 h-4" /> Sign Out
+        </button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-2 mb-8">
@@ -114,23 +123,7 @@ export default function BuyerDashboard({ user, profile }) {
       )}
 
       {tab === "payment" && (
-        <div className="max-w-md space-y-4">
-          <h3 className="text-white font-bold text-lg mb-4">Saved Payment Methods</h3>
-          {[
-            { name: "PayPal", icon: "🅿️", color: "border-blue-700/30 bg-blue-900/10" },
-            { name: "GCash", icon: "💚", color: "border-green-700/30 bg-green-900/10" },
-            { name: "Credit/Debit Card", icon: "💳", color: "border-purple-700/30 bg-purple-900/10" },
-            { name: "BDO Online Banking", icon: "🏦", color: "border-yellow-700/30 bg-yellow-900/10" },
-          ].map((m) => (
-            <div key={m.name} className={`flex items-center justify-between p-4 rounded-2xl border ${m.color}`}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{m.icon}</span>
-                <p className="text-white font-semibold text-sm">{m.name}</p>
-              </div>
-              <button className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 text-xs font-semibold hover:bg-gray-700 transition-colors">Link</button>
-            </div>
-          ))}
-        </div>
+        <PaymentMethodsTab profile={profile} />
       )}
     </div>
   );

@@ -146,22 +146,30 @@ export default function HeroSection() {
 
         {/* CTA Buttons */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-          className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
-          <motion.a href="#categories" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-            className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            style={{ boxShadow: "0 0 20px rgba(139,92,246,0.4)" }}>
-            <Gamepad2 className="w-5 h-5" /> Explore Categories
+          className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+          <motion.a href="/register" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+            className="px-10 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            style={{ boxShadow: "0 0 30px rgba(139,92,246,0.5)" }}>
+            <Zap className="w-5 h-5" /> Sign Up Free — Join Now
           </motion.a>
           <motion.a href="#livestream" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-            className="px-8 py-3.5 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
+            className="px-8 py-4 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
             <Radio className="w-5 h-5" />
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             Go Live Now
           </motion.a>
-          <motion.a href="/register" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-            className="px-8 py-3.5 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-base hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
-            <Users className="w-5 h-5" /> Join Community
+          <motion.a href="#categories" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+            className="px-8 py-4 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-base hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
+            <Gamepad2 className="w-5 h-5" /> Browse Categories
           </motion.a>
+        </motion.div>
+
+        {/* Trust signals */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+          className="flex flex-wrap justify-center gap-4 mb-10 text-xs text-gray-500">
+          {["✅ Free to Join", "🔒 Secure Payments via PayPal & Stripe", "🌍 Available Worldwide", "💰 Earn from Content", "🎮 100% Gaming Focused"].map((t, i) => (
+            <span key={i} className="flex items-center gap-1 font-medium">{t}</span>
+          ))}
         </motion.div>
 
         {/* Live Stats */}

@@ -120,6 +120,14 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Right: User */}
         <div className="flex items-center gap-2">
+          {/* Sign Out — always visible */}
+          <button
+            onClick={handleLogout}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-900/20 border border-red-700/30 text-red-400 text-xs font-semibold hover:bg-red-900/40 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out
+          </button>
           {/* Add Listing for sellers */}
           {(admin || accountType === "digital_creator" || accountType === "business") && (
             <Link
