@@ -6,26 +6,27 @@ import { toast } from "sonner";
 
 export default function PaymentSettingsTab({ profile, user }) {
   const [connecting, setConnecting] = useState(false);
-  const [paypalConnected, setPaypalConnected] = useState(!!profile?.paypal_merchant_id);
+  const [paypalConnected, setPaypalConnected] = useState(!!profile?.paypal_merchant_id || !!profile?.paypal_email);
   const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || profile?.seller_paypal_email || "");
+  const [manualEmail, setManualEmail] = useState("");
 
   const handleConnectPayPal = async () => {
     setConnecting(true);
     try {
-      // Open PayPal OAuth login
-      const paypalAuthUrl = "https://www.paypal.com/signin";
-      const popup = window.open(paypalAuthUrl, "_blank", "width=620,height=720");
+      const emailToConnect = manualEmail || user?.email;
       
-      // Simulate OAuth callback with full account details
-      setTimeout(async () => {
-        const merchantId = `PAYPAL_${Date.now()}`;
-        const email = user?.email || "user@example.com";
-        const fullName = user?.full_name || email.split('@')[0];
-        
+      // Use backend function to connect PayPal
+      const response = await base44.functions.invoke('connectSellerPaypal', {
+        paypalEmail: emailToConnect,
+        paypalMerchantId: `PAYPAL_${Date.now()}`,
+        paypalConnected: true
+      });
+
+      if (response.data.success) {
+        // Update local profile with additional details
         await base44.entities.UserProfile.update(profile.id, {
-          paypal_merchant_id: merchantId,
-          paypal_email: email,
-          paypal_account_name: fullName,
+          paypal_email: emailToConnect,
+          paypal_account_name: user?.full_name || emailToConnect.split('@')[0],
           paypal_account_type: "personal",
           paypal_country: "Philippines",
           payout_method: "paypal",
@@ -34,29 +35,31 @@ export default function PaymentSettingsTab({ profile, user }) {
         });
 
         setPaypalConnected(true);
-        setPaypalEmail(email);
+        setPaypalEmail(emailToConnect);
         toast.success("✅ PayPal connected successfully! You're now verified.");
-      }, 3000);
+      }
     } catch (e) {
       console.error("PayPal connection error:", e);
-      toast.error("Failed to connect PayPal.");
+      toast.error("Failed to connect PayPal: " + e.message);
     } finally {
       setConnecting(false);
     }
   };
 
   const handleChangePayPal = async () => {
-    // Disconnect current and reconnect
     await base44.entities.UserProfile.update(profile.id, {
       paypal_merchant_id: null,
       paypal_email: null,
+      paypal_account_name: null,
+      paypal_account_type: null,
+      paypal_country: null,
       payout_method: null,
       verification_status: "none",
       is_verified: false,
     });
     setPaypalConnected(false);
     setPaypalEmail("");
-    setTimeout(() => handleConnectPayPal(), 500);
+    setManualEmail("");
   };
 
   return (
@@ -181,6 +184,21 @@ export default function PaymentSettingsTab({ profile, user }) {
             </div>
           </div>
 
+          {/* PayPal Email Input */}
+          <div className="mb-4">
+            <label className="text-gray-300 text-xs font-semibold mb-2 block">Enter Your PayPal Email</label>
+            <input
+              type="email"
+              value={manualEmail}
+              onChange={(e) => setManualEmail(e.target.value)}
+              placeholder="your-paypal@email.com"
+              className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none"
+            />
+            <p className="text-gray-500 text-[10px] mt-2">
+              This email will be used to receive payouts and process payments
+            </p>
+          </div>
+
           <div className="mb-4 space-y-2">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-400" />
@@ -203,7 +221,7 @@ export default function PaymentSettingsTab({ profile, user }) {
           {/* Connect Button */}
           <button
             onClick={handleConnectPayPal}
-            disabled={connecting}
+            disabled={connecting || !manualEmail}
             className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg shadow-blue-900/30"
           >
             {connecting ? (
