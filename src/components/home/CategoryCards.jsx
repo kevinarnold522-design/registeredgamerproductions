@@ -2,77 +2,132 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   IconController, IconMod, IconStream, IconTrophy, IconStore,
-  IconGear, IconPlay, IconJobs, IconServices
+  IconPlay, IconJobs, IconServices
 } from "@/components/icons/GameIcons";
+// Note: IconGear removed — Gaming Gear is now a subcategory of Buy & Sell
 
+// Direct routing — each category maps to /category?cat=ID
 const moddingCategory = {
   icon: IconMod,
   iconColor: "#fb923c",
   title: "Modding Community",
-  sub: "Upload, Share & Sell Mods for WWE2K, GTA, FIFA, PES, NBA2K, PPSSPP & More",
-  back: "Browse Mods",
-  color: "from-orange-950 via-orange-900 to-amber-900",
+  sub: "Upload, Share & Download Mods — GTA, FIFA, NBA2K, PPSSPP, Minecraft & more",
+  color: "from-orange-950 via-amber-950 to-gray-950",
   borderColor: "border-orange-500/60",
   glowColor: "rgba(249,115,22,0.7)",
-  href: "/?cat=modding",
+  href: "/category?cat=modding",
+  tags: ["PPSSPP", "GTA 5", "FIFA", "NBA2K", "Minecraft", "Android"],
 };
 
 const otherCategories = [
-  { icon: IconController, iconColor: "#a855f7", title: "Games", sub: "PC, Console & Mobile Titles", back: "Browse Games", color: "from-purple-950 to-purple-800", borderColor: "border-purple-500/50", glowColor: "rgba(139,92,246,0.6)", href: "/?cat=games" },
-  { icon: IconGear, iconColor: "#ec4899", title: "Gaming Gear", sub: "Keyboards, Mice & Monitors", back: "Shop Gear", color: "from-pink-950 to-pink-800", borderColor: "border-pink-500/50", glowColor: "rgba(236,72,153,0.6)", href: "/?cat=gear" },
-  { icon: IconStore, iconColor: "#eab308", title: "Buy & Sell", sub: "Accounts, Items, Premium Mods", back: "Trade Now", color: "from-yellow-950 to-yellow-800", borderColor: "border-yellow-500/50", glowColor: "rgba(234,179,8,0.6)", href: "/?cat=buy_sell" },
-  { icon: IconTrophy, iconColor: "#4ade80", title: "Tournaments", sub: "Esports & Competitions", back: "Join Event", color: "from-green-950 to-green-800", borderColor: "border-green-500/50", glowColor: "rgba(74,222,128,0.6)", href: "/?cat=tournaments" },
-  { icon: IconStream, iconColor: "#f87171", title: "Live Streams", sub: "Watch & Go Live Now", back: "Watch Live", color: "from-red-950 to-red-800", borderColor: "border-red-500/50", glowColor: "rgba(239,68,68,0.6)", href: "#livestream", live: true },
-  { icon: IconPlay, iconColor: "#60a5fa", title: "Content", sub: "Gaming Videos, Clips & Streams", back: "Watch Now", color: "from-blue-950 to-blue-800", borderColor: "border-blue-500/50", glowColor: "rgba(59,130,246,0.6)", href: "/?cat=content" },
-  { icon: IconJobs, iconColor: "#f87171", title: "Gaming Jobs", sub: "QA, Dev, Community & More", back: "Find Jobs", color: "from-rose-950 to-rose-800", borderColor: "border-rose-500/50", glowColor: "rgba(248,113,113,0.5)", href: "/?cat=jobs" },
-  { icon: IconServices, iconColor: "#818cf8", title: "Services", sub: "PC Repair, Coaching & More", back: "Browse Services", color: "from-indigo-950 to-indigo-800", borderColor: "border-indigo-500/50", glowColor: "rgba(99,102,241,0.6)", href: "/?cat=services" },
+  {
+    icon: IconController, iconColor: "#a855f7",
+    title: "Games",
+    sub: "Top deals from Steam, Epic · Android & iOS titles",
+    color: "from-purple-950 to-purple-900",
+    borderColor: "border-purple-500/50", glowColor: "rgba(139,92,246,0.6)",
+    href: "/category?cat=games",
+    badge: "Steam · Epic · Mobile",
+  },
+  {
+    icon: IconStore, iconColor: "#eab308",
+    title: "Buy & Sell",
+    sub: "Accounts, Items, Gear, Gift Cards & Premium Mods",
+    color: "from-yellow-950 to-yellow-900",
+    borderColor: "border-yellow-500/50", glowColor: "rgba(234,179,8,0.6)",
+    href: "/category?cat=buy_sell",
+    badge: "All Users",
+  },
+  {
+    icon: IconTrophy, iconColor: "#4ade80",
+    title: "Tournaments",
+    sub: "MLBB, CS2, Valorant, FIFA, NBA2K & global events",
+    color: "from-green-950 to-green-900",
+    borderColor: "border-green-500/50", glowColor: "rgba(74,222,128,0.6)",
+    href: "/category?cat=tournaments",
+    badge: "Global",
+  },
+  {
+    icon: IconStream, iconColor: "#f87171",
+    title: "Live Streams",
+    sub: "Watch & Go Live Now",
+    color: "from-red-950 to-red-900",
+    borderColor: "border-red-500/50", glowColor: "rgba(239,68,68,0.6)",
+    href: "/category?cat=livestream",
+    live: true,
+    badge: "LIVE",
+  },
+  {
+    icon: IconPlay, iconColor: "#60a5fa",
+    title: "Content",
+    sub: "Videos, Clips, Reviews & Highlights",
+    color: "from-blue-950 to-blue-900",
+    borderColor: "border-blue-500/50", glowColor: "rgba(59,130,246,0.6)",
+    href: "/category?cat=content",
+    badge: "Videos",
+  },
+  {
+    icon: IconJobs, iconColor: "#f87171",
+    title: "Gaming Jobs",
+    sub: "QA, Dev, Coaching & Community",
+    color: "from-rose-950 to-rose-900",
+    borderColor: "border-rose-500/50", glowColor: "rgba(248,113,113,0.5)",
+    href: "/category?cat=jobs",
+    badge: "Careers",
+  },
+  {
+    icon: IconServices, iconColor: "#818cf8",
+    title: "Services",
+    sub: "PC Repair, Coaching, Design & More",
+    color: "from-indigo-950 to-indigo-900",
+    borderColor: "border-indigo-500/50", glowColor: "rgba(99,102,241,0.6)",
+    href: "/category?cat=services",
+    badge: "Pro Help",
+  },
 ];
 
-function SmallFlipCard({ cat, index }) {
-  const [flipped, setFlipped] = useState(false);
+function SmallCard({ cat, index }) {
   const [hovered, setHovered] = useState(false);
   const CatIcon = cat.icon;
 
   return (
-    <motion.div
+    <motion.a
+      href={cat.href}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
-      className="relative h-44 cursor-pointer"
-      style={{ perspective: "900px" }}
-      onHoverStart={() => { setFlipped(true); setHovered(true); }}
-      onHoverEnd={() => { setFlipped(false); setHovered(false); }}
-      onClick={() => setFlipped(!flipped)}
+      className="relative rounded-2xl cursor-pointer block group"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      whileHover={{ y: -4 }}
     >
-      <div className="absolute inset-0 rounded-2xl transition-opacity duration-300 pointer-events-none"
-        style={{ opacity: hovered ? 1 : 0, boxShadow: `0 0 24px 6px ${cat.glowColor}`, borderRadius: "1rem", zIndex: 10 }} />
-      <motion.div className="relative w-full h-full" style={{ transformStyle: "preserve-3d" }}
-        animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.4, ease: "easeInOut" }}>
-        {/* Front */}
-        <div className={`absolute inset-0 rounded-2xl border-2 ${cat.borderColor} bg-gradient-to-br ${cat.color} p-4 flex flex-col items-center justify-center gap-3`}
-          style={{ backfaceVisibility: "hidden" }}>
-          {cat.live && <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-600/80 text-white text-[8px] font-black"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE</div>}
-          <motion.div animate={hovered ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.4 }}>
-            <CatIcon size={32} color={cat.iconColor} />
-          </motion.div>
-          <div className="text-center">
-            <div className="text-white font-bold text-sm">{cat.title}</div>
-            <div className="text-white/50 text-[10px] mt-0.5 leading-tight">{cat.sub}</div>
+      {/* Glow */}
+      <div className="absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-300"
+        style={{ opacity: hovered ? 1 : 0, boxShadow: `0 0 28px 6px ${cat.glowColor}` }} />
+
+      <div className={`relative h-44 rounded-2xl border-2 ${cat.borderColor} bg-gradient-to-br ${cat.color} p-4 flex flex-col items-center justify-center gap-3 transition-all`}>
+        {cat.live && (
+          <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-600/80 text-white text-[8px] font-black">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
           </div>
+        )}
+        {cat.badge && !cat.live && (
+          <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/40 text-white/60 text-[8px] font-semibold">{cat.badge}</div>
+        )}
+        <motion.div animate={hovered ? { scale: 1.2 } : { scale: 1 }} transition={{ duration: 0.2 }}>
+          <CatIcon size={32} color={cat.iconColor} />
+        </motion.div>
+        <div className="text-center">
+          <div className="text-white font-bold text-sm group-hover:text-white transition-colors">{cat.title}</div>
+          <div className="text-white/40 text-[10px] mt-0.5 leading-tight">{cat.sub}</div>
         </div>
-        {/* Back */}
-        <div className={`absolute inset-0 rounded-2xl border-2 ${cat.borderColor} bg-gray-950 flex flex-col items-center justify-center gap-2`}
-          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
-          <CatIcon size={28} color={cat.iconColor} />
-          <div className="text-white font-bold text-sm">{cat.title}</div>
-          <a href={cat.href || "#"} className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold hover:opacity-90 transition-opacity"
-            style={{ boxShadow: `0 0 12px ${cat.glowColor}` }}>
-            {cat.back}
-          </a>
+        {/* Hover arrow */}
+        <div className={`absolute bottom-3 right-3 transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}>
+          <span className="text-white/60 text-xs font-bold">→</span>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </motion.a>
   );
 }
 
@@ -90,28 +145,27 @@ export default function CategoryCards() {
           <h2 className="text-3xl md:text-4xl font-black text-white">
             Browse by <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Category</span>
           </h2>
-          <p className="text-gray-500 text-sm mt-2">Hover to flip · Glow on touch · Click to explore</p>
+          <p className="text-gray-500 text-sm mt-2">Click any category to explore</p>
         </motion.div>
 
         {/* MODDING — Hero large card */}
-        <motion.div
+        <motion.a
+          href={moddingCategory.href}
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden"
+          className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden block"
           style={{
             height: "240px",
             border: `2px solid ${modHovered ? "rgba(249,115,22,0.8)" : "rgba(249,115,22,0.3)"}`,
             transition: "border-color 0.3s",
             boxShadow: modHovered ? "0 0 50px 12px rgba(249,115,22,0.4), 0 0 100px 30px rgba(249,115,22,0.15)" : "0 0 20px rgba(249,115,22,0.1)",
           }}
-          onHoverStart={() => setModHovered(true)}
-          onHoverEnd={() => setModHovered(false)}
+          onMouseEnter={() => setModHovered(true)}
+          onMouseLeave={() => setModHovered(false)}
+          whileHover={{ scale: 1.005 }}
         >
-          {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-orange-950 via-amber-950 to-gray-950" />
-          {/* Animated grid lines */}
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(249,115,22,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.6) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-          {/* Glow orb */}
-          <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-3xl"
+          <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-3xl pointer-events-none"
             style={{ background: "radial-gradient(circle, rgba(249,115,22,0.3), transparent)" }}
             animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 3, repeat: Infinity }} />
 
@@ -125,34 +179,33 @@ export default function CategoryCards() {
 
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-300 text-xs font-black uppercase tracking-wider">
-                  Featured
-                </span>
+                <span className="px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-300 text-xs font-black uppercase tracking-wider">Featured</span>
                 <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black uppercase">Most Popular</span>
               </div>
               <h3 className="text-white font-black text-3xl md:text-4xl mb-2" style={{ textShadow: modHovered ? "0 0 30px rgba(249,115,22,0.8)" : "none" }}>
                 Modding Community
               </h3>
               <p className="text-orange-200/70 text-base max-w-xl">
-                Upload, share & sell premium mods for <strong className="text-orange-300">WWE2K, GTA, FIFA, PES, NBA2K, PPSSPP</strong> & more. The biggest modding hub for gamers worldwide.
+                Upload, share & download mods — <strong className="text-orange-300">PPSSPP, Football Life, PES, FIFA, NBA2K, GTA5, GTA SA, WWE2K, Minecraft, Android</strong> & more.
               </p>
-              <div className="flex gap-3 mt-4">
-                <a href="/?cat=modding" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-sm hover:opacity-90 transition-opacity"
-                  style={{ boxShadow: "0 0 20px rgba(249,115,22,0.5)" }}>
-                  Browse Mods
-                </a>
-                <a href="/create-listing" className="px-6 py-2.5 rounded-xl border border-orange-700/50 text-orange-300 font-bold text-sm hover:bg-orange-900/20 transition-colors">
-                  Upload Mod
-                </a>
+              {/* game tags */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {moddingCategory.tags.map(t => (
+                  <span key={t} className="px-2 py-0.5 rounded-full bg-orange-900/40 border border-orange-700/40 text-orange-300 text-[10px] font-semibold">{t}</span>
+                ))}
               </div>
             </div>
-          </div>
-        </motion.div>
 
-        {/* Other Categories — smaller grid below */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            <div className="hidden md:flex items-center gap-2 text-orange-300 font-bold text-sm">
+              Explore → 
+            </div>
+          </div>
+        </motion.a>
+
+        {/* Other Categories — direct click cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {otherCategories.map((cat, i) => (
-            <SmallFlipCard key={i} cat={cat} index={i} />
+            <SmallCard key={i} cat={cat} index={i} />
           ))}
         </div>
       </div>

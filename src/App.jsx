@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import CreateListing from "./pages/CreateListing";
 import Profile from "./pages/Profile";
 import Channel from "./pages/Channel";
+import CategoryPage from "./pages/CategoryPage.jsx";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -45,6 +46,7 @@ const AuthenticatedApp = () => {
       <Route path="/create-listing" element={<CreateListing />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/channel" element={<Channel />} />
+      <Route path="/category" element={<CategoryPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

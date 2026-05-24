@@ -25,12 +25,11 @@
       "type": "string",
       "enum": [
         "games",
-        "gear",
+        "modding",
         "buy_sell",
         "tournaments",
         "content",
         "jobs",
-        "modding",
         "livestream",
         "services"
       ]
@@ -52,6 +51,14 @@
     },
     "platform": {
       "type": "string"
+    },
+    "game_name": {
+      "type": "string",
+      "description": "Name of the game this listing is about"
+    },
+    "game_platform": {
+      "type": "string",
+      "description": "Platform the game/mod is for"
     },
     "condition": {
       "type": "string",
@@ -102,6 +109,13 @@
     },
     "youtube_url": {
       "type": "string"
+    },
+    "youtube_video_id": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string",
+      "description": "Direct video file URL"
     }
   },
   "required": [

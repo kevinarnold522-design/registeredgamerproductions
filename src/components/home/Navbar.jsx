@@ -5,10 +5,10 @@ import { base44 } from "@/api/base44Client";
 
 const navLinks = [
   { label: "Categories", href: "#categories" },
-  { label: "Live", href: "#livestream", live: true },
-  { label: "Mods", href: "/?cat=modding" },
-  { label: "Community", href: "#community" },
-  { label: "Marketplace", href: "/?cat=buy_sell" },
+  { label: "Live", href: "/category?cat=livestream", live: true },
+  { label: "Mods", href: "/category?cat=modding" },
+  { label: "Tournaments", href: "/category?cat=tournaments" },
+  { label: "Marketplace", href: "/category?cat=buy_sell" },
 ];
 
 const accountTypes = [

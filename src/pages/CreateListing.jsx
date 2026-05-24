@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Upload, X, Plus, ArrowLeft, Gamepad2 } from "lucide-react";
+import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, CATEGORIES } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
+
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+  return match ? match[1] : null;
+}
 
 export default function CreateListing() {
   const [user, setUser] = useState(null);
@@ -13,15 +19,17 @@ export default function CreateListing() {
   const [images, setImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef(null);
+  const videoFileRef = useRef(null);
 
   const params = new URLSearchParams(window.location.search);
   const editId = params.get("edit");
+  const defaultCat = params.get("cat") || "games";
 
   const [form, setForm] = useState({
     title: "",
     description: "",
     price: "",
-    category: "games",
+    category: defaultCat,
     subcategory: "",
     condition: "digital",
     is_premium: false,
@@ -29,16 +37,19 @@ export default function CreateListing() {
     stock: 1,
     location: "",
     tags: "",
+    youtube_url: "",
+    video_url: "",
+    game_name: "",
+    game_platform: "",
   });
 
   useEffect(() => {
     const init = async () => {
       const me = await base44.auth.me();
-      if (!me) { window.location.href = "/login"; return; }
+      if (!me) { base44.auth.redirectToLogin("/create-listing"); return; }
       setUser(me);
       const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
       if (profiles.length > 0) setProfile(profiles[0]);
-      // Load existing listing for edit
       if (editId) {
         const listings = await base44.entities.Listing.filter({ id: editId });
         if (listings.length > 0) {
@@ -47,7 +58,7 @@ export default function CreateListing() {
             title: l.title || "",
             description: l.description || "",
             price: l.price || "",
-            category: l.category || "games",
+            category: l.category || defaultCat,
             subcategory: l.subcategory || "",
             condition: l.condition || "digital",
             is_premium: l.is_premium || false,
@@ -55,6 +66,10 @@ export default function CreateListing() {
             stock: l.stock || 1,
             location: l.location || "",
             tags: (l.tags || []).join(", "),
+            youtube_url: l.youtube_url || "",
+            video_url: l.video_url || "",
+            game_name: l.game_name || "",
+            game_platform: l.game_platform || "",
           });
           setImages(l.images || []);
         }
@@ -67,12 +82,19 @@ export default function CreateListing() {
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     setUploadingImages(true);
-    const urls = [];
     for (const file of files) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      urls.push(file_url);
+      setImages(prev => [...prev, file_url]);
     }
-    setImages(prev => [...prev, ...urls]);
+    setUploadingImages(false);
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImages(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(f => ({ ...f, video_url: file_url }));
     setUploadingImages(false);
   };
 
@@ -81,12 +103,14 @@ export default function CreateListing() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    const ytId = extractYouTubeId(form.youtube_url);
     const data = {
       ...form,
-      price: parseFloat(form.price),
-      stock: parseInt(form.stock),
+      price: parseFloat(form.price) || 0,
+      stock: parseInt(form.stock) || 1,
       tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
       images,
+      youtube_video_id: ytId || undefined,
       seller_email: user.email,
       seller_username: profile?.username || user.full_name,
     };
@@ -100,9 +124,13 @@ export default function CreateListing() {
   };
 
   const selectedCat = CATEGORIES.find(c => c.id === form.category);
-  const canEdit = user && (isAdmin(user.email) || !editId);
+  const ytId = extractYouTubeId(form.youtube_url);
 
-  if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return (
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -118,7 +146,9 @@ export default function CreateListing() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Images */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
-            <h3 className="text-white font-bold mb-4">Photos & Images</h3>
+            <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-purple-400" /> Photos & Images
+            </h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
               {images.map((img, i) => (
                 <div key={i} className="relative aspect-square">
@@ -132,12 +162,51 @@ export default function CreateListing() {
               <button type="button" onClick={() => fileInputRef.current?.click()}
                 className="aspect-square flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-700 hover:border-purple-500 transition-colors text-gray-500 hover:text-purple-400">
                 <Plus className="w-6 h-6" />
-                <span className="text-xs">Add</span>
+                <span className="text-xs">Add Photo</span>
               </button>
             </div>
             <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
-            {uploadingImages && <p className="text-purple-400 text-sm">Uploading images...</p>}
-            <p className="text-gray-600 text-xs">Connect your device camera or upload from gallery</p>
+            {uploadingImages && <p className="text-purple-400 text-sm animate-pulse">Uploading...</p>}
+          </div>
+
+          {/* Video / YouTube */}
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <Play className="w-4 h-4 text-red-400" /> Video Content
+            </h3>
+
+            {/* YouTube URL */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1">
+                <Youtube className="w-3 h-3 text-red-400" /> YouTube URL (optional)
+              </label>
+              <input value={form.youtube_url} onChange={e => setForm({ ...form, youtube_url: e.target.value })}
+                placeholder="https://youtube.com/watch?v=..."
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 text-sm" />
+              {ytId && (
+                <div className="mt-2 rounded-xl overflow-hidden aspect-video">
+                  <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt="YouTube thumbnail" className="w-full h-full object-cover" />
+                  <p className="text-green-400 text-xs mt-1">YouTube video detected!</p>
+                </div>
+              )}
+            </div>
+
+            {/* Upload video file */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Upload Video File (optional)</label>
+              {form.video_url ? (
+                <div className="flex items-center gap-3">
+                  <video src={form.video_url} controls className="w-48 rounded-xl" />
+                  <button type="button" onClick={() => setForm(f => ({ ...f, video_url: "" }))} className="text-red-400 text-xs hover:text-red-300">Remove</button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => videoFileRef.current?.click()}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-gray-700 hover:border-blue-500 text-gray-500 hover:text-blue-400 text-sm transition-colors">
+                  <Upload className="w-4 h-4" /> Upload Video
+                </button>
+              )}
+              <input ref={videoFileRef} type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
+            </div>
           </div>
 
           {/* Details */}
@@ -145,23 +214,40 @@ export default function CreateListing() {
             <h3 className="text-white font-bold mb-2">Listing Details</h3>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Title *</label>
-              <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} required placeholder="What are you selling?"
+              <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required placeholder="What are you selling?"
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
             </div>
+
+            {/* Game info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Name</label>
+                <input value={form.game_name} onChange={e => setForm({ ...form, game_name: e.target.value })} placeholder="e.g. GTA 5, FIFA 25..."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+              </div>
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Platform</label>
+                <input value={form.game_platform} onChange={e => setForm({ ...form, game_platform: e.target.value })} placeholder="PC, Android, PS5..."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+              </div>
+            </div>
+
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Description</label>
-              <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={4} placeholder="Describe your listing..."
+              <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={5}
+                placeholder="Describe your listing in detail — include game version, what's included, installation steps if needed..."
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm resize-none" />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Price (₱) *</label>
-                <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required placeholder="0.00"
+                <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required placeholder="0.00 (0 = Free)"
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
               </div>
               <div>
                 <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Stock</label>
-                <input type="number" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} min={1}
+                <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} min={1}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
               </div>
             </div>
@@ -172,15 +258,15 @@ export default function CreateListing() {
             <h3 className="text-white font-bold mb-2">Category</h3>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Main Category *</label>
-              <select value={form.category} onChange={e => setForm({...form, category: e.target.value, subcategory: ""})}
+              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, subcategory: "" })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </div>
-            {selectedCat?.subcategories.length > 0 && (
+            {selectedCat?.subcategories?.length > 0 && (
               <div>
                 <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Subcategory</label>
-                <select value={form.subcategory} onChange={e => setForm({...form, subcategory: e.target.value})}
+                <select value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
                   <option value="">Select subcategory</option>
                   {selectedCat.subcategories.map(s => <option key={s} value={s}>{s}</option>)}
@@ -190,25 +276,25 @@ export default function CreateListing() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Condition</label>
-                <select value={form.condition} onChange={e => setForm({...form, condition: e.target.value})}
+                <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
                   {["new","like_new","good","fair","digital"].map(c => <option key={c} value={c}>{c.replace("_"," ")}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Platform</label>
-                <input value={form.platform} onChange={e => setForm({...form, platform: e.target.value})} placeholder="PC, PS5, Xbox..."
+                <input value={form.platform} onChange={e => setForm({ ...form, platform: e.target.value })} placeholder="PC, PS5, Android..."
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
               </div>
             </div>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Tags (comma separated)</label>
-              <input value={form.tags} onChange={e => setForm({...form, tags: e.target.value})} placeholder="gaming, mod, fps..."
+              <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="gaming, mod, fps..."
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
             </div>
             <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={form.is_premium} onChange={e => setForm({...form, is_premium: e.target.checked})} className="w-4 h-4 rounded accent-purple-600" />
-              <span className="text-gray-300 text-sm font-medium">⭐ Mark as Premium listing</span>
+              <input type="checkbox" checked={form.is_premium} onChange={e => setForm({ ...form, is_premium: e.target.checked })} className="w-4 h-4 rounded accent-purple-600" />
+              <span className="text-gray-300 text-sm font-medium">Mark as Premium listing</span>
             </label>
           </div>
 

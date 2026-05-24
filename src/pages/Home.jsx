@@ -14,7 +14,6 @@ import ModdingSection from "@/components/home/ModdingSection";
 import MonetizationBadge from "@/components/home/MonetizationBadge";
 import VideosSection from "@/components/home/VideosSection";
 import FeaturedGames from "@/components/home/FeaturedGames";
-import TopGamingGear from "@/components/home/TopGamingGear";
 import CommunitySection from "@/components/home/CommunitySection";
 import ShootingStars from "@/components/home/ShootingStars";
 import Footer from "@/components/home/Footer";
@@ -56,7 +55,6 @@ export default function Home() {
             <MonetizationBadge />
             <VideosSection />
             <FeaturedGames />
-            <TopGamingGear />
             <CommunitySection />
             <Footer />
           </div>
