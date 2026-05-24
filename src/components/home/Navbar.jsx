@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Gamepad2, Search, Menu, X, Zap } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Youtube, Trophy } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const navLinks = [
   { label: "Games", href: "#games" },
@@ -10,9 +11,34 @@ const navLinks = [
   { label: "Deals", href: "#deals" },
 ];
 
+const accountTypes = [
+  {
+    id: "regular",
+    icon: <User className="w-5 h-5 text-blue-400" />,
+    label: "Regular Gamer",
+    desc: "Browse, buy & share videos",
+    color: "border-blue-500/40 hover:border-blue-400/70 bg-blue-900/10",
+  },
+  {
+    id: "digital_creator",
+    icon: <Youtube className="w-5 h-5 text-red-400" />,
+    label: "Digital Creator",
+    desc: "Share videos, earn $1/1K views, get Gaming Checkmark",
+    color: "border-purple-500/40 hover:border-purple-400/70 bg-purple-900/10",
+  },
+  {
+    id: "business",
+    icon: <Store className="w-5 h-5 text-green-400" />,
+    label: "Business / Seller",
+    desc: "List & sell gaming products or services",
+    color: "border-green-500/40 hover:border-green-400/70 bg-green-900/10",
+  },
+];
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -20,88 +46,172 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  return (
-    <motion.nav
-      initial={{ y: -60, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        scrolled
-          ? "bg-gray-950/95 backdrop-blur-md border-b border-purple-900/40 shadow-lg shadow-purple-900/10"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <a href="#" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-              <Gamepad2 className="w-5 h-5 text-white" />
-            </div>
-            <div className="hidden sm:block">
-              <span className="font-black text-white text-sm">GAMER</span>
-              <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">
-                Productions
-              </span>
-            </div>
-          </a>
+  const handleSignUp = (typeId) => {
+    setShowSignUpModal(false);
+    window.location.href = `/register?type=${typeId}`;
+  };
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-6">
+  return (
+    <>
+      <motion.nav
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          scrolled
+            ? "bg-gray-950/95 backdrop-blur-md border-b border-purple-900/40 shadow-lg shadow-purple-900/10"
+            : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <a href="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                <Gamepad2 className="w-5 h-5 text-white" />
+              </div>
+              <div className="hidden sm:block">
+                <span className="font-black text-white text-sm">GAMER</span>
+                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">
+                  Productions
+                </span>
+              </div>
+            </a>
+
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center gap-6">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-gray-400 hover:text-purple-400 text-sm font-medium transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+
+            {/* Right */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => base44.auth.redirectToLogin("/dashboard")}
+                className="hidden sm:block text-gray-400 hover:text-white text-sm font-semibold transition-colors px-3 py-2"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setShowSignUpModal(true)}
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+              >
+                <Zap className="w-4 h-4" />
+                Sign Up Now
+              </button>
+              <button
+                className="md:hidden p-2 text-gray-400"
+                onClick={() => setMenuOpen(!menuOpen)}
+              >
+                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {menuOpen && (
+          <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="text-gray-400 hover:text-purple-400 text-sm font-medium transition-colors"
+                className="text-gray-300 hover:text-purple-400 font-medium py-1"
+                onClick={() => setMenuOpen(false)}
               >
                 {link.label}
               </a>
             ))}
-          </div>
-
-          {/* Right */}
-          <div className="flex items-center gap-3">
-            <button className="p-2 text-gray-400 hover:text-purple-400 transition-colors">
-              <Search className="w-5 h-5" />
-            </button>
-            <a
-              href="#community"
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              <Zap className="w-4 h-4" />
-              Sign Up Now
-              </a>
             <button
-              className="md:hidden p-2 text-gray-400"
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => { setMenuOpen(false); base44.auth.redirectToLogin("/dashboard"); }}
+              className="mt-2 text-center px-4 py-2 rounded-lg border border-gray-700 text-gray-300 font-semibold"
             >
-              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              Sign In
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); setShowSignUpModal(true); }}
+              className="text-center px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold"
+            >
+              Join Now
             </button>
           </div>
-        </div>
-      </div>
+        )}
+      </motion.nav>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-gray-300 hover:text-purple-400 font-medium py-1"
-              onClick={() => setMenuOpen(false)}
-            >
-              {link.label}
-            </a>
-          ))}
-          <a
-            href="#community"
-            className="mt-2 text-center px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold"
+      {/* Sign Up Account Type Modal */}
+      <AnimatePresence>
+        {showSignUpModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            style={{ background: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowSignUpModal(false)}
           >
-            Join Now
-          </a>
-        </div>
-      )}
-    </motion.nav>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gray-950 border border-purple-700/40 rounded-3xl p-7 w-full max-w-md shadow-2xl shadow-purple-900/30"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                    <Gamepad2 className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-white font-black text-sm">GAMER Productions</span>
+                </div>
+                <button onClick={() => setShowSignUpModal(false)} className="text-gray-600 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <h2 className="text-xl font-black text-white mt-4 mb-1">Who are you joining as?</h2>
+              <p className="text-gray-500 text-sm mb-6">Choose your account type to get started:</p>
+
+              <div className="space-y-3 mb-5">
+                {accountTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => handleSignUp(type.id)}
+                    className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group ${type.color}`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-700 flex items-center justify-center flex-shrink-0">
+                      {type.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-bold text-sm">{type.label}</p>
+                      <p className="text-gray-400 text-xs mt-0.5 leading-relaxed">{type.desc}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-800 pt-4 text-center">
+                <p className="text-gray-500 text-sm">
+                  Already have an account?{" "}
+                  <button
+                    onClick={() => { setShowSignUpModal(false); base44.auth.redirectToLogin("/dashboard"); }}
+                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+                  >
+                    Sign In →
+                  </button>
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
