@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck, Youtube, ExternalLink } from "lucide-react";
 import { ACCOUNT_TYPES, TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 
@@ -59,25 +59,24 @@ export default function Register() {
     setLoading(false);
   };
 
-  // Social OAuth providers — redirect to Base44 OAuth flow
+  // Social OAuth providers — each opens the correct provider email login
   const socialProviders = [
-    { name: "Google", icon: "🔵", color: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50", provider: "google" },
-    { name: "Outlook", icon: "🔷", color: "bg-blue-600 text-white hover:bg-blue-700", provider: "microsoft" },
-    { name: "Yahoo", icon: "🟣", color: "bg-purple-600 text-white hover:bg-purple-700", provider: "yahoo" },
-    { name: "AOL", icon: "🔴", color: "bg-red-500 text-white hover:bg-red-600", provider: "aol" },
+    { name: "Google", icon: "🔵", color: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50", loginUrl: "https://accounts.google.com/signin" },
+    { name: "Outlook", icon: "🔷", color: "bg-blue-600 text-white hover:bg-blue-700", loginUrl: "https://login.live.com" },
+    { name: "Yahoo", icon: "🟣", color: "bg-purple-600 text-white hover:bg-purple-700", loginUrl: "https://login.yahoo.com" },
+    { name: "AOL", icon: "🔴", color: "bg-red-500 text-white hover:bg-red-600", loginUrl: "https://login.aol.com" },
   ];
 
-  const handleSocialLogin = (provider) => {
-    // Store pending account type so it's set on first login
+  const handleSocialLogin = (loginUrl) => {
+    // Store pending account type then open provider's login in same tab
     localStorage.setItem("pending_profile", JSON.stringify({
       username: "",
-      account_type: accountType,
+      account_type: accountType || "regular",
       phone_number: "",
       preferred_otp_method: "email",
       display_name: "",
     }));
-    // Redirect to Base44 OAuth — platform handles the OAuth flow
-    base44.auth.redirectToLogin(`/dashboard`);
+    window.open(loginUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -125,22 +124,49 @@ export default function Register() {
                 {ACCOUNT_TYPES.map((type) => (
                   <motion.button key={type.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     onClick={() => handleSelectType(type.id)}
-                    className="w-full flex items-center gap-4 p-5 rounded-2xl bg-gray-900/80 border border-gray-700 hover:border-purple-500 transition-colors text-left group">
+                    className="w-full flex items-start gap-4 p-5 rounded-2xl bg-gray-900/80 border border-gray-700 hover:border-purple-500 transition-colors text-left group">
                     <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-2xl flex-shrink-0`}>
                       {type.icon}
                     </div>
                     <div className="flex-1">
                       <p className="text-white font-bold text-lg">{type.label}</p>
                       <p className="text-gray-400 text-sm mt-0.5">{type.desc}</p>
+                      {type.id === "digital_creator" && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {["🎬 Share YouTube Videos","🔧 Upload Mods","☁️ Cloud Storage Links","🔗 Link Shorteners","🤖 AI Video Tools","🎮 Gaming Checkmark","💰 Earn $1/1K Views"].map(f => (
+                            <span key={f} className="text-xs bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                      )}
+                      {type.id === "regular" && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {["📺 Link YouTube","🎬 Share Videos","🛒 Buy Products","❤️ Favorites"].map(f => (
+                            <span key={f} className="text-xs bg-blue-900/30 border border-blue-700/30 text-blue-300 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                      )}
+                      {type.id === "business" && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {["🏪 List Products","🎬 Share Videos","✅ Verified Badge","📊 Sales Analytics","💳 PayPal Payouts"].map(f => (
+                            <span key={f} className="text-xs bg-green-900/30 border border-green-700/30 text-green-300 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-purple-400 transition-colors" />
+                    <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-purple-400 transition-colors flex-shrink-0 mt-1" />
                   </motion.button>
                 ))}
               </div>
-              <p className="text-center text-gray-500 text-sm mt-6">
-                Already have an account?{" "}
-                <a href="/login" className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</a>
-              </p>
+              <div className="flex flex-col items-center gap-3 mt-6">
+                <p className="text-gray-500 text-sm">
+                  Already have an account?{" "}
+                  <button onClick={() => base44.auth.redirectToLogin("/dashboard")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
+                </p>
+                <button onClick={() => base44.auth.redirectToLogin("/dashboard")}
+                  className="w-full py-3 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-sm hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
+                  🔐 Sign In to Existing Account
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -161,9 +187,9 @@ export default function Register() {
               {/* Social Providers */}
               <div className="grid grid-cols-2 gap-3 mb-5">
                 {socialProviders.map((p) => (
-                  <button key={p.name} onClick={() => handleSocialLogin(p.provider)}
+                  <button key={p.name} onClick={() => handleSocialLogin(p.loginUrl)}
                     className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-opacity ${p.color}`}>
-                    <span>{p.icon}</span> Continue with {p.name}
+                    <span>{p.icon}</span> {p.name} Email
                   </button>
                 ))}
               </div>

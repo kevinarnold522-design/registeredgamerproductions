@@ -2,9 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Shield, Users, BarChart2, TrendingUp, DollarSign,
-  Store, Eye, Package, CheckCircle, XCircle, AlertCircle
+  Store, Eye, Package, CheckCircle, XCircle, AlertCircle,
+  MessageSquare, Play
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ReviewsTab from "./ReviewsTab";
+import VideoManagementTab from "./VideoManagementTab";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -59,6 +62,8 @@ export default function AdminDashboard({ user, profile }) {
     { id: "listings", label: "Listings", icon: Store },
     { id: "orders", label: "Orders", icon: Package },
     { id: "verifications", label: `Verifications${pendingVerifications.length > 0 ? ` (${pendingVerifications.length})` : ""}`, icon: CheckCircle },
+    { id: "reviews", label: "Reviews", icon: MessageSquare },
+    { id: "videos", label: "Videos", icon: Play },
   ];
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" /></div>;
@@ -220,6 +225,48 @@ export default function AdminDashboard({ user, profile }) {
                         <button onClick={() => removeListing(l.id)} className="text-red-400 hover:text-red-300 text-xs font-semibold">Remove</button>
                       )}
                     </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Reviews */}
+      {tab === "reviews" && <ReviewsTab />}
+
+      {/* Videos */}
+      {tab === "videos" && <VideoManagementTab />}
+
+      {/* Orders full tab */}
+      {tab === "orders" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div className="p-4 border-b border-gray-800">
+            <h3 className="text-white font-bold">All Orders ({allOrders.length})</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-800/50">
+                <tr>{["Buyer","Seller","Item","Amount","Commission","Payment","Order","Date"].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
+                ))}</tr>
+              </thead>
+              <tbody>
+                {allOrders.map(o => (
+                  <tr key={o.id} className="border-t border-gray-800 hover:bg-gray-800/30">
+                    <td className="px-4 py-3 text-gray-300 text-xs">{o.buyer_email}</td>
+                    <td className="px-4 py-3 text-gray-300 text-xs">{o.seller_email}</td>
+                    <td className="px-4 py-3 text-white text-xs font-medium max-w-[120px] truncate">{o.listing_title}</td>
+                    <td className="px-4 py-3 text-green-400 font-bold text-xs">₱{o.amount?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-yellow-400 font-bold text-xs">₱{o.commission?.toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.order_status === "completed" ? "bg-blue-900/50 text-blue-400" : "bg-gray-800 text-gray-400"}`}>{o.order_status}</span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{new Date(o.created_date).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>

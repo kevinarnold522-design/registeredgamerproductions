@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, DollarSign } from "lucide-react";
+import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, DollarSign, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import CreatorVideoTools from "./CreatorVideoTools";
 
 export default function SellerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -37,6 +38,7 @@ export default function SellerDashboard({ user, profile }) {
     { id: "overview", label: "Overview", icon: BarChart2 },
     { id: "listings", label: "My Listings", icon: Store },
     { id: "orders", label: "Orders", icon: Package },
+    { id: "videos", label: "📹 Video Tools", icon: Youtube },
     { id: "payouts", label: "Payouts & Banking", icon: CreditCard },
     { id: "verification", label: isVerified ? "✅ Verified" : "Get Verified", icon: CheckCircle },
   ];
@@ -160,6 +162,11 @@ export default function SellerDashboard({ user, profile }) {
         </div>
       )}
 
+      {/* Video Tools */}
+      {tab === "videos" && (
+        <CreatorVideoTools user={user} profile={profile} />
+      )}
+
       {/* Verification */}
       {tab === "verification" && (
         <VerificationTab profile={profile} accountType={profile?.account_type} />
@@ -251,20 +258,53 @@ function VerificationTab({ profile, accountType }) {
 }
 
 function PayoutsTab({ profile }) {
+  const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || "");
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const savePaypal = async () => {
+    if (!paypalEmail.trim() || !profile?.id) return;
+    setSaving(true);
+    await base44.entities.UserProfile.update(profile.id, { paypal_email: paypalEmail, payout_method: "paypal" });
+    setSaved(true);
+    setSaving(false);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
   return (
     <div className="max-w-lg">
-      <h3 className="text-white font-black text-xl mb-6">Payout & Banking</h3>
-      <div className="space-y-4">
+      <h3 className="text-white font-black text-xl mb-2">Payout & Banking</h3>
+      <p className="text-gray-400 text-sm mb-6">PayPal is the default payout method. All earnings are sent to your PayPal account.</p>
+
+      {/* PayPal — default/primary */}
+      <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-5 mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-2xl">🅿️</span>
+          <div>
+            <p className="text-white font-black text-base">PayPal <span className="text-blue-400 text-xs font-semibold ml-1">✓ Default</span></p>
+            <p className="text-gray-400 text-xs">Earnings from sales + video monetization go here</p>
+          </div>
+        </div>
+        <input value={paypalEmail} onChange={e => setPaypalEmail(e.target.value)}
+          placeholder="Your PayPal email address" type="email"
+          className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm mb-3" />
+        <button onClick={savePaypal} disabled={saving}
+          className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-40">
+          {saving ? "Saving..." : saved ? "✅ Saved!" : "Save PayPal Email"}
+        </button>
+      </div>
+
+      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">Additional Payment Methods</p>
+      <div className="space-y-3">
         {[
-          { name: "PayPal", icon: "🅿️", desc: "Link your PayPal account for instant payouts", color: "border-blue-700/30 bg-blue-900/10" },
-          { name: "GCash", icon: "💚", desc: "Philippine e-wallet — fastest local payouts", color: "border-green-700/30 bg-green-900/10" },
-          { name: "BDO", icon: "🏦", desc: "Direct bank transfer to BDO account", color: "border-yellow-700/30 bg-yellow-900/10" },
-          { name: "BPI", icon: "🏦", desc: "Direct bank transfer to BPI account", color: "border-red-700/30 bg-red-900/10" },
-          { name: "UnionBank", icon: "🏦", desc: "Direct bank transfer to UnionBank account", color: "border-purple-700/30 bg-purple-900/10" },
+          { name: "GCash", icon: "💚", desc: "Philippine e-wallet", color: "border-green-700/30 bg-green-900/10" },
+          { name: "BDO", icon: "🏦", desc: "Bank transfer to BDO", color: "border-yellow-700/30 bg-yellow-900/10" },
+          { name: "BPI", icon: "🏦", desc: "Bank transfer to BPI", color: "border-red-700/30 bg-red-900/10" },
+          { name: "UnionBank", icon: "🏦", desc: "Bank transfer to UnionBank", color: "border-purple-700/30 bg-purple-900/10" },
         ].map((method) => (
           <div key={method.name} className={`flex items-center justify-between p-4 rounded-2xl border ${method.color}`}>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{method.icon}</span>
+              <span className="text-xl">{method.icon}</span>
               <div>
                 <p className="text-white font-bold text-sm">{method.name}</p>
                 <p className="text-gray-500 text-xs">{method.desc}</p>
@@ -275,8 +315,8 @@ function PayoutsTab({ profile }) {
             </button>
           </div>
         ))}
-        <p className="text-gray-600 text-xs text-center mt-2">10% platform commission is automatically deducted from each sale.</p>
       </div>
+      <p className="text-gray-600 text-xs text-center mt-4">10% platform commission deducted per sale. Payouts processed within 1-3 business days.</p>
     </div>
   );
 }

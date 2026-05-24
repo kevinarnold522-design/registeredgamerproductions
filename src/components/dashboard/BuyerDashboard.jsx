@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ShoppingCart, Heart, ClipboardList, Settings, User, CreditCard } from "lucide-react";
+import { ShoppingCart, Heart, ClipboardList, Settings, User, CreditCard, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import CreatorVideoTools from "./CreatorVideoTools";
 
 export default function BuyerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -26,6 +27,7 @@ export default function BuyerDashboard({ user, profile }) {
     { id: "overview", label: "Overview", icon: User },
     { id: "orders", label: "Orders & History", icon: ClipboardList },
     { id: "favorites", label: "Favourites", icon: Heart },
+    { id: "videos", label: "📹 Share Videos", icon: Youtube },
     { id: "payment", label: "Payment Methods", icon: CreditCard },
     { id: "settings", label: "Settings", icon: Settings },
   ];
@@ -105,6 +107,10 @@ export default function BuyerDashboard({ user, profile }) {
             </div>
           ))}
         </div>
+      )}
+
+      {tab === "videos" && (
+        <CreatorVideoTools user={user} profile={profile} />
       )}
 
       {tab === "payment" && (

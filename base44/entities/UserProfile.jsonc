@@ -75,10 +75,14 @@
       }
     },
     "payout_method": {
-      "type": "string"
+      "type": "string",
+      "default": "paypal"
     },
     "payout_details": {
       "type": "object"
+    },
+    "paypal_email": {
+      "type": "string"
     },
     "business_name": {
       "type": "string"
@@ -91,6 +95,36 @@
     },
     "social_links": {
       "type": "object"
+    },
+    "youtube_url": {
+      "type": "string"
+    },
+    "youtube_channel_id": {
+      "type": "string"
+    },
+    "youtube_subscribers": {
+      "type": "number",
+      "default": 0
+    },
+    "total_views": {
+      "type": "number",
+      "default": 0
+    },
+    "total_watch_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "is_monetized": {
+      "type": "boolean",
+      "default": false
+    },
+    "gaming_checkmark": {
+      "type": "boolean",
+      "default": false
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0
     },
     "joined_date": {
       "type": "string"
