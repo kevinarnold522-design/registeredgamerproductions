@@ -94,15 +94,15 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         <div className="bg-gray-950 border-b border-gray-800 sticky top-16 z-30">
           <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
             <div className="flex gap-2 min-w-max">
-              <button onClick={() => setActiveSub("all")}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${activeSub === "all" ? "bg-gray-700 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
+              <a href={`/category?cat=${cat}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${!activeSub || activeSub === "all" ? "bg-gray-700 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
                 All
-              </button>
+              </a>
               {categoryData.subcategories.map(s => (
-                <button key={s} onClick={() => setActiveSub(s)}
+                <a key={s} href={`/category?cat=${cat}&sub=${encodeURIComponent(s)}`}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${activeSub === s ? "bg-gray-700 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
                   {s}
-                </button>
+                </a>
               ))}
             </div>
           </div>

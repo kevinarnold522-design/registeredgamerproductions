@@ -23,8 +23,9 @@ const accountTypes = [
     id: "digital_creator",
     icon: <Youtube className="w-5 h-5 text-red-400" />,
     label: "Digital Creator",
-    desc: "Share videos, earn $1/1K views, get Gaming Checkmark",
+    desc: "Upload gameplay, mods, tutorials, streams, walkthroughs & missions. Earn $1/1K views + link shortener bonuses.",
     color: "border-purple-500/40 hover:border-purple-400/70 bg-purple-900/10",
+    tags: ["🎮 Gameplay","🔧 Mods","📡 Streams","🗺️ Walkthroughs","🏆 Missions","✂️ Highlights"],
   },
   {
     id: "business",
@@ -206,6 +207,11 @@ export default function Navbar() {
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold text-sm">{type.label}</p>
                       <p className="text-gray-400 text-xs mt-0.5 leading-relaxed">{type.desc}</p>
+                      {type.tags && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {type.tags.map(t => <span key={t} className="text-[10px] bg-purple-900/40 border border-purple-700/30 text-purple-300 px-1.5 py-0.5 rounded-full">{t}</span>)}
+                        </div>
+                      )}
                     </div>
                     <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
                   </button>

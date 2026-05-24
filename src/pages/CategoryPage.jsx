@@ -4,6 +4,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import GenericCategoryPage from "@/components/category/GenericCategoryPage";
 import BuySellLandingPage from "@/components/category/BuySellLandingPage";
 import ContentLandingPage from "@/components/category/ContentLandingPage";
+import SubcategoryLandingPage from "@/components/category/SubcategoryLandingPage";
 import { CATEGORIES } from "@/lib/constants";
 
 export default function CategoryPage() {
@@ -42,7 +43,13 @@ export default function CategoryPage() {
     <div className="min-h-screen bg-gray-950 text-white">
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-16">
-        {cat === "buy_sell" ? (
+        {/* If a specific subcategory is selected, render its own unique landing page */}
+        {sub ? (
+          <SubcategoryLandingPage
+            user={user} profile={profile} cat={cat} sub={sub}
+            parentCategoryName={categoryData?.label?.replace(/^[^ ]+ /, "") || cat}
+          />
+        ) : cat === "buy_sell" ? (
           <BuySellLandingPage user={user} profile={profile} sub={sub} />
         ) : cat === "content" ? (
           <ContentLandingPage user={user} profile={profile} sub={sub} />

@@ -132,10 +132,18 @@ export default function Register() {
                       <p className="text-white font-bold text-lg">{type.label}</p>
                       <p className="text-gray-400 text-sm mt-0.5">{type.desc}</p>
                       {type.id === "digital_creator" && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {["🎬 Share YouTube Videos","🔧 Upload Mods","☁️ Cloud Storage Links","🔗 Link Shorteners","🤖 AI Video Tools","🎮 Gaming Checkmark","💰 Earn $1/1K Views"].map(f => (
-                            <span key={f} className="text-xs bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2 py-0.5 rounded-full">{f}</span>
-                          ))}
+                        <div className="mt-2 space-y-1.5">
+                          <p className="text-purple-300 text-xs font-bold">📹 What to upload:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {["🎮 Gameplay","🔧 Mods","📚 Tutorials","📡 Streams","🗺️ Walkthroughs","🏆 Missions","✂️ Highlights","⚽ Sports Games","🎯 FPS Clips"].map(f => (
+                              <span key={f} className="text-xs bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2 py-0.5 rounded-full">{f}</span>
+                            ))}
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {["🔗 Link Shortener Earnings","🤖 AI Tools","🎮 Gaming Checkmark","💰 Earn $1/1K Views"].map(f => (
+                              <span key={f} className="text-xs bg-pink-900/30 border border-pink-700/30 text-pink-300 px-2 py-0.5 rounded-full">{f}</span>
+                            ))}
+                          </div>
                         </div>
                       )}
                       {type.id === "regular" && (

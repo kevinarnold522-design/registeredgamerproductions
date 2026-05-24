@@ -83,8 +83,9 @@ export const ACCOUNT_TYPES = [
     id: "digital_creator",
     label: "Digital Creator",
     icon: "🎨",
-    desc: "Sell your premium mods, share gaming videos or products, and digital creations to the community.",
+    desc: "Upload gameplay videos, mods, tutorials, streams, walkthroughs, highlights & missions. Earn from your content and sell digital products.",
     color: "from-purple-600 to-pink-600",
+    videoTypes: ["🎮 Gameplay", "🔧 Mods", "📚 Tutorials", "📡 Streams", "🗺️ Walkthroughs", "🏆 Missions", "✂️ Highlights", "⚽ Sports Games", "🎯 FPS"],
   },
   {
     id: "business",

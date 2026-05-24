@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, ShoppingCart, Star, Filter, Plus, Tag, Package } from "lucide-react";
+import { Search, ShoppingCart, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { CATEGORIES, isAdmin } from "@/lib/constants";
+import ListingImageSlider from "@/components/listings/ListingImageSlider";
 
 const buySellCat = CATEGORIES.find(c => c.id === "buy_sell");
 
@@ -44,17 +45,7 @@ function ListingCard({ listing, index }) {
       whileHover={{ y: -3, boxShadow: "0 0 25px rgba(234,179,8,0.2)" }}
       className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden group cursor-pointer hover:border-yellow-500/30 transition-colors"
     >
-      <div className="relative h-40 bg-gradient-to-br from-yellow-900/20 to-gray-900 overflow-hidden">
-        {listing.images?.[0] ? (
-          <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="flex items-center justify-center h-full text-4xl">🛒</div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        {listing.is_premium && (
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-[10px] font-black">PREMIUM</div>
-        )}
-      </div>
+      <ListingImageSlider images={listing.images || []} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} />
       <div className="p-4">
         <p className="text-white font-bold text-sm truncate mb-1">{listing.title}</p>
         <p className="text-gray-500 text-xs line-clamp-2 mb-2">{listing.description || "No description."}</p>
@@ -114,15 +105,15 @@ export default function BuySellLandingPage({ user, profile, sub }) {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
             {SUBCATEGORY_GROUPS.map((group, i) => (
-              <motion.button
+              <motion.a
                 key={i} whileHover={{ y: -2 }}
-                onClick={() => setActiveSub(group.subs[0])}
-                className={`p-4 rounded-2xl bg-gradient-to-br ${group.color} border ${group.border} text-left transition-colors hover:border-opacity-60`}
+                href={`/category?cat=buy_sell&sub=${encodeURIComponent(group.subs[0])}`}
+                className={`p-4 rounded-2xl bg-gradient-to-br ${group.color} border ${group.border} text-left transition-colors hover:border-opacity-60 block`}
               >
                 <span className="text-2xl mb-2 block">{group.icon}</span>
                 <p className="text-white font-bold text-sm">{group.label}</p>
                 <p className="text-gray-400 text-xs mt-0.5">{group.subs.length} subcategories</p>
-              </motion.button>
+              </motion.a>
             ))}
           </div>
         </div>
@@ -137,10 +128,10 @@ export default function BuySellLandingPage({ user, profile, sub }) {
               All
             </button>
             {buySellCat?.subcategories.map(s => (
-              <button key={s} onClick={() => setActiveSub(s)}
+              <a key={s} href={`/category?cat=buy_sell&sub=${encodeURIComponent(s)}`}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${activeSub === s ? "bg-yellow-500/20 border border-yellow-500/50 text-yellow-300" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
                 {s}
-              </button>
+              </a>
             ))}
           </div>
         </div>
