@@ -128,41 +128,62 @@ export default function PaymentMethodsTab({ profile }) {
       </p>
 
       {/* PayPal — primary with email input */}
-      <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-5 mb-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm">PP</div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-white font-black">PayPal</p>
-              <span className="text-[10px] bg-blue-500/20 border border-blue-500/30 text-blue-400 px-2 py-0.5 rounded-full font-bold">Default Payout</span>
-              {connected.includes("paypal") && <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-bold">✓ Connected</span>}
+      {connected.includes("paypal") && paypalEmail ? (
+        <div className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-5 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center font-black text-white text-sm">✓</div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-white font-black">PayPal Linked Successfully</p>
+                <span className="text-[10px] bg-green-500/20 border border-green-500/30 text-green-400 px-2 py-0.5 rounded-full font-bold">Active</span>
+              </div>
+              <p className="text-gray-300 text-xs font-semibold mt-1">{paypalEmail}</p>
+              <p className="text-green-400 text-xs mt-2">✓ Ready to make payments and receive payouts</p>
             </div>
-            <p className="text-gray-400 text-xs">Receive earnings + sales payouts worldwide</p>
+          </div>
+          <button
+            onClick={() => window.open("https://www.paypal.com", "_blank", "width=620,height=720")}
+            className="w-full py-2.5 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors"
+          >
+            Open PayPal Account →
+          </button>
+        </div>
+      ) : (
+        <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-5 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm">PP</div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-white font-black">PayPal</p>
+                <span className="text-[10px] bg-blue-500/20 border border-blue-500/30 text-blue-400 px-2 py-0.5 rounded-full font-bold">Default Payout</span>
+              </div>
+              <p className="text-gray-400 text-xs">Receive earnings + sales payouts worldwide</p>
+            </div>
+          </div>
+          <input
+            value={paypalEmail}
+            onChange={(e) => setPaypalEmail(e.target.value)}
+            placeholder="Enter your PayPal email..."
+            type="email"
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm mb-3"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={savePayPal}
+              disabled={saving || !paypalEmail.trim()}
+              className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-40"
+            >
+              {saving ? "Saving..." : saved ? "✅ Saved!" : "Save PayPal Email"}
+            </button>
+            <button
+              onClick={() => window.open("https://www.paypal.com/signin", "_blank", "width=620,height=720")}
+              className="flex-1 py-2.5 rounded-xl bg-blue-900/40 border border-blue-600/40 text-blue-300 font-bold text-sm hover:bg-blue-900/60 transition-colors"
+            >
+              Open PayPal →
+            </button>
           </div>
         </div>
-        <input
-          value={paypalEmail}
-          onChange={(e) => setPaypalEmail(e.target.value)}
-          placeholder="Enter your PayPal email..."
-          type="email"
-          className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm mb-3"
-        />
-        <div className="flex gap-2">
-          <button
-            onClick={savePayPal}
-            disabled={saving || !paypalEmail.trim()}
-            className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-40"
-          >
-            {saving ? "Saving..." : saved ? "✅ Saved!" : "Save PayPal Email"}
-          </button>
-          <button
-            onClick={() => window.open("https://www.paypal.com/signin", "_blank", "width=620,height=720")}
-            className="flex-1 py-2.5 rounded-xl bg-blue-900/40 border border-blue-600/40 text-blue-300 font-bold text-sm hover:bg-blue-900/60 transition-colors"
-          >
-            Open PayPal →
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Stripe */}
       <div className="bg-purple-900/20 border-2 border-purple-500/40 rounded-2xl p-5 mb-6">

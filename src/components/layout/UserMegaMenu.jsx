@@ -110,6 +110,9 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
                   <a href="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <BarChart2 className="w-4 h-4 text-purple-400" /> Dashboard
                   </a>
+                  <a href="/checkout" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                    <ShoppingCart className="w-4 h-4 text-green-400" /> Checkout
+                  </a>
 
                   {/* Buyer extras */}
                   {accountType === "regular" && (
