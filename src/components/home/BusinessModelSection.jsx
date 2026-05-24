@@ -114,8 +114,8 @@ export default function BusinessModelSection() {
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
           className="mt-10 text-center">
           <p className="text-gray-600 text-sm">
-            Founded in <strong className="text-purple-400">2026</strong> by <strong className="text-white">Kevin Roberto</strong> · Philippines 🇵🇭 ·{" "}
-            <span className="text-gray-500">Built for Gamers, by a Gamer 🕹️</span>
+            Founded in <strong className="text-purple-400">2026</strong> by <strong className="text-white">Kevin Roberto</strong> ·{" "}
+            <span className="text-gray-500">Built for Gamers, by a Gamer</span>
           </p>
         </motion.div>
       </div>

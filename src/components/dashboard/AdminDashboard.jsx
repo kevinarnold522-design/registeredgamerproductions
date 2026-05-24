@@ -11,6 +11,7 @@ import VideoManagementTab from "./VideoManagementTab";
 import EmailHeaderEditor from "./EmailHeaderEditor";
 import LeaderboardTab from "./LeaderboardTab";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
+import AdminTextEditor from "./AdminTextEditor";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -68,6 +69,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "reviews", label: "Reviews", icon: MessageSquare },
     { id: "videos", label: "Videos", icon: Play },
     { id: "leaderboard", label: "Leaderboard", icon: Trophy },
+    { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
 
@@ -251,6 +253,13 @@ export default function AdminDashboard({ user, profile }) {
       {tab === "leaderboard" && (
         <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
           <LeaderboardTab />
+        </div>
+      )}
+
+      {/* Site Text Editor */}
+      {tab === "site_text" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <AdminTextEditor />
         </div>
       )}
 

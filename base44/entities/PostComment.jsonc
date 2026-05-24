@@ -1,0 +1,44 @@
+{
+  "name": "PostComment",
+  "type": "object",
+  "properties": {
+    "post_id": {
+      "type": "string",
+      "description": "ID of the VideoPost or Listing being commented on"
+    },
+    "post_type": {
+      "type": "string",
+      "enum": [
+        "video",
+        "listing"
+      ],
+      "description": "Type of post"
+    },
+    "author_email": {
+      "type": "string"
+    },
+    "author_username": {
+      "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": true
+    },
+    "parent_id": {
+      "type": "string",
+      "description": "ID of parent comment for replies"
+    }
+  },
+  "required": [
+    "post_id",
+    "post_type",
+    "author_email",
+    "content"
+  ]
+}

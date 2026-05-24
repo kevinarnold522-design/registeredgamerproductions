@@ -114,7 +114,7 @@ export default function HeroSection() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-900/40 border border-purple-700/50 text-purple-300 text-xs font-semibold tracking-wider uppercase"
           >
             <Zap className="w-3 h-3" />
-            🎮 Streaming · Mods · Social · Community · Est. 2026
+            Streaming · Mods · Social · Community · Est. 2026
           </motion.span>
         </motion.div>
 
@@ -134,8 +134,13 @@ export default function HeroSection() {
             Stream Live · Share Mods · Build Community · Sell & Earn —{" "}
             <span className="text-purple-400 font-semibold">worldwide</span>.
           </p>
-          <p className="mt-2 text-gray-500 text-sm max-w-xl mx-auto">
-            Founded by Kevin Roberto in 2026 · Philippines 🇵🇭 · The #1 Gaming Hub for Southeast Asia
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            {["Content Social Platform", "Live Streaming", "Mods Community", "Gaming Marketplace", "Share Any Game Videos"].map((tag, i) => (
+              <span key={i} className="px-3 py-1 rounded-full bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">{tag}</span>
+            ))}
+          </div>
+          <p className="mt-3 text-gray-500 text-sm max-w-xl mx-auto">
+            Founded by Kevin Roberto in 2026 · Built for Gamers, by a Gamer
           </p>
         </motion.div>
 
@@ -168,7 +173,7 @@ export default function HeroSection() {
           {quickLinks.map((item, i) => (
             <motion.a key={i} href="#categories" whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
               className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-purple-700/60 transition-all cursor-pointer group">
-              <span className="text-2xl">{item.icon}</span>
+              <span className="text-xl">{item.icon}</span>
               <span className="text-white text-xs font-semibold text-center leading-tight group-hover:text-purple-300 transition-colors">{item.label}</span>
               <span className="text-gray-500 text-xs text-center">{item.sub}</span>
             </motion.a>

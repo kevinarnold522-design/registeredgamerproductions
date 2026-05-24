@@ -1,5 +1,6 @@
 import React from "react";
-import { Gamepad2, Twitter, Youtube, Twitch, Instagram, MessageCircle } from "lucide-react";
+import { GamerLogo } from "@/components/icons/GameIcons";
+import { Twitter, Youtube, Twitch, Instagram, MessageCircle } from "lucide-react";
 
 const links = {
   Platform: ["Games", "Gaming Gear", "Buy & Sell", "Tournaments", "Content"],
@@ -25,9 +26,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                <Gamepad2 className="w-5 h-5 text-white" />
-              </div>
+              <GamerLogo size={36} />
               <div>
                 <span className="font-black text-white text-sm block">GAMER</span>
                 <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">
@@ -36,7 +35,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed mb-5">
-              GAMER Productions — your one-stop gaming hub. Games, gear, community, and esports — all in one place.
+              GAMER Productions — Streaming, Mods, Social & Gaming Marketplace. Your global platform built for gamers, by a gamer.
             </p>
             <div className="flex gap-3">
               {socials.map((s) => (
@@ -78,7 +77,7 @@ export default function Footer() {
             © 2026 GAMER Productions · Founded by Kevin Roberto · Built for Gamers
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-gray-700 text-xs">🎮 1 Community · 1 Mindset · 1 Goal</span>
+            <span className="text-gray-700 text-xs">1 Community · 1 Mindset · 1 Goal</span>
             <span className="text-gray-700 text-xs">·</span>
             <span className="text-gray-700 text-xs">Humbly Growing Thanks to You, Gamer!</span>
           </div>

@@ -1,0 +1,26 @@
+{
+  "name": "SiteContent",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique content key identifier (e.g. 'hero_title', 'hero_subtitle')"
+    },
+    "value": {
+      "type": "string",
+      "description": "The display text shown on the website"
+    },
+    "section": {
+      "type": "string",
+      "description": "Which section this belongs to (e.g. 'hero', 'categories', 'footer')"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable admin label"
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ]
+}

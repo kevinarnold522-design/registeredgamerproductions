@@ -53,9 +53,11 @@ export default function SplashScreen({ onDismiss }) {
         <h2 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
           Productions
         </h2>
-        <p className="mt-4 text-gray-400 text-sm tracking-widest uppercase">
-          1 Community · 1 Mindset · 1 Goal
-        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          {["Streaming", "Mods", "Social Platform", "Gaming Community"].map((t, i) => (
+            <span key={i} className="text-xs text-gray-500 uppercase tracking-widest">{t}{i < 3 ? " ·" : ""}</span>
+          ))}
+        </div>
       </motion.div>
 
       <motion.p

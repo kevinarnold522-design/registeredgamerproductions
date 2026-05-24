@@ -29,6 +29,20 @@
     "video_url": {
       "type": "string"
     },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "game_tag": {
+      "type": "string",
+      "description": "Game this content is about"
+    },
+    "game_tag_custom": {
+      "type": "string",
+      "description": "Manually entered game name if not in list"
+    },
     "category": {
       "type": "string",
       "enum": [
@@ -39,6 +53,7 @@
         "mods",
         "esports",
         "vlog",
+        "livestream",
         "other"
       ]
     },

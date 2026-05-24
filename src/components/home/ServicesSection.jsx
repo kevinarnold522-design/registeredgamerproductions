@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ShoppingCart, Zap, BarChart2, Headphones, RefreshCw } from "lucide-react";
+// lucide icons not needed - using custom GameIcons
+import { IconMod, IconStore, IconPlay, IconController } from "@/components/icons/GameIcons";
 
 const services = [
   "1 Community",
@@ -12,19 +13,23 @@ const services = [
 
 const features = [
   {
-    icon: "🔧",
+    Icon: IconMod,
+    color: "#fb923c",
     title: "Modding Community — Upload, share and sell mods for WWE2K, GTA, FIFA, NBA2K, PPSSPP, PS2 & more",
   },
   {
-    icon: "🛒",
+    Icon: IconStore,
+    color: "#4ade80",
     title: "Marketplace — Buy and sell gaming accounts, items, mods, and gear directly from community members",
   },
   {
-    icon: "🎬",
-    title: "Share gaming videos, content, streams and highlights with the community",
+    Icon: IconPlay,
+    color: "#60a5fa",
+    title: "Content Social Platform — Share gaming videos for ALL games, streams, highlights with the community",
   },
   {
-    icon: "🕹️",
+    Icon: IconController,
+    color: "#a855f7",
     title: "Built for Gamers — by a Gamer. Founded by Kevin Roberto in 2026.",
   },
 ];
@@ -68,16 +73,16 @@ export default function ServicesSection() {
               <div className="absolute inset-4 rounded-full border border-pink-700/20 animate-spin" style={{ animationDuration: "15s", animationDirection: "reverse" }} />
               {/* Center */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl mb-1">🕹️</span>
-                <span className="text-xs text-purple-400 font-bold uppercase tracking-widest">GAMER</span>
+                <IconController size={40} color="#a855f7" />
+                <span className="text-xs text-purple-400 font-bold uppercase tracking-widest mt-1">GAMER</span>
                 <span className="text-sm text-white font-bold">PRODUCTIONS</span>
               </div>
               {/* Orbit icons */}
               {[
-                { icon: "🛒", label: "PLAYER", angle: 0 },
-                { icon: "🏆", label: "WIN", angle: 120 },
-                { icon: "🎮", label: "PLAY", angle: 240 },
-              ].map(({ icon, label, angle }) => {
+                { icon: IconStore, color: "#4ade80", label: "MARKET", angle: 0 },
+                { icon: IconMod, color: "#fb923c", label: "MODS", angle: 120 },
+                { icon: IconPlay, color: "#60a5fa", label: "STREAM", angle: 240 },
+              ].map(({ icon: OIcon, color, label, angle }) => {
                 const rad = (angle * Math.PI) / 180;
                 const r = 110;
                 const x = r * Math.cos(rad);
@@ -88,8 +93,8 @@ export default function ServicesSection() {
                     className="absolute flex flex-col items-center"
                     style={{ left: `calc(50% + ${x}px - 24px)`, top: `calc(50% + ${y}px - 24px)` }}
                   >
-                    <div className="w-12 h-12 rounded-full bg-gray-900 border border-purple-700/50 flex flex-col items-center justify-center">
-                      <span className="text-lg">{icon}</span>
+                    <div className="w-12 h-12 rounded-full bg-gray-900 border border-purple-700/50 flex flex-col items-center justify-center gap-0.5">
+                      <OIcon size={16} color={color} />
                       <span className="text-gray-400 text-[9px] font-bold">{label}</span>
                     </div>
                   </div>
@@ -114,8 +119,7 @@ export default function ServicesSection() {
               </span>
             </h2>
             <p className="text-gray-400 mb-8 leading-relaxed">
-              GAMER Productions — local gaming community, real connections. We bring you the best deals, reviews,
-              and esports content — all in one place.
+              GAMER Productions — the global gaming community. Stream, share mods, sell gear, and connect with gamers worldwide. We bring you the best gaming content, deals, and community — all in one platform.
             </p>
             <div className="space-y-4">
               {features.map((f, i) => (
@@ -127,7 +131,9 @@ export default function ServicesSection() {
                   transition={{ delay: i * 0.1 }}
                   className="flex items-start gap-3"
                 >
-                  <span className="text-xl flex-shrink-0 mt-0.5">{f.icon}</span>
+                  <div className="w-8 h-8 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <f.Icon size={16} color={f.color} />
+                  </div>
                   <p className="text-gray-300 text-sm leading-relaxed">{f.title}</p>
                 </motion.div>
               ))}
