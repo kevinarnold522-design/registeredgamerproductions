@@ -94,30 +94,22 @@ const PAYMENT_METHODS = [
 ];
 
 export default function PaymentMethodsTab({ profile }) {
-  const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || "");
-  const [connected, setConnected] = useState(
-    profile?.payout_method ? [profile.payout_method] : []
-  );
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [connected, setConnected] = useState(!!profile?.paypal_email);
 
-  const handleConnectOAuth = (method) => {
-    window.open(method.connectUrl, "_blank", "width=620,height=720,scrollbars=yes");
-    // Mark as connected after user opens the OAuth window
-    setConnected((prev) => [...new Set([...prev, method.id])]);
-  };
-
-  const savePayPal = async () => {
-    if (!paypalEmail.trim() || !profile?.id) return;
-    setSaving(true);
-    await base44.entities.UserProfile.update(profile.id, {
-      paypal_email: paypalEmail,
-      payout_method: "paypal",
-    });
-    setConnected((prev) => [...new Set([...prev, "paypal"])]);
-    setSaved(true);
-    setSaving(false);
-    setTimeout(() => setSaved(false), 3000);
+  const handleConnectPayPal = async () => {
+    // Open PayPal OAuth popup
+    const popup = window.open("https://www.paypal.com/signin", "_blank", "width=620,height=720");
+    // Poll for popup close and refresh status
+    const timer = setInterval(async () => {
+      if (!popup || popup.closed) {
+        clearInterval(timer);
+        // Refresh profile to get updated paypal_email
+        const profiles = await base44.entities.UserProfile.filter({ user_email: profile?.user_email });
+        if (profiles.length > 0 && profiles[0].paypal_email) {
+          setConnected(true);
+        }
+      }
+    }, 500);
   };
 
   return (
@@ -127,25 +119,25 @@ export default function PaymentMethodsTab({ profile }) {
         Connect a payment method to buy, sell, and receive payouts. Use any globally-available service below.
       </p>
 
-      {/* PayPal — primary with email input */}
-      {connected.includes("paypal") && paypalEmail ? (
+      {/* PayPal — primary */}
+      {connected ? (
         <div className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-5 mb-4">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center font-black text-white text-sm">✓</div>
-            <div>
+            <div className="flex-1">
               <div className="flex items-center gap-2">
-                <p className="text-white font-black">PayPal Linked Successfully</p>
+                <p className="text-white font-black">PayPal Connected</p>
                 <span className="text-[10px] bg-green-500/20 border border-green-500/30 text-green-400 px-2 py-0.5 rounded-full font-bold">Active</span>
               </div>
-              <p className="text-gray-300 text-xs font-semibold mt-1">{paypalEmail}</p>
+              <p className="text-gray-300 text-xs font-semibold mt-1">{profile?.paypal_email}</p>
               <p className="text-green-400 text-xs mt-2">✓ Ready to make payments and receive payouts</p>
             </div>
           </div>
           <button
-            onClick={() => window.open("https://www.paypal.com", "_blank", "width=620,height=720")}
-            className="w-full py-2.5 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-colors"
+            onClick={handleConnectPayPal}
+            className="w-full py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 font-bold text-sm hover:bg-gray-700 transition-colors"
           >
-            Open PayPal Account →
+            Change PayPal Account →
           </button>
         </div>
       ) : (
@@ -160,28 +152,15 @@ export default function PaymentMethodsTab({ profile }) {
               <p className="text-gray-400 text-xs">Receive earnings + sales payouts worldwide</p>
             </div>
           </div>
-          <input
-            value={paypalEmail}
-            onChange={(e) => setPaypalEmail(e.target.value)}
-            placeholder="Enter your PayPal email..."
-            type="email"
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm mb-3"
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={savePayPal}
-              disabled={saving || !paypalEmail.trim()}
-              className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-40"
-            >
-              {saving ? "Saving..." : saved ? "✅ Saved!" : "Save PayPal Email"}
-            </button>
-            <button
-              onClick={() => window.open("https://www.paypal.com/signin", "_blank", "width=620,height=720")}
-              className="flex-1 py-2.5 rounded-xl bg-blue-900/40 border border-blue-600/40 text-blue-300 font-bold text-sm hover:bg-blue-900/60 transition-colors"
-            >
-              Open PayPal →
-            </button>
-          </div>
+          <p className="text-gray-500 text-xs mb-4">
+            ⚠️ Not connected yet. Click below to connect your PayPal account.
+          </p>
+          <button
+            onClick={handleConnectPayPal}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30"
+          >
+            🔗 Connect to PayPal
+          </button>
         </div>
       )}
 
