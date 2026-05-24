@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { CheckCircle, AlertCircle, Loader2, Wallet, LogOut, CreditCard, Lock } from "lucide-react";
 import { toast } from "sonner";
 
-export default function PaymentSettingsTab({ profile, user }) {
+export default function PaymentSettingsTab({ profile, user, onProfileUpdate }) {
   const [connecting, setConnecting] = useState(false);
   const [paypalConnected, setPaypalConnected] = useState(!!profile?.paypal_merchant_id || !!profile?.paypal_email);
   const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || profile?.seller_paypal_email || "");
@@ -25,20 +25,21 @@ export default function PaymentSettingsTab({ profile, user }) {
           clearInterval(timer);
           
           // Save PayPal email to profile
-          await base44.entities.UserProfile.update(profile.id, {
+          const updatedProfile = await base44.entities.UserProfile.update(profile.id, {
             paypal_email: emailToConnect,
             paypal_account_name: user?.full_name || emailToConnect.split('@')[0],
             paypal_account_type: "personal",
             paypal_country: "Philippines",
             payout_method: "paypal",
-            paypal_merchant_id: `PAYPAL_${Date.now()}`,
+            paypal_merchant_id: `PAYPAL_MERCHANT_${Date.now()}`,
             verification_status: "approved",
             is_verified: true,
           });
 
           setPaypalConnected(true);
           setPaypalEmail(emailToConnect);
-          toast.success("✅ PayPal connected successfully! Redirecting...");
+          if (onProfileUpdate) onProfileUpdate(updatedProfile);
+          toast.success("✅ PayPal connected successfully!");
           
           // Redirect to dashboard payment settings
           setTimeout(() => {
