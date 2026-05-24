@@ -101,26 +101,41 @@ export default function PaymentSettingsTab({ profile, user }) {
             </div>
           </div>
 
-          {/* Greyed out PayPal email - cannot be edited */}
-          <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-5 mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wide">Linked PayPal Email</p>
-                  <p className="text-white font-bold text-base">{paypalEmail}</p>
-                </div>
-              </div>
-              <span className="text-green-400 text-xs font-bold flex items-center gap-1">
-                <CheckCircle className="w-3.5 h-3.5" /> Connected
-              </span>
+          {/* PayPal Account Details Grid - Non-editable */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">PayPal Email</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_email || paypalEmail}</p>
             </div>
-            <div className="flex items-center gap-2 text-gray-500 text-xs">
-              <Lock className="w-3.5 h-3.5" />
-              <span>This PayPal account is locked and linked to your profile. Click "Change PayPal Account" below to disconnect and link a different account.</span>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Merchant ID</p>
+              <p className="text-white font-bold text-sm truncate" title={profile?.paypal_merchant_id || ""}>
+                {profile?.paypal_merchant_id ? profile.paypal_merchant_id.substring(0, 15) + "..." : "N/A"}
+              </p>
             </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Account Name</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_account_name || "Verified Account"}</p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Account Type</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_account_type === "business" ? "🏢 Business" : "👤 Personal"}</p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Country</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_country || "Global"}</p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Status</p>
+              <p className="text-green-400 font-bold text-sm flex items-center gap-1">
+                <CheckCircle className="w-3.5 h-3.5" /> Verified
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 text-gray-500 text-xs mb-4">
+            <Lock className="w-3.5 h-3.5" />
+            <span>This PayPal account is locked and linked to your profile. Click "Change PayPal Account" below to disconnect and link a different account.</span>
           </div>
 
           {/* Setup Requirements */}
