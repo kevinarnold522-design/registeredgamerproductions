@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, DollarSign, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
+import CreatorAnalyticsTab from "./CreatorAnalyticsTab";
+import LeaderboardTab from "./LeaderboardTab";
+import GamerCheckmark from "@/components/shared/GamerCheckmark";
 
 export default function SellerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -38,7 +41,9 @@ export default function SellerDashboard({ user, profile }) {
     { id: "overview", label: "Overview", icon: BarChart2 },
     { id: "listings", label: "My Listings", icon: Store },
     { id: "orders", label: "Orders", icon: Package },
+    { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
     { id: "videos", label: "📹 Video Tools", icon: Youtube },
+    { id: "leaderboard", label: "🏆 Leaderboard", icon: DollarSign },
     { id: "payouts", label: "Payouts & Banking", icon: CreditCard },
     { id: "verification", label: isVerified ? "✅ Verified" : "Get Verified", icon: CheckCircle },
   ];
@@ -54,10 +59,12 @@ export default function SellerDashboard({ user, profile }) {
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">Seller Dashboard</h1>
-            <p className="text-purple-400 text-sm font-semibold">
-              {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : "🏢 Business"} · {profile?.username}
-              {isVerified && <span className="ml-2 text-blue-400">✅ Verified</span>}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-purple-400 text-sm font-semibold">
+                {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : "🏢 Business"} · {profile?.username}
+              </p>
+              <GamerCheckmark accountType={profile?.account_type} isVerified={profile?.is_verified} userEmail={user?.email} size="md" />
+            </div>
           </div>
         </div>
         <a href="/create-listing"
@@ -160,6 +167,16 @@ export default function SellerDashboard({ user, profile }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Analytics */}
+      {tab === "analytics" && (
+        <CreatorAnalyticsTab user={user} profile={profile} />
+      )}
+
+      {/* Leaderboard */}
+      {tab === "leaderboard" && (
+        <LeaderboardTab />
       )}
 
       {/* Video Tools */}

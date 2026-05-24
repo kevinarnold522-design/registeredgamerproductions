@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Gamepad2, Heart, ShoppingCart, ClipboardList, Settings,
@@ -43,7 +44,7 @@ export default function AuthNavbar({ user, profile }) {
     base44.auth.logout("/");
   };
 
-  const accountLabel = admin ? "⚡ Admin" : typeInfo?.label || "User";
+  const accountLabel = admin ? "CEO & President" : typeInfo?.label || "User";
   const accountColor = admin
     ? "text-yellow-400"
     : accountType === "digital_creator"
@@ -144,7 +145,10 @@ export default function AuthNavbar({ user, profile }) {
                 )}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-white text-xs font-bold leading-none">{profile?.username || user?.full_name || "Gamer"}</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-white text-xs font-bold leading-none">{profile?.username || user?.full_name || "Gamer"}</p>
+                  <GamerCheckmark accountType={accountType} isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showTooltip={false} />
+                </div>
                 <p className={`text-[10px] font-semibold leading-none mt-0.5 ${accountColor}`}>{accountLabel}</p>
               </div>
               <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform ${profileOpen ? "rotate-180" : ""}`} />
@@ -165,7 +169,10 @@ export default function AuthNavbar({ user, profile }) {
                         {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
                       </div>
                       <div>
-                        <p className="text-white font-bold text-sm">{profile?.username || user?.full_name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-white font-bold text-sm">{profile?.username || user?.full_name}</p>
+                          <GamerCheckmark accountType={accountType} isVerified={profile?.is_verified} userEmail={user?.email} size="md" />
+                        </div>
                         <p className={`text-xs font-semibold ${accountColor}`}>{accountLabel}</p>
                         <p className="text-gray-500 text-xs truncate">{user?.email}</p>
                       </div>

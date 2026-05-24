@@ -3,12 +3,14 @@ import { motion } from "framer-motion";
 import {
   Shield, Users, BarChart2, TrendingUp, DollarSign,
   Store, Eye, Package, CheckCircle, XCircle, AlertCircle,
-  MessageSquare, Play, Mail
+  MessageSquare, Play, Mail, Trophy
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ReviewsTab from "./ReviewsTab";
 import VideoManagementTab from "./VideoManagementTab";
 import EmailHeaderEditor from "./EmailHeaderEditor";
+import LeaderboardTab from "./LeaderboardTab";
+import GamerCheckmark from "@/components/shared/GamerCheckmark";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -65,6 +67,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "verifications", label: `Verifications${pendingVerifications.length > 0 ? ` (${pendingVerifications.length})` : ""}`, icon: CheckCircle },
     { id: "reviews", label: "Reviews", icon: MessageSquare },
     { id: "videos", label: "Videos", icon: Play },
+    { id: "leaderboard", label: "Leaderboard", icon: Trophy },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
 
@@ -78,8 +81,11 @@ export default function AdminDashboard({ user, profile }) {
           <Shield className="w-5 h-5 text-yellow-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
-          <p className="text-yellow-400 text-sm font-semibold">⚡ Owner Access — {user?.email}</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
+            <GamerCheckmark accountType="admin" isVerified={true} userEmail={user?.email} size="lg" />
+          </div>
+          <p className="text-yellow-400 text-sm font-semibold">👑 CEO & President · GAMER Productions</p>
         </div>
       </div>
 
@@ -240,6 +246,13 @@ export default function AdminDashboard({ user, profile }) {
 
       {/* Videos */}
       {tab === "videos" && <VideoManagementTab />}
+
+      {/* Leaderboard */}
+      {tab === "leaderboard" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <LeaderboardTab />
+        </div>
+      )}
 
       {/* Email Settings */}
       {tab === "email_settings" && (
