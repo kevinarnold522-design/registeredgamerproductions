@@ -58,16 +58,10 @@ export const CATEGORIES = [
     subcategories: ["QA Testing", "Game Dev", "Community Manager", "Esports Coach", "Content Creator"],
   },
   {
-    id: "food",
-    label: "🍔 Food",
-    icon: "🍔",
-    subcategories: ["Gaming Cafes", "Food Delivery", "Restaurants", "Snacks & Beverages"],
-  },
-  {
-    id: "travel",
-    label: "✈️ Travel",
-    icon: "✈️",
-    subcategories: ["Gaming Events", "Esports Venues", "Philippines Destinations", "International Trips"],
+    id: "livestream",
+    label: "📡 Live Streams",
+    icon: "📡",
+    subcategories: ["Gameplay Streams", "Tournaments", "Esports Events", "Mod Reviews", "Q&A Sessions", "Unboxing"],
   },
   {
     id: "services",

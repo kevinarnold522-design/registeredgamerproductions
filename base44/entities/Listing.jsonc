@@ -31,8 +31,7 @@
         "content",
         "jobs",
         "modding",
-        "food",
-        "travel",
+        "livestream",
         "services"
       ]
     },
@@ -100,6 +99,9 @@
     "is_approved": {
       "type": "boolean",
       "default": true
+    },
+    "youtube_url": {
+      "type": "string"
     }
   },
   "required": [

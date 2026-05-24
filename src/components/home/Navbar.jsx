@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Youtube, Trophy } from "lucide-react";
+import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Youtube, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const navLinks = [
-  { label: "Games", href: "#games" },
-  { label: "Gear", href: "#gear" },
   { label: "Categories", href: "#categories" },
+  { label: "Live", href: "#livestream", live: true },
+  { label: "Mods", href: "/?cat=modding" },
   { label: "Community", href: "#community" },
-  { label: "Deals", href: "#deals" },
+  { label: "Marketplace", href: "/?cat=buy_sell" },
 ];
 
 const accountTypes = [
@@ -39,6 +39,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -79,16 +81,29 @@ export default function Navbar() {
             </a>
 
             {/* Desktop Links */}
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4">
               {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-gray-400 hover:text-purple-400 text-sm font-medium transition-colors"
-                >
+                <a key={link.label} href={link.href}
+                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
+                  {link.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
                   {link.label}
                 </a>
               ))}
+            </div>
+
+            {/* Search Bar */}
+            <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-300 ${searchFocused ? "bg-gray-800 border border-purple-600/60 w-56" : "bg-gray-900/60 border border-gray-800 w-40"}`}>
+              <Search className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Search..."
+                className="bg-transparent text-white text-xs placeholder-gray-600 outline-none flex-1 min-w-0"
+                onKeyDown={e => e.key === "Enter" && searchQuery && (window.location.href = `/?search=${encodeURIComponent(searchQuery)}`)}
+              />
             </div>
 
             {/* Right */}
