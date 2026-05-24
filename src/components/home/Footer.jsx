@@ -1,6 +1,8 @@
 import React from "react";
 import { GamerLogo } from "@/components/icons/GameIcons";
 import { Twitter, Youtube, Twitch, Instagram, MessageCircle } from "lucide-react";
+import PlatformLinksBar from "@/components/home/PlatformLinksBar";
+import LinkShortenerBar from "@/components/home/LinkShortenerBar";
 
 const links = {
   Platform: ["Games", "Gaming Gear", "Buy & Sell", "Tournaments", "Content"],
@@ -19,7 +21,11 @@ const socials = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-950 border-t border-gray-900 pt-16 pb-8 px-4">
+    <footer className="bg-gray-950 border-t border-gray-900 pt-0 pb-8 px-0">
+      {/* Platform & Link Shortener bars */}
+      <PlatformLinksBar />
+      <LinkShortenerBar />
+      <div className="pt-16 pb-0 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Top */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
@@ -82,6 +88,7 @@ export default function Footer() {
             <span className="text-gray-700 text-xs">Humbly Growing Thanks to You, Gamer!</span>
           </div>
         </div>
+      </div>
       </div>
     </footer>
   );

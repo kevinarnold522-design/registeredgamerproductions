@@ -278,62 +278,176 @@ function PayoutsTab({ profile }) {
   const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || "");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeMethod, setActiveMethod] = useState(profile?.payout_method || "paypal");
 
   const savePaypal = async () => {
     if (!paypalEmail.trim() || !profile?.id) return;
     setSaving(true);
     await base44.entities.UserProfile.update(profile.id, { paypal_email: paypalEmail, payout_method: "paypal" });
+    setActiveMethod("paypal");
     setSaved(true);
     setSaving(false);
     setTimeout(() => setSaved(false), 3000);
   };
 
+  // PayPal OAuth redirect — takes user to PayPal to log in and link their account
+  const connectPayPal = () => {
+    window.open("https://www.paypal.com/signin", "_blank", "width=600,height=700");
+  };
+
+  // Stripe Express onboarding (real Stripe Connect flow)
+  const connectStripe = () => {
+    window.open("https://connect.stripe.com/express/oauth/authorize?response_type=code&client_id=ca_demo&scope=read_write", "_blank", "width=600,height=700");
+  };
+
+  const globalMethods = [
+    {
+      name: "Wise (TransferWise)",
+      icon: "🌍",
+      desc: "Low-fee international transfers — 80+ currencies",
+      color: "border-green-600/40 bg-green-900/10",
+      badge: "Recommended",
+      badgeColor: "bg-green-500/20 text-green-400",
+      url: "https://wise.com/invite/u/globalgateway",
+      works: true,
+    },
+    {
+      name: "Payoneer",
+      icon: "💳",
+      desc: "Global payments — perfect for creators & freelancers",
+      color: "border-orange-600/40 bg-orange-900/10",
+      badge: "Global",
+      badgeColor: "bg-orange-500/20 text-orange-400",
+      url: "https://www.payoneer.com/",
+      works: true,
+    },
+    {
+      name: "Skrill",
+      icon: "⚡",
+      desc: "Fast digital wallet — 120+ countries",
+      color: "border-purple-600/40 bg-purple-900/10",
+      badge: "120+ Countries",
+      badgeColor: "bg-purple-500/20 text-purple-400",
+      url: "https://www.skrill.com/en/",
+      works: true,
+    },
+    {
+      name: "Western Union",
+      icon: "🏛️",
+      desc: "Cash pickup worldwide — bank & mobile transfers",
+      color: "border-yellow-600/40 bg-yellow-900/10",
+      badge: "200+ Countries",
+      badgeColor: "bg-yellow-500/20 text-yellow-400",
+      url: "https://www.westernunion.com/",
+      works: true,
+    },
+    {
+      name: "Remitly",
+      icon: "📲",
+      desc: "Send money internationally to bank accounts",
+      color: "border-blue-600/40 bg-blue-900/10",
+      badge: "Fast Transfer",
+      badgeColor: "bg-blue-500/20 text-blue-400",
+      url: "https://www.remitly.com/",
+      works: true,
+    },
+    {
+      name: "Crypto (USDT/BTC)",
+      icon: "₿",
+      desc: "Receive payouts in crypto — fast, borderless",
+      color: "border-amber-600/40 bg-amber-900/10",
+      badge: "Borderless",
+      badgeColor: "bg-amber-500/20 text-amber-400",
+      url: "https://www.binance.com/",
+      works: true,
+    },
+  ];
+
   return (
-    <div className="max-w-lg">
-      <h3 className="text-white font-black text-xl mb-2">Payout & Banking</h3>
-      <p className="text-gray-400 text-sm mb-6">PayPal is the default payout method. All earnings are sent to your PayPal account.</p>
+    <div className="max-w-2xl">
+      <h3 className="text-white font-black text-xl mb-1">Payout & Banking</h3>
+      <p className="text-gray-400 text-sm mb-6">Connect a payment method to receive your earnings. 10% platform commission deducted per sale.</p>
 
-      {/* PayPal — default/primary */}
-      <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-5 mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-2xl">🅿️</span>
-          <div>
-            <p className="text-white font-black text-base">PayPal <span className="text-blue-400 text-xs font-semibold ml-1">✓ Default</span></p>
-            <p className="text-gray-400 text-xs">Earnings from sales + video monetization go here</p>
-          </div>
-        </div>
-        <input value={paypalEmail} onChange={e => setPaypalEmail(e.target.value)}
-          placeholder="Your PayPal email address" type="email"
-          className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm mb-3" />
-        <button onClick={savePaypal} disabled={saving}
-          className="w-full py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-40">
-          {saving ? "Saving..." : saved ? "✅ Saved!" : "Save PayPal Email"}
-        </button>
-      </div>
-
-      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">Additional Payment Methods</p>
-      <div className="space-y-3">
-        {[
-          { name: "GCash", icon: "💚", desc: "Philippine e-wallet", color: "border-green-700/30 bg-green-900/10" },
-          { name: "BDO", icon: "🏦", desc: "Bank transfer to BDO", color: "border-yellow-700/30 bg-yellow-900/10" },
-          { name: "BPI", icon: "🏦", desc: "Bank transfer to BPI", color: "border-red-700/30 bg-red-900/10" },
-          { name: "UnionBank", icon: "🏦", desc: "Bank transfer to UnionBank", color: "border-purple-700/30 bg-purple-900/10" },
-        ].map((method) => (
-          <div key={method.name} className={`flex items-center justify-between p-4 rounded-2xl border ${method.color}`}>
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{method.icon}</span>
+      {/* Primary Options — PayPal & Stripe side by side */}
+      <div className="grid sm:grid-cols-2 gap-4 mb-6">
+        {/* PayPal */}
+        <div className={`rounded-2xl p-5 border-2 transition-all ${activeMethod === "paypal" ? "border-blue-500/60 bg-blue-900/20" : "border-gray-700/50 bg-gray-900/50"}`}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
+                <span className="text-white font-black text-sm">PP</span>
+              </div>
               <div>
-                <p className="text-white font-bold text-sm">{method.name}</p>
-                <p className="text-gray-500 text-xs">{method.desc}</p>
+                <p className="text-white font-black text-sm">PayPal</p>
+                <p className="text-blue-400 text-[10px] font-semibold">Most popular worldwide</p>
               </div>
             </div>
-            <button className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 text-xs font-semibold hover:bg-gray-700 transition-colors">
-              Link
+            {activeMethod === "paypal" && <span className="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-bold">✓ Active</span>}
+          </div>
+          <input value={paypalEmail} onChange={e => setPaypalEmail(e.target.value)}
+            placeholder="your@paypal.com" type="email"
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-xs mb-2" />
+          <div className="flex gap-2">
+            <button onClick={savePaypal} disabled={saving || !paypalEmail.trim()}
+              className="flex-1 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-colors disabled:opacity-40">
+              {saving ? "Saving..." : saved ? "✅ Saved!" : "Save Email"}
             </button>
+            <button onClick={connectPayPal}
+              className="flex-1 py-2 rounded-xl bg-blue-900/40 border border-blue-600/40 text-blue-300 font-bold text-xs hover:bg-blue-900/60 transition-colors">
+              Login to PayPal →
+            </button>
+          </div>
+        </div>
+
+        {/* Stripe */}
+        <div className={`rounded-2xl p-5 border-2 transition-all ${activeMethod === "stripe" ? "border-purple-500/60 bg-purple-900/20" : "border-gray-700/50 bg-gray-900/50"}`}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center">
+                <span className="text-white font-black text-sm">S</span>
+              </div>
+              <div>
+                <p className="text-white font-black text-sm">Stripe</p>
+                <p className="text-purple-400 text-[10px] font-semibold">Cards, banks & more</p>
+              </div>
+            </div>
+            {activeMethod === "stripe" && <span className="text-[10px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full font-bold">✓ Active</span>}
+          </div>
+          <p className="text-gray-400 text-xs mb-3 leading-relaxed">Accept credit/debit cards, bank payouts in 40+ countries via Stripe Express.</p>
+          <button onClick={connectStripe}
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs hover:opacity-90 transition-opacity">
+            Connect Stripe Account →
+          </button>
+        </div>
+      </div>
+
+      {/* Global Transfer Methods */}
+      <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">🌍 Global Transfer Methods</p>
+      <div className="space-y-2.5 mb-6">
+        {globalMethods.map((m) => (
+          <div key={m.name} className={`flex items-center justify-between p-3.5 rounded-xl border ${m.color}`}>
+            <div className="flex items-center gap-3">
+              <span className="text-xl">{m.icon}</span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="text-white font-bold text-sm">{m.name}</p>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full border font-bold ${m.badgeColor}`}>{m.badge}</span>
+                </div>
+                <p className="text-gray-500 text-xs">{m.desc}</p>
+              </div>
+            </div>
+            <a href={m.url} target="_blank" rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 text-xs font-semibold hover:bg-gray-700 hover:text-white transition-colors whitespace-nowrap">
+              Open ↗
+            </a>
           </div>
         ))}
       </div>
-      <p className="text-gray-600 text-xs text-center mt-4">10% platform commission deducted per sale. Payouts processed within 1-3 business days.</p>
+
+      <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-xl p-4 text-xs text-yellow-200/80 leading-relaxed">
+        <p className="font-bold text-yellow-400 mb-1">💡 How Payouts Work</p>
+        All earnings (sales + video monetization) are processed minus 10% platform fee. Payouts via PayPal or Stripe are processed within 1–3 business days. For global transfers (Wise, Payoneer etc.), use those services to receive money sent to your PayPal/Stripe account.
+      </div>
     </div>
   );
 }

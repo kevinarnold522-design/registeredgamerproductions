@@ -17,8 +17,7 @@ import FeaturedGames from "@/components/home/FeaturedGames";
 import CommunitySection from "@/components/home/CommunitySection";
 import ShootingStars from "@/components/home/ShootingStars";
 import Footer from "@/components/home/Footer";
-import LinkShortenerBar from "@/components/home/LinkShortenerBar";
-import PlatformLinksBar from "@/components/home/PlatformLinksBar";
+
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
@@ -33,8 +32,6 @@ export default function Home() {
 
           <div className="relative z-10">
             <Navbar />
-            <PlatformLinksBar />
-            <LinkShortenerBar />
             <VideoHeroBanner />
             <HeroSection />
             <MarqueeTicker />
