@@ -9,6 +9,7 @@ import CategoryCards from "@/components/home/CategoryCards";
 import ModdingSection from "@/components/home/ModdingSection";
 import MonetizationBadge from "@/components/home/MonetizationBadge";
 import VideosSection from "@/components/home/VideosSection";
+import HowWeHelpSection from "@/components/home/HowWeHelpSection";
 import FeaturedGames from "@/components/home/FeaturedGames";
 import TopGamingGear from "@/components/home/TopGamingGear";
 import CommunitySection from "@/components/home/CommunitySection";
@@ -26,6 +27,7 @@ export default function Home() {
           <VideoHeroBanner />
           <HeroSection />
           <MarqueeTicker />
+          <HowWeHelpSection />
           <ServicesSection />
           <CategoryCards />
           <ModdingSection />

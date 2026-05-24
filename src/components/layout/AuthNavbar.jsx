@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Gamepad2, Heart, ShoppingCart, ClipboardList, Settings,
   User, LogOut, ChevronDown, Bell, Store, BarChart2, Shield,
-  Star, Package, CreditCard, Upload, X
+  Star, Package, CreditCard, Upload, X, Play
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
@@ -176,6 +176,9 @@ export default function AuthNavbar({ user, profile }) {
                   <div className="p-2">
                     <a href="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                       <User className="w-4 h-4" /> My Profile
+                    </a>
+                    <a href="/channel" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                      <Play className="w-4 h-4" /> My Channel
                     </a>
                     <a href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                       <BarChart2 className="w-4 h-4" /> Dashboard

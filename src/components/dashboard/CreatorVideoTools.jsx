@@ -33,6 +33,9 @@ export default function CreatorVideoTools({ user, profile }) {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiResult, setAiResult] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [scriptTopic, setScriptTopic] = useState("");
+  const [scriptResult, setScriptResult] = useState("");
+  const [scriptLoading, setScriptLoading] = useState(false);
 
   const handleShareVideo = async (e) => {
     e.preventDefault();
@@ -57,6 +60,23 @@ export default function CreatorVideoTools({ user, profile }) {
     setTimeout(() => setPosted(false), 3000);
   };
 
+  const handleScriptWrite = async () => {
+    if (!scriptTopic.trim()) return;
+    setScriptLoading(true);
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `Write a complete YouTube gaming video script for the topic: "${scriptTopic}". 
+Include:
+- A catchy hook (first 15 seconds to grab attention)
+- Intro with channel intro line
+- Main content sections with talking points
+- Engagement prompt (ask viewers to like/subscribe)
+- Outro CTA
+Format it clearly with section headers. Keep it natural and conversational for a gaming audience.`,
+    });
+    setScriptResult(res);
+    setScriptLoading(false);
+  };
+
   const handleAiEnhance = async () => {
     if (!aiPrompt.trim()) return;
     setAiLoading(true);
@@ -69,9 +89,10 @@ export default function CreatorVideoTools({ user, profile }) {
 
   const tabs = [
     { id: "share", label: "📹 Share YouTube Video" },
+    { id: "ai", label: "🤖 AI Assistant" },
+    { id: "script", label: "📝 AI Script Writer" },
     { id: "links", label: "🔗 Link Shorteners" },
     { id: "cloud", label: "☁️ Cloud Storage" },
-    { id: "ai", label: "🤖 AI Video Assistant" },
   ];
 
   return (
@@ -121,6 +142,30 @@ export default function CreatorVideoTools({ user, profile }) {
               {posting ? "Sharing..." : "Share Video to Community"}
             </button>
           </form>
+        </div>
+      )}
+
+      {tab === "script" && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4 text-yellow-400" />
+            <p className="text-white font-semibold text-sm">AI Video Script Writer</p>
+          </div>
+          <p className="text-gray-500 text-xs mb-3">Describe your video topic and AI will write a full script — hook, intro, sections, CTA and outro.</p>
+          <textarea value={scriptTopic} onChange={e => setScriptTopic(e.target.value)}
+            placeholder="e.g. 'Top 10 GTA5 mods for PS2 emulator' or 'How to dominate in WWE2K tournaments'"
+            rows={3}
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 text-sm resize-none mb-3" />
+          <button onClick={handleScriptWrite} disabled={scriptLoading || !scriptTopic.trim()}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 mb-4">
+            <Zap className="w-4 h-4" />
+            {scriptLoading ? "Writing script..." : "Write My Script"}
+          </button>
+          {scriptResult && (
+            <div className="bg-gray-800 border border-yellow-700/30 rounded-xl p-4 text-gray-300 text-xs whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">
+              {scriptResult}
+            </div>
+          )}
         </div>
       )}
 
