@@ -185,6 +185,17 @@ export default function PaymentMethodsTab({ profile }) {
           <p className="text-gray-500 text-xs mb-4">
             ⚠️ Not connected yet. Click below to connect your PayPal account.
           </p>
+          
+          {/* Link to PayPal Button */}
+          <a
+            href="https://www.paypal.com/myaccount/settings/notifications"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 font-bold text-sm hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 mb-4"
+          >
+            🔗 Link to PayPal Account Settings →
+          </a>
+          
           <button
             onClick={handleConnectPayPal}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30"
