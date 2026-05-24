@@ -65,8 +65,8 @@ export default function Navbar() {
   };
 
   const handleSignInClick = async () => {
-    // Check if user already has an account before allowing sign in
-    base44.auth.redirectToLogin("/dashboard");
+    // Redirect to home page after sign in (AuthNavbar will show dashboard features)
+    base44.auth.redirectToLogin("/");
   };
 
   return (
@@ -286,7 +286,7 @@ export default function Navbar() {
 
               {/* Primary sign-in button */}
               <button
-                onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/dashboard"); }}
+                onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/"); }}
                 className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-sm hover:opacity-90 transition-opacity mb-4"
                 style={{ boxShadow: "0 0 20px rgba(139,92,246,0.4)" }}
               >

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SplashScreen from "@/components/home/SplashScreen";
 import Navbar from "@/components/home/Navbar";
+import AuthNavbar from "@/components/layout/AuthNavbar";
 import VideoHeroBanner from "@/components/home/VideoHeroBanner";
 import HeroSection from "@/components/home/HeroSection";
 import MarqueeTicker from "@/components/home/MarqueeTicker";
@@ -17,10 +18,31 @@ import FeaturedGames from "@/components/home/FeaturedGames";
 import CommunitySection from "@/components/home/CommunitySection";
 import ShootingStars from "@/components/home/ShootingStars";
 import Footer from "@/components/home/Footer";
+import { base44 } from "@/api/base44Client";
 
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const me = await base44.auth.me();
+        setUser(me);
+        if (me) {
+          const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
+          if (profiles.length > 0) {
+            setProfile(profiles[0]);
+          }
+        }
+      } catch (e) {
+        // User not authenticated
+      }
+    };
+    initAuth();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white relative">
@@ -31,7 +53,7 @@ export default function Home() {
           <ShootingStars />
 
           <div className="relative z-10">
-            <Navbar />
+            {user && profile ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
             <VideoHeroBanner />
             <HeroSection />
             <MarqueeTicker />
