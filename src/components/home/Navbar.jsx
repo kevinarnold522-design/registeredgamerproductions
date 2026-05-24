@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Youtube, Radio } from "lucide-react";
+import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Youtube, Radio, Mail, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const navLinks = [
@@ -40,8 +40,18 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+
+  const EMAIL_PROVIDERS = [
+    { name: "Google / Gmail", icon: "🔵", hint: "gmail.com", url: null },
+    { name: "Yahoo Mail", icon: "🟣", hint: "yahoo.com", url: "https://mail.yahoo.com" },
+    { name: "Outlook / Hotmail", icon: "🔷", hint: "outlook.com / hotmail.com", url: "https://outlook.live.com" },
+    { name: "iCloud Mail", icon: "☁️", hint: "icloud.com / me.com", url: "https://www.icloud.com/mail" },
+    { name: "ProtonMail", icon: "🛡️", hint: "proton.me", url: "https://mail.proton.me" },
+    { name: "Zoho Mail", icon: "🟠", hint: "zoho.com", url: "https://mail.zoho.com" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -117,7 +127,7 @@ export default function Navbar() {
                 Sign Up Free
               </button>
               <button
-                onClick={() => base44.auth.redirectToLogin("/dashboard")}
+                onClick={() => setShowSignInModal(true)}
                 className="hidden sm:block text-gray-400 hover:text-white text-sm font-semibold transition-colors px-3 py-2"
               >
                 Sign In
@@ -146,7 +156,7 @@ export default function Navbar() {
               </a>
             ))}
             <button
-              onClick={() => { setMenuOpen(false); base44.auth.redirectToLogin("/dashboard"); }}
+              onClick={() => { setMenuOpen(false); setShowSignInModal(true); }}
               className="mt-2 text-center px-4 py-2 rounded-lg border border-gray-700 text-gray-300 font-semibold"
             >
               Sign In
@@ -222,10 +232,98 @@ export default function Navbar() {
                 <p className="text-gray-500 text-sm">
                   Already have an account?{" "}
                   <button
-                    onClick={() => { setShowSignUpModal(false); base44.auth.redirectToLogin("/dashboard"); }}
+                    onClick={() => { setShowSignUpModal(false); setShowSignInModal(true); }}
                     className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
                   >
                     Sign In →
+                  </button>
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sign In Modal */}
+      <AnimatePresence>
+        {showSignInModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            style={{ background: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowSignInModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gray-950 border border-purple-700/40 rounded-3xl p-7 w-full max-w-md shadow-2xl shadow-purple-900/30"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+                    <Gamepad2 className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-white font-black text-sm">Sign In to GAMER Productions</span>
+                </div>
+                <button onClick={() => setShowSignInModal(false)} className="text-gray-600 hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Primary sign-in button */}
+              <button
+                onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/dashboard"); }}
+                className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-sm hover:opacity-90 transition-opacity mb-4"
+                style={{ boxShadow: "0 0 20px rgba(139,92,246,0.4)" }}
+              >
+                <Zap className="w-4 h-4" />
+                Sign In with Your Email
+              </button>
+
+              <p className="text-gray-500 text-xs text-center mb-3">— or open your email provider first —</p>
+
+              {/* Email providers */}
+              <div className="space-y-2 mb-5">
+                {EMAIL_PROVIDERS.map((ep) => (
+                  <div key={ep.name} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800">
+                    <span className="text-lg">{ep.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-xs font-semibold">{ep.name}</p>
+                      <p className="text-gray-500 text-[10px]">{ep.hint}</p>
+                    </div>
+                    {ep.url ? (
+                      <a
+                        href={ep.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-[10px] bg-gray-800 border border-gray-700 text-gray-300 px-2.5 py-1.5 rounded-lg hover:bg-gray-700 hover:text-white transition-colors font-semibold whitespace-nowrap"
+                      >
+                        Open ↗
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/dashboard"); }}
+                        className="flex items-center gap-1 text-[10px] bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2.5 py-1.5 rounded-lg hover:bg-purple-900/60 transition-colors font-semibold whitespace-nowrap"
+                      >
+                        Sign In →
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-gray-800 pt-4 text-center">
+                <p className="text-gray-500 text-sm">
+                  New here?{" "}
+                  <button
+                    onClick={() => { setShowSignInModal(false); setShowSignUpModal(true); }}
+                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+                  >
+                    Create Free Account →
                   </button>
                 </p>
               </div>

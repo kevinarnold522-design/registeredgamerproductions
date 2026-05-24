@@ -1,29 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
-import GamerCheckmark from "@/components/shared/GamerCheckmark";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Gamepad2, Heart, ShoppingCart, ClipboardList, Settings,
-  User, LogOut, ChevronDown, Bell, Store, BarChart2, Shield,
-  Star, Package, CreditCard, Upload, X, Play
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import CartDropdown from "@/components/layout/CartDropdown";
 import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
+import UserMegaMenu from "@/components/layout/UserMegaMenu";
 
 export default function AuthNavbar({ user, profile }) {
-  const navigate = useNavigate();
   const [cartOpen, setCartOpen] = useState(false);
   const [favOpen, setFavOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [favCount, setFavCount] = useState(0);
-  const menuRef = useRef(null);
 
   const admin = isAdmin(user?.email);
   const accountType = profile?.account_type || "regular";
-  const typeInfo = ACCOUNT_TYPES.find((t) => t.id === accountType);
 
   useEffect(() => {
     if (user?.email) {
@@ -31,27 +23,6 @@ export default function AuthNavbar({ user, profile }) {
       base44.entities.Favorite.filter({ user_email: user.email }).then((r) => setFavCount(r.length));
     }
   }, [user]);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setProfileOpen(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  const handleLogout = () => {
-    base44.auth.logout("/");
-  };
-
-  const accountLabel = admin ? "CEO & President" : typeInfo?.label || "User";
-  const accountColor = admin
-    ? "text-yellow-400"
-    : accountType === "digital_creator"
-    ? "text-purple-400"
-    : accountType === "business"
-    ? "text-green-400"
-    : "text-blue-400";
 
   const regularLinks = [
     { icon: Heart, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
@@ -121,14 +92,6 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Right: User */}
         <div className="flex items-center gap-2">
-          {/* Sign Out — always visible */}
-          <button
-            onClick={handleLogout}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-900/20 border border-red-700/30 text-red-400 text-xs font-semibold hover:bg-red-900/40 transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Sign Out
-          </button>
           {/* Add Listing for sellers */}
           {(admin || accountType === "digital_creator" || accountType === "business") && (
             <Link
@@ -139,114 +102,16 @@ export default function AuthNavbar({ user, profile }) {
               Add Listing
             </Link>
           )}
-
-          {/* Profile dropdown */}
-          <div ref={menuRef} className="relative">
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2 pl-1 pr-3 py-1.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-700/50 transition-colors"
-            >
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm overflow-hidden">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  "🎮"
-                )}
-              </div>
-              <div className="hidden sm:block text-left">
-                <div className="flex items-center gap-1">
-                  <p className="text-white text-xs font-bold leading-none">{profile?.username || user?.full_name || "Gamer"}</p>
-                  <GamerCheckmark accountType={accountType} isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showTooltip={false} />
-                </div>
-                <p className={`text-[10px] font-semibold leading-none mt-0.5 ${accountColor}`}>{accountLabel}</p>
-              </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform ${profileOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            <AnimatePresence>
-              {profileOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                  className="absolute right-0 top-full mt-2 w-64 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden"
-                >
-                  {/* Header */}
-                  <div className="p-4 border-b border-gray-800 bg-gradient-to-r from-purple-900/30 to-pink-900/20">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl overflow-hidden">
-                        {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-white font-bold text-sm">{profile?.username || user?.full_name}</p>
-                          <GamerCheckmark accountType={accountType} isVerified={profile?.is_verified} userEmail={user?.email} size="md" />
-                        </div>
-                        <p className={`text-xs font-semibold ${accountColor}`}>{accountLabel}</p>
-                        <p className="text-gray-500 text-xs truncate">{user?.email}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Menu items */}
-                  <div className="p-2">
-                    <a href="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                      <User className="w-4 h-4" /> My Profile
-                    </a>
-                    <a href="/channel" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                      <Play className="w-4 h-4" /> My Channel
-                    </a>
-                    <a href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                      <BarChart2 className="w-4 h-4" /> Dashboard
-                    </a>
-                    {accountType === "regular" && (
-                      <>
-                        <button onClick={() => { setFavOpen(true); setProfileOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                          <Heart className="w-4 h-4" /> Favourites {favCount > 0 && <span className="ml-auto text-purple-400 font-bold text-xs">{favCount}</span>}
-                        </button>
-                        <button onClick={() => { setCartOpen(true); setProfileOpen(false); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                          <ShoppingCart className="w-4 h-4" /> Cart {cartCount > 0 && <span className="ml-auto text-purple-400 font-bold text-xs">{cartCount}</span>}
-                        </button>
-                        <a href="/dashboard?tab=orders" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                          <ClipboardList className="w-4 h-4" /> Transaction & Orders
-                        </a>
-                      </>
-                    )}
-                    <a href="/dashboard?tab=payment" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                      <CreditCard className="w-4 h-4" /> Payment Methods
-                    </a>
-                    <a href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                      <Settings className="w-4 h-4" /> Settings
-                    </a>
-                    {admin && (
-                      <a href="/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-yellow-400 hover:bg-yellow-900/20 text-sm font-semibold transition-colors">
-                        <Shield className="w-4 h-4" /> Admin Dashboard
-                      </a>
-                    )}
-                    <div className="border-t border-gray-800 mt-1 pt-1">
-                      <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-900/20 text-sm font-semibold transition-colors">
-                        <LogOut className="w-4 h-4" /> Sign Out
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Mega menu profile button */}
+          <UserMegaMenu
+            user={user}
+            profile={profile}
+            favCount={favCount}
+            cartCount={cartCount}
+            onFavOpen={() => setFavOpen(true)}
+            onCartOpen={() => setCartOpen(true)}
+          />
         </div>
-      </div>
-
-      {/* Mobile bottom bar — sign out + payment visible on small screens */}
-      <div className="sm:hidden flex items-center justify-between px-4 py-2 border-t border-gray-900 bg-gray-950/95">
-        <a href="/dashboard?tab=payment" className="flex items-center gap-1.5 text-xs text-gray-400 font-semibold">
-          <CreditCard className="w-4 h-4 text-purple-400" /> Payment
-        </a>
-        <a href="/dashboard" className="flex items-center gap-1.5 text-xs text-gray-400 font-semibold">
-          <BarChart2 className="w-4 h-4 text-blue-400" /> Dashboard
-        </a>
-        <button onClick={handleLogout} className="flex items-center gap-1.5 text-xs text-red-400 font-semibold">
-          <LogOut className="w-4 h-4" /> Sign Out
-        </button>
       </div>
 
       {/* Cart & Favorites slide-ins */}
