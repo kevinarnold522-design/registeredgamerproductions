@@ -64,6 +64,11 @@ export default function Navbar() {
     window.location.href = `/register?type=${typeId}`;
   };
 
+  const handleSignInClick = async () => {
+    // Check if user already has an account before allowing sign in
+    base44.auth.redirectToLogin("/dashboard");
+  };
+
   return (
     <>
       <motion.nav
@@ -274,6 +279,11 @@ export default function Navbar() {
                 </button>
               </div>
 
+              {/* No account warning */}
+              <div className="bg-yellow-900/20 border border-yellow-600/40 rounded-xl px-4 py-3 mb-4 text-xs text-yellow-300 leading-relaxed">
+                ⚠️ <strong>Don't have an account yet?</strong> You must <button onClick={() => { setShowSignInModal(false); setShowSignUpModal(true); }} className="underline text-yellow-200 hover:text-white font-bold">create a free account first</button> before you can sign in.
+              </div>
+
               {/* Primary sign-in button */}
               <button
                 onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/dashboard"); }}
@@ -281,7 +291,7 @@ export default function Navbar() {
                 style={{ boxShadow: "0 0 20px rgba(139,92,246,0.4)" }}
               >
                 <Zap className="w-4 h-4" />
-                Sign In with Your Email
+                I Have an Account — Sign In
               </button>
 
               <p className="text-gray-500 text-xs text-center mb-3">— or open your email provider first —</p>
