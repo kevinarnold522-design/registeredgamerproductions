@@ -7,6 +7,7 @@ import CreatorAnalyticsTab from "./CreatorAnalyticsTab";
 import LeaderboardTab from "./LeaderboardTab";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import PaymentMethodsTab from "./PaymentMethodsTab";
+import PayPalConnect from "@/components/payments/PayPalConnect";
 
 export default function SellerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -46,6 +47,7 @@ export default function SellerDashboard({ user, profile }) {
     { id: "videos", label: "📹 Video Tools", icon: Youtube },
     { id: "leaderboard", label: "🏆 Leaderboard", icon: DollarSign },
     { id: "payouts", label: "Payouts & Banking", icon: CreditCard },
+    { id: "paypal", label: "🅿️ PayPal Connect", icon: CreditCard },
     { id: "verification", label: isVerified ? "✅ Verified" : "Get Verified", icon: CheckCircle },
   ];
 
@@ -239,6 +241,23 @@ export default function SellerDashboard({ user, profile }) {
       {/* Payouts */}
       {tab === "payouts" && (
         <PaymentMethodsTab profile={profile} />
+      )}
+
+      {/* PayPal Connect */}
+      {tab === "paypal" && (
+        <div className="max-w-lg mx-auto">
+          <h3 className="text-white font-black text-xl mb-4">Connect PayPal for Automatic Payouts</h3>
+          <p className="text-gray-400 text-sm mb-6">
+            Link your PayPal account to receive automatic payouts from your sales. 
+            You'll receive 90% of each sale, with 10% platform commission.
+          </p>
+          <PayPalConnect 
+            profile={profile} 
+            onConnect={(data) => {
+              console.log("PayPal connected:", data);
+            }} 
+          />
+        </div>
       )}
 
       </main>

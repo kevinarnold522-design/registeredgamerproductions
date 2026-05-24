@@ -12,6 +12,7 @@ import EmailHeaderEditor from "./EmailHeaderEditor";
 import LeaderboardTab from "./LeaderboardTab";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import AdminTextEditor from "./AdminTextEditor";
+import AdminTransactionsDashboard from "./AdminTransactionsDashboard";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -69,6 +70,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "reviews", label: "Reviews", icon: MessageSquare },
     { id: "videos", label: "Videos", icon: Play },
     { id: "leaderboard", label: "Leaderboard", icon: Trophy },
+    { id: "transactions", label: "💰 Transactions", icon: DollarSign },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
@@ -268,6 +270,11 @@ export default function AdminDashboard({ user, profile }) {
         <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
           <EmailHeaderEditor />
         </div>
+      )}
+
+      {/* Global Transactions */}
+      {tab === "transactions" && (
+        <AdminTransactionsDashboard user={user} />
       )}
 
       {/* Orders full tab */}

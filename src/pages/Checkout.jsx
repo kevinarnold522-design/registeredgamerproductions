@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { CheckCircle, AlertCircle, Loader2, ShoppingCart, CreditCard } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Base44Checkout from "@/components/payments/Base44Checkout";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -245,37 +246,9 @@ export default function Checkout() {
             className="bg-gray-900 rounded-2xl border border-gray-800 p-6"
           >
             <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-green-400" />
-              Secure Payment
+              <CheckCircle className="w-5 h-5 text-green-400" />
+              Secure Checkout
             </h2>
-
-            {paypalLinked ? (
-              <div className="bg-green-900/20 border border-green-600/40 rounded-xl p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <p className="text-green-400 font-bold text-sm">PayPal Successfully Linked</p>
-                </div>
-                <p className="text-gray-400 text-xs">
-                  You're ready to make payments and receive payouts via PayPal.
-                </p>
-              </div>
-            ) : (
-              <div className="bg-yellow-900/20 border border-yellow-600/40 rounded-xl p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle className="w-5 h-5 text-yellow-400" />
-                  <p className="text-yellow-400 font-bold text-sm">PayPal Not Linked</p>
-                </div>
-                <p className="text-gray-400 text-xs mb-3">
-                  Please link your PayPal account to proceed with payment.
-                </p>
-                <a
-                  href="/profile"
-                  className="block w-full py-2 rounded-lg bg-yellow-600/20 border border-yellow-600/40 text-yellow-300 text-sm font-semibold text-center hover:bg-yellow-600/30 transition-colors"
-                >
-                  Go to Profile →
-                </a>
-              </div>
-            )}
 
             {errorMessage && (
               <div className="bg-red-900/20 border border-red-600/40 rounded-xl p-3 mb-4">
@@ -283,27 +256,13 @@ export default function Checkout() {
               </div>
             )}
 
-            <button
-              onClick={initiatePayment}
-              disabled={!paypalLinked || cartItems.length === 0 || paymentStatus === "processing"}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {paymentStatus === "processing" ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <span>🅿️</span>
-                  Pay with PayPal
-                </>
-              )}
-            </button>
-
-            <p className="text-gray-500 text-xs text-center mt-4">
-              🔒 Secure 256-bit SSL encryption
-            </p>
+            <Base44Checkout
+              totalAmount={totalAmount}
+              items={cartItems}
+              userEmail={user.email}
+              onSuccess={() => setPaymentStatus("success")}
+              onError={(msg) => setErrorMessage(msg)}
+            />
           </motion.div>
         </div>
       </div>
