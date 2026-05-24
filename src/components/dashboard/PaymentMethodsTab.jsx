@@ -145,6 +145,12 @@ export default function PaymentMethodsTab({ profile }) {
               <p className="text-white text-sm font-semibold">{profile?.paypal_email || "Linked"}</p>
             </div>
             <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Merchant ID</p>
+              <p className="text-white text-sm font-semibold truncate" title={profile?.paypal_merchant_id || ""}>
+                {profile?.paypal_merchant_id ? profile.paypal_merchant_id.substring(0, 12) + "..." : "N/A"}
+              </p>
+            </div>
+            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
               <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Account Name</p>
               <p className="text-white text-sm font-semibold">{profile?.paypal_account_name || "Verified Account"}</p>
             </div>
@@ -155,6 +161,10 @@ export default function PaymentMethodsTab({ profile }) {
             <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
               <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Country</p>
               <p className="text-white text-sm font-semibold">{profile?.paypal_country || "Global"}</p>
+            </div>
+            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Status</p>
+              <p className="text-white text-sm font-semibold">✓ Verified</p>
             </div>
           </div>
           
