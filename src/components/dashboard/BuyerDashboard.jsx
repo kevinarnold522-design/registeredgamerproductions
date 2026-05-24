@@ -36,33 +36,49 @@ export default function BuyerDashboard({ user, profile }) {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl overflow-hidden">
+    <div className="min-h-screen flex">
+      {/* Vertical Sidebar */}
+      <aside className="w-56 shrink-0 bg-gray-950 border-r border-gray-800 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto hidden md:flex">
+        {/* User info */}
+        <div className="flex flex-col items-center text-center gap-2 mb-6 px-2">
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl overflow-hidden">
             {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white">{profile?.username || user?.full_name}</h1>
-            <p className="text-blue-400 text-sm font-semibold">👤 Regular Account · {user?.email}</p>
+            <p className="text-white font-black text-sm leading-tight">{profile?.username || user?.full_name}</p>
+            <p className="text-blue-400 text-[10px] font-semibold mt-0.5">👤 Regular Account</p>
+            <p className="text-gray-500 text-[9px] truncate max-w-[130px]">{user?.email}</p>
           </div>
         </div>
-        <button
-          onClick={() => base44.auth.logout("/")}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-semibold hover:bg-red-900/40 transition-colors"
-        >
+
+        <nav className="flex flex-col gap-1 flex-1">
+          {tabs.map((t) => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-colors ${tab === t.id ? "bg-blue-500/20 border border-blue-500/40 text-blue-300" : "text-gray-400 hover:text-white hover:bg-gray-800"}`}>
+              <t.icon className="w-4 h-4 shrink-0" />{t.label}
+            </button>
+          ))}
+        </nav>
+
+        <button onClick={() => base44.auth.logout("/")}
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-900/20 border border-red-700/30 text-red-400 text-sm font-semibold hover:bg-red-900/40 transition-colors mt-4">
           <LogOut className="w-4 h-4" /> Sign Out
         </button>
-      </div>
+      </aside>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-8">
+      {/* Mobile horizontal tabs */}
+      <div className="md:hidden w-full absolute top-16 left-0 z-10 bg-gray-950 border-b border-gray-800 px-3 py-2 flex gap-2 overflow-x-auto">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-blue-500/20 border border-blue-500/50 text-blue-300" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
-            <t.icon className="w-4 h-4" />{t.label}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-blue-500/20 border border-blue-500/50 text-blue-300" : "bg-gray-900 border border-gray-800 text-gray-400"}`}>
+            <t.icon className="w-3.5 h-3.5" />{t.label}
           </button>
         ))}
       </div>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto px-6 py-8 md:pt-8 pt-20">
+        <div className="max-w-4xl">
 
       {tab === "overview" && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -125,6 +141,9 @@ export default function BuyerDashboard({ user, profile }) {
       {tab === "payment" && (
         <PaymentMethodsTab profile={profile} />
       )}
+
+        </div>
+      </main>
     </div>
   );
 }

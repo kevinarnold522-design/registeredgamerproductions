@@ -57,13 +57,14 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Heart, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
     { icon: ShoppingCart, label: "Cart", badge: cartCount, action: () => { setCartOpen(true); setFavOpen(false); } },
     { icon: ClipboardList, label: "Orders", href: "/dashboard?tab=orders" },
+    { icon: CreditCard, label: "Payment", href: "/dashboard?tab=payment" },
   ];
 
   const sellerLinks = [
     { icon: Store, label: "My Listings", href: "/dashboard?tab=listings" },
     { icon: BarChart2, label: "Analytics", href: "/dashboard?tab=analytics" },
     { icon: Package, label: "Orders", href: "/dashboard?tab=orders" },
-    { icon: CreditCard, label: "Payouts", href: "/dashboard?tab=payouts" },
+    { icon: CreditCard, label: "Payment", href: "/dashboard?tab=payouts" },
   ];
 
   const adminLinks = [
@@ -211,6 +212,9 @@ export default function AuthNavbar({ user, profile }) {
                         </a>
                       </>
                     )}
+                    <a href="/dashboard?tab=payment" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                      <CreditCard className="w-4 h-4" /> Payment Methods
+                    </a>
                     <a href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                       <Settings className="w-4 h-4" /> Settings
                     </a>
@@ -230,6 +234,19 @@ export default function AuthNavbar({ user, profile }) {
             </AnimatePresence>
           </div>
         </div>
+      </div>
+
+      {/* Mobile bottom bar — sign out + payment visible on small screens */}
+      <div className="sm:hidden flex items-center justify-between px-4 py-2 border-t border-gray-900 bg-gray-950/95">
+        <a href="/dashboard?tab=payment" className="flex items-center gap-1.5 text-xs text-gray-400 font-semibold">
+          <CreditCard className="w-4 h-4 text-purple-400" /> Payment
+        </a>
+        <a href="/dashboard" className="flex items-center gap-1.5 text-xs text-gray-400 font-semibold">
+          <BarChart2 className="w-4 h-4 text-blue-400" /> Dashboard
+        </a>
+        <button onClick={handleLogout} className="flex items-center gap-1.5 text-xs text-red-400 font-semibold">
+          <LogOut className="w-4 h-4" /> Sign Out
+        </button>
       </div>
 
       {/* Cart & Favorites slide-ins */}

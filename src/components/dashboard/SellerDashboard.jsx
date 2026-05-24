@@ -52,44 +52,55 @@ export default function SellerDashboard({ user, profile }) {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/50 flex items-center justify-center">
-            <Store className="w-5 h-5 text-purple-400" />
+    <div className="min-h-screen flex">
+      {/* Vertical Sidebar */}
+      <aside className="w-56 shrink-0 bg-gray-950 border-r border-gray-800 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto hidden md:flex">
+        {/* User info */}
+        <div className="flex flex-col items-center text-center gap-2 mb-6 px-2">
+          <div className="w-14 h-14 rounded-xl bg-purple-500/20 border border-purple-500/50 flex items-center justify-center overflow-hidden">
+            {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <Store className="w-7 h-7 text-purple-400" />}
           </div>
           <div>
-            <h1 className="text-2xl font-black text-white">Seller Dashboard</h1>
-            <div className="flex items-center gap-2">
-              <p className="text-purple-400 text-sm font-semibold">
-                {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : "🏢 Business"} · {profile?.username}
-              </p>
-              <GamerCheckmark accountType={profile?.account_type} isVerified={profile?.is_verified} userEmail={user?.email} size="md" />
-            </div>
+            <p className="text-white font-black text-sm leading-tight">{profile?.username || user?.full_name}</p>
+            <p className="text-purple-400 text-[10px] font-semibold mt-0.5">
+              {profile?.account_type === "digital_creator" ? "🎨 Creator" : "🏢 Business"}
+            </p>
+            <p className="text-gray-500 text-[9px] truncate max-w-[130px]">{user?.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <a href="/create-listing"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity">
-            <Plus className="w-4 h-4" /> New Listing
-          </a>
-          <button
-            onClick={() => base44.auth.logout("/")}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-semibold hover:bg-red-900/40 transition-colors"
-          >
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
-        </div>
-      </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-8">
+        <a href="/create-listing"
+          className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold hover:opacity-90 transition-opacity mb-4">
+          <Plus className="w-3.5 h-3.5" /> New Listing
+        </a>
+
+        <nav className="flex flex-col gap-1 flex-1">
+          {tabs.map((t) => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-colors ${tab === t.id ? "bg-purple-500/20 border border-purple-500/40 text-purple-300" : "text-gray-400 hover:text-white hover:bg-gray-800"}`}>
+              <t.icon className="w-4 h-4 shrink-0" />{t.label}
+            </button>
+          ))}
+        </nav>
+
+        <button onClick={() => base44.auth.logout("/")}
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-900/20 border border-red-700/30 text-red-400 text-sm font-semibold hover:bg-red-900/40 transition-colors mt-4">
+          <LogOut className="w-4 h-4" /> Sign Out
+        </button>
+      </aside>
+
+      {/* Mobile horizontal tabs */}
+      <div className="md:hidden w-full absolute top-16 left-0 z-10 bg-gray-950 border-b border-gray-800 px-3 py-2 flex gap-2 overflow-x-auto">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-purple-500/20 border border-purple-500/50 text-purple-300" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
-            <t.icon className="w-4 h-4" />{t.label}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-purple-500/20 border border-purple-500/50 text-purple-300" : "bg-gray-900 border border-gray-800 text-gray-400"}`}>
+            <t.icon className="w-3.5 h-3.5" />{t.label}
           </button>
         ))}
       </div>
+
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto px-6 py-8 md:pt-8 pt-20">
 
       {/* Overview */}
       {tab === "overview" && (
@@ -178,6 +189,33 @@ export default function SellerDashboard({ user, profile }) {
         </div>
       )}
 
+      {/* Orders */}
+      {tab === "orders" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+          <div className="p-4 border-b border-gray-800"><h3 className="text-white font-bold">All Orders</h3></div>
+          {orders.length === 0 ? (
+            <p className="text-center text-gray-500 py-8 text-sm">No orders yet.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-800/50">
+                <tr>{["Item", "Buyer", "Amount", "Payout", "Status"].map(h => <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => (
+                  <tr key={o.id} className="border-t border-gray-800">
+                    <td className="px-4 py-3 text-white text-xs font-medium">{o.listing_title}</td>
+                    <td className="px-4 py-3 text-gray-400 text-xs">{o.buyer_email}</td>
+                    <td className="px-4 py-3 text-green-400 font-bold">₱{o.amount?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-purple-400 font-bold">₱{o.seller_payout?.toLocaleString()}</td>
+                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
       {/* Analytics */}
       {tab === "analytics" && (
         <CreatorAnalyticsTab user={user} profile={profile} />
@@ -202,6 +240,8 @@ export default function SellerDashboard({ user, profile }) {
       {tab === "payouts" && (
         <PaymentMethodsTab profile={profile} />
       )}
+
+      </main>
     </div>
   );
 }
