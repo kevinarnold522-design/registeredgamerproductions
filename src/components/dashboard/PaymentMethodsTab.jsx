@@ -99,7 +99,7 @@ export default function PaymentMethodsTab({ profile }) {
   const handleConnectPayPal = async () => {
     // Open PayPal OAuth popup
     const popup = window.open("https://www.paypal.com/signin", "_blank", "width=620,height=720");
-    // Poll for popup close and refresh status
+    // Poll for popup close and redirect to payment settings
     const timer = setInterval(async () => {
       if (!popup || popup.closed) {
         clearInterval(timer);
@@ -107,6 +107,10 @@ export default function PaymentMethodsTab({ profile }) {
         const profiles = await base44.entities.UserProfile.filter({ user_email: profile?.user_email });
         if (profiles.length > 0 && profiles[0].paypal_email) {
           setConnected(true);
+          // Redirect to dashboard payment settings after successful connection
+          setTimeout(() => {
+            window.location.href = "/dashboard?tab=payment";
+          }, 1000);
         }
       }
     }, 500);
