@@ -34,6 +34,8 @@ export default function Channel() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [videoSubcategory, setVideoSubcategory] = useState("gameplay");
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
+  const [videoTitle, setVideoTitle] = useState("");
   const fileInputRef = React.useRef(null);
   
   // Posts state
@@ -380,8 +382,8 @@ export default function Channel() {
                   <Upload className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-white font-semibold text-sm">Upload Ready-Made Video</p>
-                  <p className="text-gray-500 text-xs">Upload a video file you already created</p>
+                  <p className="text-white font-semibold text-sm">Upload Video from Device</p>
+                  <p className="text-gray-500 text-xs">Select and publish a video file</p>
                 </div>
               </button>
             </div>
@@ -398,7 +400,7 @@ export default function Channel() {
               </div>
             </div>
 
-            <p className="text-gray-500 text-xs text-center mt-3">Your video will be published to the Content section after upload</p>
+            <p className="text-gray-500 text-xs text-center mt-3">After selecting a video, you'll be able to publish it</p>
 
             {/* Hidden file input */}
             <input
@@ -409,37 +411,76 @@ export default function Channel() {
                 const file = e.target.files[0];
                 if (!file) return;
                 
-                setUploadingVideo(true);
-                try {
-                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                  await base44.entities.VideoPost.create({
-                    creator_email: user.email,
-                    creator_username: profile?.username || user.full_name,
-                    creator_avatar: profile?.avatar_url || "",
-                    title: file.name.replace(/\.[^/.]+$/, ""),
-                    description: "",
-                    youtube_url: "",
-                    youtube_video_id: "",
-                    video_url: file_url,
-                    image_urls: [],
-                    game_tag: "",
-                    category: videoSubcategory,
-                    status: "active",
-                    is_approved: true,
-                  });
-                  const videos = await base44.entities.VideoPost.filter({ creator_email: user.email });
-                  setVideos(videos.filter(v => v.status === "active"));
-                  setShowUploadModal(false);
-                  // Refresh channel
-                  window.location.reload();
-                } catch (error) {
-                  console.error("Upload failed:", error);
-                } finally {
-                  setUploadingVideo(false);
-                }
+                // Store file info for publish
+                setSelectedVideoFile(file);
+                setVideoTitle(file.name.replace(/\.[^/.]+$/, ""));
               }}
               style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
             />
+            
+            {/* Show publish option after video selected */}
+            {selectedVideoFile && (
+              <div className="mt-4 space-y-3">
+                <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-3">
+                  <p className="text-blue-300 text-xs font-bold mb-2">Selected: {selectedVideoFile.name}</p>
+                  <input
+                    value={videoTitle}
+                    onChange={e => setVideoTitle(e.target.value)}
+                    placeholder="Video title..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm mb-2"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        if (!videoTitle.trim()) return;
+                        setUploadingVideo(true);
+                        try {
+                          const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
+                          await base44.entities.VideoPost.create({
+                            creator_email: user.email,
+                            creator_username: profile?.username || user.full_name,
+                            creator_avatar: profile?.avatar_url || "",
+                            title: videoTitle.trim(),
+                            description: "",
+                            youtube_url: "",
+                            youtube_video_id: "",
+                            video_url: file_url,
+                            image_urls: [],
+                            game_tag: "",
+                            category: videoSubcategory,
+                            status: "active",
+                            is_approved: true,
+                          });
+                          const videos = await base44.entities.VideoPost.filter({ creator_email: user.email });
+                          setVideos(videos.filter(v => v.status === "active"));
+                          setShowUploadModal(false);
+                          setSelectedVideoFile(null);
+                          setVideoTitle("");
+                          window.location.reload();
+                        } catch (error) {
+                          console.error("Upload failed:", error);
+                        } finally {
+                          setUploadingVideo(false);
+                        }
+                      }}
+                      disabled={uploadingVideo || !videoTitle.trim()}
+                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
+                    >
+                      {uploadingVideo ? "Publishing..." : "Publish Video"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedVideoFile(null);
+                        setVideoTitle("");
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

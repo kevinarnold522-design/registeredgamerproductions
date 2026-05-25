@@ -48,8 +48,14 @@ export default function ContentLandingPage({ user, profile }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
 
   const videoCategories = ["all", "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream"];
+  const sortOptions = [
+    { id: "newest", label: "Newest" },
+    { id: "popular", label: "Most Viewed" },
+    { id: "likes", label: "Most Liked" },
+  ];
 
   useEffect(() => {
     base44.entities.VideoPost.filter({ status: "active", is_approved: true }, "-created_date", 60).then(v => {
@@ -62,6 +68,11 @@ export default function ContentLandingPage({ user, profile }) {
     const matchCat = activeCategory === "all" || v.category === activeCategory;
     const matchSearch = !search || v.title?.toLowerCase().includes(search.toLowerCase()) || v.creator_username?.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
+  }).sort((a, b) => {
+    if (sortBy === "newest") return new Date(b.created_date) - new Date(a.created_date);
+    if (sortBy === "popular") return (b.views || 0) - (a.views || 0);
+    if (sortBy === "likes") return (b.likes || 0) - (a.likes || 0);
+    return 0;
   });
 
   return (
@@ -110,12 +121,16 @@ export default function ContentLandingPage({ user, profile }) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 max-w-md">
             <Search className="w-4 h-4 text-gray-500" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search videos..."
               className="bg-transparent text-white text-sm placeholder-gray-600 outline-none flex-1" />
           </div>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+            className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500">
+            {sortOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+          </select>
           <span className="text-gray-500 text-sm">{filtered.length} videos</span>
         </div>
 

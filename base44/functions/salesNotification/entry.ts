@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
       body: `Hey Gamer!\n\nYour purchase was successful! 🎮\n\nItem: ${listing_title}\nAmount Paid: ₱${amount?.toLocaleString()}\nOrder ID: ${order_id || "N/A"}\n\nYour download link or details will be delivered by the seller shortly.\n\nThank you for shopping on GAMER Productions!\n\n— GAMER Productions Team 🕹️`,
     });
 
-    // Send notification to seller
+    // Send notification to seller (always enabled)
     if (seller_email) {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: seller_email,
@@ -21,6 +21,13 @@ Deno.serve(async (req) => {
         body: `Congratulations! 🎉\n\nYou just made a sale on GAMER Productions!\n\nItem Sold: ${listing_title}\nSale Amount: ₱${amount?.toLocaleString()}\nPlatform Commission (10%): ₱${commission?.toLocaleString()}\nYour Payout: ₱${seller_payout?.toLocaleString()}\n\nPayout will be processed to your PayPal within 1-3 business days.\n\nKeep it up — GAMER Productions Team 🕹️`,
       });
     }
+
+    // Send admin notification
+    await base44.asServiceRole.integrations.Core.SendEmail({
+      to: "admin@gamerproductions.com",
+      subject: "📊 New Sale Alert — GAMER Productions",
+      body: `New Sale Recorded!\n\nItem: ${listing_title}\nBuyer: ${buyer_email}\nSeller: ${seller_email}\nTotal Amount: ₱${amount?.toLocaleString()}\nPlatform Commission (10%): ₱${commission?.toLocaleString()}\nSeller Payout: ₱${seller_payout?.toLocaleString()}\nOrder ID: ${order_id || "N/A"}\n\n— GAMER Productions Admin`,
+    });
 
     return Response.json({ success: true });
   } catch (error) {

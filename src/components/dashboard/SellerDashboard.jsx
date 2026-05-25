@@ -197,26 +197,36 @@ export default function SellerDashboard({ user, profile }) {
       {/* Orders */}
       {tab === "orders" && (
         <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="p-4 border-b border-gray-800"><h3 className="text-white font-bold">All Orders</h3></div>
+          <div className="p-4 border-b border-gray-800 flex justify-between items-center">
+            <h3 className="text-white font-bold">Order History ({orders.length})</h3>
+          </div>
           {orders.length === 0 ? (
             <p className="text-center text-gray-500 py-8 text-sm">No orders yet.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-800/50">
-                <tr>{["Item", "Buyer", "Amount", "Payout", "Status"].map(h => <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {orders.map((o) => (
-                  <tr key={o.id} className="border-t border-gray-800">
-                    <td className="px-4 py-3 text-white text-xs font-medium">{o.listing_title}</td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{o.buyer_email}</td>
-                    <td className="px-4 py-3 text-green-400 font-bold">₱{o.amount?.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-purple-400 font-bold">₱{o.seller_payout?.toLocaleString()}</td>
-                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-800/50">
+                  <tr>{["Item", "Buyer", "Amount", "Your Payout", "Payment", "Order", "Date"].map(h => <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {orders.map((o) => (
+                    <tr key={o.id} className="border-t border-gray-800 hover:bg-gray-800/30">
+                      <td className="px-4 py-3 text-white text-xs font-medium max-w-[120px] truncate">{o.listing_title}</td>
+                      <td className="px-4 py-3 text-gray-400 text-xs">{o.buyer_email}</td>
+                      <td className="px-4 py-3 text-green-400 font-bold text-xs">₱{o.amount?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-purple-400 font-bold text-xs">₱{o.seller_payout?.toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.order_status === "completed" ? "bg-blue-900/50 text-blue-400" : o.order_status === "cancelled" ? "bg-red-900/50 text-red-400" : "bg-gray-800 text-gray-400"}`}>{o.order_status}</span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{new Date(o.created_date).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
