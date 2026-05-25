@@ -3,6 +3,26 @@ import { motion } from "framer-motion";
 import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, CATEGORIES } from "@/lib/constants";
+
+const DIGITAL_SUBCATEGORIES = [
+  { id: "mods", label: "Mods / Modifications" },
+  { id: "skins", label: "Skins / Textures" },
+  { id: "maps", label: "Custom Maps" },
+  { id: "cheats", label: "Cheats / Trainers" },
+  { id: "tools", label: "Tools / Utilities" },
+  { id: "guides", label: "Guides / Tutorials" },
+  { id: "other", label: "Other Digital" },
+];
+
+const PHYSICAL_SUBCATEGORIES = [
+  { id: "consoles", label: "Gaming Consoles" },
+  { id: "controllers", label: "Controllers" },
+  { id: "accessories", label: "Accessories" },
+  { id: "merchandise", label: "Merchandise" },
+  { id: "collectibles", label: "Collectibles" },
+  { id: "cables", label: "Cables / Adapters" },
+  { id: "other", label: "Other Physical" },
+];
 import AuthNavbar from "@/components/layout/AuthNavbar";
 
 function extractYouTubeId(url) {
@@ -30,9 +50,12 @@ export default function CreateListing() {
     title: "",
     description: "",
     price: "",
+    product_type: "",
     category: defaultCat,
-    subcategory: "",
-    condition: "digital",
+    subcategories: [],
+    digital_subcategory: "",
+    physical_subcategory: "",
+    condition: "",
     is_premium: false,
     platform: "",
     stock: 1,
@@ -62,8 +85,11 @@ export default function CreateListing() {
             title: l.title || "",
             description: l.description || "",
             price: l.price || "",
+            product_type: l.product_type || "",
             category: l.category || defaultCat,
-            subcategory: l.subcategory || "",
+            subcategories: l.subcategories || [],
+            digital_subcategory: l.digital_subcategory || "",
+            physical_subcategory: l.physical_subcategory || "",
             condition: l.condition || "digital",
             is_premium: l.is_premium || false,
             platform: l.platform || "",
@@ -75,7 +101,7 @@ export default function CreateListing() {
             game_name: l.game_name || "",
             game_platform: l.game_platform || "",
             external_link: l.external_link || "",
-          download_url: l.download_url || "",
+            download_url: l.download_url || "",
           });
           setImages(l.images || []);
         }
@@ -132,6 +158,8 @@ export default function CreateListing() {
       seller_username: profile?.username || user.full_name,
       seller_paypal_email: form.paypal_email || undefined,
       external_link: form.external_link || undefined,
+      subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
+      subcategory: undefined, // Remove old single subcategory field
     };
     if (editId) {
       await base44.entities.Listing.update(editId, data);
@@ -144,6 +172,8 @@ export default function CreateListing() {
 
   const selectedCat = CATEGORIES.find(c => c.id === form.category);
   const ytId = extractYouTubeId(form.youtube_url);
+  const isDigital = form.product_type === "digital";
+  const isPhysical = form.product_type === "physical";
 
   if (loading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -272,6 +302,33 @@ export default function CreateListing() {
             </div>
           </div>
 
+          {/* Product Type Selection */}
+          <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-2xl border border-purple-700/50 p-6">
+            <h3 className="text-white font-black text-lg mb-4 flex items-center gap-2">
+              <span className="text-2xl">📦</span> Product Type
+            </h3>
+            <p className="text-gray-400 text-sm mb-4">Select whether you're selling a digital download or physical item</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button type="button" onClick={() => setForm({ ...form, product_type: "digital", condition: "digital" })}
+                className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.product_type === "digital" ? "bg-purple-900/40 border-purple-500 shadow-lg shadow-purple-500/20" : "bg-gray-800 border-gray-700 hover:border-purple-500/50"}`}>
+                <span className="text-4xl">💻</span>
+                <span className="text-white font-bold text-sm">Digital Product</span>
+                <span className="text-gray-400 text-xs text-center">Mods, skins, maps, tools, guides</span>
+              </button>
+              <button type="button" onClick={() => setForm({ ...form, product_type: "physical", condition: "new" })}
+                className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.product_type === "physical" ? "bg-pink-900/40 border-pink-500 shadow-lg shadow-pink-500/20" : "bg-gray-800 border-gray-700 hover:border-pink-500/50"}`}>
+                <span className="text-4xl">🎮</span>
+                <span className="text-white font-bold text-sm">Physical Product</span>
+                <span className="text-gray-400 text-xs text-center">Consoles, controllers, merch</span>
+              </button>
+            </div>
+            {form.product_type && (
+              <div className="mt-4 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+                <p className="text-green-400 text-xs font-semibold">✓ Selected: {form.product_type === "digital" ? "Digital Download" : "Physical Item"}</p>
+              </div>
+            )}
+          </div>
+
           {/* Details */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
             <h3 className="text-white font-bold mb-2">Listing Details</h3>
@@ -348,32 +405,95 @@ export default function CreateListing() {
             </div>
           </div>
 
-          {/* Category */}
+          {/* Category & Subcategories */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
-            <h3 className="text-white font-bold mb-2">Category</h3>
+            <h3 className="text-white font-bold mb-2">Category & Placement</h3>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Main Category *</label>
-              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, subcategory: "" })}
+              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </div>
-            {selectedCat?.subcategories?.length > 0 && (
-              <div>
-                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Subcategory</label>
-                <select value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                  <option value="">Select subcategory</option>
-                  {selectedCat.subcategories.map(s => <option key={s} value={s}>{s}</option>)}
+
+            {/* Product-type specific subcategory */}
+            {form.product_type === "digital" && (
+              <div className="bg-purple-900/20 border border-purple-700/40 rounded-xl p-4">
+                <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                  💻 Digital Product Subcategory
+                </label>
+                <select value={form.digital_subcategory} onChange={e => setForm({ ...form, digital_subcategory: e.target.value })}
+                  className="w-full bg-gray-800 border border-purple-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
+                  <option value="">Select digital subcategory</option>
+                  {DIGITAL_SUBCATEGORIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
+                {form.digital_subcategory && (
+                  <p className="text-purple-400 text-xs mt-2">This will be auto-categorized under Digital → {DIGITAL_SUBCATEGORIES.find(s => s.id === form.digital_subcategory)?.label}</p>
+                )}
               </div>
             )}
+
+            {form.product_type === "physical" && (
+              <div className="bg-pink-900/20 border border-pink-700/40 rounded-xl p-4">
+                <label className="text-pink-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                  🎮 Physical Product Subcategory
+                </label>
+                <select value={form.physical_subcategory} onChange={e => setForm({ ...form, physical_subcategory: e.target.value })}
+                  className="w-full bg-gray-800 border border-pink-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 text-sm">
+                  <option value="">Select physical subcategory</option>
+                  {PHYSICAL_SUBCATEGORIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+                {form.physical_subcategory && (
+                  <p className="text-pink-400 text-xs mt-2">This will be auto-categorized under Physical → {PHYSICAL_SUBCATEGORIES.find(s => s.id === form.physical_subcategory)?.label}</p>
+                )}
+              </div>
+            )}
+
+            {/* Additional subcategories (multi-select) */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Additional Subcategories (Optional)</label>
+              <p className="text-gray-500 text-xs mb-3">Show your listing in multiple subcategories for more visibility</p>
+              {selectedCat?.subcategories?.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {selectedCat.subcategories.map(s => {
+                    const isSelected = form.subcategories.includes(s);
+                    return (
+                      <button key={s} type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setForm(f => ({ ...f, subcategories: f.subcategories.filter(x => x !== s) }));
+                          } else {
+                            setForm(f => ({ ...f, subcategories: [...f.subcategories, s] }));
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isSelected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}>
+                        {s} {isSelected && "✓"}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-xs italic">No subcategories available for this category</p>
+              )}
+              {form.subcategories.length > 0 && (
+                <p className="text-green-400 text-xs mt-2">✓ Showing in {form.subcategories.length} additional subcategories</p>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Condition</label>
                 <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                  {["new","like_new","good","fair","digital"].map(c => <option key={c} value={c}>{c.replace("_"," ")}</option>)}
+                  {form.product_type === "physical" ? (
+                    <>
+                      <option value="new">New</option>
+                      <option value="like_new">Like New</option>
+                      <option value="good">Good</option>
+                      <option value="fair">Fair</option>
+                    </>
+                  ) : (
+                    <option value="digital">Digital Download</option>
+                  )}
                 </select>
               </div>
               <div>

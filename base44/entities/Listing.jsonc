@@ -21,6 +21,14 @@
       "type": "string",
       "default": "PHP"
     },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "digital",
+        "physical"
+      ],
+      "description": "Whether this is a digital or physical product"
+    },
     "category": {
       "type": "string",
       "enum": [
@@ -34,8 +42,38 @@
         "services"
       ]
     },
-    "subcategory": {
-      "type": "string"
+    "subcategories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple subcategories this listing belongs to"
+    },
+    "digital_subcategory": {
+      "type": "string",
+      "enum": [
+        "mods",
+        "skins",
+        "maps",
+        "cheats",
+        "tools",
+        "guides",
+        "other"
+      ],
+      "description": "Subcategory for digital products"
+    },
+    "physical_subcategory": {
+      "type": "string",
+      "enum": [
+        "consoles",
+        "controllers",
+        "accessories",
+        "merchandise",
+        "collectibles",
+        "cables",
+        "other"
+      ],
+      "description": "Subcategory for physical products"
     },
     "images": {
       "type": "array",
@@ -131,6 +169,7 @@
     "seller_email",
     "title",
     "price",
-    "category"
+    "category",
+    "product_type"
   ]
 }
