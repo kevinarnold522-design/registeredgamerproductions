@@ -5,6 +5,7 @@ import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Grid, Upload, Radio } from "lucide-react";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
+import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { AnimatePresence } from "framer-motion";
 import LiveStreamStudio from "@/components/streaming/LiveStreamStudio";
 
@@ -92,7 +93,7 @@ export default function Profile() {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-black text-white">{profile?.username || user?.full_name}</h1>
-                {profile?.is_verified && <span className="text-blue-400 text-lg">✅</span>}
+                {profile?.is_verified && <GamerCheckmark isVerified={true} userEmail={null} size="md" />}
                 {admin && isOwnProfile && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold">⚡ ADMIN</span>}
                 <FollowerRankBadge followers={followers} size="md" />
               </div>

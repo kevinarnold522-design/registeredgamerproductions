@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import AdminPayPalPanel from "@/components/dashboard/AdminPayPalPanel";
 import { motion } from "framer-motion";
 import {
@@ -57,6 +57,11 @@ export default function AdminDashboard({ user, profile }) {
   const removeListing = async (listingId) => {
     await base44.entities.Listing.update(listingId, { status: "removed" });
     setAllListings(prev => prev.map(l => l.id === listingId ? { ...l, status: "removed" } : l));
+  };
+
+  const toggleVerifiedBadge = async (profileId, currentValue) => {
+    await base44.entities.UserProfile.update(profileId, { is_verified: !currentValue });
+    setAllUsers(prev => prev.map(u => u.id === profileId ? { ...u, is_verified: !currentValue } : u));
   };
 
   const totalModDownloads = allListings
@@ -179,8 +184,8 @@ export default function AdminDashboard({ user, profile }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-800/50">
                 <tr>
-                  {["Username", "Email", "Type", "Payment", "Verified", "Revenue", "Joined"].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
+                  {["Username", "Email", "Type", "Payment", "Verified Badge", "Revenue", "Joined"].map(h => (
+                   <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -211,7 +216,17 @@ export default function AdminDashboard({ user, profile }) {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {u.is_verified ? <CheckCircle className="w-4 h-4 text-green-400" /> : <XCircle className="w-4 h-4 text-gray-600" />}
+                      <button
+                        onClick={() => toggleVerifiedBadge(u.id, u.is_verified)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${u.is_verified ? "bg-purple-900/40 border border-purple-600/50 text-purple-300 hover:bg-red-900/30 hover:text-red-400 hover:border-red-600/50" : "bg-gray-800 border border-gray-700 text-gray-400 hover:bg-purple-900/30 hover:text-purple-300 hover:border-purple-600/50"}`}
+                        title={u.is_verified ? "Click to revoke badge" : "Click to grant badge"}
+                      >
+                        {u.is_verified ? (
+                          <><span style={{fontSize:10}}>✓</span> Verified</>
+                        ) : (
+                          <><span>+</span> Grant Badge</>
+                        )}
+                      </button>
                     </td>
                     <td className="px-4 py-3 text-yellow-400 font-bold">₱{(u.total_revenue || 0).toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{u.joined_date ? new Date(u.joined_date).toLocaleDateString() : "—"}</td>
