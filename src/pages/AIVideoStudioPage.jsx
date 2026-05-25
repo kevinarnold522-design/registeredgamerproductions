@@ -117,6 +117,10 @@ export default function AIVideoStudioPage() {
     });
   };
 
+  const handleExport = async (format, quality) => {
+    console.log("Exporting:", format, quality);
+  };
+
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadForm, setUploadForm] = useState({ title: "", description: "", category: "gameplay", game_tag: "" });
 

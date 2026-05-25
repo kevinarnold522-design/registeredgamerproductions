@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Youtube, Instagram, Twitter, Facebook, Globe, Play,
-  Users, Eye, Heart, Edit2, Check, Plus, ExternalLink
+  Users, Eye, Heart, Edit2, Check, Plus, ExternalLink, Upload, Wand2
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -25,6 +25,7 @@ export default function Channel() {
   const [socialLinks, setSocialLinks] = useState({});
   const [savingSocial, setSavingSocial] = useState(false);
   const [savedSocial, setSavedSocial] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Check if viewing someone else's channel via ?email=
   const urlParams = new URLSearchParams(window.location.search);
@@ -199,9 +200,9 @@ export default function Channel() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-white font-black text-lg">Videos ({videos.length})</h2>
               {isOwner && (
-                <a href="/dashboard" className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors">
-                  <Plus className="w-3.5 h-3.5" /> Share Video
-                </a>
+                <button onClick={() => setShowUploadModal(true)} className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> Upload Video
+                </button>
               )}
             </div>
 
@@ -210,9 +211,9 @@ export default function Channel() {
                 <Play className="w-12 h-12 text-gray-700 mx-auto mb-3" />
                 <p className="text-gray-400 font-semibold mb-1">No videos yet</p>
                 {isOwner && (
-                  <a href="/dashboard" className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
-                    <Youtube className="w-4 h-4" /> Share Your First Video
-                  </a>
+                  <button onClick={() => setShowUploadModal(true)} className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
+                    <Upload className="w-4 h-4" /> Upload Your First Video
+                  </button>
                 )}
               </div>
             ) : (
@@ -252,6 +253,47 @@ export default function Channel() {
           </div>
         </div>
       </div>
+
+      {/* Upload Video Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.85)" }} onClick={() => setShowUploadModal(false)}>
+          <div className="bg-gray-900 border border-purple-700/30 rounded-3xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-white font-black text-xl">Upload Video</h2>
+              <button onClick={() => setShowUploadModal(false)} className="text-gray-600 hover:text-white"><Upload className="w-5 h-5" /></button>
+            </div>
+
+            <div className="space-y-3 mb-4">
+              <a href="/studio" onClick={() => setShowUploadModal(false)}
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-900/50 to-pink-900/40 border border-purple-600/40 rounded-2xl hover:border-purple-500 transition-colors group">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
+                  <Wand2 className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-bold text-sm flex items-center gap-2">
+                    🎬 Create in Studio
+                    <span className="px-1.5 py-0.5 rounded-full bg-pink-500/30 border border-pink-500/40 text-pink-300 text-[9px] font-black">NEW</span>
+                  </p>
+                  <p className="text-purple-300 text-xs mt-0.5">Edit & create videos with AI tools</p>
+                </div>
+              </a>
+
+              <button type="button"
+                className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left">
+                <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-700/40 flex items-center justify-center shrink-0">
+                  <Upload className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold text-sm">Upload Ready-Made Video</p>
+                  <p className="text-gray-500 text-xs">Upload a video file you already created</p>
+                </div>
+              </button>
+            </div>
+
+            <p className="text-gray-500 text-xs text-center">Your video will be published to the Content section after upload</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
