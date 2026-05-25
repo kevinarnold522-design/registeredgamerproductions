@@ -167,22 +167,52 @@ export default function ContentLandingPage({ user, profile }) {
               <button onClick={() => setShowUploadModal(false)} className="text-gray-600 hover:text-white"><X className="w-5 h-5" /></button>
             </div>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
-              className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left mb-4"
-            >
-              <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-700/40 flex items-center justify-center shrink-0">
-                <Upload className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold text-sm">Upload Video from Device</p>
-                <p className="text-gray-500 text-xs">Select and publish a video file</p>
-              </div>
-            </button>
+            <div className="space-y-3 mb-4">
+              <a href="/studio" onClick={() => setShowUploadModal(false)}
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-900/50 to-blue-900/40 border border-purple-600/40 rounded-2xl hover:border-purple-500 transition-colors group">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shrink-0">
+                  <Wand2 className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-bold text-sm flex items-center gap-2">
+                    🎬 Create in Studio
+                    <span className="px-1.5 py-0.5 rounded-full bg-blue-500/30 border border-blue-500/40 text-blue-300 text-[9px] font-black">NEW</span>
+                  </p>
+                  <p className="text-blue-300 text-xs mt-0.5">Edit & create videos with AI tools</p>
+                </div>
+              </a>
 
+              <button type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+                className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left">
+                <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-700/40 flex items-center justify-center shrink-0">
+                  <Upload className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold text-sm">Upload Video from Device</p>
+                  <p className="text-gray-500 text-xs">Select and publish a video file</p>
+                </div>
+              </button>
+            </div>
+
+            <div className="mt-4">
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Select Category</label>
+              <div className="flex flex-wrap gap-2">
+                {["gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream"].map(cat => (
+                  <button key={cat} type="button" onClick={() => setVideoCategory(cat)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${videoCategory === cat ? "bg-blue-600 text-white" : "bg-gray-800 border border-gray-700 text-gray-400 hover:text-white"}`}>
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-gray-500 text-xs text-center mt-3">After selecting a video, you'll be able to publish it</p>
+
+            {/* Hidden file input */}
             <input
               ref={fileInputRef}
               type="file"
@@ -195,9 +225,10 @@ export default function ContentLandingPage({ user, profile }) {
               }}
               className="hidden"
             />
-
+            
+            {/* Show publish option after video selected */}
             {selectedVideoFile && (
-              <div className="space-y-4">
+              <div className="mt-4 space-y-3">
                 <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-3">
                   <p className="text-blue-300 text-xs font-bold mb-2">Selected: {selectedVideoFile.name}</p>
                   <input
@@ -206,18 +237,7 @@ export default function ContentLandingPage({ user, profile }) {
                     placeholder="Video title..."
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm mb-2"
                   />
-                  <div>
-                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Category</label>
-                    <div className="flex flex-wrap gap-2">
-                      {["gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream"].map(cat => (
-                        <button key={cat} type="button" onClick={() => setVideoCategory(cat)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${videoCategory === cat ? "bg-blue-600 text-white" : "bg-gray-800 border border-gray-700 text-gray-400 hover:text-white"}`}>
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex gap-2">
                     <button
                       onClick={async () => {
                         if (!videoTitle.trim()) return;
