@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link } from "lucide-react";
+import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, CATEGORIES } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -42,6 +42,7 @@ export default function CreateListing() {
     game_name: "",
     game_platform: "",
     paypal_email: "",
+    external_link: "",
   });
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function CreateListing() {
             video_url: l.video_url || "",
             game_name: l.game_name || "",
             game_platform: l.game_platform || "",
+            external_link: l.external_link || "",
           });
           setImages(l.images || []);
         }
@@ -117,6 +119,7 @@ export default function CreateListing() {
       seller_email: user.email,
       seller_username: profile?.username || user.full_name,
       seller_paypal_email: form.paypal_email || undefined,
+      external_link: form.external_link || undefined,
     };
     if (editId) {
       await base44.entities.Listing.update(editId, data);
@@ -211,6 +214,25 @@ export default function CreateListing() {
               )}
               <input ref={videoFileRef} type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
             </div>
+          </div>
+
+          {/* External Link */}
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-3">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <ExternalLink className="w-4 h-4 text-green-400" /> External Download / Access Link
+            </h3>
+            <p className="text-gray-500 text-xs">When buyers click "Download" or "Access", they'll be routed to this URL. Leave blank if not applicable.</p>
+            <input
+              value={form.external_link}
+              onChange={e => setForm({ ...form, external_link: e.target.value })}
+              placeholder="https://drive.google.com/... or any external link"
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 text-sm"
+            />
+            {form.external_link && (
+              <a href={form.external_link} target="_blank" rel="noopener noreferrer" className="text-green-400 text-xs underline flex items-center gap-1">
+                <ExternalLink className="w-3 h-3" /> Preview link
+              </a>
+            )}
           </div>
 
           {/* Details */}

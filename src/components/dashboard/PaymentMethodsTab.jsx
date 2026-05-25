@@ -1,305 +1,147 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import { Lock, Eye, EyeOff, Unlink, CheckCircle } from "lucide-react";
 
-const PAYMENT_METHODS = [
-  {
-    id: "paypal",
-    name: "PayPal",
-    icon: "🅿️",
-    desc: "Worldwide — 200+ countries",
-    color: "border-blue-500/50 bg-blue-900/10",
-    badge: "Most Popular",
-    badgeColor: "bg-blue-500/20 text-blue-400",
-    connectUrl: "https://www.paypal.com/signin",
-    type: "oauth",
-  },
-  {
-    id: "stripe",
-    name: "Stripe",
-    icon: "💳",
-    desc: "Cards & bank — 40+ countries",
-    color: "border-purple-500/50 bg-purple-900/10",
-    badge: "Recommended",
-    badgeColor: "bg-purple-500/20 text-purple-400",
-    connectUrl: "https://stripe.com/",
-    type: "oauth",
-  },
-  {
-    id: "wise",
-    name: "Wise",
-    icon: "🌍",
-    desc: "Low-fee international transfers — 80+ currencies",
-    color: "border-green-500/50 bg-green-900/10",
-    badge: "Global",
-    badgeColor: "bg-green-500/20 text-green-400",
-    connectUrl: "https://wise.com/",
-    type: "link",
-  },
-  {
-    id: "payoneer",
-    name: "Payoneer",
-    icon: "💰",
-    desc: "Best for freelancers & creators globally",
-    color: "border-orange-500/50 bg-orange-900/10",
-    badge: "Creators",
-    badgeColor: "bg-orange-500/20 text-orange-400",
-    connectUrl: "https://www.payoneer.com/",
-    type: "link",
-  },
-  {
-    id: "skrill",
-    name: "Skrill",
-    icon: "⚡",
-    desc: "Fast digital wallet — 120+ countries",
-    color: "border-pink-500/50 bg-pink-900/10",
-    badge: "Fast",
-    badgeColor: "bg-pink-500/20 text-pink-400",
-    connectUrl: "https://www.skrill.com/",
-    type: "link",
-  },
-  {
-    id: "westernunion",
-    name: "Western Union",
-    icon: "🏛️",
-    desc: "Cash pickup or bank — 200+ countries",
-    color: "border-yellow-500/50 bg-yellow-900/10",
-    badge: "Cash Option",
-    badgeColor: "bg-yellow-500/20 text-yellow-400",
-    connectUrl: "https://www.westernunion.com/",
-    type: "link",
-  },
-  {
-    id: "remitly",
-    name: "Remitly",
-    icon: "📲",
-    desc: "Fast international bank transfers",
-    color: "border-sky-500/50 bg-sky-900/10",
-    badge: "Fast Transfer",
-    badgeColor: "bg-sky-500/20 text-sky-400",
-    connectUrl: "https://www.remitly.com/",
-    type: "link",
-  },
-  {
-    id: "crypto",
-    name: "Crypto (USDT/BTC)",
-    icon: "₿",
-    desc: "Receive in crypto via Binance or any wallet",
-    color: "border-amber-500/50 bg-amber-900/10",
-    badge: "Borderless",
-    badgeColor: "bg-amber-500/20 text-amber-400",
-    connectUrl: "https://www.binance.com/",
-    type: "link",
-  },
-];
+export default function PaymentMethodsTab({ profile, onProfileUpdate }) {
+  const hasPaypal = !!(profile?.paypal_email);
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [unlinking, setUnlinking] = useState(false);
+  const [confirmUnlink, setConfirmUnlink] = useState(false);
 
-export default function PaymentMethodsTab({ profile }) {
-  const [connected, setConnected] = useState(!!profile?.paypal_merchant_id || !!profile?.paypal_email);
-  const [connectedMethods, setConnectedMethods] = useState([]);
+  const handleConnect = async () => {
+    if (!paypalEmail.includes("@")) return;
+    setSaving(true);
+    await base44.entities.UserProfile.update(profile.id, {
+      paypal_email: paypalEmail,
+      payout_method: "paypal",
+    });
+    setSaving(false);
+    window.location.reload();
+  };
 
-  const handleConnectPayPal = async () => {
-    // Open PayPal OAuth popup
-    const popup = window.open("https://www.paypal.com/signin", "_blank", "width=620,height=720");
-    // Poll for popup close and redirect to payment settings
-    const timer = setInterval(async () => {
-      if (!popup || popup.closed) {
-        clearInterval(timer);
-        // Refresh profile to get updated paypal_email
-        const profiles = await base44.entities.UserProfile.filter({ user_email: profile?.user_email });
-        if (profiles.length > 0 && profiles[0].paypal_email) {
-          setConnected(true);
-          // Redirect to dashboard payment settings after successful connection
-          setTimeout(() => {
-            window.location.href = "/dashboard?tab=payment";
-          }, 1000);
-        }
-      }
-    }, 500);
+  const handleUnlink = async () => {
+    setUnlinking(true);
+    await base44.entities.UserProfile.update(profile.id, {
+      paypal_email: null,
+      paypal_merchant_id: null,
+      paypal_account_name: null,
+      paypal_account_type: null,
+      paypal_country: null,
+      payout_method: null,
+    });
+    setUnlinking(false);
+    setConfirmUnlink(false);
+    window.location.reload();
   };
 
   return (
-    <div className="max-w-2xl">
-      <h3 className="text-white font-black text-xl mb-1">Payment Methods</h3>
+    <div className="max-w-xl">
+      <h3 className="text-white font-black text-xl mb-1">Payments</h3>
       <p className="text-gray-400 text-sm mb-6">
-        Connect a payment method to buy, sell, and receive payouts. Use any globally-available service below.
+        Connect your PayPal account to receive payouts and make purchases on the platform.
       </p>
 
-      {/* PayPal — primary */}
-      {connected && (profile?.paypal_email || profile?.paypal_merchant_id) ? (
-        <div className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-5 mb-4">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center font-black text-white text-sm">✓</div>
+      {hasPaypal ? (
+        /* ── Connected State ── */
+        <div className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-5 space-y-4">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-white" />
+            </div>
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-white font-black">PayPal Connected</p>
                 <span className="text-[10px] bg-green-500/20 border border-green-500/30 text-green-400 px-2 py-0.5 rounded-full font-bold">Active</span>
               </div>
-              <p className="text-gray-300 text-xs font-semibold">{profile?.paypal_email || "Linked Account"}</p>
-            </div>
-          </div>
-          
-          {/* Account Details Grid - Non-editable */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
-              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">PayPal Email</p>
-              <p className="text-white text-sm font-semibold">{profile?.paypal_email || "Linked"}</p>
-            </div>
-            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
-              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Merchant ID</p>
-              <p className="text-white text-sm font-semibold truncate" title={profile?.paypal_merchant_id || ""}>
-                {profile?.paypal_merchant_id ? profile.paypal_merchant_id.substring(0, 12) + "..." : "N/A"}
-              </p>
-            </div>
-            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
-              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Account Name</p>
-              <p className="text-white text-sm font-semibold">{profile?.paypal_account_name || "Verified Account"}</p>
-            </div>
-            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
-              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Account Type</p>
-              <p className="text-white text-sm font-semibold">{profile?.paypal_account_type === "business" ? "🏢 Business" : "👤 Personal"}</p>
-            </div>
-            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
-              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Country</p>
-              <p className="text-white text-sm font-semibold">{profile?.paypal_country || "Global"}</p>
-            </div>
-            <div className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
-              <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1">Status</p>
-              <p className="text-white text-sm font-semibold">✓ Verified</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-2 mb-4 p-3 bg-green-900/20 border border-green-700/30 rounded-xl">
-            <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-white text-xs font-bold">✓</span>
-            </div>
-            <div>
-              <p className="text-green-300 text-xs font-bold">Ready for Transactions</p>
-              <p className="text-green-400/80 text-[10px] mt-0.5">You can receive payouts and make secure purchases on the platform</p>
+              <p className="text-gray-300 text-xs">{profile.paypal_email}</p>
             </div>
           </div>
 
-          <button
-            onClick={handleConnectPayPal}
-            className="w-full py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 font-bold text-sm hover:bg-gray-700 transition-colors"
-          >
-            Change PayPal Account →
-          </button>
+          {/* Read-only details */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: "PayPal Email", value: profile.paypal_email },
+              { label: "Account Name", value: profile.paypal_account_name || "Verified Account" },
+              { label: "Account Type", value: profile.paypal_account_type === "business" ? "🏢 Business" : "👤 Personal" },
+              { label: "Country", value: profile.paypal_country || "Global" },
+              { label: "Merchant ID", value: profile.paypal_merchant_id ? profile.paypal_merchant_id.substring(0, 10) + "..." : "N/A" },
+              { label: "Status", value: "✓ Verified" },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-green-900/30 border border-green-700/30 rounded-xl p-3">
+                <p className="text-green-400 text-[10px] font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> {label}
+                </p>
+                <p className="text-white text-sm font-semibold">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-gray-600 text-xs flex items-center gap-1.5">
+            <Lock className="w-3 h-3" /> Details are read-only. Click "Unlink" to disconnect your account.
+          </p>
+
+          {/* Unlink */}
+          {!confirmUnlink ? (
+            <button
+              onClick={() => setConfirmUnlink(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-bold hover:bg-red-900/30 transition-colors"
+            >
+              <Unlink className="w-4 h-4" /> Unlink PayPal Account
+            </button>
+          ) : (
+            <div className="bg-red-900/20 border border-red-600/40 rounded-xl p-4 flex items-center justify-between gap-3">
+              <p className="text-red-300 text-sm font-semibold">Are you sure? This will disable payouts.</p>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmUnlink(false)} className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-bold hover:bg-gray-700">Cancel</button>
+                <button onClick={handleUnlink} disabled={unlinking} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 disabled:opacity-50">
+                  {unlinking ? "Unlinking..." : "Yes, Unlink"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
-        <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-5 mb-4">
-          <div className="flex items-center gap-3 mb-3">
+        /* ── Not Connected State ── */
+        <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm">PP</div>
             <div>
-              <div className="flex items-center gap-2">
-                <p className="text-white font-black">PayPal</p>
-                <span className="text-[10px] bg-blue-500/20 border border-blue-500/30 text-blue-400 px-2 py-0.5 rounded-full font-bold">Default Payout</span>
-              </div>
-              <p className="text-gray-400 text-xs">Receive earnings + sales payouts worldwide</p>
+              <p className="text-white font-black">PayPal</p>
+              <p className="text-gray-400 text-xs">Receive earnings & payouts worldwide</p>
             </div>
           </div>
-          
-          {/* How to Connect Instructions */}
-          <div className="bg-blue-900/30 border border-blue-700/40 rounded-xl p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-blue-400 text-[10px] font-bold">!</span>
-              </div>
-              <div>
-                <p className="text-blue-300 text-xs font-bold mb-2">How to Link Your PayPal Account</p>
-                <ol className="text-gray-400 text-xs leading-relaxed space-y-1">
-                  <li>1. Click "Link to PayPal Account Settings" to open PayPal</li>
-                  <li>2. Log in and verify your email address in PayPal settings</li>
-                  <li>3. Enter the same email in the field below</li>
-                  <li>4. Click "Connect to PayPal" to save it</li>
-                  <li>5. You'll be verified as a seller instantly</li>
-                </ol>
-              </div>
-            </div>
+
+          <div className="bg-blue-900/30 border border-blue-700/40 rounded-xl p-4 text-xs text-gray-400 space-y-1">
+            <p className="text-blue-300 font-bold mb-2">How to connect</p>
+            <ol className="space-y-1 list-decimal list-inside">
+              <li>Visit <a href="https://www.paypal.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">paypal.com</a> and log in</li>
+              <li>Copy your registered PayPal email address</li>
+              <li>Paste it below and click "Connect PayPal"</li>
+            </ol>
           </div>
-          
-          {/* Link to PayPal Button */}
-          <a
-            href="https://www.paypal.com/myaccount/settings/notifications"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 font-bold text-sm hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 mb-4"
-          >
-            🔗 Link to PayPal Account Settings →
-          </a>
-          
+
+          <div>
+            <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Your PayPal Email</label>
+            <input
+              type="email"
+              value={paypalEmail}
+              onChange={e => setPaypalEmail(e.target.value)}
+              placeholder="your@paypal.com"
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm"
+            />
+          </div>
+
           <button
-            onClick={handleConnectPayPal}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-blue-900/30"
+            onClick={handleConnect}
+            disabled={saving || !paypalEmail.includes("@")}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
           >
-            🔗 Connect to PayPal
+            {saving ? "Connecting..." : "🔗 Connect PayPal"}
           </button>
         </div>
       )}
-
-      {/* Stripe */}
-      <div className="bg-purple-900/20 border-2 border-purple-500/40 rounded-2xl p-5 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center font-black text-white text-lg">S</div>
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="text-white font-black">Stripe</p>
-                {connectedMethods.includes("stripe") && <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-bold">✓ Connected</span>}
-              </div>
-              <p className="text-gray-400 text-xs">Cards, bank transfers — 40+ countries</p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              window.open("https://stripe.com/", "_blank", "width=620,height=720");
-              setConnectedMethods((prev) => [...new Set([...prev, "stripe"])]);
-            }}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm hover:opacity-90 transition-opacity"
-          >
-            Connect Stripe →
-          </button>
-        </div>
-      </div>
-
-      {/* Global Options */}
-      <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">🌍 Global Transfer Options</p>
-      <div className="space-y-2.5 mb-6">
-        {PAYMENT_METHODS.filter((m) => m.id !== "paypal" && m.id !== "stripe").map((method) => (
-          <motion.div
-            key={method.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex items-center justify-between p-4 rounded-xl border ${method.color}`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">{method.icon}</span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-white font-bold text-sm">{method.name}</p>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${method.badgeColor}`}>{method.badge}</span>
-                  {connectedMethods.includes(method.id) && (
-                    <span className="text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold">✓</span>
-                  )}
-                </div>
-                <p className="text-gray-500 text-xs">{method.desc}</p>
-              </div>
-            </div>
-            <a
-              href={method.connectUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 text-xs font-semibold hover:bg-gray-700 hover:text-white transition-colors whitespace-nowrap"
-            >
-              Open ↗
-            </a>
-          </motion.div>
-        ))}
-      </div>
-
-      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4 text-xs text-gray-400">
-        <p className="font-bold text-gray-300 mb-1">💡 Note on Local Banking</p>
-        Direct integration with local banks (GCash, BDO, BPI, Maya) requires verified business accounts and direct API agreements. Use <strong className="text-green-400">Wise</strong> or <strong className="text-orange-400">Payoneer</strong> to receive payouts internationally, then transfer to your local bank — they officially support PH bank deposits.
-      </div>
     </div>
   );
 }

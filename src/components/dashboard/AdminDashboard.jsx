@@ -14,6 +14,7 @@ import LeaderboardTab from "./LeaderboardTab";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import AdminTextEditor from "./AdminTextEditor";
 import AdminTransactionsDashboard from "./AdminTransactionsDashboard";
+import AdminSubcategoryManager from "./AdminSubcategoryManager";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -73,6 +74,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "leaderboard", label: "Leaderboard", icon: Trophy },
     { id: "transactions", label: "💰 Transactions", icon: DollarSign },
     { id: "payment", label: "💳 Payment Account", icon: Shield },
+    { id: "subcategories", label: "📂 Subcategories", icon: Store },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
@@ -287,6 +289,13 @@ export default function AdminDashboard({ user, profile }) {
       {tab === "email_settings" && (
         <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
           <EmailHeaderEditor />
+        </div>
+      )}
+
+      {/* Subcategory Manager */}
+      {tab === "subcategories" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <AdminSubcategoryManager />
         </div>
       )}
 

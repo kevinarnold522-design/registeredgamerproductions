@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import CartDropdown from "@/components/layout/CartDropdown";
 import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import UserMegaMenu from "@/components/layout/UserMegaMenu";
+import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 
 export default function AuthNavbar({ user, profile }) {
   const [cartOpen, setCartOpen] = useState(false);
@@ -60,8 +61,13 @@ export default function AuthNavbar({ user, profile }) {
           </span>
         </Link>
 
+        {/* Search Bar */}
+        <div className="hidden md:block flex-1 max-w-sm mx-4">
+          <GlobalSearchBar />
+        </div>
+
         {/* Nav Links */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden lg:flex items-center gap-1">
           {navLinks.map((link, i) =>
             link.action ? (
               <button

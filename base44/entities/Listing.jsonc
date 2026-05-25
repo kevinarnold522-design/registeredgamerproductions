@@ -105,6 +105,10 @@
     "download_url": {
       "type": "string"
     },
+    "external_link": {
+      "type": "string",
+      "description": "External URL buyers are routed to when clicking download/access"
+    },
     "is_approved": {
       "type": "boolean",
       "default": true
