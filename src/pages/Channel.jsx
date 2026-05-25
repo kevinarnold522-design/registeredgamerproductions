@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Youtube, Instagram, Twitter, Facebook, Globe, Play,
@@ -26,6 +26,8 @@ export default function Channel() {
   const [savingSocial, setSavingSocial] = useState(false);
   const [savedSocial, setSavedSocial] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const fileInputRef = React.useRef(null);
 
   // Check if viewing someone else's channel via ?email=
   const urlParams = new URLSearchParams(window.location.search);
@@ -279,6 +281,7 @@ export default function Channel() {
               </a>
 
               <button type="button"
+                onClick={() => { setShowUploadModal(false); setTimeout(() => fileInputRef.current?.click(), 100); }}
                 className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left">
                 <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-700/40 flex items-center justify-center shrink-0">
                   <Upload className="w-5 h-5 text-blue-400" />
@@ -291,6 +294,45 @@ export default function Channel() {
             </div>
 
             <p className="text-gray-500 text-xs text-center">Your video will be published to the Content section after upload</p>
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                setUploadingVideo(true);
+                try {
+                  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                  await base44.entities.VideoPost.create({
+                    creator_email: user.email,
+                    creator_username: profile?.username || user.full_name,
+                    creator_avatar: profile?.avatar_url || "",
+                    title: file.name.replace(/\.[^/.]+$/, ""),
+                    description: "",
+                    youtube_url: "",
+                    youtube_video_id: "",
+                    video_url: file_url,
+                    image_urls: [],
+                    game_tag: "",
+                    category: "gameplay",
+                    status: "active",
+                    is_approved: true,
+                  });
+                  const videos = await base44.entities.VideoPost.filter({ creator_email: user.email });
+                  setVideos(videos.filter(v => v.status === "active"));
+                  setShowUploadModal(false);
+                } catch (error) {
+                  console.error("Upload failed:", error);
+                } finally {
+                  setUploadingVideo(false);
+                }
+              }}
+              className="hidden"
+            />
           </div>
         </div>
       )}
