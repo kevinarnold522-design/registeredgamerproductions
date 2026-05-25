@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Play, Eye, Search, Upload, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import SubcategoryCards from "./SubcategoryCards";
 
 function VideoCard({ video, index }) {
   const ytId = video.youtube_video_id || (video.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
@@ -85,6 +86,8 @@ export default function ContentLandingPage({ user, profile }) {
           </div>
         </div>
       </div>
+
+      <SubcategoryCards cat="content" categoryName="Content" />
 
       {/* Category filter */}
       <div className="bg-gray-950 border-b border-gray-800 sticky top-16 z-30">

@@ -2,8 +2,33 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import SubcategoryCards from "./SubcategoryCards";
 
 const CATEGORY_META = {
+  modding: {
+    title: "Modding Community",
+    subtitle: "Upload, share & download mods — PPSSPP, GTA, FIFA, NBA2K, WWE2K, Football Life & more.",
+    color: "#fb923c",
+    bg: "from-orange-950 to-gray-950",
+    grid: "linear-gradient(rgba(249,115,22,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.5) 1px, transparent 1px)",
+    accent: "orange",
+  },
+  games: {
+    title: "Games",
+    subtitle: "Top deals on PC, PlayStation, Xbox, Nintendo Switch & Mobile games.",
+    color: "#a855f7",
+    bg: "from-purple-950 to-gray-950",
+    grid: "linear-gradient(rgba(168,85,247,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(168,85,247,0.5) 1px, transparent 1px)",
+    accent: "purple",
+  },
+  tournaments: {
+    title: "Tournaments",
+    subtitle: "Join and host FPS, Battle Royale, MOBA, Sports & Mobile Gaming tournaments.",
+    color: "#4ade80",
+    bg: "from-green-950 to-gray-950",
+    grid: "linear-gradient(rgba(74,222,128,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(74,222,128,0.5) 1px, transparent 1px)",
+    accent: "green",
+  },
   jobs: {
     title: "Gaming Jobs",
     subtitle: "Find gaming industry jobs — QA, Dev, Coaching, Content & more.",
@@ -88,6 +113,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           <p className="max-w-xl mb-1 text-base" style={{ color: `${meta.color}99` }}>{meta.subtitle}</p>
         </div>
       </div>
+
+      {/* Subcategory cards grid */}
+      {!sub && <SubcategoryCards cat={cat} categoryName={meta.title} />}
 
       {/* Subcategory tabs */}
       {categoryData?.subcategories?.length > 0 && (

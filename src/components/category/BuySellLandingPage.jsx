@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SubcategoryCards from "./SubcategoryCards";
 import { motion } from "framer-motion";
 import { Search, ShoppingCart, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -100,24 +101,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
         </div>
       </div>
 
-      {/* Subcategory Groups */}
-      <div className="bg-gray-950 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            {SUBCATEGORY_GROUPS.map((group, i) => (
-              <motion.a
-                key={i} whileHover={{ y: -2 }}
-                href={`/category?cat=buy_sell&sub=${encodeURIComponent(group.subs[0])}`}
-                className={`p-4 rounded-2xl bg-gradient-to-br ${group.color} border ${group.border} text-left transition-colors hover:border-opacity-60 block`}
-              >
-                <span className="text-2xl mb-2 block">{group.icon}</span>
-                <p className="text-white font-bold text-sm">{group.label}</p>
-                <p className="text-gray-400 text-xs mt-0.5">{group.subs.length} subcategories</p>
-              </motion.a>
-            ))}
-          </div>
-        </div>
-      </div>
+      <SubcategoryCards cat="buy_sell" categoryName="Buy & Sell" />
 
       {/* Filters */}
       <div className="bg-gray-950 border-b border-gray-800 sticky top-16 z-30">
