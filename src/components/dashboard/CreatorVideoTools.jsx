@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Youtube, Link, Wand2, Upload, CheckCircle, ExternalLink, Zap, Star } from "lucide-react";
+import { Youtube, Link, Wand2, Upload, CheckCircle, ExternalLink, Zap, Star, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { Link as RouterLink } from "react-router-dom";
 
 const LINK_SHORTENERS = [
   { name: "Bitly", url: "https://bitly.com", desc: "Most popular link shortener" },
@@ -97,6 +98,22 @@ Format it clearly with section headers. Keep it natural and conversational for a
 
   return (
     <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">
+      {/* AI Studio Highlight */}
+      <RouterLink to="/ai-video-studio"
+        className="flex items-center gap-3 p-4 mb-5 bg-gradient-to-r from-purple-900/50 to-pink-900/40 border border-purple-600/50 rounded-2xl hover:border-purple-500 transition-colors group">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
+          <Wand2 className="w-5 h-5 text-white" />
+        </div>
+        <div className="flex-1">
+          <p className="text-white font-black text-sm flex items-center gap-2">
+            ✨ Open AI Video Studio
+            <span className="px-1.5 py-0.5 rounded-full bg-pink-500/30 border border-pink-500/40 text-pink-300 text-[9px] font-black">NEW</span>
+          </p>
+          <p className="text-purple-300 text-xs">AI video creation • enhance • script • music • copyright scan</p>
+        </div>
+        <Sparkles className="w-4 h-4 text-purple-400 group-hover:text-pink-400 transition-colors" />
+      </RouterLink>
+
       <div className="flex items-center gap-2 mb-5">
         <Youtube className="w-5 h-5 text-red-400" />
         <h3 className="text-white font-bold text-lg">Creator Video Tools</h3>

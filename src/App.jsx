@@ -17,6 +17,7 @@ import CategoryPage from "./pages/CategoryPage.jsx";
 import Checkout from "./pages/Checkout";
 import Messages from "./pages/Messages";
 import PaymentPage from "./pages/PaymentPage";
+import AIVideoStudioPage from "./pages/AIVideoStudioPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/messages" element={<Messages />} />
       <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/ai-video-studio" element={<AIVideoStudioPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

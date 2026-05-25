@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle } from "lucide-react";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
 import { Link } from "react-router-dom";
@@ -98,6 +98,15 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Right: User */}
         <div className="flex items-center gap-2">
+          {/* AI Video Studio — for all logged-in users */}
+          <Link
+            to="/ai-video-studio"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/40 text-purple-300 text-sm font-bold hover:from-purple-600/40 hover:to-pink-600/40 transition-all"
+          >
+            <Wand2 className="w-4 h-4" />
+            <span className="hidden lg:block">AI Studio</span>
+            <span className="px-1 py-0.5 rounded text-[9px] bg-pink-500/30 text-pink-300 font-black">NEW</span>
+          </Link>
           {/* Add Listing for sellers */}
           {(admin || accountType === "digital_creator" || accountType === "business") && (
             <Link

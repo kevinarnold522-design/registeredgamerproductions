@@ -17,6 +17,7 @@ import VideosSection from "@/components/home/VideosSection";
 import FeaturedGames from "@/components/home/FeaturedGames";
 import CommunitySection from "@/components/home/CommunitySection";
 import Footer from "@/components/home/Footer";
+import AIAssistBanner from "@/components/home/AIAssistBanner";
 import { base44 } from "@/api/base44Client";
 
 
@@ -60,6 +61,7 @@ export default function Home() {
         <>
           <div className="relative z-10">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
+            {user && <AIAssistBanner user={user} />}
             <VideoHeroBanner />
             <HeroSection />
             <MarqueeTicker />
