@@ -16,12 +16,12 @@ export default function ShootingStars() {
     window.addEventListener("resize", resize);
 
     // Static background stars
-    const bgStars = Array.from({ length: 320 }, () => ({
+    const bgStars = Array.from({ length: 600 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 1.4 + 0.2,
-      alpha: Math.random() * 0.7 + 0.2,
-      twinkleSpeed: Math.random() * 0.02 + 0.005,
+      r: Math.random() * 2.2 + 0.3,
+      alpha: Math.random() * 0.85 + 0.3,
+      twinkleSpeed: Math.random() * 0.025 + 0.008,
       twinkleDir: Math.random() > 0.5 ? 1 : -1,
     }));
 
@@ -30,7 +30,7 @@ export default function ShootingStars() {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 300 + 150,
-      color: ["#7c3aed22", "#ec489922", "#06b6d422", "#a855f722", "#6366f122"][Math.floor(Math.random() * 5)],
+      color: ["#7c3aed44", "#ec489933", "#06b6d433", "#a855f744", "#6366f133"][Math.floor(Math.random() * 5)],
       dx: (Math.random() - 0.5) * 0.15,
       dy: (Math.random() - 0.5) * 0.15,
     }));
@@ -43,13 +43,13 @@ export default function ShootingStars() {
       reset(initial = false) {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height * 0.5;
-        this.len = Math.random() * 280 + 120;
-        this.speed = Math.random() * 10 + 6;
-        this.size = Math.random() * 2 + 0.8;
+        this.len = Math.random() * 400 + 180;
+        this.speed = Math.random() * 14 + 9;
+        this.size = Math.random() * 3 + 1.2;
         this.color = shootingColors[Math.floor(Math.random() * shootingColors.length)];
         this.angle = (Math.PI / 4) + (Math.random() - 0.5) * 0.25;
-        this.opacity = Math.random() * 0.6 + 0.4;
-        this.waitFrames = initial ? Math.random() * 200 : Math.random() * 150 + 30;
+        this.opacity = Math.random() * 0.5 + 0.7;
+        this.waitFrames = initial ? Math.random() * 120 : Math.random() * 90 + 20;
         this.trail = [];
       }
       draw() {
@@ -71,7 +71,7 @@ export default function ShootingStars() {
           ctx.globalAlpha = this.opacity;
           ctx.strokeStyle = grad;
           ctx.lineWidth = this.size;
-          ctx.shadowBlur = 14;
+          ctx.shadowBlur = 22;
           ctx.shadowColor = this.color;
           ctx.lineCap = "round";
           ctx.beginPath();
@@ -83,7 +83,7 @@ export default function ShootingStars() {
           ctx.beginPath();
           ctx.arc(head.x, head.y, this.size * 1.5, 0, Math.PI * 2);
           ctx.fillStyle = this.color;
-          ctx.shadowBlur = 20;
+          ctx.shadowBlur = 30;
           ctx.fill();
           ctx.restore();
         }
@@ -97,7 +97,7 @@ export default function ShootingStars() {
       }
     }
 
-    const shootingStars = Array.from({ length: 22 }, () => new ShootingStar());
+    const shootingStars = Array.from({ length: 35 }, () => new ShootingStar());
     let animId;
     let frame = 0;
 
@@ -139,7 +139,7 @@ export default function ShootingStars() {
         ctx.save();
         ctx.globalAlpha = s.alpha;
         ctx.fillStyle = "#ffffff";
-        ctx.shadowBlur = s.r > 1 ? 4 : 0;
+        ctx.shadowBlur = s.r > 1 ? 8 : 2;
         ctx.shadowColor = "#a5b4fc";
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);

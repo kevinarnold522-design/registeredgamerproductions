@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import AdminPayPalPanel from "@/components/dashboard/AdminPayPalPanel";
 import { motion } from "framer-motion";
 import {
   Shield, Users, BarChart2, TrendingUp, DollarSign,
@@ -71,6 +72,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "videos", label: "Videos", icon: Play },
     { id: "leaderboard", label: "Leaderboard", icon: Trophy },
     { id: "transactions", label: "💰 Transactions", icon: DollarSign },
+    { id: "payment", label: "💳 Payment Account", icon: Shield },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
@@ -285,6 +287,13 @@ export default function AdminDashboard({ user, profile }) {
       {tab === "email_settings" && (
         <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
           <EmailHeaderEditor />
+        </div>
+      )}
+
+      {/* Admin Payment Account */}
+      {tab === "payment" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <AdminPayPalPanel />
         </div>
       )}
 
