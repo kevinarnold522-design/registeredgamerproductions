@@ -374,7 +374,8 @@ export default function Channel() {
               </a>
 
               <button type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   fileInputRef.current?.click();
                 }}
                 className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left">
@@ -407,15 +408,13 @@ export default function Channel() {
               ref={fileInputRef}
               type="file"
               accept="video/*"
-              onChange={async (e) => {
+              onChange={(e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                
-                // Store file info for publish
                 setSelectedVideoFile(file);
                 setVideoTitle(file.name.replace(/\.[^/.]+$/, ""));
               }}
-              style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
+              className="hidden"
             />
             
             {/* Show publish option after video selected */}
