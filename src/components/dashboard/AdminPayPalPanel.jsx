@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Lock, Unlink, Eye, EyeOff, Shield } from "lucide-react";
 
 const ADMIN_PAYPAL = {
-  clientId: "AU69KZ-7fS4IKtLLD8NdX4CXRY2N3g3ERjE4w9ZmN_p6mVEBs0YVHrCEWLVPlbq55w5bX",
+  merchantId: "WHLHPWVX9BAP2",
+  clientId: "AU69KZ-7fS4IKtLLD8NdX...",
   secret: "AU69KZ-7fS4IKtLLD8NdXUVEyG7XlLSwsmzOVAwfYfQAlbu4dbFCXCQTVaEOzZkeI9nJlJwRJQ5Hu2Sc",
   accountEmail: "kevinarnold522@gmail.com",
   accountName: "Kevin Arnold",
@@ -46,6 +47,15 @@ export default function AdminPayPalPanel() {
 
       {/* Locked Fields */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 space-y-4">
+
+        {/* Merchant ID */}
+        <div>
+          <p className="text-gray-500 text-[10px] uppercase font-bold tracking-wider mb-1.5">PayPal Merchant ID</p>
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gray-800/60 border border-gray-700">
+            <Lock className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+            <p className="text-white font-semibold text-sm font-mono">{ADMIN_PAYPAL.merchantId}</p>
+          </div>
+        </div>
 
         {/* Email */}
         <div>

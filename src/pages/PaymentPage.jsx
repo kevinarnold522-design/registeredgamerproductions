@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { CheckCircle, Unlink, Lock, Wallet } from "lucide-react";
+import { CheckCircle, Unlink, Lock, Wallet, Eye, EyeOff, Info } from "lucide-react";
 
 export default function PaymentPage() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [paypalEmail, setPaypalEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
   const [unlinking, setUnlinking] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
+
+  // Form fields for sellers
+  const [form, setForm] = useState({
+    paypal_email: "",
+    paypal_merchant_id: "",
+    paypal_client_id: "",
+    paypal_secret: "",
+    paypal_account_name: "",
+    paypal_account_type: "personal",
+    paypal_country: "",
+  });
 
   useEffect(() => {
     const init = async () => {
@@ -18,22 +29,38 @@ export default function PaymentPage() {
       if (!me) { base44.auth.redirectToLogin("/payment"); return; }
       setUser(me);
       const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
-      if (profiles.length > 0) setProfile(profiles[0]);
+      if (profiles.length > 0) {
+        const p = profiles[0];
+        setProfile(p);
+        setForm(f => ({
+          ...f,
+          paypal_email: p.paypal_email || "",
+          paypal_merchant_id: p.paypal_merchant_id || "",
+          paypal_account_name: p.paypal_account_name || "",
+          paypal_account_type: p.paypal_account_type || "personal",
+          paypal_country: p.paypal_country || "",
+        }));
+      }
       setLoading(false);
     };
     init();
   }, []);
 
+  const isSeller = profile?.account_type === "digital_creator" || profile?.account_type === "business";
   const hasPaypal = !!(profile?.paypal_email);
 
   const handleConnect = async () => {
-    if (!paypalEmail.includes("@")) return;
+    if (!form.paypal_email.includes("@")) return;
     setSaving(true);
-    const updated = await base44.entities.UserProfile.update(profile.id, {
-      paypal_email: paypalEmail,
+    await base44.entities.UserProfile.update(profile.id, {
+      paypal_email: form.paypal_email,
+      paypal_merchant_id: form.paypal_merchant_id || null,
+      paypal_account_name: form.paypal_account_name || null,
+      paypal_account_type: form.paypal_account_type || "personal",
+      paypal_country: form.paypal_country || null,
       payout_method: "paypal",
     });
-    setProfile({ ...profile, paypal_email: paypalEmail });
+    setProfile(p => ({ ...p, paypal_email: form.paypal_email, paypal_merchant_id: form.paypal_merchant_id }));
     setSaving(false);
   };
 
@@ -47,7 +74,7 @@ export default function PaymentPage() {
       paypal_country: null,
       payout_method: null,
     });
-    setProfile({ ...profile, paypal_email: null, paypal_merchant_id: null });
+    setProfile(p => ({ ...p, paypal_email: null, paypal_merchant_id: null }));
     setUnlinking(false);
     setConfirmUnlink(false);
   };
@@ -62,8 +89,12 @@ export default function PaymentPage() {
     <div className="min-h-screen bg-gray-950">
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-24 max-w-xl mx-auto px-4 pb-12">
-        <h1 className="text-2xl font-black text-white mb-2">💳 Payment</h1>
-        <p className="text-gray-400 text-sm mb-8">Connect your PayPal to receive payouts and make purchases on the platform.</p>
+        <h1 className="text-2xl font-black text-white mb-1">💳 Payment</h1>
+        <p className="text-gray-400 text-sm mb-8">
+          {isSeller
+            ? "Connect your PayPal to receive payouts. 90% of each sale goes directly to you."
+            : "Connect your PayPal to make purchases and receive any payouts on the platform."}
+        </p>
 
         {hasPaypal ? (
           <div className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-6 space-y-4">
@@ -103,10 +134,8 @@ export default function PaymentPage() {
             </p>
 
             {!confirmUnlink ? (
-              <button
-                onClick={() => setConfirmUnlink(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-bold hover:bg-red-900/30 transition-colors"
-              >
+              <button onClick={() => setConfirmUnlink(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-bold hover:bg-red-900/30 transition-colors">
                 <Unlink className="w-4 h-4" /> Unlink PayPal Account
               </button>
             ) : (
@@ -121,55 +150,137 @@ export default function PaymentPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-green-900/40">
-              <div className="bg-green-900/10 border border-green-700/30 rounded-lg p-3">
-                <p className="text-green-400 text-xs font-bold mb-1">✓ 90% Payouts</p>
-                <p className="text-gray-500 text-[10px]">90% of each sale goes to you</p>
+            {isSeller && (
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-green-900/40">
+                <div className="bg-green-900/10 border border-green-700/30 rounded-lg p-3">
+                  <p className="text-green-400 text-xs font-bold mb-1">✓ 90% Payouts</p>
+                  <p className="text-gray-500 text-[10px]">90% of each sale goes to you</p>
+                </div>
+                <div className="bg-green-900/10 border border-green-700/30 rounded-lg p-3">
+                  <p className="text-green-400 text-xs font-bold mb-1">✓ Secure Payments</p>
+                  <p className="text-gray-500 text-[10px]">Powered by PayPal</p>
+                </div>
               </div>
-              <div className="bg-green-900/10 border border-green-700/30 rounded-lg p-3">
-                <p className="text-green-400 text-xs font-bold mb-1">✓ Secure Payments</p>
-                <p className="text-gray-500 text-[10px]">Powered by PayPal</p>
-              </div>
-            </div>
+            )}
           </div>
         ) : (
-          <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white">PP</div>
-              <div>
-                <p className="text-white font-black">PayPal</p>
-                <p className="text-gray-400 text-xs">Receive earnings & payouts worldwide</p>
+          <div className="space-y-4">
+            <div className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm">PP</div>
+                <div>
+                  <p className="text-white font-black">Connect PayPal</p>
+                  <p className="text-gray-400 text-xs">Receive earnings & payouts worldwide</p>
+                </div>
               </div>
+
+              {isSeller && (
+                <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-xl p-4 flex gap-2">
+                  <Info className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-yellow-300 font-bold text-xs mb-1">Sellers & Creators</p>
+                    <p className="text-gray-400 text-xs leading-relaxed">
+                      To receive automatic payouts, please provide your PayPal Merchant ID and API credentials from your <a href="https://developer.paypal.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">PayPal Developer Dashboard</a>. This enables the platform to route 90% of each payment directly to your PayPal account.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Always-required: PayPal email */}
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">PayPal Email *</label>
+                <input type="email" value={form.paypal_email} onChange={e => setForm(f => ({ ...f, paypal_email: e.target.value }))}
+                  placeholder="your@paypal.com"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
+              </div>
+
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Account Holder Name</label>
+                <input value={form.paypal_account_name} onChange={e => setForm(f => ({ ...f, paypal_account_name: e.target.value }))}
+                  placeholder="Full name on your PayPal account"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Account Type</label>
+                  <select value={form.paypal_account_type} onChange={e => setForm(f => ({ ...f, paypal_account_type: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm">
+                    <option value="personal">👤 Personal</option>
+                    <option value="business">🏢 Business</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Country</label>
+                  <input value={form.paypal_country} onChange={e => setForm(f => ({ ...f, paypal_country: e.target.value }))}
+                    placeholder="e.g. Philippines"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
+                </div>
+              </div>
+
+              {/* Seller-only: Merchant ID + Client ID + Secret */}
+              {isSeller && (
+                <div className="space-y-3 border-t border-gray-700 pt-4">
+                  <p className="text-purple-300 text-xs font-bold uppercase tracking-wider">API Credentials (for automatic payouts)</p>
+
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">PayPal Merchant ID</label>
+                    <input value={form.paypal_merchant_id} onChange={e => setForm(f => ({ ...f, paypal_merchant_id: e.target.value }))}
+                      placeholder="e.g. WHLHPWVX9BAP2 (from PayPal account settings)"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm font-mono" />
+                    <p className="text-gray-600 text-[10px] mt-1">Found in: PayPal Settings → Account → Merchant ID</p>
+                  </div>
+
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Client ID (from PayPal Developer)</label>
+                    <input value={form.paypal_client_id} onChange={e => setForm(f => ({ ...f, paypal_client_id: e.target.value }))}
+                      placeholder="AU69KZ-xxxx..."
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm font-mono" />
+                    <p className="text-gray-600 text-[10px] mt-1">Found at: developer.paypal.com → Apps & Credentials</p>
+                  </div>
+
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1">
+                      Secret ID
+                      <span className="text-red-400 text-[10px]">(stored securely)</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showSecret ? "text" : "password"}
+                        value={form.paypal_secret}
+                        onChange={e => setForm(f => ({ ...f, paypal_secret: e.target.value }))}
+                        placeholder="AU69KZ-xxxx..."
+                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm font-mono pr-10"
+                      />
+                      <button type="button" onClick={() => setShowSecret(v => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                        {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button onClick={handleConnect} disabled={saving || !form.paypal_email.includes("@")}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2">
+                <Wallet className="w-4 h-4" />
+                {saving ? "Connecting..." : "🔗 Connect PayPal"}
+              </button>
             </div>
 
-            <div className="bg-blue-900/30 border border-blue-700/40 rounded-xl p-4 text-xs text-gray-400 space-y-1">
-              <p className="text-blue-300 font-bold mb-2">How to connect</p>
-              <ol className="space-y-1 list-decimal list-inside">
-                <li>Visit <a href="https://www.paypal.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">paypal.com</a> and log in</li>
-                <li>Copy your registered PayPal email address</li>
-                <li>Paste it below and click "Connect PayPal"</li>
-              </ol>
-            </div>
-
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Your PayPal Email</label>
-              <input
-                type="email"
-                value={paypalEmail}
-                onChange={e => setPaypalEmail(e.target.value)}
-                placeholder="your@paypal.com"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm"
-              />
-            </div>
-
-            <button
-              onClick={handleConnect}
-              disabled={saving || !paypalEmail.includes("@")}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2"
-            >
-              <Wallet className="w-4 h-4" />
-              {saving ? "Connecting..." : "🔗 Connect PayPal"}
-            </button>
+            {/* How to get credentials guide for sellers */}
+            {isSeller && (
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                <p className="text-white font-bold text-sm mb-3">📖 How to Get Your PayPal API Credentials</p>
+                <ol className="space-y-2 text-xs text-gray-400 list-decimal list-inside">
+                  <li>Go to <a href="https://developer.paypal.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">developer.paypal.com</a> and log in</li>
+                  <li>Click <strong className="text-white">Apps & Credentials</strong> in the left menu</li>
+                  <li>Create a new App or use an existing one</li>
+                  <li>Copy your <strong className="text-white">Client ID</strong> and <strong className="text-white">Secret</strong></li>
+                  <li>For Merchant ID: go to <a href="https://www.paypal.com/myaccount/settings/" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">PayPal Account Settings</a> → Account Info</li>
+                </ol>
+              </div>
+            )}
           </div>
         )}
       </div>

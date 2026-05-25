@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, ClipboardList, User, CreditCard, Youtube, LogOut, Settings } from "lucide-react";
+import { Heart, ClipboardList, User, Link2, Youtube, LogOut, Settings } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
+import LinkShortenerDashboard from "./LinkShortenerDashboard";
 
 
 export default function BuyerDashboard({ user, profile }) {
@@ -28,6 +29,7 @@ export default function BuyerDashboard({ user, profile }) {
     { id: "overview", label: "Overview", icon: User },
     { id: "orders", label: "Orders & History", icon: ClipboardList },
     { id: "favorites", label: "Favourites", icon: Heart },
+    { id: "links", label: "🔗 Link Shortener", icon: Link2 },
     { id: "videos", label: "📹 Share Videos", icon: Youtube },
     { id: "settings", label: "Settings", icon: Settings },
   ];
@@ -137,7 +139,9 @@ export default function BuyerDashboard({ user, profile }) {
         <CreatorVideoTools user={user} profile={profile} />
       )}
 
-
+      {tab === "links" && (
+        <LinkShortenerDashboard user={user} />
+      )}
 
         </div>
       </main>

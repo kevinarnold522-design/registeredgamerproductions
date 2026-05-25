@@ -10,6 +10,7 @@ import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import PaymentMethodsTab from "./PaymentMethodsTab";
 import PayPalConnect from "@/components/payments/PayPalConnect";
 import PaymentSettingsTab from "./PaymentSettingsTab";
+import AdvancedAnalytics from "./AdvancedAnalytics";
 
 export default function SellerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -227,7 +228,10 @@ export default function SellerDashboard({ user, profile }) {
 
       {/* Analytics */}
       {tab === "analytics" && (
-        <CreatorAnalyticsTab user={user} profile={profile} />
+        <div className="space-y-8">
+          <AdvancedAnalytics user={user} profile={profile} sellerOnly={true} />
+          <CreatorAnalyticsTab user={user} profile={profile} />
+        </div>
       )}
 
       {/* Leaderboard */}

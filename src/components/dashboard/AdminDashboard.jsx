@@ -15,6 +15,7 @@ import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import AdminTextEditor from "./AdminTextEditor";
 import AdminTransactionsDashboard from "./AdminTransactionsDashboard";
 import AdminSubcategoryManager from "./AdminSubcategoryManager";
+import AdvancedAnalytics from "./AdvancedAnalytics";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -80,6 +81,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "transactions", label: "💰 Transactions", icon: DollarSign },
     { id: "payment", label: "💳 Payment Account", icon: Shield },
     { id: "subcategories", label: "📂 Subcategories", icon: Store },
+    { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
@@ -278,6 +280,11 @@ export default function AdminDashboard({ user, profile }) {
             </table>
           </div>
         </div>
+      )}
+
+      {/* Analytics */}
+      {tab === "analytics" && (
+        <AdvancedAnalytics user={user} profile={profile} sellerOnly={false} />
       )}
 
       {/* Reviews */}
