@@ -4,7 +4,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import GenericCategoryPage from "@/components/category/GenericCategoryPage";
 import BuySellLandingPage from "@/components/category/BuySellLandingPage";
 import ContentLandingPage from "@/components/category/ContentLandingPage";
-import SubcategoryLandingPage from "@/components/category/SubcategoryLandingPage";
+import SubcategoryLandingPage from "@/components/category/SubcategoryLandingPage.jsx";
 import { CATEGORIES } from "@/lib/constants";
 
 export default function CategoryPage() {
