@@ -104,7 +104,7 @@ export default function AuthNavbar({ user, profile }) {
             className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/40 text-purple-300 text-sm font-bold hover:from-purple-600/40 hover:to-pink-600/40 transition-all"
           >
             <Wand2 className="w-4 h-4" />
-            <span className="hidden lg:block">AI Studio</span>
+            <span className="hidden lg:block">Studio</span>
             <span className="px-1 py-0.5 rounded text-[9px] bg-pink-500/30 text-pink-300 font-black">NEW</span>
           </Link>
           {/* Add Listing for sellers */}

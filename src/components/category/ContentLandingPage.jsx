@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Play, Eye, Search, Upload, Radio } from "lucide-react";
+import { Play, Eye, Search, Upload, Radio, Wand2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { Link as RouterLink } from "react-router-dom";
 import SubcategoryCards from "./SubcategoryCards";
 
 function VideoCard({ video, index }) {
@@ -79,9 +80,14 @@ export default function ContentLandingPage({ user, profile }) {
               <p className="text-blue-200/60 text-base max-w-xl">Watch gaming videos, clips, tutorials, reviews and streams from creators worldwide.</p>
             </div>
             {user && (
-              <a href="/dashboard?tab=create_post" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap">
-                <Upload className="w-4 h-4" /> Upload Video
-              </a>
+              <div className="flex gap-2">
+                <RouterLink to="/studio" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap">
+                  <Wand2 className="w-4 h-4" /> Studio
+                </RouterLink>
+                <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white font-bold text-sm hover:bg-gray-700 whitespace-nowrap">
+                  <Upload className="w-4 h-4" /> Upload
+                </button>
+              </div>
             )}
           </div>
         </div>

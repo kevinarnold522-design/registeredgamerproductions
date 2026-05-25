@@ -82,36 +82,43 @@ export default function CreatePostModal({ isOpen, onClose, user, profile, onCrea
               <button onClick={onClose} className="text-gray-600 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
             </div>
 
-            {/* AI Studio Quick-Access */}
+            {/* Studio & Upload Options */}
             <div className="mb-5 space-y-2">
-              <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">⚡ Quick Actions</p>
-              <RouterLink to="/ai-video-studio" onClick={onClose}
+              <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">📹 Upload Video</p>
+              
+              <RouterLink to="/studio" onClick={onClose}
                 className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-900/50 to-pink-900/40 border border-purple-600/40 rounded-2xl hover:border-purple-500 transition-colors group">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
                   <Wand2 className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
                   <p className="text-white font-bold text-sm flex items-center gap-2">
-                    ✨ AI Video Studio
+                    🎬 Create in Studio
                     <span className="px-1.5 py-0.5 rounded-full bg-pink-500/30 border border-pink-500/40 text-pink-300 text-[9px] font-black">NEW</span>
                   </p>
-                  <p className="text-purple-300 text-xs mt-0.5">Create videos from images • Enhance • Script • Music • SEO</p>
+                  <p className="text-purple-300 text-xs mt-0.5">Edit & create videos with AI tools</p>
                 </div>
                 <Sparkles className="w-4 h-4 text-purple-400 group-hover:text-pink-400 transition-colors" />
               </RouterLink>
 
-              <RouterLink to="/ai-video-studio" state={{ tab: "upload" }} onClick={onClose}
-                className="flex items-center gap-3 p-3.5 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-orange-600/40 transition-colors group">
-                <div className="w-9 h-9 rounded-xl bg-orange-900/40 border border-orange-700/40 flex items-center justify-center shrink-0">
-                  <Shield className="w-4 h-4 text-orange-400" />
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">Upload Video with Copyright Scan</p>
-                  <p className="text-gray-500 text-xs">AI checks for violations before publishing</p>
-                </div>
-              </RouterLink>
+              <div className="flex items-center gap-2 my-3">
+                <div className="flex-1 h-px bg-gray-800" />
+                <p className="text-gray-600 text-xs">or</p>
+                <div className="flex-1 h-px bg-gray-800" />
+              </div>
 
-              <div className="flex items-center gap-2 my-2">
+              <button type="button"
+                className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left">
+                <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-700/40 flex items-center justify-center shrink-0">
+                  <Upload className="w-5 h-5 text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-white font-semibold text-sm">Upload Ready-Made Video</p>
+                  <p className="text-gray-500 text-xs">Upload a video file you already created</p>
+                </div>
+              </button>
+
+              <div className="flex items-center gap-2 my-3">
                 <div className="flex-1 h-px bg-gray-800" />
                 <p className="text-gray-600 text-xs">or post manually</p>
                 <div className="flex-1 h-px bg-gray-800" />

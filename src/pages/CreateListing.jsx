@@ -376,25 +376,7 @@ export default function CreateListing() {
                 <div className="space-y-3">
                   <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder="Enter price in ₱"
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-                  {/* Commission notice */}
-                  <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-4">
-                    <p className="text-blue-300 font-bold text-xs mb-1">💳 Payment & Commission Info</p>
-                    <p className="text-gray-400 text-xs leading-relaxed">
-                      A <strong className="text-white">10% platform commission</strong> is automatically deducted from each sale and transferred to GAMER Productions' PayPal (<span className="text-blue-300">kevinjersey2019@gmail.com</span>). You receive <strong className="text-green-400">90%</strong> of the sale price. Payments are processed via PayPal.
-                    </p>
-                    {form.price && parseFloat(form.price) > 0 && (
-                      <div className="mt-2 flex gap-3 text-xs">
-                        <span className="text-white font-bold">List: ₱{parseFloat(form.price).toLocaleString()}</span>
-                        <span className="text-red-400">Platform fee: ₱{(parseFloat(form.price) * 0.1).toFixed(2)}</span>
-                        <span className="text-green-400 font-bold">You earn: ₱{(parseFloat(form.price) * 0.9).toFixed(2)}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Your PayPal Email (to receive payments)</label>
-                    <input value={form.paypal_email || ""} onChange={e => setForm({ ...form, paypal_email: e.target.value })} placeholder="your@paypal.com"
-                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-                  </div>
+
                 </div>
               )}
             </div>

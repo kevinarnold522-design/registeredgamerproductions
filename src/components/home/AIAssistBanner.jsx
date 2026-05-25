@@ -32,7 +32,7 @@ export default function AIAssistBanner({ user }) {
                 ✨ NEW
               </span>
               <p className="text-white font-bold text-sm whitespace-nowrap">
-                AI Video Studio is here!
+                Studio is here!
               </p>
               <p className="text-purple-300 text-xs hidden sm:block truncate">
                 Create, enhance & publish gaming videos with AI — script, thumbnail, music, copyright scan & more
@@ -46,7 +46,7 @@ export default function AIAssistBanner({ user }) {
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-black hover:opacity-90 transition-opacity shadow-lg shadow-purple-900/40 whitespace-nowrap"
             >
               <Zap className="w-3.5 h-3.5" />
-              Try AI Studio
+              Try Studio
               <ChevronRight className="w-3 h-3" />
             </Link>
             <button

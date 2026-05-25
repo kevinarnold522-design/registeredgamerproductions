@@ -117,8 +117,35 @@ export default function AIVideoStudioPage() {
     });
   };
 
-  const handleExport = async (format, quality) => {
-    console.log("Exporting:", format, quality);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadForm, setUploadForm] = useState({ title: "", description: "", category: "gameplay", game_tag: "" });
+
+  const handleUploadToSite = () => {
+    setShowUploadModal(true);
+  };
+
+  const handlePublishToSite = async () => {
+    if (!currentProject || !uploadForm.title.trim()) return;
+    
+    const videoData = {
+      creator_email: user.email,
+      creator_username: profile?.username || user.full_name,
+      creator_avatar: profile?.avatar_url || "",
+      title: uploadForm.title.trim(),
+      description: uploadForm.description.trim(),
+      youtube_url: "",
+      youtube_video_id: "",
+      video_url: "", // Will be populated after export
+      image_urls: [],
+      game_tag: uploadForm.game_tag,
+      category: uploadForm.category,
+      status: "processing",
+      is_approved: false,
+    };
+    
+    const created = await base44.entities.VideoPost.create(videoData);
+    setShowUploadModal(false);
+    window.location.href = "/category/content";
   };
 
   if (loading) {
@@ -159,9 +186,12 @@ export default function AIVideoStudioPage() {
             <Save className="w-4 h-4" />
             Save
           </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white">
-            <Share2 className="w-4 h-4" />
-            Share
+          <button
+            onClick={handleUploadToSite}
+            className="flex items-center gap-2 px-4 py-1.5 text-sm bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-lg font-semibold"
+          >
+            <Upload className="w-4 h-4" />
+            Upload to Site
           </button>
           <button
             onClick={() => setActivePanel("export")}
@@ -306,6 +336,56 @@ export default function AIVideoStudioPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Upload to Site Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.85)" }} onClick={() => setShowUploadModal(false)}>
+          <div className="bg-gray-900 border border-purple-700/30 rounded-3xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-white font-black text-xl mb-4">Upload to Site</h2>
+            <p className="text-gray-400 text-sm mb-4">Publish your video to the Content section</p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Title *</label>
+                <input value={uploadForm.title} onChange={e => setUploadForm({ ...uploadForm, title: e.target.value })} placeholder="Video title..."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+              </div>
+              
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Description</label>
+                <textarea value={uploadForm.description} onChange={e => setUploadForm({ ...uploadForm, description: e.target.value })} placeholder="Describe your video..."
+                  rows={3} className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm resize-none" />
+              </div>
+              
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Tag</label>
+                <input value={uploadForm.game_tag} onChange={e => setUploadForm({ ...uploadForm, game_tag: e.target.value })} placeholder="e.g. GTA 5, Minecraft..."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+              </div>
+              
+              <div>
+                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Category</label>
+                <div className="flex flex-wrap gap-2">
+                  {["gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream"].map(cat => (
+                    <button key={cat} type="button" onClick={() => setUploadForm({ ...uploadForm, category: cat })}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${uploadForm.category === cat ? "bg-purple-600 text-white" : "bg-gray-800 border border-gray-700 text-gray-400 hover:text-white"}`}>
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowUploadModal(false)} className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 font-semibold hover:text-white transition-colors text-sm">Cancel</button>
+              <button onClick={handlePublishToSite} disabled={!uploadForm.title.trim()}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40">
+                Publish to Content
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
