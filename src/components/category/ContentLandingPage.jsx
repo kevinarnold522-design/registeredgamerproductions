@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Play, Eye, Search, Upload, Radio, Wand2 } from "lucide-react";
+import { Play, Eye, Search, Upload, Radio, Wand2, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Link as RouterLink } from "react-router-dom";
 import SubcategoryCards from "./SubcategoryCards";
@@ -49,6 +49,12 @@ export default function ContentLandingPage({ user, profile }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null);
+  const [videoTitle, setVideoTitle] = useState("");
+  const [videoCategory, setVideoCategory] = useState("gameplay");
+  const fileInputRef = useRef(null);
 
   const videoCategories = ["all", "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream"];
   const sortOptions = [
@@ -95,7 +101,10 @@ export default function ContentLandingPage({ user, profile }) {
                 <RouterLink to="/studio" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap">
                   <Wand2 className="w-4 h-4" /> Studio
                 </RouterLink>
-                <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white font-bold text-sm hover:bg-gray-700 whitespace-nowrap">
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-800 border border-gray-700 text-white font-bold text-sm hover:bg-gray-700 whitespace-nowrap"
+                >
                   <Upload className="w-4 h-4" /> Upload
                 </button>
               </div>
@@ -148,6 +157,119 @@ export default function ContentLandingPage({ user, profile }) {
           </div>
         )}
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.85)" }} onClick={() => setShowUploadModal(false)}>
+          <div className="bg-gray-900 border border-blue-700/30 rounded-3xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-white font-black text-xl">Upload Video</h2>
+              <button onClick={() => setShowUploadModal(false)} className="text-gray-600 hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left mb-4"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-700/40 flex items-center justify-center shrink-0">
+                <Upload className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-semibold text-sm">Upload Video from Device</p>
+                <p className="text-gray-500 text-xs">Select and publish a video file</p>
+              </div>
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                setSelectedVideoFile(file);
+                setVideoTitle(file.name.replace(/\.[^/.]+$/, ""));
+              }}
+              className="hidden"
+            />
+
+            {selectedVideoFile && (
+              <div className="space-y-4">
+                <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-3">
+                  <p className="text-blue-300 text-xs font-bold mb-2">Selected: {selectedVideoFile.name}</p>
+                  <input
+                    value={videoTitle}
+                    onChange={e => setVideoTitle(e.target.value)}
+                    placeholder="Video title..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm mb-2"
+                  />
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Category</label>
+                    <div className="flex flex-wrap gap-2">
+                      {["gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream"].map(cat => (
+                        <button key={cat} type="button" onClick={() => setVideoCategory(cat)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${videoCategory === cat ? "bg-blue-600 text-white" : "bg-gray-800 border border-gray-700 text-gray-400 hover:text-white"}`}>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={async () => {
+                        if (!videoTitle.trim()) return;
+                        setUploadingVideo(true);
+                        try {
+                          const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
+                          await base44.entities.VideoPost.create({
+                            creator_email: user.email,
+                            creator_username: profile?.username || user.full_name,
+                            creator_avatar: profile?.avatar_url || "",
+                            title: videoTitle.trim(),
+                            description: "",
+                            youtube_url: "",
+                            youtube_video_id: "",
+                            video_url: file_url,
+                            image_urls: [],
+                            game_tag: "",
+                            category: videoCategory,
+                            status: "active",
+                            is_approved: true,
+                          });
+                          setShowUploadModal(false);
+                          setSelectedVideoFile(null);
+                          setVideoTitle("");
+                          window.location.reload();
+                        } catch (error) {
+                          console.error("Upload failed:", error);
+                        } finally {
+                          setUploadingVideo(false);
+                        }
+                      }}
+                      disabled={uploadingVideo || !videoTitle.trim()}
+                      className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
+                    >
+                      {uploadingVideo ? "Publishing..." : "Publish Video"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedVideoFile(null);
+                        setVideoTitle("");
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
