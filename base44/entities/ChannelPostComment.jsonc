@@ -1,18 +1,9 @@
 {
-  "name": "PostComment",
+  "name": "ChannelPostComment",
   "type": "object",
   "properties": {
     "post_id": {
-      "type": "string",
-      "description": "ID of the VideoPost or Listing being commented on"
-    },
-    "post_type": {
-      "type": "string",
-      "enum": [
-        "video",
-        "listing"
-      ],
-      "description": "Type of post"
+      "type": "string"
     },
     "author_email": {
       "type": "string"
@@ -26,18 +17,21 @@
     "content": {
       "type": "string"
     },
-    "is_approved": {
-      "type": "boolean",
-      "default": true
+    "likes": {
+      "type": "number",
+      "default": 0
     },
     "parent_id": {
       "type": "string",
       "description": "ID of parent comment for replies"
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": true
     }
   },
   "required": [
     "post_id",
-    "post_type",
     "author_email",
     "content"
   ]

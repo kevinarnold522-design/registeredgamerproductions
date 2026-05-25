@@ -1,0 +1,66 @@
+{
+  "name": "ChannelPost",
+  "type": "object",
+  "properties": {
+    "creator_email": {
+      "type": "string"
+    },
+    "creator_username": {
+      "type": "string"
+    },
+    "creator_avatar": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "text"
+      ],
+      "default": "image"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "caption": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "comments_count": {
+      "type": "number",
+      "default": 0
+    },
+    "shares_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "removed"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "creator_email",
+    "content_type"
+  ]
+}
