@@ -54,7 +54,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen text-white relative">
+    <div className="min-h-screen text-white relative z-10">
       {showSplash && <SplashScreen onDismiss={() => setShowSplash(false)} />}
       {!showSplash && (
         <>

@@ -78,7 +78,7 @@ export default function AdminDashboard({ user, profile }) {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 bg-gray-950 min-h-screen">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
@@ -94,7 +94,7 @@ export default function AdminDashboard({ user, profile }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-8">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-8 bg-gray-950 sticky top-16 z-30 py-2">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-yellow-500/20 border border-yellow-500/50 text-yellow-300" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>

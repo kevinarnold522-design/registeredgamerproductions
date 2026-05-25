@@ -64,7 +64,9 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ShootingStars />
-          <AuthenticatedApp />
+          <div style={{ position: "relative", zIndex: 10 }}>
+            <AuthenticatedApp />
+          </div>
         </Router>
         <Toaster />
       </QueryClientProvider>

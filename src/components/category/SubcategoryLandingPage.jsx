@@ -24,7 +24,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-4 py-8 max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-950 text-white px-4 py-8 max-w-6xl mx-auto relative z-10">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <a href="/" className="hover:text-white transition-colors">Home</a>

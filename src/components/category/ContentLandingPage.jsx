@@ -64,7 +64,7 @@ export default function ContentLandingPage({ user, profile }) {
   });
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-950">
       {/* Hero */}
       <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #00060f 0%, #00040a 50%, #030712 100%)" }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(59,130,246,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.6) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
@@ -90,7 +90,7 @@ export default function ContentLandingPage({ user, profile }) {
       <SubcategoryCards cat="content" categoryName="Content" />
 
       {/* Category filter */}
-      <div className="bg-gray-950 border-b border-gray-800 sticky top-16 z-30">
+      <div className="bg-gray-950/95 backdrop-blur-sm border-b border-gray-800 sticky top-16 z-30">
         <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
           <div className="flex gap-2 min-w-max">
             {videoCategories.map(c => (

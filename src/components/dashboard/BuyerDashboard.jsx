@@ -36,9 +36,9 @@ export default function BuyerDashboard({ user, profile }) {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gray-950">
       {/* Vertical Sidebar */}
-      <aside className="w-56 shrink-0 bg-gray-950 border-r border-gray-800 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto hidden md:flex">
+      <aside className="w-56 shrink-0 bg-gray-950 border-r border-gray-800 flex flex-col py-6 px-3 sticky top-0 h-screen overflow-y-auto hidden md:flex z-20">
         {/* User info */}
         <div className="flex flex-col items-center text-center gap-2 mb-6 px-2">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl overflow-hidden">
@@ -67,7 +67,7 @@ export default function BuyerDashboard({ user, profile }) {
       </aside>
 
       {/* Mobile horizontal tabs */}
-      <div className="md:hidden w-full absolute top-16 left-0 z-10 bg-gray-950 border-b border-gray-800 px-3 py-2 flex gap-2 overflow-x-auto">
+      <div className="md:hidden w-full absolute top-16 left-0 z-20 bg-gray-950 border-b border-gray-800 px-3 py-2 flex gap-2 overflow-x-auto">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-blue-500/20 border border-blue-500/50 text-blue-300" : "bg-gray-900 border border-gray-800 text-gray-400"}`}>
@@ -77,7 +77,7 @@ export default function BuyerDashboard({ user, profile }) {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto px-6 py-8 md:pt-8 pt-20">
+      <main className="flex-1 overflow-y-auto px-6 py-8 md:pt-8 pt-20 bg-gray-950">
         <div className="max-w-4xl">
 
       {tab === "overview" && (

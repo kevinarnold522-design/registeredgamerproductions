@@ -40,7 +40,7 @@ export default function CategoryPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-950 text-white relative z-10">
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-16">
         {/* If a specific subcategory is selected, render its own unique landing page */}
