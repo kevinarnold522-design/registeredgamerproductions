@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Heart, ClipboardList, User, CreditCard, Youtube, LogOut, Settings } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
-import PaymentMethodsTab from "./PaymentMethodsTab";
+
 
 export default function BuyerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -29,7 +29,6 @@ export default function BuyerDashboard({ user, profile }) {
     { id: "orders", label: "Orders & History", icon: ClipboardList },
     { id: "favorites", label: "Favourites", icon: Heart },
     { id: "videos", label: "📹 Share Videos", icon: Youtube },
-    { id: "payment", label: "Payment Methods", icon: CreditCard },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -138,9 +137,7 @@ export default function BuyerDashboard({ user, profile }) {
         <CreatorVideoTools user={user} profile={profile} />
       )}
 
-      {tab === "payment" && (
-        <PaymentMethodsTab profile={profile} />
-      )}
+
 
         </div>
       </main>

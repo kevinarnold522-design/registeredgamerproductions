@@ -15,6 +15,8 @@ import Profile from "./pages/Profile";
 import Channel from "./pages/Channel";
 import CategoryPage from "./pages/CategoryPage.jsx";
 import Checkout from "./pages/Checkout";
+import Messages from "./pages/Messages";
+import PaymentPage from "./pages/PaymentPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -50,6 +52,8 @@ const AuthenticatedApp = () => {
       <Route path="/channel" element={<Channel />} />
       <Route path="/category" element={<CategoryPage />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/messages" element={<Messages />} />
+      <Route path="/payment" element={<PaymentPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

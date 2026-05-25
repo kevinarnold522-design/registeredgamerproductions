@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User } from "lucide-react";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
 import { Link } from "react-router-dom";
@@ -8,6 +7,7 @@ import CartDropdown from "@/components/layout/CartDropdown";
 import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import UserMegaMenu from "@/components/layout/UserMegaMenu";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 export default function AuthNavbar({ user, profile }) {
   const [cartOpen, setCartOpen] = useState(false);
@@ -29,14 +29,14 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Heart, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
     { icon: ShoppingCart, label: "Cart", badge: cartCount, action: () => { setCartOpen(true); setFavOpen(false); } },
     { icon: ClipboardList, label: "Orders", href: "/dashboard?tab=orders" },
-    { icon: CreditCard, label: "Payment", href: "/dashboard?tab=payment" },
+    { icon: CreditCard, label: "Payment", href: "/payment" },
   ];
 
   const sellerLinks = [
     { icon: Store, label: "My Listings", href: "/dashboard?tab=listings" },
-    { icon: BarChart2, label: "Analytics", href: "/dashboard?tab=analytics" },
+    { icon: BarChart2, label: "Sales", href: "/dashboard?tab=sales" },
     { icon: Package, label: "Orders", href: "/dashboard?tab=orders" },
-    { icon: CreditCard, label: "Payment", href: "/dashboard?tab=payouts" },
+    { icon: CreditCard, label: "Payment", href: "/payment" },
   ];
 
   const adminLinks = [
@@ -108,6 +108,12 @@ export default function AuthNavbar({ user, profile }) {
               Add Listing
             </Link>
           )}
+          {/* Messages */}
+          <Link to="/messages" className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-700/50 transition-colors">
+            <MessageCircle className="w-4 h-4 text-gray-400" />
+          </Link>
+          {/* Notifications */}
+          <NotificationBell userEmail={user?.email} />
           {/* Mega menu profile button */}
           <UserMegaMenu
             user={user}

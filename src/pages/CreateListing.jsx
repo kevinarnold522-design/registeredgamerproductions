@@ -20,6 +20,7 @@ export default function CreateListing() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef(null);
   const videoFileRef = useRef(null);
+  const downloadFileRef = useRef(null);
 
   const params = new URLSearchParams(window.location.search);
   const editId = params.get("edit");
@@ -43,6 +44,7 @@ export default function CreateListing() {
     game_platform: "",
     paypal_email: "",
     external_link: "",
+    download_url: "",
   });
 
   useEffect(() => {
@@ -73,6 +75,7 @@ export default function CreateListing() {
             game_name: l.game_name || "",
             game_platform: l.game_platform || "",
             external_link: l.external_link || "",
+          download_url: l.download_url || "",
           });
           setImages(l.images || []);
         }
@@ -98,6 +101,15 @@ export default function CreateListing() {
     setUploadingImages(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setForm(f => ({ ...f, video_url: file_url }));
+    setUploadingImages(false);
+  };
+
+  const handleDownloadFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImages(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(f => ({ ...f, download_url: file_url }));
     setUploadingImages(false);
   };
 
@@ -216,23 +228,48 @@ export default function CreateListing() {
             </div>
           </div>
 
-          {/* External Link */}
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-3">
+          {/* Download File / External Link */}
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
             <h3 className="text-white font-bold flex items-center gap-2">
-              <ExternalLink className="w-4 h-4 text-green-400" /> External Download / Access Link
+              <ExternalLink className="w-4 h-4 text-green-400" /> Download / Access Options
             </h3>
-            <p className="text-gray-500 text-xs">When buyers click "Download" or "Access", they'll be routed to this URL. Leave blank if not applicable.</p>
-            <input
-              value={form.external_link}
-              onChange={e => setForm({ ...form, external_link: e.target.value })}
-              placeholder="https://drive.google.com/... or any external link"
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 text-sm"
-            />
-            {form.external_link && (
-              <a href={form.external_link} target="_blank" rel="noopener noreferrer" className="text-green-400 text-xs underline flex items-center gap-1">
-                <ExternalLink className="w-3 h-3" /> Preview link
-              </a>
-            )}
+            <p className="text-gray-500 text-xs">Choose one or both: upload a file from your device, or paste an external link. When buyers click "Download", they'll be routed there.</p>
+
+            {/* Upload file from device */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1">
+                <Upload className="w-3 h-3 text-purple-400" /> Upload File from Device
+              </label>
+              {form.download_url ? (
+                <div className="flex items-center gap-3 bg-green-900/20 border border-green-700/40 rounded-xl p-3">
+                  <span className="text-green-400 text-sm">✅ File uploaded</span>
+                  <a href={form.download_url} target="_blank" rel="noopener noreferrer" className="text-green-400 text-xs underline">Preview</a>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, download_url: "" }))} className="ml-auto text-red-400 text-xs hover:text-red-300">Remove</button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => downloadFileRef.current?.click()}
+                  className="flex items-center gap-2 px-4 py-3 w-full rounded-xl border-2 border-dashed border-gray-700 hover:border-purple-500 text-gray-500 hover:text-purple-400 text-sm transition-colors justify-center">
+                  <Upload className="w-4 h-4" /> Click to connect & upload from your device
+                </button>
+              )}
+              <input ref={downloadFileRef} type="file" onChange={handleDownloadFileUpload} className="hidden" />
+            </div>
+
+            {/* External link */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">External Link (Google Drive, Mega, etc.)</label>
+              <input
+                value={form.external_link}
+                onChange={e => setForm({ ...form, external_link: e.target.value })}
+                placeholder="https://drive.google.com/... or any external link"
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 text-sm"
+              />
+              {form.external_link && (
+                <a href={form.external_link} target="_blank" rel="noopener noreferrer" className="text-green-400 text-xs underline flex items-center gap-1 mt-1">
+                  <ExternalLink className="w-3 h-3" /> Preview link
+                </a>
+              )}
+            </div>
           </div>
 
           {/* Details */}

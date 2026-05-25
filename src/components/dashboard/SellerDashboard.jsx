@@ -4,6 +4,7 @@ import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, Dolla
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
 import CreatorAnalyticsTab from "./CreatorAnalyticsTab";
+import SalesDashboard from "./SalesDashboard";
 import LeaderboardTab from "./LeaderboardTab";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import PaymentMethodsTab from "./PaymentMethodsTab";
@@ -44,6 +45,7 @@ export default function SellerDashboard({ user, profile }) {
     { id: "overview", label: "Overview", icon: BarChart2 },
     { id: "listings", label: "My Listings", icon: Store },
     { id: "orders", label: "Orders", icon: Package },
+    { id: "sales", label: "📈 Sales Dashboard", icon: DollarSign },
     { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
     { id: "videos", label: "📹 Video Tools", icon: Youtube },
     { id: "leaderboard", label: "🏆 Leaderboard", icon: DollarSign },
@@ -216,6 +218,11 @@ export default function SellerDashboard({ user, profile }) {
             </table>
           )}
         </div>
+      )}
+
+      {/* Sales Dashboard */}
+      {tab === "sales" && (
+        <SalesDashboard user={user} />
       )}
 
       {/* Analytics */}
