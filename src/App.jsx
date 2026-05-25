@@ -4,6 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import ShootingStars from '@/components/home/ShootingStars';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 // Add page imports here
 import Home from "./pages/Home";
@@ -62,6 +63,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <ShootingStars />
           <AuthenticatedApp />
         </Router>
         <Toaster />

@@ -16,7 +16,6 @@ import MonetizationBadge from "@/components/home/MonetizationBadge";
 import VideosSection from "@/components/home/VideosSection";
 import FeaturedGames from "@/components/home/FeaturedGames";
 import CommunitySection from "@/components/home/CommunitySection";
-import ShootingStars from "@/components/home/ShootingStars";
 import Footer from "@/components/home/Footer";
 import { base44 } from "@/api/base44Client";
 
@@ -55,13 +54,10 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white relative">
+    <div className="min-h-screen text-white relative">
       {showSplash && <SplashScreen onDismiss={() => setShowSplash(false)} />}
       {!showSplash && (
         <>
-          {/* Global shooting stars background */}
-          <ShootingStars />
-
           <div className="relative z-10">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
             <VideoHeroBanner />
