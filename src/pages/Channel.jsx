@@ -372,7 +372,10 @@ export default function Channel() {
               </a>
 
               <button type="button"
-                onClick={() => { setShowUploadModal(false); setTimeout(() => fileInputRef.current?.click(), 100); }}
+                onClick={() => {
+                  setShowUploadModal(false);
+                  setTimeout(() => fileInputRef.current?.click(), 300);
+                }}
                 className="flex items-center gap-3 p-4 bg-gray-900 border border-gray-700/50 rounded-2xl hover:border-blue-600/40 transition-colors group w-full text-left">
                 <div className="w-10 h-10 rounded-xl bg-blue-900/40 border border-blue-700/40 flex items-center justify-center shrink-0">
                   <Upload className="w-5 h-5 text-blue-400" />
@@ -403,6 +406,7 @@ export default function Channel() {
               ref={fileInputRef}
               type="file"
               accept="video/*"
+              style={{ display: 'none' }}
               onChange={async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -436,7 +440,6 @@ export default function Channel() {
                   setUploadingVideo(false);
                 }
               }}
-              className="hidden"
             />
           </div>
         </div>

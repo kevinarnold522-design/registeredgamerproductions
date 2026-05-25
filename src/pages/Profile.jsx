@@ -46,6 +46,14 @@ export default function Profile() {
     setProfile({ ...profile, avatar_url: file_url });
   };
 
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
+    setProfile({ ...profile, banner_url: file_url });
+  };
+
   if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;
 
   const accountColors = {
@@ -70,8 +78,18 @@ export default function Profile() {
       <div className={user ? "pt-16" : ""}>
         {/* Banner */}
         <div className="relative h-48 md:h-64 bg-gradient-to-r from-purple-900 via-pink-900 to-gray-900 overflow-hidden">
-          {profile?.banner_url && <img src={profile.banner_url} alt="" className="w-full h-full object-cover" />}
+          {profile?.banner_url ? (
+            <img src={profile.banner_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/60 to-pink-900/40" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 to-transparent" />
+          {isOwnProfile && (
+            <label className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gray-900/80 border border-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm">
+              <Upload className="w-4 h-4 text-gray-300" />
+              <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+            </label>
+          )}
         </div>
 
         <div className="max-w-4xl mx-auto px-4 -mt-16 relative z-10">
