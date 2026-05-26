@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, Music, PieChart } from "lucide-react";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
 import { Link } from "react-router-dom";
@@ -102,11 +102,6 @@ export default function AuthNavbar({ user, profile }) {
           <Link to="/analytics" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900/60 border border-gray-800 text-gray-400 text-sm font-bold hover:text-purple-300 hover:border-purple-700/40 transition-all">
             <PieChart className="w-4 h-4" />
             <span className="hidden lg:block">Analytics</span>
-          </Link>
-          {/* Music Library */}
-          <Link to="/music-library" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900/60 border border-gray-800 text-gray-400 text-sm font-bold hover:text-purple-300 hover:border-purple-700/40 transition-all">
-            <Music className="w-4 h-4" />
-            <span className="hidden lg:block">Music</span>
           </Link>
           {/* AI Video Studio — for all logged-in users */}
           <Link

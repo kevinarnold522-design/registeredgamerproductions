@@ -397,6 +397,7 @@ function LeftPanel({ activePanel, setActivePanel, canvasSize, addElement, addPag
     { id: "text", icon: Type, label: "Text" },
     { id: "shapes", icon: Grid3X3, label: "Shapes" },
     { id: "stickers", icon: Sparkles, label: "Stickers" },
+    { id: "music", icon: Music, label: "Music" },
     { id: "pages", icon: Layers, label: "Pages" },
     { id: "background", icon: Palette, label: "BG" },
   ];
@@ -495,6 +496,30 @@ function LeftPanel({ activePanel, setActivePanel, canvasSize, addElement, addPag
                   <span className="text-gray-400 text-xs">{lbl}</span>
                 </button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* MUSIC PANEL */}
+        {activePanel === "music" && (
+          <div className="space-y-3">
+            <h3 className="text-white font-bold text-sm">Music Library</h3>
+            <p className="text-gray-500 text-xs">Add background music to your video project</p>
+            <a href="/music-library" target="_blank" rel="noopener noreferrer"
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-purple-900/30 border border-purple-700/40 hover:bg-purple-900/50 transition-all group">
+              <div className="w-10 h-10 rounded-lg bg-purple-600/40 flex items-center justify-center">
+                <Music className="w-5 h-5 text-purple-400" />
+              </div>
+              <div className="text-left flex-1">
+                <p className="text-white text-sm font-semibold">Open Music Library</p>
+                <p className="text-gray-400 text-xs">Browse royalty-free tracks</p>
+              </div>
+            </a>
+            <div className="border-t border-gray-800 pt-3">
+              <p className="text-gray-400 text-xs font-semibold mb-2">Upload Audio Track</p>
+              <button className="w-full flex items-center gap-2 p-3 rounded-xl border border-dashed border-gray-700 hover:border-purple-500 text-gray-500 hover:text-purple-400 text-sm transition-colors">
+                <Upload className="w-4 h-4" /> Upload MP3 / WAV
+              </button>
             </div>
           </div>
         )}

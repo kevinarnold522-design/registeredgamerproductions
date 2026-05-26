@@ -68,6 +68,7 @@ export default function CreateListing() {
     paypal_email: "",
     external_link: "",
     download_url: "",
+    card_animation: "fade",
   });
 
   useEffect(() => {
@@ -493,6 +494,38 @@ export default function CreateListing() {
               <input type="checkbox" checked={form.is_premium} onChange={e => setForm({ ...form, is_premium: e.target.checked })} className="w-4 h-4 rounded accent-purple-600" />
               <span className="text-gray-300 text-sm font-medium">Mark as Premium listing</span>
             </label>
+          </div>
+
+          {/* Card Animation Style */}
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <span className="text-lg">✨</span> Card Animation Style
+            </h3>
+            <p className="text-gray-500 text-xs">Choose how your listing card animates when viewers see it</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {[
+                { id: "fade", label: "Fade In", desc: "Smooth opacity fade", emoji: "🌅" },
+                { id: "slide_up", label: "Slide Up", desc: "Slides from below", emoji: "⬆️" },
+                { id: "slide_left", label: "Slide Left", desc: "Glides from right", emoji: "◀️" },
+                { id: "zoom", label: "Zoom In", desc: "Scales into view", emoji: "🔍" },
+                { id: "flip", label: "Flip Card", desc: "3D card flip reveal", emoji: "🃏" },
+                { id: "bounce", label: "Bounce", desc: "Bouncy entrance", emoji: "🎾" },
+                { id: "glow", label: "Glow Pulse", desc: "Purple glow pulse", emoji: "💜" },
+                { id: "rotate", label: "Rotate In", desc: "Spins into place", emoji: "🌀" },
+                { id: "none", label: "No Animation", desc: "Static, instant", emoji: "⬛" },
+              ].map(anim => (
+                <button
+                  key={anim.id}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, card_animation: anim.id }))}
+                  className={`flex flex-col items-start gap-1.5 p-3 rounded-xl border-2 transition-all text-left ${form.card_animation === anim.id ? "bg-purple-900/40 border-purple-500 shadow-lg shadow-purple-500/20" : "bg-gray-800 border-gray-700 hover:border-purple-500/50"}`}
+                >
+                  <span className="text-2xl">{anim.emoji}</span>
+                  <span className="text-white text-xs font-bold">{anim.label}</span>
+                  <span className="text-gray-500 text-[10px]">{anim.desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <button type="submit" disabled={saving}

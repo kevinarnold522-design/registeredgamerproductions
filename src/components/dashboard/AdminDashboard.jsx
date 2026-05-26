@@ -65,6 +65,17 @@ export default function AdminDashboard({ user, profile }) {
     setAllUsers(prev => prev.map(u => u.id === profileId ? { ...u, is_verified: !currentValue } : u));
   };
 
+  const [editingUser, setEditingUser] = useState(null);
+  const [editForm, setEditForm] = useState({});
+
+  const startEdit = (u) => { setEditingUser(u.id); setEditForm({ username: u.username, account_type: u.account_type }); };
+  const cancelEdit = () => { setEditingUser(null); setEditForm({}); };
+  const saveEdit = async (profileId) => {
+    await base44.entities.UserProfile.update(profileId, editForm);
+    setAllUsers(prev => prev.map(u => u.id === profileId ? { ...u, ...editForm } : u));
+    setEditingUser(null);
+  };
+
   const totalModDownloads = allListings
     .filter(l => l.category === "modding")
     .reduce((s, l) => s + (l.views || 0), 0);
@@ -186,7 +197,7 @@ export default function AdminDashboard({ user, profile }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-800/50">
                 <tr>
-                  {["Username", "Email", "Type", "Payment", "Verified Badge", "Revenue", "Joined"].map(h => (
+                  {["Username", "Email", "Type", "Payment", "Verified Badge", "Revenue", "Joined", "Edit"].map(h => (
                    <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
                   ))}
                 </tr>
@@ -194,12 +205,26 @@ export default function AdminDashboard({ user, profile }) {
               <tbody>
                 {allUsers.map((u) => (
                   <tr key={u.id} className="border-t border-gray-800 hover:bg-gray-800/30">
-                    <td className="px-4 py-3 text-white font-semibold text-xs">{u.username}</td>
+                    <td className="px-4 py-3 text-white font-semibold text-xs">
+                      {editingUser === u.id ? (
+                        <input value={editForm.username} onChange={e => setEditForm(f => ({ ...f, username: e.target.value }))}
+                          className="bg-gray-800 border border-purple-500 rounded px-2 py-1 text-white text-xs w-28 focus:outline-none" />
+                      ) : u.username}
+                    </td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{u.user_email}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${u.account_type === "business" ? "bg-green-900/50 text-green-400" : u.account_type === "digital_creator" ? "bg-purple-900/50 text-purple-400" : "bg-blue-900/50 text-blue-400"}`}>
-                        {u.account_type}
-                      </span>
+                      {editingUser === u.id ? (
+                        <select value={editForm.account_type} onChange={e => setEditForm(f => ({ ...f, account_type: e.target.value }))}
+                          className="bg-gray-800 border border-purple-500 rounded px-2 py-1 text-white text-xs focus:outline-none">
+                          <option value="regular">regular</option>
+                          <option value="digital_creator">digital_creator</option>
+                          <option value="business">business</option>
+                        </select>
+                      ) : (
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${u.account_type === "business" ? "bg-green-900/50 text-green-400" : u.account_type === "digital_creator" ? "bg-purple-900/50 text-purple-400" : "bg-blue-900/50 text-blue-400"}`}>
+                          {u.account_type}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {u.paypal_email ? (
@@ -232,8 +257,20 @@ export default function AdminDashboard({ user, profile }) {
                     </td>
                     <td className="px-4 py-3 text-yellow-400 font-bold">₱{(u.total_revenue || 0).toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{u.joined_date ? new Date(u.joined_date).toLocaleDateString() : "—"}</td>
-                  </tr>
-                ))}
+                    <td className="px-4 py-3">
+                      {editingUser === u.id ? (
+                        <div className="flex gap-1">
+                          <button onClick={() => saveEdit(u.id)} className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded font-bold">Save</button>
+                          <button onClick={cancelEdit} className="px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 text-xs rounded">Cancel</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => startEdit(u)} className="px-2 py-1 bg-gray-800 hover:bg-purple-900/40 border border-gray-700 hover:border-purple-600/50 text-gray-400 hover:text-purple-300 text-xs rounded font-semibold transition-colors">
+                          ✏️ Edit
+                        </button>
+                      )}
+                    </td>
+                    </tr>
+                    ))}
               </tbody>
             </table>
           </div>
