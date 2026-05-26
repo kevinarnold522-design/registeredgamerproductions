@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Youtube, Radio, Mail, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Radio, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const navLinks = [
@@ -43,6 +44,7 @@ export default function Navbar() {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const navigate = useNavigate();
   const EMAIL_PROVIDERS = [
     { name: "Google / Gmail", icon: "🔵", hint: "gmail.com", webmail: "https://mail.google.com" },
     { name: "Yahoo Mail", icon: "🟣", hint: "yahoo.com", webmail: "https://mail.yahoo.com" },
@@ -70,7 +72,7 @@ export default function Navbar() {
 
   const handleSignUp = (typeId) => {
     setShowSignUpModal(false);
-    window.location.href = `/register?type=${typeId}`;
+    navigate(`/register?type=${typeId}`);
   };
 
   const handleSignInClick = async () => {
@@ -127,7 +129,7 @@ export default function Navbar() {
                 onBlur={() => setSearchFocused(false)}
                 placeholder="Search..."
                 className="bg-transparent text-white text-xs placeholder-gray-600 outline-none flex-1 min-w-0"
-                onKeyDown={e => e.key === "Enter" && searchQuery && (window.location.href = `/?search=${encodeURIComponent(searchQuery)}`)}
+                onKeyDown={e => e.key === "Enter" && searchQuery && navigate(`/?search=${encodeURIComponent(searchQuery)}`)}
               />
             </div>
 

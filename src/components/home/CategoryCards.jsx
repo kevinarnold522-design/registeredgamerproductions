@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   IconController, IconMod, IconStream, IconTrophy, IconStore,
   IconPlay, IconJobs, IconServices
@@ -88,11 +89,12 @@ const otherCategories = [
 
 function SmallCard({ cat, index }) {
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
   const CatIcon = cat.icon;
 
   return (
-    <motion.a
-      href={cat.href}
+    <motion.div
+      onClick={() => navigate(cat.href)}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -127,12 +129,13 @@ function SmallCard({ cat, index }) {
           <span className="text-white/60 text-xs font-bold">→</span>
         </div>
       </div>
-    </motion.a>
+    </motion.div>
   );
 }
 
 export default function CategoryCards() {
   const [modHovered, setModHovered] = useState(false);
+  const navigate = useNavigate();
   const ModIcon = moddingCategory.icon;
 
   return (
@@ -149,8 +152,8 @@ export default function CategoryCards() {
         </motion.div>
 
         {/* MODDING — Hero large card */}
-        <motion.a
-          href={moddingCategory.href}
+        <motion.div
+          onClick={() => navigate(moddingCategory.href)}
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden block"
           style={{
@@ -200,7 +203,7 @@ export default function CategoryCards() {
               Explore → 
             </div>
           </div>
-        </motion.a>
+        </motion.div>
 
         {/* Other Categories — direct click cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">

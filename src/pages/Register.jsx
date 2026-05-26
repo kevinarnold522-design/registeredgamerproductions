@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck, Youtube, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { ACCOUNT_TYPES, TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 
@@ -95,14 +96,14 @@ export default function Register() {
       <div className="w-full max-w-lg relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <a href="/" className="inline-flex items-center gap-2 group">
+          <Link to="/" className="inline-flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
               <Gamepad2 className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-black text-white">
               GAMER<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"> Productions</span>
             </span>
-          </a>
+          </Link>
         </div>
 
         {/* Progress */}
@@ -318,10 +319,11 @@ export default function Register() {
                 </ol>
               </div>
               <p className="text-gray-500 text-xs mb-1">An OTP will be required on each login for security via <span className="text-purple-400">{form.otpMethod === "email" ? "Email" : "SMS"}</span>.</p>
-              <a href="/login"
+              <button
+                onClick={() => base44.auth.redirectToLogin("/")}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity mt-4">
                 <Check className="w-5 h-5" /> Go to Sign In
-              </a>
+              </button>
               <p className="text-gray-600 text-xs mt-4">
                 Didn't receive it? Check spam or <button onClick={async () => { try { await base44.users.inviteUser(form.email, "user"); } catch {} }} className="text-purple-400 underline">resend</button>
               </p>

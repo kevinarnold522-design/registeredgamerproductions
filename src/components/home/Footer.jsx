@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { GamerLogo } from "@/components/icons/GameIcons";
 import { Twitter, Youtube, Twitch, Instagram, MessageCircle } from "lucide-react";
 import PlatformLinksBar from "@/components/home/PlatformLinksBar";
@@ -65,11 +66,18 @@ export default function Footer() {
                 {items.map((item) => {
                   const label = typeof item === "string" ? item : item.label;
                   const href = typeof item === "string" ? "#" : item.href;
+                  const isInternal = href && href.startsWith("/");
                   return (
                     <li key={label}>
-                      <a href={href} className="text-gray-500 hover:text-purple-400 text-sm transition-colors">
-                        {label}
-                      </a>
+                      {isInternal ? (
+                        <Link to={href} className="text-gray-500 hover:text-purple-400 text-sm transition-colors">
+                          {label}
+                        </Link>
+                      ) : (
+                        <a href={href} className="text-gray-500 hover:text-purple-400 text-sm transition-colors">
+                          {label}
+                        </a>
+                      )}
                     </li>
                   );
                 })}

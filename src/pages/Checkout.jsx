@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { ShoppingCart, CheckCircle, ArrowLeft } from "lucide-react";
 import PayPalCheckout from "@/components/payments/PayPalCheckout";
 
@@ -55,9 +56,9 @@ export default function Checkout() {
           <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
           <h2 className="text-white font-black text-2xl mb-2">Payment Successful!</h2>
           <p className="text-gray-400 text-sm mb-6">Your order has been placed and the seller has been notified.</p>
-          <a href="/dashboard" className="px-6 py-3 rounded-xl bg-purple-600 text-white font-bold hover:opacity-90 transition-opacity">
+          <Link to="/dashboard" className="px-6 py-3 rounded-xl bg-purple-600 text-white font-bold hover:opacity-90 transition-opacity">
             Go to Dashboard
-          </a>
+          </Link>
         </motion.div>
       </div>
     );
@@ -66,9 +67,9 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <div className="max-w-2xl mx-auto px-4 py-10">
-        <a href="/" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-6 transition-colors">
+        <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back
-        </a>
+        </Link>
 
         <h1 className="text-2xl font-black mb-6 flex items-center gap-2">
           <ShoppingCart className="w-6 h-6 text-purple-400" /> Checkout
@@ -78,7 +79,7 @@ export default function Checkout() {
           <div className="text-center py-16 bg-gray-900 rounded-2xl border border-gray-800">
             <ShoppingCart className="w-12 h-12 text-gray-700 mx-auto mb-3" />
             <p className="text-gray-400">Your cart is empty.</p>
-            <a href="/" className="mt-4 inline-block px-5 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm hover:opacity-90">Browse Listings</a>
+            <Link to="/" className="mt-4 inline-block px-5 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm hover:opacity-90">Browse Listings</Link>
           </div>
         ) : (
           <div className="space-y-4">
