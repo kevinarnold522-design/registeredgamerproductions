@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gamepad2, Zap, Users, Radio } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Gamepad2, Zap, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 function SignInHeroButton() {
@@ -103,6 +104,7 @@ const quickLinks = [
 ];
 
 export default function HeroSection() {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16">
       {/* Background */}
@@ -181,18 +183,18 @@ export default function HeroSection() {
         {/* CTA Buttons */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
         className="flex flex-col sm:flex-row gap-3 justify-center mb-6 flex-wrap">
-        <motion.a href="/register" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+        <motion.button onClick={() => navigate("/register")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
           className="px-10 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
           style={{ boxShadow: "0 0 30px rgba(139,92,246,0.5)" }}>
           <Zap className="w-5 h-5" /> Sign Up Free — Join Now
-        </motion.a>
+        </motion.button>
         <SignInHeroButton />
-        <motion.a href="/category?cat=livestream" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+        <motion.button onClick={() => navigate("/category?cat=livestream")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
             className="px-8 py-4 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
             <Radio className="w-5 h-5" />
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             Go Live Now
-          </motion.a>
+          </motion.button>
         <motion.a href="#categories" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
           className="px-8 py-4 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-base hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
           <Gamepad2 className="w-5 h-5" /> Browse Categories
@@ -214,12 +216,12 @@ export default function HeroSection() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
           {quickLinks.map((item, i) => (
-            <motion.a key={i} href={item.href} whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
+            <motion.button key={i} onClick={() => navigate(item.href)} whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
               className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-purple-700/60 transition-all cursor-pointer group">
               <span className="text-xl">{item.icon}</span>
               <span className="text-white text-xs font-semibold text-center leading-tight group-hover:text-purple-300 transition-colors">{item.label}</span>
               <span className="text-gray-500 text-xs text-center">{item.sub}</span>
-            </motion.a>
+            </motion.button>
           ))}
         </motion.div>
       </div>

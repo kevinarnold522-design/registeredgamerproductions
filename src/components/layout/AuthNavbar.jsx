@@ -84,14 +84,14 @@ export default function AuthNavbar({ user, profile }) {
                 )}
               </button>
             ) : (
-              <a
+              <Link
                 key={i}
-                href={link.href}
+                to={link.href}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-400 hover:text-purple-300 hover:bg-purple-900/20 text-sm font-medium transition-colors"
               >
                 <link.icon className="w-4 h-4" />
                 {link.label}
-              </a>
+              </Link>
             )
           )}
         </div>

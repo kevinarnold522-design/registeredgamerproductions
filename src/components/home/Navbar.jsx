@@ -110,11 +110,18 @@ export default function Navbar() {
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-4">
               {navLinks.map((link) => (
-                <a key={link.label} href={link.href}
-                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
-                  {link.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-                  {link.label}
-                </a>
+                link.href.startsWith("#") ? (
+                  <a key={link.label} href={link.href}
+                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
+                    {link.label}
+                  </a>
+                ) : (
+                  <button key={link.label} onClick={() => navigate(link.href)}
+                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
+                    {link.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+                    {link.label}
+                  </button>
+                )
               ))}
             </div>
 
@@ -162,9 +169,15 @@ export default function Navbar() {
         {menuOpen && (
         <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3">
           {navLinks.map((link) => (
-            <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
-              {link.label}
-            </a>
+            link.href.startsWith("#") ? (
+              <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
+                {link.label}
+              </a>
+            ) : (
+              <button key={link.label} onClick={() => { setMenuOpen(false); navigate(link.href); }} className="text-gray-300 hover:text-purple-400 font-medium py-1 text-left">
+                {link.label}
+              </button>
+            )
           ))}
             <button
               onClick={() => { setMenuOpen(false); setShowSignInModal(true); }}
