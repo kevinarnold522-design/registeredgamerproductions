@@ -197,7 +197,10 @@ export default function Navbar() {
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                     <Gamepad2 className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-white font-black text-sm">GAMER Productions</span>
+                  <div>
+                    <span className="font-black text-white text-sm">GAMER</span>
+                    <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm"> Productions</span>
+                  </div>
                 </div>
                 <button onClick={() => setShowSignUpModal(false)} className="text-gray-600 hover:text-white transition-colors">
                   <X className="w-5 h-5" />

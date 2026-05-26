@@ -73,7 +73,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                 <Gamepad2 className="w-5 h-5 text-white" />
               </div>
-              <span className="text-white font-black text-sm">Log In to GAMER Productions</span>
+              <span className="text-white font-black text-sm">Log In — GAMER Productions</span>
             </div>
             <button onClick={onClose} className="text-gray-600 hover:text-white transition-colors">
               <X className="w-5 h-5" />
