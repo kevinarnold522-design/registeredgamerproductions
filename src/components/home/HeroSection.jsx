@@ -3,6 +3,23 @@ import { motion } from "framer-motion";
 import { Gamepad2, Zap, Users, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
+function SignInHeroButton() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(auth => setShow(!auth));
+  }, []);
+  if (!show) return null;
+  return (
+    <motion.button
+      onClick={() => base44.auth.redirectToLogin("/")}
+      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+      className="px-10 py-4 rounded-xl bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-500 text-white font-black text-lg hover:from-gray-700 hover:to-gray-600 transition-all flex items-center justify-center gap-2 shadow-lg"
+    >
+      Sign In
+    </motion.button>
+  );
+}
+
 function LiveStats() {
   const [stats, setStats] = useState({ users: 0, listings: 0 });
   useEffect(() => {
@@ -163,22 +180,23 @@ export default function HeroSection() {
 
         {/* CTA Buttons */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-          className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
-          <motion.a href="/register" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-            className="px-10 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            style={{ boxShadow: "0 0 30px rgba(139,92,246,0.5)" }}>
-            <Zap className="w-5 h-5" /> Sign Up Free — Join Now
-          </motion.a>
-          <motion.a href="#livestream" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-            className="px-8 py-4 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
-            <Radio className="w-5 h-5" />
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            Go Live Now
-          </motion.a>
-          <motion.a href="#categories" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-            className="px-8 py-4 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-base hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
-            <Gamepad2 className="w-5 h-5" /> Browse Categories
-          </motion.a>
+        className="flex flex-col sm:flex-row gap-3 justify-center mb-6 flex-wrap">
+        <motion.a href="/register" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+          className="px-10 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          style={{ boxShadow: "0 0 30px rgba(139,92,246,0.5)" }}>
+          <Zap className="w-5 h-5" /> Sign Up Free — Join Now
+        </motion.a>
+        <SignInHeroButton />
+        <motion.a href="#livestream" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+          className="px-8 py-4 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
+          <Radio className="w-5 h-5" />
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          Go Live Now
+        </motion.a>
+        <motion.a href="#categories" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+          className="px-8 py-4 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-base hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
+          <Gamepad2 className="w-5 h-5" /> Browse Categories
+        </motion.a>
         </motion.div>
 
         {/* Trust signals */}
