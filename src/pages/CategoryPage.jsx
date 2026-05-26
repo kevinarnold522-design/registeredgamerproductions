@@ -24,8 +24,9 @@ export default function CategoryPage() {
         const me = await base44.auth.me();
         setUser(me);
         if (me) {
-          const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
-          if (profiles.length > 0) setProfile(profiles[0]);
+          base44.entities.UserProfile.filter({ user_email: me.email }).then(profiles => {
+            if (profiles.length > 0) setProfile(profiles[0]);
+          });
         }
       } catch {}
       setLoading(false);
@@ -33,7 +34,8 @@ export default function CategoryPage() {
     init();
   }, []);
 
-  if (loading) return (
+  // Don't block page render on auth — show content immediately, auth loads in background
+  if (loading && !cat) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
     </div>

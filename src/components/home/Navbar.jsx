@@ -44,13 +44,23 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const EMAIL_PROVIDERS = [
-    { name: "Google / Gmail", icon: "🔵", hint: "gmail.com", url: null },
-    { name: "Yahoo Mail", icon: "🟣", hint: "yahoo.com", url: "https://mail.yahoo.com" },
-    { name: "Outlook / Hotmail", icon: "🔷", hint: "outlook.com / hotmail.com", url: "https://outlook.live.com" },
-    { name: "iCloud Mail", icon: "☁️", hint: "icloud.com / me.com", url: "https://www.icloud.com/mail" },
-    { name: "ProtonMail", icon: "🛡️", hint: "proton.me", url: "https://mail.proton.me" },
-    { name: "Zoho Mail", icon: "🟠", hint: "zoho.com", url: "https://mail.zoho.com" },
+    { name: "Google / Gmail", icon: "🔵", hint: "gmail.com", webmail: "https://mail.google.com" },
+    { name: "Yahoo Mail", icon: "🟣", hint: "yahoo.com", webmail: "https://mail.yahoo.com" },
+    { name: "Outlook / Hotmail", icon: "🔷", hint: "outlook.com / hotmail.com", webmail: "https://outlook.live.com" },
+    { name: "iCloud Mail", icon: "☁️", hint: "icloud.com / me.com", webmail: "https://www.icloud.com/mail" },
+    { name: "ProtonMail", icon: "🛡️", hint: "proton.me", webmail: "https://mail.proton.me" },
+    { name: "Zoho Mail", icon: "🟠", hint: "zoho.com", webmail: "https://mail.zoho.com" },
+    { name: "Tutanota", icon: "🟢", hint: "tuta.com", webmail: "https://app.tuta.com" },
+    { name: "AOL Mail", icon: "🔴", hint: "aol.com", webmail: "https://mail.aol.com" },
   ];
+
+  const handleEmailProviderSignIn = (provider) => {
+    setShowSignInModal(false);
+    // Open their webmail in a new tab so they can receive the login email/OTP
+    window.open(provider.webmail, "_blank", "noopener,noreferrer");
+    // Trigger the platform login flow
+    base44.auth.redirectToLogin("/");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -295,7 +305,7 @@ export default function Navbar() {
                 {EMAIL_PROVIDERS.map((ep) => (
                   <button
                     key={ep.name}
-                    onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/"); }}
+                    onClick={() => handleEmailProviderSignIn(ep)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 hover:bg-gray-800 transition-colors text-left"
                   >
                     <span className="text-lg">{ep.icon}</span>
