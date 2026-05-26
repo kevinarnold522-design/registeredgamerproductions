@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { CheckCircle, Unlink, Lock, Wallet, Eye, EyeOff, Info } from "lucide-react";
+import StripeConnect from "@/components/payments/StripeConnect";
+import FeedbackWidget from "@/components/shared/FeedbackWidget";
 
 export default function PaymentPage() {
   const [user, setUser] = useState(null);
@@ -108,6 +110,7 @@ export default function PaymentPage() {
   return (
     <div className="min-h-screen bg-gray-950">
       <AuthNavbar user={user} profile={profile} />
+      <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
       <div className="pt-24 max-w-xl mx-auto px-4 pb-12">
         <h1 className="text-2xl font-black text-white mb-1">💳 Payment</h1>
         <p className="text-gray-400 text-sm mb-8">
@@ -338,6 +341,18 @@ export default function PaymentPage() {
                 </ol>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Stripe Section */}
+        {profile && (
+          <div className="mt-8">
+            <h2 className="text-lg font-black text-white mb-1">💜 Stripe</h2>
+            <p className="text-gray-400 text-sm mb-4">Connect Stripe to accept card payments from buyers worldwide.</p>
+            <StripeConnect
+              profile={profile}
+              onProfileUpdate={(updated) => setProfile(updated)}
+            />
           </div>
         )}
       </div>

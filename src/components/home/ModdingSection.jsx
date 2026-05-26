@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Download } from "lucide-react";
+import { Download, Star } from "lucide-react";
+import ModReviewModal from "@/components/shared/ModReviewModal";
 
 const MODDING_SUBCATEGORIES = [
   "WWE2K", "Football Life", "GTA 4", "GTA 5", "GTA SA",
@@ -13,6 +14,20 @@ export default function ModdingSection() {
   const [totalDownloads, setTotalDownloads] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [reviewMod, setReviewMod] = useState(null);
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(auth => {
+      if (auth) {
+        base44.auth.me().then(me => {
+          setUser(me);
+          if (me) base44.entities.UserProfile.filter({ user_email: me.email }).then(p => p.length > 0 && setProfile(p[0]));
+        });
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -95,14 +110,20 @@ export default function ModdingSection() {
                   <p className="text-orange-400 text-xs font-semibold mb-0.5">{mod.subcategory}</p>
                   <h3 className="text-white font-bold text-sm truncate">{mod.title}</h3>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-orange-400 font-black text-sm">
-                      {mod.price === 0 ? "FREE" : `₱${mod.price?.toLocaleString()}`}
+                    <span className={`font-black text-sm ${mod.price === 0 || mod.is_free ? "text-green-400" : "text-yellow-400"}`}>
+                      {mod.price === 0 || mod.is_free ? "FREE" : `₱${mod.price?.toLocaleString()}`}
                     </span>
                     <span className="text-gray-600 text-xs flex items-center gap-1">
                       <Download className="w-3 h-3" />{mod.views || 0}
                     </span>
                   </div>
                   <p className="text-gray-600 text-xs mt-1">by @{mod.seller_username}</p>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setReviewMod(mod); }}
+                    className="mt-2 flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-semibold transition-colors"
+                  >
+                    <Star className="w-3 h-3" /> Reviews
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -115,6 +136,18 @@ export default function ModdingSection() {
           </a>
         </div>
       </div>
+
+      {/* Review Modal */}
+      <AnimatePresence>
+        {reviewMod && (
+          <ModReviewModal
+            listing={reviewMod}
+            user={user}
+            profile={profile}
+            onClose={() => setReviewMod(null)}
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }

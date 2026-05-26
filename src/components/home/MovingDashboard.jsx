@@ -222,14 +222,20 @@ export default function MovingDashboard() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [freeMods, setFreeMods] = useState([]);
+  const [paidMods, setPaidMods] = useState([]);
+
   useEffect(() => {
     const load = async () => {
       const [vids, listings] = await Promise.all([
         base44.entities.VideoPost.filter({ status: "active", is_approved: true }, "-views", 20),
-        base44.entities.Listing.filter({ status: "active" }, "-created_date", 60),
+        base44.entities.Listing.filter({ status: "active" }, "-created_date", 80),
       ]);
       setVideos(vids);
-      setMods(listings.filter(l => l.category === "modding").slice(0, 16));
+      const allMods = listings.filter(l => l.category === "modding");
+      setFreeMods(allMods.filter(m => !m.price || m.price === 0 || m.is_free).slice(0, 16));
+      setPaidMods(allMods.filter(m => m.price > 0 && !m.is_free).slice(0, 16));
+      setMods(allMods.slice(0, 16));
       setProducts(listings.filter(l => l.category !== "modding" && l.category !== "content").slice(0, 16));
       setLoading(false);
     };
@@ -310,10 +316,30 @@ export default function MovingDashboard() {
         </div>
       )}
 
-      {/* Premium Mods */}
-      {mods.length > 0 && (
+      {/* Paid/Premium Mods */}
+      {paidMods.length > 0 && (
         <div className="mb-8">
-          <SectionLabel icon={Package} label="PREMIUM MODS" color={CP.yellow} />
+          <SectionLabel icon={Package} label="💎 PREMIUM MODS — Paid" color={CP.yellow} />
+          <ScrollRow speed={35} reverse>
+            {paidMods.map((m, i) => <ModCard key={i} mod={m} />)}
+          </ScrollRow>
+        </div>
+      )}
+
+      {/* Free Mods */}
+      {freeMods.length > 0 && (
+        <div className="mb-8">
+          <SectionLabel icon={Package} label="🆓 FREE MODS — Community" color="#4ade80" />
+          <ScrollRow speed={38}>
+            {freeMods.map((m, i) => <ModCard key={i} mod={m} />)}
+          </ScrollRow>
+        </div>
+      )}
+
+      {/* Fallback: all mods if no split available */}
+      {paidMods.length === 0 && freeMods.length === 0 && mods.length > 0 && (
+        <div className="mb-8">
+          <SectionLabel icon={Package} label="TOP MODS" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
             {mods.map((m, i) => <ModCard key={i} mod={m} />)}
           </ScrollRow>

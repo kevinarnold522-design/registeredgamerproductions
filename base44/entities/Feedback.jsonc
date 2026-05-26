@@ -1,0 +1,51 @@
+{
+  "name": "Feedback",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bug",
+        "feature_request",
+        "improvement",
+        "general",
+        "content",
+        "payment"
+      ],
+      "default": "general"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "reviewed",
+        "resolved"
+      ],
+      "default": "new"
+    },
+    "page": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "message",
+    "category"
+  ]
+}

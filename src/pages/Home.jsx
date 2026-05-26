@@ -18,6 +18,7 @@ import FeaturedGames from "@/components/home/FeaturedGames";
 import CommunitySection from "@/components/home/CommunitySection";
 import Footer from "@/components/home/Footer";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
+import FeedbackWidget from "@/components/shared/FeedbackWidget";
 import { base44 } from "@/api/base44Client";
 
 
@@ -88,6 +89,7 @@ export default function Home() {
             <FeaturedGames />
             <CommunitySection />
             <Footer />
+            <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
           </div>
         </>
       )}

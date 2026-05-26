@@ -103,6 +103,36 @@
     "paypal_merchant_id": {
       "type": "string"
     },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "Stripe Connect account ID"
+    },
+    "stripe_publishable_key": {
+      "type": "string",
+      "description": "Stripe publishable key"
+    },
+    "stripe_secret_key": {
+      "type": "string",
+      "description": "Stripe secret key (stored securely)"
+    },
+    "stripe_webhook_secret": {
+      "type": "string",
+      "description": "Stripe webhook endpoint secret"
+    },
+    "stripe_business_name": {
+      "type": "string"
+    },
+    "stripe_country": {
+      "type": "string"
+    },
+    "stripe_currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "stripe_connected": {
+      "type": "boolean",
+      "default": false
+    },
     "business_name": {
       "type": "string"
     },
