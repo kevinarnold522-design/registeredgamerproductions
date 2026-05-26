@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Heart, MessageCircle, Share2, MoreHorizontal, X, Send } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
+import ShareButton from "@/components/shared/ShareButton";
 
 export default function PostCard({ post, user, profile, onLike, onComment, onShare }) {
   const [showCommentsList, setShowCommentsList] = useState(false);
@@ -103,13 +104,7 @@ export default function PostCard({ post, user, profile, onLike, onComment, onSha
           <MessageCircle className="w-5 h-5" />
           {post.comments_count || 0}
         </button>
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-2 text-gray-400 hover:text-white text-sm font-semibold transition-colors"
-        >
-          <Share2 className="w-5 h-5" />
-          {post.shares_count || 0}
-        </button>
+        <ShareButton type="post" id={post.id} title={post.caption} />
       </div>
 
       {/* Comments Section */}

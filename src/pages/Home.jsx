@@ -19,6 +19,7 @@ import CommunitySection from "@/components/home/CommunitySection";
 import Footer from "@/components/home/Footer";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import FeedbackWidget from "@/components/shared/FeedbackWidget";
+import AdminLinkScanner from "@/components/admin/AdminLinkScanner";
 import { base44 } from "@/api/base44Client";
 
 
@@ -90,6 +91,7 @@ export default function Home() {
             <CommunitySection />
             <Footer />
             <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
+            <AdminLinkScanner userEmail={user?.email} />
           </div>
         </>
       )}

@@ -6,15 +6,20 @@ import { base44 } from "@/api/base44Client";
 const EMAIL_PROVIDERS = [
   { name: "Gmail", icon: "🔵", hint: "gmail.com", webmail: "https://mail.google.com", match: ["gmail"] },
   { name: "Yahoo Mail", icon: "🟣", hint: "yahoo.com", webmail: "https://mail.yahoo.com", match: ["yahoo"] },
-  { name: "Outlook / Hotmail", icon: "🔷", hint: "outlook.com / hotmail.com", webmail: "https://outlook.live.com", match: ["outlook","hotmail","live","msn"] },
-  { name: "iCloud Mail", icon: "☁️", hint: "icloud.com / me.com", webmail: "https://www.icloud.com/mail", match: ["icloud","me.com"] },
-  { name: "ProtonMail", icon: "🛡️", hint: "proton.me", webmail: "https://mail.proton.me", match: ["proton","protonmail"] },
+  { name: "Outlook / Hotmail", icon: "🔷", hint: "outlook.com / hotmail.com", webmail: "https://outlook.live.com/mail/0/", match: ["outlook", "hotmail", "live", "msn"] },
+  { name: "iCloud Mail", icon: "☁️", hint: "icloud.com / me.com", webmail: "https://www.icloud.com/mail", match: ["icloud", "me.com"] },
+  { name: "ProtonMail", icon: "🛡️", hint: "proton.me / protonmail.com", webmail: "https://mail.proton.me", match: ["proton", "protonmail"] },
   { name: "Zoho Mail", icon: "🟠", hint: "zoho.com", webmail: "https://mail.zoho.com", match: ["zoho"] },
   { name: "AOL Mail", icon: "🔴", hint: "aol.com", webmail: "https://mail.aol.com", match: ["aol"] },
 ];
 
+// Opens the provider's webmail ONLY — no routing through Google
+function openWebmail(provider) {
+  window.open(provider.webmail, "_blank", "noopener,noreferrer");
+}
+
 export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
-  const [step, setStep] = useState("email"); // "email" | "sent"
+  const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,29 +28,27 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
     p.match.some(m => email.toLowerCase().includes(m))
   );
 
-  const handleSendLink = async () => {
+  // Sends magic link AND opens correct provider inbox (NOT Google by default)
+  const handleLoginAndOpen = (provider) => {
+    base44.auth.redirectToLogin("/");
+    openWebmail(provider);
+  };
+
+  const handleDirectLogin = () => {
+    base44.auth.redirectToLogin("/");
+  };
+
+  const handleSendLink = () => {
     if (!email.trim() || !email.includes("@")) {
       setError("Please enter a valid email address.");
       return;
     }
     setError("");
     setLoading(true);
-    try {
-      // Trigger the base44 magic link flow — this sends the login email
-      await base44.auth.redirectToLogin("/");
-    } catch {
-      // redirectToLogin navigates away — this catch is just safety
-    }
+    // Redirect to login (magic link) then show sent state
+    base44.auth.redirectToLogin("/");
     setLoading(false);
     setStep("sent");
-  };
-
-  const handleProviderOpen = (provider) => {
-    window.open(provider.webmail, "_blank", "noopener,noreferrer");
-  };
-
-  const handleDirectLogin = () => {
-    base44.auth.redirectToLogin("/");
   };
 
   if (!isOpen) return null;
@@ -53,9 +56,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center px-4"
         style={{ background: "rgba(0,0,0,0.88)" }}
         onClick={onClose}
@@ -82,31 +83,25 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
 
           {step === "email" && (
             <>
-              {/* No account warning */}
               <div className="bg-yellow-900/20 border border-yellow-600/40 rounded-xl px-4 py-3 mb-5 text-xs text-yellow-300 leading-relaxed">
                 ⚠️ <strong>New here?</strong> You must{" "}
-                <button
-                  onClick={() => { onClose(); onSwitchToSignUp(); }}
-                  className="underline text-yellow-200 hover:text-white font-bold"
-                >
+                <button onClick={() => { onClose(); onSwitchToSignUp(); }} className="underline text-yellow-200 hover:text-white font-bold">
                   create a free account first
-                </button>{" "}
-                before logging in.
+                </button>{" "}before logging in.
               </div>
 
-              {/* Primary button — full platform login */}
+              {/* Magic Link Button */}
               <button
                 onClick={handleDirectLogin}
                 className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-sm hover:opacity-90 transition-opacity mb-5"
                 style={{ boxShadow: "0 0 20px rgba(139,92,246,0.4)" }}
               >
-                <Zap className="w-4 h-4" />
-                Log In with Magic Link
+                <Zap className="w-4 h-4" /> Log In with Magic Link
               </button>
 
-              <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="flex-1 h-px bg-gray-800" />
-                <span className="text-gray-600 text-xs">or log in via your email app</span>
+                <span className="text-gray-600 text-xs">or type your email to open inbox directly</span>
                 <div className="flex-1 h-px bg-gray-800" />
               </div>
 
@@ -127,32 +122,32 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                 {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
                 {detectedProvider && (
                   <p className="text-purple-400 text-xs mt-1 flex items-center gap-1">
-                    {detectedProvider.icon} Detected: {detectedProvider.name}
+                    {detectedProvider.icon} Detected: <strong>{detectedProvider.name}</strong>
                   </p>
                 )}
               </div>
 
-              {/* If provider detected, show direct open button */}
+              {/* Detected provider shortcut */}
               {detectedProvider && (
                 <button
-                  onClick={() => { handleDirectLogin(); handleProviderOpen(detectedProvider); }}
+                  onClick={() => handleLoginAndOpen(detectedProvider)}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-900 border border-purple-600/50 hover:bg-gray-800 transition-colors mb-3"
                 >
                   <span className="text-xl">{detectedProvider.icon}</span>
                   <div className="flex-1 text-left">
-                    <p className="text-white text-sm font-semibold">Send link & open {detectedProvider.name}</p>
-                    <p className="text-gray-500 text-xs">We'll send the link then open your inbox</p>
+                    <p className="text-white text-sm font-semibold">Send link &amp; open {detectedProvider.name}</p>
+                    <p className="text-gray-500 text-xs">Opens {detectedProvider.webmail}</p>
                   </div>
                   <ExternalLink className="w-4 h-4 text-gray-500" />
                 </button>
               )}
 
-              {/* All providers */}
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              {/* All providers — each opens their OWN inbox */}
+              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                 {EMAIL_PROVIDERS.map(ep => (
                   <button
                     key={ep.name}
-                    onClick={() => { handleDirectLogin(); handleProviderOpen(ep); }}
+                    onClick={() => handleLoginAndOpen(ep)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 hover:bg-gray-800 transition-colors text-left"
                   >
                     <span className="text-lg">{ep.icon}</span>
@@ -161,7 +156,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                       <p className="text-gray-500 text-[10px]">{ep.hint}</p>
                     </div>
                     <span className="text-[10px] bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2 py-1 rounded-lg font-semibold whitespace-nowrap flex items-center gap-1">
-                      Log In <ArrowRight className="w-3 h-3" />
+                      Open <ArrowRight className="w-3 h-3" />
                     </span>
                   </button>
                 ))}
@@ -174,12 +169,12 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
               <CheckCircle className="w-14 h-14 text-green-400 mx-auto mb-4" />
               <h3 className="text-white font-black text-lg mb-2">Check Your Email!</h3>
               <p className="text-gray-400 text-sm mb-5">
-                We've sent a magic login link to<br />
-                <span className="text-purple-400 font-semibold">{email}</span>
+                Magic login link sent to<br />
+                <span className="text-purple-400 font-semibold">{email || "your inbox"}</span>
               </p>
               {detectedProvider && (
                 <button
-                  onClick={() => handleProviderOpen(detectedProvider)}
+                  onClick={() => openWebmail(detectedProvider)}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-900 border border-purple-600/50 text-white font-semibold text-sm hover:bg-gray-800 transition-colors mb-3"
                 >
                   <span>{detectedProvider.icon}</span>
@@ -196,10 +191,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
           <div className="border-t border-gray-800 pt-4 mt-4 text-center">
             <p className="text-gray-500 text-sm">
               New here?{" "}
-              <button
-                onClick={() => { onClose(); onSwitchToSignUp(); }}
-                className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
-              >
+              <button onClick={() => { onClose(); onSwitchToSignUp(); }} className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
                 Create Free Account →
               </button>
             </p>

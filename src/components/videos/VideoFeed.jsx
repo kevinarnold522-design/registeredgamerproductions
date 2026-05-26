@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Play, Eye, Heart, Youtube, CheckCircle } from "lucide-react";
+import { Play, Eye, Heart, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ShareButton from "@/components/shared/ShareButton";
 
 function getYouTubeId(url) {
   if (!url) return null;
@@ -79,6 +80,7 @@ export default function VideoFeed({ limit = 8 }) {
                 <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{(v.views || 0).toLocaleString()}</span>
                 <span className="flex items-center gap-1"><Heart className="w-3 h-3" />{(v.likes || 0).toLocaleString()}</span>
                 {v.is_monetized && <span className="text-green-400 font-semibold">+${((v.views || 0) / 1000).toFixed(2)}</span>}
+                <ShareButton type="video" id={v.id} title={v.title} compact />
               </div>
             </div>
           </motion.div>

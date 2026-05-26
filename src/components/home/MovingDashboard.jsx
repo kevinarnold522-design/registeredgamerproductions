@@ -33,18 +33,41 @@ function ScrollRow({ children, speed = 30, reverse = false }) {
   );
 }
 
+function FireBurst() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.5 }}
+      whileHover={{ opacity: 1, scale: 1 }}
+      className="absolute inset-0 pointer-events-none z-20 flex items-end justify-center pb-1 overflow-hidden"
+    >
+      {["🔥","🔥","🔥"].map((f, i) => (
+        <motion.span
+          key={i}
+          animate={{ y: [0, -18, 0], opacity: [0.7, 1, 0.7], scale: [1, 1.3, 1] }}
+          transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
+          className="text-base"
+          style={{ marginLeft: i === 1 ? 0 : i === 0 ? -6 : 6 }}
+        >{f}</motion.span>
+      ))}
+    </motion.div>
+  );
+}
+
 function VideoCard({ video }) {
   const ytId = video.youtube_video_id || (video.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
   return (
     <motion.div
-      whileHover={{ scale: 1.04, y: -4 }}
-      className="relative w-60 flex-shrink-0 rounded-xl overflow-hidden group cursor-pointer"
+      whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(168,85,247,0.5), 0 0 80px rgba(168,85,247,0.15)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="relative w-60 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer"
       style={{
-        background: "linear-gradient(135deg, #0d0020, #080012)",
-        border: "1px solid rgba(168,85,247,0.3)",
-        boxShadow: "0 0 15px rgba(168,85,247,0.1)",
+        background: "rgba(13,0,32,0.55)",
+        border: "1px solid rgba(168,85,247,0.45)",
+        backdropFilter: "blur(18px)",
+        boxShadow: "0 4px 24px rgba(168,85,247,0.12), inset 0 0 20px rgba(168,85,247,0.04)",
       }}
     >
+      <FireBurst />
       <div className="relative h-34 overflow-hidden" style={{ height: "136px" }}>
         {ytId ? (
           <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -80,14 +103,17 @@ function VideoCard({ video }) {
 function ModCard({ mod }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.04, y: -4 }}
-      className="relative w-52 flex-shrink-0 rounded-xl overflow-hidden group cursor-pointer"
+      whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(245,197,24,0.4), 0 0 80px rgba(245,197,24,0.1)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="relative w-52 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer"
       style={{
-        background: "linear-gradient(135deg, #120800, #0a0500)",
-        border: "1px solid rgba(245,197,24,0.25)",
-        boxShadow: "0 0 15px rgba(245,197,24,0.06)",
+        background: "rgba(18,8,0,0.55)",
+        border: "1px solid rgba(245,197,24,0.35)",
+        backdropFilter: "blur(18px)",
+        boxShadow: "0 4px 24px rgba(245,197,24,0.08), inset 0 0 20px rgba(245,197,24,0.03)",
       }}
     >
+      <FireBurst />
       <div className="relative h-32 overflow-hidden">
         {mod.images?.[0] ? (
           <img src={mod.images[0]} alt={mod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -117,14 +143,17 @@ function ModCard({ mod }) {
 function ProductCard({ product }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.04, y: -4 }}
-      className="relative w-48 flex-shrink-0 rounded-xl overflow-hidden group cursor-pointer"
+      whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(0,212,255,0.35), 0 0 80px rgba(0,212,255,0.08)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="relative w-48 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer"
       style={{
-        background: "linear-gradient(135deg, #001208, #000a05)",
-        border: "1px solid rgba(0,212,255,0.2)",
-        boxShadow: "0 0 15px rgba(0,212,255,0.05)",
+        background: "rgba(0,18,8,0.55)",
+        border: "1px solid rgba(0,212,255,0.3)",
+        backdropFilter: "blur(18px)",
+        boxShadow: "0 4px 24px rgba(0,212,255,0.07), inset 0 0 20px rgba(0,212,255,0.03)",
       }}
     >
+      <FireBurst />
       <div className="h-28 overflow-hidden relative">
         {product.images?.[0] ? (
           <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -168,9 +197,16 @@ function PCDealCard({ game }) {
   const isFree = game.price === "FREE";
   const isEpic = game.store === "EPIC";
   return (
-    <motion.a href="/category?cat=games" whileHover={{ scale: 1.05, y: -4 }}
-      className="relative w-44 flex-shrink-0 rounded-xl overflow-hidden group block cursor-pointer"
-      style={{ background: "linear-gradient(135deg, #050010, #030712)", border: `1px solid ${isEpic ? "rgba(168,85,247,0.3)" : "rgba(0,212,255,0.2)"}` }}>
+    <motion.a href="/category?cat=games"
+      whileHover={{ scale: 1.06, y: -6, boxShadow: isEpic ? "0 0 36px rgba(168,85,247,0.45)" : "0 0 36px rgba(0,212,255,0.4)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="relative w-44 flex-shrink-0 rounded-2xl overflow-hidden group block cursor-pointer"
+      style={{
+        background: "rgba(5,0,16,0.55)",
+        border: `1px solid ${isEpic ? "rgba(168,85,247,0.4)" : "rgba(0,212,255,0.3)"}`,
+        backdropFilter: "blur(18px)",
+      }}>
+      <FireBurst />
       <div className="relative h-24 overflow-hidden">
         <img src={game.img} alt={game.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
@@ -189,9 +225,16 @@ function PCDealCard({ game }) {
 
 function MobileDealCard({ game }) {
   return (
-    <motion.a href="/category?cat=games&sub=mobile" whileHover={{ scale: 1.05, y: -4 }}
-      className="relative w-40 flex-shrink-0 rounded-xl overflow-hidden group block"
-      style={{ background: "linear-gradient(135deg, #00050d, #030712)", border: "1px solid rgba(255,45,120,0.2)" }}>
+    <motion.a href="/category?cat=games&sub=mobile"
+      whileHover={{ scale: 1.06, y: -6, boxShadow: "0 0 36px rgba(255,45,120,0.4)" }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="relative w-40 flex-shrink-0 rounded-2xl overflow-hidden group block"
+      style={{
+        background: "rgba(0,5,13,0.55)",
+        border: "1px solid rgba(255,45,120,0.3)",
+        backdropFilter: "blur(18px)",
+      }}>
+      <FireBurst />
       <div className="relative h-24 overflow-hidden">
         <img src={game.img} alt={game.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />

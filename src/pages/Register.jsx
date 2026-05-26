@@ -64,16 +64,17 @@ export default function Register() {
     setLoading(false);
   };
 
-  // Social OAuth providers — each opens the correct provider email login
+  // Social login — each opens its OWN provider's inbox after triggering magic link
   const socialProviders = [
-    { name: "Google", icon: "🔵", color: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50", loginUrl: "https://accounts.google.com/signin" },
-    { name: "Outlook", icon: "🔷", color: "bg-blue-600 text-white hover:bg-blue-700", loginUrl: "https://login.live.com" },
-    { name: "Yahoo", icon: "🟣", color: "bg-purple-600 text-white hover:bg-purple-700", loginUrl: "https://login.yahoo.com" },
-    { name: "AOL", icon: "🔴", color: "bg-red-500 text-white hover:bg-red-600", loginUrl: "https://login.aol.com" },
+    { name: "Google", icon: "🔵", color: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50", webmail: "https://mail.google.com" },
+    { name: "Outlook", icon: "🔷", color: "bg-blue-600 text-white hover:bg-blue-700", webmail: "https://outlook.live.com/mail/0/" },
+    { name: "Yahoo", icon: "🟣", color: "bg-purple-600 text-white hover:bg-purple-700", webmail: "https://mail.yahoo.com" },
+    { name: "AOL", icon: "🔴", color: "bg-red-500 text-white hover:bg-red-600", webmail: "https://mail.aol.com" },
+    { name: "ProtonMail", icon: "🛡️", color: "bg-indigo-700 text-white hover:bg-indigo-800", webmail: "https://mail.proton.me" },
+    { name: "Zoho", icon: "🟠", color: "bg-orange-500 text-white hover:bg-orange-600", webmail: "https://mail.zoho.com" },
   ];
 
-  const handleSocialLogin = (loginUrl) => {
-    // Store pending account type then open provider's login in same tab
+  const handleSocialLogin = (webmail) => {
     localStorage.setItem("pending_profile", JSON.stringify({
       username: "",
       account_type: accountType || "regular",
@@ -81,7 +82,9 @@ export default function Register() {
       preferred_otp_method: "email",
       display_name: "",
     }));
-    window.open(loginUrl, "_blank", "noopener,noreferrer");
+    // Trigger platform magic link, then open the CORRECT provider inbox
+    base44.auth.redirectToLogin("/");
+    window.open(webmail, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -198,11 +201,11 @@ export default function Register() {
               </div>
 
               {/* Social Providers */}
-              <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="grid grid-cols-3 gap-2 mb-5">
                 {socialProviders.map((p) => (
-                  <button key={p.name} onClick={() => handleSocialLogin(p.loginUrl)}
-                    className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-opacity ${p.color}`}>
-                    <span>{p.icon}</span> {p.name} Email
+                  <button key={p.name} onClick={() => handleSocialLogin(p.webmail)}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-opacity ${p.color}`}>
+                    <span>{p.icon}</span> {p.name}
                   </button>
                 ))}
               </div>
