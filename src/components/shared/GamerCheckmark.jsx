@@ -1,5 +1,6 @@
 import React from "react";
 import { isAdmin } from "@/lib/constants";
+import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
 
 /**
  * GamerCheckmark — themed verified badge
@@ -42,65 +43,8 @@ export default function GamerCheckmark({ accountType, isVerified, userEmail, siz
     );
   }
 
-  // Verified Badge — compact double-checkmark with pulsing purple/pink glow
-  return (
-    <span className="relative inline-flex items-center group">
-      <span style={{
-        width: px, height: px,
-        display: "inline-flex", alignItems: "center", justifyContent: "center",
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #18001a, #1a0028)",
-        border: "1.5px solid rgba(192,38,211,0.8)",
-        boxShadow: "0 0 6px 2px rgba(168,85,247,0.7), 0 0 14px 3px rgba(236,72,153,0.35)",
-        animation: "verifiedGlow 2.5s ease-in-out infinite",
-        flexShrink: 0,
-      }}>
-        <svg viewBox="0 0 14 10" fill="none" style={{ width: svgSize, height: svgSize * 0.72 }}>
-          <defs>
-            <linearGradient id="vg2" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#d946ef" />
-              <stop offset="100%" stopColor="#a855f7" />
-            </linearGradient>
-            <filter id="glowF" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="0.6" result="blur" />
-              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
-          </defs>
-          {/* First check (slightly offset left) */}
-          <polyline
-            points="1,5.5 3.5,8 7.5,2"
-            stroke="url(#vg2)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            filter="url(#glowF)"
-            opacity="0.7"
-          />
-          {/* Second check (main, offset right) */}
-          <polyline
-            points="4,5.5 6.5,8 12,1.5"
-            stroke="url(#vg2)"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            filter="url(#glowF)"
-          />
-        </svg>
-      </span>
-      {showTooltip && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 border border-purple-700/50 rounded-lg text-white text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl"
-          style={{ textShadow: "0 0 8px #a855f7" }}>
-          ✓✓ Verified Badge
-        </span>
-      )}
-      <style>{`
-        @keyframes verifiedGlow {
-          0%, 100% { box-shadow: 0 0 6px 2px rgba(168,85,247,0.7), 0 0 14px 3px rgba(236,72,153,0.35); }
-          50% { box-shadow: 0 0 10px 4px rgba(168,85,247,0.9), 0 0 22px 6px rgba(236,72,153,0.5); }
-        }
-      `}</style>
-    </span>
-  );
+  // Use the new Meta-style VerifiedCheckmark
+  return <VerifiedCheckmark size={size} showLabel={true} showTooltip={showTooltip} />;
 }
 
 export function getCheckmarkLabel(accountType, isVerified, userEmail) {

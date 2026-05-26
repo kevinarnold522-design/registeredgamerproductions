@@ -39,11 +39,18 @@ export default function Home() {
             setProfile(profiles[0]);
           } else {
             // Auto-create minimal profile for existing users
+            // Check for pending profile from registration
+            let pendingProfile = {};
+            try { pendingProfile = JSON.parse(localStorage.getItem("pending_profile") || "{}"); localStorage.removeItem("pending_profile"); } catch {}
             const newProfile = await base44.entities.UserProfile.create({
               user_email: me.email,
-              username: me.full_name || me.email.split('@')[0],
-              display_name: me.full_name || me.email.split('@')[0],
-              account_type: "regular",
+              username: pendingProfile.username || me.full_name || me.email.split('@')[0],
+              display_name: pendingProfile.display_name || me.full_name || me.email.split('@')[0],
+              account_type: pendingProfile.account_type || "regular",
+              phone_number: pendingProfile.phone_number || "",
+              preferred_otp_method: pendingProfile.preferred_otp_method || "email",
+              honor_badge: pendingProfile.honor_badge || "founding_member",
+              honor_badge_label: pendingProfile.honor_badge_label || "Founding Member",
               joined_date: new Date().toISOString(),
             });
             setProfile(newProfile);

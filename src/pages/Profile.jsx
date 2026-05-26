@@ -6,9 +6,12 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Grid, Upload, Radio } from "lucide-react";
 import { Link } from "react-router-dom";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
-import GamerCheckmark from "@/components/shared/GamerCheckmark";
+import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
+import HonorBadge from "@/components/shared/HonorBadge";
 import LiveStreamStudio from "@/components/streaming/LiveStreamStudio";
 import AvatarEditor from "@/components/profile/AvatarEditor";
+import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
+import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -17,6 +20,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [showStudio, setShowStudio] = useState(false);
+  const [sortOrder, setSortOrder] = useState("newest");
 
   const params = new URLSearchParams(window.location.search);
   const targetEmail = params.get("email");
@@ -108,9 +112,10 @@ export default function Profile() {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-black text-white">{profile?.username || user?.full_name}</h1>
-                {profile?.is_verified && <GamerCheckmark isVerified={true} userEmail={null} size="md" />}
+                {profile?.is_verified && <VerifiedCheckmark size="md" showLabel={true} />}
                 {admin && isOwnProfile && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold">⚡ ADMIN</span>}
                 <FollowerRankBadge followers={followers} size="md" />
+                {profile?.honor_badge && <HonorBadge label={profile.honor_badge_label || "Founding Member"} size="sm" />}
               </div>
               <p className={`text-sm font-semibold ${accountColors[profile?.account_type] || "text-gray-400"}`}>
                 {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : profile?.account_type === "business" ? "🏢 Business" : "👤 Gamer"}
@@ -172,11 +177,19 @@ export default function Profile() {
             )}
           </div>
 
+          {/* Gaming Accounts */}
+          <GamingAccountsPanel profile={profile} isOwnProfile={isOwnProfile} onUpdated={setProfile} />
+
           {/* Listings grid */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Grid className="w-4 h-4 text-gray-400" />
-              <h2 className="text-white font-bold">Listings & Posts</h2>
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <Grid className="w-4 h-4 text-gray-400" />
+                <h2 className="text-white font-bold">Listings & Posts</h2>
+              </div>
+              {listings.length > 0 && (
+                <ListingSortControl value={sortOrder} onChange={setSortOrder} />
+              )}
             </div>
             {listings.length === 0 ? (
               <div className="text-center py-16 text-gray-600">
@@ -185,7 +198,7 @@ export default function Profile() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {listings.map((l, i) => (
+                {sortListings(listings, sortOrder).map((l, i) => (
                   <motion.a
                     key={l.id}
                     href={`/listing?id=${l.id}`}

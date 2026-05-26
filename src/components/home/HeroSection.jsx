@@ -207,6 +207,22 @@ export default function HeroSection() {
           {["✅ Free to Join", "🔒 Secure Payments via PayPal & Stripe", "🌍 Available Worldwide", "💰 Earn from Content", "🎮 100% Gaming Focused"].map((t, i) => (
             <span key={i} className="flex items-center gap-1 font-medium">{t}</span>
           ))}
+          {/* Verified badge highlight */}
+          <span className="flex items-center gap-1.5 font-medium px-3 py-1 rounded-full"
+            style={{ background: "linear-gradient(135deg,rgba(168,85,247,0.15),rgba(236,72,153,0.1))", border: "1px solid rgba(168,85,247,0.3)" }}>
+            <span style={{
+              width: 14, height: 14, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center",
+              background: "linear-gradient(135deg,#a855f7,#ec4899)",
+              boxShadow: "0 0 6px rgba(168,85,247,0.8)",
+            }}>
+              <svg viewBox="0 0 12 10" fill="none" style={{ width: 8, height: 8 }}>
+                <polyline points="1.5,5 4.5,8.5 10.5,1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span style={{ background: "linear-gradient(90deg,#a855f7,#ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontWeight: 700 }}>
+              Verified Creator Badges
+            </span>
+          </span>
         </motion.div>
 
         {/* Live Stats */}

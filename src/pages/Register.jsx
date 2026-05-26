@@ -56,6 +56,8 @@ export default function Register() {
         phone_number: form.phone,
         preferred_otp_method: form.otpMethod,
         display_name: form.username,
+        honor_badge: "founding_member",
+        honor_badge_label: "Founding Member",
       }));
       setStep(4);
     } catch (err) {
@@ -63,6 +65,20 @@ export default function Register() {
     }
     setLoading(false);
   };
+
+  // Detect email provider for opening correct inbox on step 4
+  const EMAIL_PROVIDERS_MAP = [
+    { match: ["gmail"], webmail: "https://mail.google.com" },
+    { match: ["yahoo"], webmail: "https://mail.yahoo.com" },
+    { match: ["outlook", "hotmail", "live", "msn"], webmail: "https://outlook.live.com/mail/0/" },
+    { match: ["icloud", "me.com"], webmail: "https://www.icloud.com/mail" },
+    { match: ["proton", "protonmail"], webmail: "https://mail.proton.me" },
+    { match: ["zoho"], webmail: "https://mail.zoho.com" },
+    { match: ["aol"], webmail: "https://mail.aol.com" },
+  ];
+  const detectedWebmail = EMAIL_PROVIDERS_MAP.find(p =>
+    p.match.some(m => form.email.toLowerCase().includes(m))
+  )?.webmail || null;
 
   // Social login — each opens its OWN provider's inbox after triggering magic link
   const socialProviders = [
@@ -309,12 +325,32 @@ export default function Register() {
           {/* Step 4: Email Verification Sent */}
           {step === 4 && (
             <motion.div key="step4" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+              {/* Honor Badge Award */}
+              <div className="mb-4 px-4 py-3 rounded-2xl border border-orange-500/40 bg-orange-900/10 flex items-center justify-center gap-3">
+                <span className="text-3xl">🏅</span>
+                <div className="text-left">
+                  <p className="text-orange-300 font-black text-sm">Badge of Honor Awarded!</p>
+                  <p className="text-orange-400/70 text-xs">You've earned the <strong>Founding Member</strong> badge for joining GAMER Productions early!</p>
+                </div>
+              </div>
+
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-4xl mx-auto mb-6">
                 📧
               </div>
               <h2 className="text-2xl font-black text-white mb-3">Check Your Email!</h2>
               <p className="text-gray-400 mb-2">We've sent a verification link to:</p>
               <p className="text-purple-400 font-bold text-lg mb-4">{form.email}</p>
+
+              {/* Open correct inbox button */}
+              {detectedWebmail && (
+                <button
+                  onClick={() => window.open(detectedWebmail, "_blank", "noopener,noreferrer")}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-purple-600/50 bg-gray-900 text-white font-semibold text-sm hover:bg-gray-800 transition-colors mb-4"
+                >
+                  📬 Open My Email Inbox
+                </button>
+              )}
+
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6 text-left">
                 <p className="text-white font-semibold text-sm mb-2">📋 What happens next:</p>
                 <ol className="text-gray-400 text-xs space-y-1.5 list-decimal list-inside">
@@ -325,7 +361,7 @@ export default function Register() {
                   <li>Start exploring GAMER Productions!</li>
                 </ol>
               </div>
-              <p className="text-gray-500 text-xs mb-1">An OTP will be required on each login for security via <span className="text-purple-400">{form.otpMethod === "email" ? "Email" : "SMS"}</span>.</p>
+              <p className="text-gray-500 text-xs mb-1">An OTP will be required on each login via <span className="text-purple-400">{form.otpMethod === "email" ? "Email" : "SMS"}</span>.</p>
               <button
                 onClick={() => base44.auth.redirectToLogin("/")}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity mt-4">
