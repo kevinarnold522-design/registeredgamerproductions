@@ -6,8 +6,12 @@ import { ACCOUNT_TYPES, TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 
 export default function Register() {
-  const [step, setStep] = useState(1); // 1=pick type, 2=create account, 3=terms, 4=verify email sent
-  const [accountType, setAccountType] = useState(null);
+  // Read ?type= param from URL to pre-select account type
+  const urlParams = new URLSearchParams(window.location.search);
+  const preselectedType = urlParams.get("type");
+
+  const [step, setStep] = useState(preselectedType ? 2 : 1);
+  const [accountType, setAccountType] = useState(preselectedType || null);
   const [form, setForm] = useState({
     username: "",
     email: "",

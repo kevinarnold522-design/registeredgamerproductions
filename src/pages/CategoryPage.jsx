@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
+import Navbar from "@/components/home/Navbar";
 import GenericCategoryPage from "@/components/category/GenericCategoryPage";
 import BuySellLandingPage from "@/components/category/BuySellLandingPage";
 import ContentLandingPage from "@/components/category/ContentLandingPage";
@@ -10,7 +11,7 @@ import { CATEGORIES } from "@/lib/constants";
 export default function CategoryPage() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoaded, setAuthLoaded] = useState(false);
 
   const params = new URLSearchParams(window.location.search);
   const cat = params.get("cat") || "games";
@@ -29,21 +30,19 @@ export default function CategoryPage() {
           });
         }
       } catch {}
-      setLoading(false);
+      setAuthLoaded(true);
     };
     init();
   }, []);
 
-  // Don't block page render on auth — show content immediately, auth loads in background
-  if (loading && !cat) return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gray-950 text-white relative z-10">
-      <AuthNavbar user={user} profile={profile} />
+      {/* Show correct navbar based on auth state; show guest navbar until auth check completes */}
+      {authLoaded && user ? (
+        <AuthNavbar user={user} profile={profile} />
+      ) : (
+        <Navbar />
+      )}
       <div className="pt-16">
         {/* If a specific subcategory is selected, render its own unique landing page */}
         {sub ? (

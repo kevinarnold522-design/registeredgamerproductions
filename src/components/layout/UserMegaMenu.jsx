@@ -5,6 +5,7 @@ import {
   ClipboardList, CreditCard, Play, Upload, ChevronRight,
   Package, Settings, X, MessageCircle
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
@@ -78,18 +79,18 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
               {/* Navigation Sections */}
               <div className="p-2">
                   {/* Quick nav */}
-                  <a href="/profile" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                  <Link to="/profile" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <User className="w-4 h-4 text-blue-400" /> My Profile
-                  </a>
-                  <a href="/channel" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                  </Link>
+                  <Link to="/channel" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <Play className="w-4 h-4 text-red-400" /> My Channel
-                  </a>
-                  <a href="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                  </Link>
+                  <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <BarChart2 className="w-4 h-4 text-purple-400" /> Dashboard
-                  </a>
-                  <a href="/checkout" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                  </Link>
+                  <Link to="/checkout" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <ShoppingCart className="w-4 h-4 text-green-400" /> Checkout
-                  </a>
+                  </Link>
 
                   {/* Buyer extras */}
                   {accountType === "regular" && (
@@ -102,43 +103,43 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
                         <ShoppingCart className="w-4 h-4 text-green-400" /> Cart
                         {cartCount > 0 && <span className="ml-auto text-green-400 font-bold text-xs">{cartCount}</span>}
                       </button>
-                      <a href="/dashboard?tab=orders" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                      <Link to="/dashboard?tab=orders" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                         <ClipboardList className="w-4 h-4 text-yellow-400" /> Orders & History
-                      </a>
+                      </Link>
                     </>
                   )}
 
                   {/* Seller extras */}
                   {isSeller && (
                     <>
-                      <a href="/dashboard?tab=listings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                      <Link to="/dashboard?tab=listings" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                         <Store className="w-4 h-4 text-purple-400" /> My Listings
-                      </a>
-                      <a href="/dashboard?tab=analytics" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                      </Link>
+                      <Link to="/dashboard?tab=analytics" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                         <BarChart2 className="w-4 h-4 text-green-400" /> Analytics
-                      </a>
-                      <a href="/dashboard?tab=orders" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                      </Link>
+                      <Link to="/dashboard?tab=orders" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                         <Package className="w-4 h-4 text-blue-400" /> Orders
-                      </a>
-                      <a href="/create-listing" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                      </Link>
+                      <Link to="/create-listing" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                         <Upload className="w-4 h-4 text-pink-400" /> Add New Listing
-                      </a>
+                      </Link>
                     </>
                   )}
 
                   {/* Admin */}
                   {admin && (
-                    <a href="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-yellow-400 hover:bg-yellow-900/20 text-sm font-semibold transition-colors">
+                    <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-yellow-400 hover:bg-yellow-900/20 text-sm font-semibold transition-colors">
                       <Shield className="w-4 h-4" /> Admin Dashboard
-                    </a>
+                    </Link>
                   )}
 
-                  <a href="/payment" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                  <Link to="/payment" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <CreditCard className="w-4 h-4 text-cyan-400" /> Payment
-                  </a>
-                  <a href="/messages" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
+                  </Link>
+                  <Link to="/messages" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <MessageCircle className="w-4 h-4 text-green-400" /> Messages
-                  </a>
+                  </Link>
 
                   <div className="border-t border-gray-800 mt-1 pt-1">
                     <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-900/20 text-sm font-semibold transition-colors">
