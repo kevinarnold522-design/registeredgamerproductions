@@ -225,7 +225,7 @@ export default function MovingDashboard() {
   useEffect(() => {
     const load = async () => {
       const [vids, listings] = await Promise.all([
-        base44.entities.VideoPost.list("-views", 20),
+        base44.entities.VideoPost.filter({ status: "active", is_approved: true }, "-views", 20),
         base44.entities.Listing.filter({ status: "active" }, "-created_date", 60),
       ]);
       setVideos(vids);

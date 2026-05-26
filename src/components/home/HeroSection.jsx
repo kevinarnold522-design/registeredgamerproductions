@@ -130,6 +130,23 @@ export default function HeroSection() {
               GAMER Productions
             </motion.span>
           </h1>
+          {/* Animated tagline */}
+          <motion.p
+            className="mt-3 text-base sm:text-lg font-bold tracking-wide"
+            style={{
+              background: "linear-gradient(90deg, #a855f7, #ec4899, #06b6d4, #a855f7)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundSize: "200% auto",
+            }}
+            animate={{
+              opacity: [1, 0.2, 1, 0.2, 1],
+              backgroundPosition: ["0% center", "100% center", "200% center"],
+            }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            The One Stop Hub for All Gamers
+          </motion.p>
           <p className="mt-4 text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
             Stream Live · Share Mods · Build Community · Sell & Earn —{" "}
             <span className="text-purple-400 font-semibold">worldwide</span>.

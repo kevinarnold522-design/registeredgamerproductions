@@ -307,11 +307,25 @@ function VerificationTab({ profile, accountType }) {
   return (
     <div className="max-w-lg mx-auto">
       <h3 className="text-white font-black text-xl mb-2">Get Verified</h3>
-      <p className="text-gray-400 text-sm mb-6">
+      <p className="text-gray-400 text-sm mb-4">
         {accountType === "digital_creator"
           ? "For Digital Creators: Submit at least 2 valid IDs and your preferred payment method to get verified."
           : "For Businesses: Submit business registration proof and 2 valid IDs."}
       </p>
+
+      {/* Checkmark Preview */}
+      <div className="bg-gray-900 border border-purple-700/30 rounded-2xl p-5 mb-6">
+        <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3">What your verified badge will look like:</p>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700">
+            <div className="w-8 h-8 rounded-full bg-purple-600/30 border border-purple-600/50 flex items-center justify-center text-sm">🎮</div>
+            <span className="text-white font-bold text-sm">YourUsername</span>
+            <GamerCheckmark isVerified={true} size="sm" showTooltip={false} />
+          </div>
+          <div className="text-gray-500 text-xs">← Your profile will show this double-glow checkmark ✓✓</div>
+        </div>
+        <p className="text-purple-400 text-xs mt-3 font-semibold">The animated glowing double-checkmark appears next to your name everywhere on the platform.</p>
+      </div>
 
       {submitted ? (
         <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-2xl p-6 text-center">

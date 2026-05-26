@@ -19,6 +19,9 @@ import Messages from "./pages/Messages";
 import PaymentPage from "./pages/PaymentPage";
 import AIVideoStudioPage from "./pages/AIVideoStudioPage";
 import StudioPage from "./pages/StudioPage";
+import MusicLibrary from "./pages/MusicLibrary";
+import AboutUs from "./pages/AboutUs";
+import Analytics from "./pages/Analytics";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -58,6 +61,9 @@ const AuthenticatedApp = () => {
       <Route path="/payment" element={<PaymentPage />} />
       <Route path="/ai-video-studio" element={<AIVideoStudioPage />} />
       <Route path="/studio" element={<StudioPage />} />
+      <Route path="/music-library" element={<MusicLibrary />} />
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/analytics" element={<Analytics />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

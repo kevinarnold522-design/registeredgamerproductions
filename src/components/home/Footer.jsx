@@ -7,7 +7,7 @@ import LinkShortenerBar from "@/components/home/LinkShortenerBar";
 const links = {
   Platform: ["Games", "Gaming Gear", "Buy & Sell", "Tournaments", "Content"],
   Community: ["Forums", "Discord Server", "Leaderboards", "Events", "Esports"],
-  Company: ["About Us", "Our Story", "Careers", "Press Kit", "Contact"],
+  Company: [{ label: "About Us", href: "/about" }, { label: "Our Story", href: "/about" }, { label: "Music Library", href: "/music-library" }, { label: "Analytics", href: "/analytics" }, { label: "Contact", href: "#" }],
   Support: ["Help Center", "Report Issue", "Refund Policy", "Privacy Policy", "Terms of Service"],
 };
 
@@ -62,16 +62,17 @@ export default function Footer() {
             <div key={title}>
               <h4 className="text-white font-bold text-sm mb-4">{title}</h4>
               <ul className="space-y-2.5">
-                {items.map((item) => (
-                  <li key={item}>
-                    <a
-                      href="#"
-                      className="text-gray-500 hover:text-purple-400 text-sm transition-colors"
-                    >
-                      {item}
-                    </a>
-                  </li>
-                ))}
+                {items.map((item) => {
+                  const label = typeof item === "string" ? item : item.label;
+                  const href = typeof item === "string" ? "#" : item.href;
+                  return (
+                    <li key={label}>
+                      <a href={href} className="text-gray-500 hover:text-purple-400 text-sm transition-colors">
+                        {label}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
