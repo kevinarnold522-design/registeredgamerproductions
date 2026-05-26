@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Radio, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
@@ -95,7 +95,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <a href="/" className="flex items-center gap-2 group">
+            <Link to="/" className="flex items-center gap-2 group">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                 <Gamepad2 className="w-5 h-5 text-white" />
               </div>
@@ -105,7 +105,7 @@ export default function Navbar() {
                   Productions
                 </span>
               </div>
-            </a>
+            </Link>
 
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-4">
