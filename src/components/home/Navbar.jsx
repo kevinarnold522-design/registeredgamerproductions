@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Youtube, Radio, Mail, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import AuthGateModal from "@/components/shared/AuthGateModal";
 
 const navLinks = [
   { label: "Categories", href: "#categories" },
   { label: "Live", href: "/category?cat=livestream", live: true },
   { label: "Mods", href: "/category?cat=modding" },
-  { label: "Tournaments", protected: true, label2: "Tournaments" },
+  { label: "Tournaments", href: "/category?cat=tournaments" },
   { label: "Marketplace", href: "/category?cat=buy_sell" },
 ];
 
@@ -44,10 +43,6 @@ export default function Navbar() {
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  const [authGate, setAuthGate] = useState({ open: false, feature: "" });
-
-  const openAuthGate = (feature) => setAuthGate({ open: true, feature });
-
   const EMAIL_PROVIDERS = [
     { name: "Google / Gmail", icon: "🔵", hint: "gmail.com", url: null },
     { name: "Yahoo Mail", icon: "🟣", hint: "yahoo.com", url: "https://mail.yahoo.com" },
@@ -102,20 +97,13 @@ export default function Navbar() {
 
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-4">
-              {navLinks.map((link) =>
-                link.protected ? (
-                  <button key={link.label} onClick={() => openAuthGate(link.label2 || link.label)}
-                    className="flex items-center gap-1 text-sm font-medium text-gray-400 hover:text-purple-400 transition-colors">
-                    {link.label}
-                  </button>
-                ) : (
-                  <a key={link.label} href={link.href}
-                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
-                    {link.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-                    {link.label}
-                  </a>
-                )
-              )}
+              {navLinks.map((link) => (
+                <a key={link.label} href={link.href}
+                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
+                  {link.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+                  {link.label}
+                </a>
+              ))}
             </div>
 
             {/* Search Bar */}
@@ -161,18 +149,11 @@ export default function Navbar() {
         {/* Mobile menu */}
         {menuOpen && (
         <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3">
-          {navLinks.map((link) =>
-            link.protected ? (
-              <button key={link.label} onClick={() => { setMenuOpen(false); openAuthGate(link.label2 || link.label); }}
-                className="text-gray-300 hover:text-purple-400 font-medium py-1 text-left">
-                {link.label}
-              </button>
-            ) : (
-              <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
-                {link.label}
-              </a>
-            )
-          )}
+          {navLinks.map((link) => (
+            <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
+              {link.label}
+            </a>
+          ))}
             <button
               onClick={() => { setMenuOpen(false); setShowSignInModal(true); }}
               className="mt-2 text-center px-4 py-2 rounded-lg border border-gray-700 text-gray-300 font-semibold"
@@ -188,9 +169,6 @@ export default function Navbar() {
           </div>
         )}
       </motion.nav>
-
-      {/* Auth Gate for protected routes */}
-      <AuthGateModal open={authGate.open} onClose={() => setAuthGate({ open: false, feature: "" })} featureName={authGate.feature} />
 
       {/* Sign Up Account Type Modal */}
       <AnimatePresence>
@@ -315,31 +293,20 @@ export default function Navbar() {
               {/* Email providers */}
               <div className="space-y-2 mb-5">
                 {EMAIL_PROVIDERS.map((ep) => (
-                  <div key={ep.name} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800">
+                  <button
+                    key={ep.name}
+                    onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/"); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 hover:bg-gray-800 transition-colors text-left"
+                  >
                     <span className="text-lg">{ep.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-xs font-semibold">{ep.name}</p>
                       <p className="text-gray-500 text-[10px]">{ep.hint}</p>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {ep.url && (
-                        <a
-                          href={ep.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-[10px] bg-gray-800 border border-gray-700 text-gray-400 px-2 py-1.5 rounded-lg hover:bg-gray-700 hover:text-white transition-colors font-semibold whitespace-nowrap"
-                        >
-                          Open ↗
-                        </a>
-                      )}
-                      <button
-                        onClick={() => { setShowSignInModal(false); base44.auth.redirectToLogin("/"); }}
-                        className="flex items-center gap-1 text-[10px] bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2.5 py-1.5 rounded-lg hover:bg-purple-900/60 transition-colors font-semibold whitespace-nowrap"
-                      >
-                        Sign In →
-                      </button>
-                    </div>
-                  </div>
+                    <span className="text-[10px] bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2.5 py-1.5 rounded-lg font-semibold whitespace-nowrap">
+                      Sign In →
+                    </span>
+                  </button>
                 ))}
               </div>
 

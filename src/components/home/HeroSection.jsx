@@ -92,14 +92,14 @@ function LiveStats() {
 }
 
 const quickLinks = [
-  { icon: "🎮", label: "Looking for Games?", sub: "PC, Console & Mobile" },
-  { icon: "📡", label: "Live Streams", sub: "Watch & go live" },
-  { icon: "🔥", label: "Hot Deals?", sub: "Best prices today" },
-  { icon: "🏆", label: "Tournaments?", sub: "Join & compete" },
-  { icon: "🎧", label: "Looking for Audio?", sub: "Headsets & Speakers" },
-  { icon: "🔧", label: "Get Mods?", sub: "GTA, FIFA, WWE & more" },
-  { icon: "🛒", label: "Buy & Sell?", sub: "Accounts & in-game items" },
-  { icon: "🎬", label: "Content Creator?", sub: "Streaming gear & tips" },
+  { icon: "🎮", label: "Looking for Games?", sub: "PC, Console & Mobile", href: "/category?cat=games" },
+  { icon: "📡", label: "Live Streams", sub: "Watch & go live", href: "/category?cat=livestream" },
+  { icon: "🔥", label: "Hot Deals?", sub: "Best prices today", href: "/category?cat=buy_sell" },
+  { icon: "🏆", label: "Tournaments?", sub: "Join & compete", href: "/category?cat=tournaments" },
+  { icon: "🎧", label: "Looking for Audio?", sub: "Headsets & Speakers", href: "/category?cat=buy_sell" },
+  { icon: "🔧", label: "Get Mods?", sub: "GTA, FIFA, WWE & more", href: "/category?cat=modding" },
+  { icon: "🛒", label: "Buy & Sell?", sub: "Accounts & in-game items", href: "/category?cat=buy_sell" },
+  { icon: "🎬", label: "Content Creator?", sub: "Streaming gear & tips", href: "/register?type=digital_creator" },
 ];
 
 export default function HeroSection() {
@@ -187,12 +187,12 @@ export default function HeroSection() {
           <Zap className="w-5 h-5" /> Sign Up Free — Join Now
         </motion.a>
         <SignInHeroButton />
-        <motion.a href="#livestream" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-          className="px-8 py-4 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
-          <Radio className="w-5 h-5" />
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          Go Live Now
-        </motion.a>
+        <motion.a href="/category?cat=livestream" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+            className="px-8 py-4 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
+            <Radio className="w-5 h-5" />
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            Go Live Now
+          </motion.a>
         <motion.a href="#categories" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
           className="px-8 py-4 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-base hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
           <Gamepad2 className="w-5 h-5" /> Browse Categories
@@ -214,7 +214,7 @@ export default function HeroSection() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
           {quickLinks.map((item, i) => (
-            <motion.a key={i} href="#categories" whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
+            <motion.a key={i} href={item.href} whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
               className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-purple-700/60 transition-all cursor-pointer group">
               <span className="text-xl">{item.icon}</span>
               <span className="text-white text-xs font-semibold text-center leading-tight group-hover:text-purple-300 transition-colors">{item.label}</span>
