@@ -22,6 +22,7 @@ import StudioPage from "./pages/StudioPage";
 import MusicLibrary from "./pages/MusicLibrary";
 import AboutUs from "./pages/AboutUs";
 import Analytics from "./pages/Analytics";
+import AdminWebsiteEditor from "./pages/AdminWebsiteEditor";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
       <Route path="/music-library" element={<MusicLibrary />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/analytics" element={<Analytics />} />
+      <Route path="/admin-editor" element={<AdminWebsiteEditor />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

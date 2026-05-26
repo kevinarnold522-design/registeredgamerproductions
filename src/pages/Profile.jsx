@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Grid, Upload, Radio } from "lucide-react";
+import { Link } from "react-router-dom";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
-import { AnimatePresence } from "framer-motion";
 import LiveStreamStudio from "@/components/streaming/LiveStreamStudio";
+import AvatarEditor from "@/components/profile/AvatarEditor";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -95,17 +96,13 @@ export default function Profile() {
         <div className="max-w-4xl mx-auto px-4 -mt-16 relative z-10">
           {/* Avatar + Info */}
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 mb-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 border-4 border-gray-950 flex items-center justify-center text-4xl overflow-hidden">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : "🎮"}
-              </div>
-              {isOwnProfile && (
-                <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors">
-                  <Upload className="w-3.5 h-3.5 text-gray-400" />
-                  <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                </label>
+            <div className="border-4 border-gray-950 rounded-2xl">
+              {isOwnProfile && profile ? (
+                <AvatarEditor profile={profile} onUpdated={setProfile} />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-4xl overflow-hidden">
+                  {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
+                </div>
               )}
             </div>
             <div className="flex-1">
@@ -135,9 +132,9 @@ export default function Profile() {
                 </motion.button>
               )}
               {isOwnProfile && (
-                <a href="/settings" className="px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors text-center">
+                <Link to="/dashboard?tab=profile" className="px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors text-center">
                   Edit Profile
-                </a>
+                </Link>
               )}
             </div>
           </div>

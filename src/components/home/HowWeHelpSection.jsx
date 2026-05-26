@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   Youtube, Link2, Wand2, Store, DollarSign, CheckCircle,
-  ShoppingCart, Heart, Users, Play, Zap, ChevronDown, ChevronUp
+  ShoppingCart, Heart, Users, Play, Zap
 } from "lucide-react";
 
 const groups = [
@@ -62,6 +63,7 @@ const groups = [
 
 export default function HowWeHelpSection() {
   const [activeGroup, setActiveGroup] = useState("creator");
+  const navigate = useNavigate();
 
   const current = groups.find(g => g.id === activeGroup);
 
@@ -125,7 +127,7 @@ export default function HowWeHelpSection() {
             {/* CTA */}
             <div className="text-center">
               <button
-                onClick={() => window.location.href = `/register?type=${activeGroup}`}
+                onClick={() => navigate(`/register?type=${activeGroup === "creator" ? "digital_creator" : activeGroup === "business" ? "business" : "regular"}`)}
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-sm hover:opacity-90 transition-opacity">
                 <Zap className="w-4 h-4" />
                 Join as {current.label}

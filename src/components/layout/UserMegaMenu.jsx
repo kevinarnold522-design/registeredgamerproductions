@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   User, LogOut, Store, BarChart2, Shield, Heart, ShoppingCart,
   ClipboardList, CreditCard, Play, Upload, ChevronRight,
-  Package, Settings, X, MessageCircle
+  Package, Settings, X, MessageCircle, Edit3
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
@@ -129,9 +129,14 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
 
                   {/* Admin */}
                   {admin && (
-                    <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-yellow-400 hover:bg-yellow-900/20 text-sm font-semibold transition-colors">
-                      <Shield className="w-4 h-4" /> Admin Dashboard
-                    </Link>
+                    <>
+                      <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-yellow-400 hover:bg-yellow-900/20 text-sm font-semibold transition-colors">
+                        <Shield className="w-4 h-4" /> Admin Dashboard
+                      </Link>
+                      <Link to="/admin-editor" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-yellow-300 hover:bg-yellow-900/20 text-sm font-semibold transition-colors">
+                        <Settings className="w-4 h-4" /> Website Editor
+                      </Link>
+                    </>
                   )}
 
                   <Link to="/payment" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
@@ -143,7 +148,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
 
                   <div className="border-t border-gray-800 mt-1 pt-1">
                     <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-400 hover:bg-red-900/20 text-sm font-semibold transition-colors">
-                      <LogOut className="w-4 h-4" /> Sign Out
+                      <LogOut className="w-4 h-4" /> Log Out
                     </button>
                   </div>
                 </div>
