@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart } from "lucide-react";
+import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
 import { Link } from "react-router-dom";
@@ -57,9 +58,16 @@ export default function AuthNavbar({ user, profile }) {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
             <Gamepad2 className="w-5 h-5 text-white" />
           </div>
-          <span className="font-black text-white text-sm hidden sm:block">
-            GAMER<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"> Productions</span>
-          </span>
+          <div className="hidden sm:flex flex-col leading-tight">
+            <span className="font-black text-white text-sm">
+              GAMER<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"> Productions</span>
+            </span>
+            {(profile?.is_verified || isAdmin(user?.email)) && (
+              <span className="flex items-center gap-1">
+                <GamerCheckmark isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showLabel={true} showTooltip={false} />
+              </span>
+            )}
+          </div>
         </Link>
 
         {/* Search Bar */}

@@ -1,69 +1,57 @@
 import React from "react";
 
 /**
- * VerifiedCheckmark — 3D purple rounded-square badge (like the reference image)
+ * VerifiedCheckmark — exact Meta-style checkmark badge, purple color
  * size: "sm" | "md" | "lg"
  */
-export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true }) {
-  const dims = { sm: 18, md: 22, lg: 30 };
-  const px = dims[size] || 18;
-  const r = px * 0.28; // border-radius ratio
+export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true, label = "Verified Partner" }) {
+  const dims = { sm: 16, md: 20, lg: 28 };
+  const px = dims[size] || 16;
 
   return (
     <span className="relative inline-flex items-center gap-1 group">
-      {/* Badge: 3D glossy purple square */}
-      <span
-        style={{
-          width: px,
-          height: px,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: r,
-          background: "linear-gradient(145deg, #c084fc 0%, #9333ea 40%, #7e22ce 100%)",
-          boxShadow: `0 ${px * 0.15}px ${px * 0.35}px rgba(124,58,237,0.7), inset 0 ${px * 0.07}px ${px * 0.12}px rgba(255,255,255,0.35), inset 0 -${px * 0.07}px ${px * 0.1}px rgba(0,0,0,0.25)`,
-          flexShrink: 0,
-          position: "relative",
-          overflow: "hidden",
-        }}
+      {/* Meta-style circle badge */}
+      <svg
+        width={px}
+        height={px}
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ flexShrink: 0 }}
       >
-        {/* Gloss highlight */}
-        <span style={{
-          position: "absolute",
-          top: 0, left: 0, right: 0,
-          height: "45%",
-          background: "linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%)",
-          borderRadius: `${r}px ${r}px 40% 40%`,
-          pointerEvents: "none",
-        }} />
-        {/* Checkmark */}
-        <svg
-          viewBox="0 0 14 11"
-          fill="none"
-          style={{ width: px * 0.58, height: px * 0.58, position: "relative", zIndex: 1 }}
-        >
-          <polyline
-            points="1.5,5.5 5,9 12.5,1.5"
-            stroke="rgba(255,255,255,0.95)"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
+        {/* Outer circle — purple gradient fill */}
+        <defs>
+          <radialGradient id={`vbg-${px}`} cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="#c084fc" />
+            <stop offset="50%" stopColor="#9333ea" />
+            <stop offset="100%" stopColor="#6b21a8" />
+          </radialGradient>
+        </defs>
+        <circle cx="12" cy="12" r="11" fill={`url(#vbg-${px})`} />
+        {/* Subtle top highlight gloss */}
+        <ellipse cx="10" cy="7.5" rx="4.5" ry="2.5" fill="rgba(255,255,255,0.18)" />
+        {/* Meta-accurate checkmark path */}
+        <path
+          d="M7 12.5L10.5 16L17 8.5"
+          stroke="white"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
 
-      {/* "Verified" inline label */}
+      {/* Inline label */}
       {showLabel && (
-        <span className="font-bold text-xs text-purple-400">
-          Verified
-        </span>
+        <span className="font-bold text-xs text-purple-400 whitespace-nowrap">{label}</span>
       )}
 
       {/* Tooltip */}
       {showTooltip && !showLabel && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded-lg text-white text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
-          style={{ background: "#7c3aed", boxShadow: "0 4px 12px rgba(124,58,237,0.5)" }}>
-          ✓ Verified
+        <span
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded-lg text-white text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          style={{ background: "#7c3aed", boxShadow: "0 4px 12px rgba(124,58,237,0.5)" }}
+        >
+          ✓ {label}
         </span>
       )}
     </span>

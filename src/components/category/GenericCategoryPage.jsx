@@ -4,6 +4,7 @@ import { Search, Plus, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
+import ListingSellerBadge from "@/components/listings/ListingSellerBadge";
 
 const CATEGORY_META = {
   modding: {
@@ -170,13 +171,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                   </div>
                 )}
                 <div className="p-4">
-                  <p className="text-white font-bold text-sm truncate">{l.title}</p>
-                  <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="text-purple-400 font-black">₱{l.price?.toLocaleString()}</p>
-                    <ShareButton type="listing" id={l.id} title={l.title} compact />
-                  </div>
-                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
+                 <p className="text-white font-bold text-sm truncate">{l.title}</p>
+                 <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
+                 <div className="flex items-center justify-between mt-2">
+                   <p className="text-purple-400 font-black">₱{l.price?.toLocaleString()}</p>
+                   <ShareButton type="listing" id={l.id} title={l.title} compact />
+                 </div>
+                 {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
+                 <ListingSellerBadge sellerEmail={l.seller_email} sellerUsername={l.seller_username} />
                 </div>
               </motion.div>
             ))}
