@@ -22,17 +22,16 @@ export const AuthProvider = ({ children }) => {
 
   const initAuth = async () => {
     try {
-      // Strip access_token from URL cleanly so it doesn't show in the address bar,
-      // but only AFTER app-params.js has already stored it in localStorage.
-      if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        if (url.searchParams.has("access_token")) {
-          url.searchParams.delete("access_token");
-          window.history.replaceState({}, document.title, url.pathname + (url.search || "") + (url.hash || ""));
-        }
-      }
-
       setIsLoadingAuth(true);
+
+      // If there's a token in localStorage that the SDK hasn't picked up yet, set it explicitly
+      try {
+        const storedToken = localStorage.getItem('base44_access_token') || localStorage.getItem('base44_token');
+        if (storedToken && base44.auth.setToken) {
+          base44.auth.setToken(storedToken, true);
+        }
+      } catch (_) {}
+
       const currentUser = await base44.auth.me();
       if (currentUser) {
         setUser(currentUser);

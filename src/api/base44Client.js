@@ -1,13 +1,26 @@
 import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
+const { appId, functionsVersion, appBaseUrl } = appParams;
 
-// For Vercel deployments, appBaseUrl must point to the Base44 backend (not the Vercel URL).
-// It is set via VITE_BASE44_APP_BASE_URL in Vercel environment variables.
+// Resolve token: prefer URL param (already extracted by app-params), 
+// then fall back to whatever is stored in localStorage
+function resolveToken() {
+  if (appParams.token) return appParams.token;
+  try {
+    return (
+      localStorage.getItem('base44_access_token') ||
+      localStorage.getItem('base44_token') ||
+      null
+    );
+  } catch (_) {
+    return null;
+  }
+}
+
 export const base44 = createClient({
   appId,
-  token,
+  token: resolveToken(),
   functionsVersion,
   appBaseUrl,
   requiresAuth: false,
