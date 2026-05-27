@@ -30,14 +30,17 @@ export default function Home() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    // After magic-link click, Base44 lands the user on this page with a token param.
-    // Clean the URL immediately so the token isn't visible, then proceed with auth.
+    // After magic-link click, Base44 redirects back here with auth tokens in the URL.
+    // Reload the page cleanly so AuthContext picks up the new session properly.
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      if (url.searchParams.has("token") || url.searchParams.has("access_token")) {
+      const hasToken = url.searchParams.has("token") || url.searchParams.has("access_token") || url.hash.includes("access_token");
+      if (hasToken) {
+        // Strip token params and do a hard reload so the SDK reads the new session
         url.searchParams.delete("token");
         url.searchParams.delete("access_token");
-        window.history.replaceState({}, "", url.toString());
+        url.hash = "";
+        window.location.replace(url.toString());
       }
     }
   }, []);
