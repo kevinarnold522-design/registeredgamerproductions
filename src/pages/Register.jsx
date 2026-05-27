@@ -80,19 +80,9 @@ export default function Register() {
     p.match.some(m => form.email.toLowerCase().includes(m))
   )?.webmail || null;
 
-  // Social login — each opens its OWN provider's inbox after triggering magic link
-  const socialProviders = [
-    { name: "Google", icon: "🔵", color: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50", webmail: "https://mail.google.com" },
-    { name: "Outlook", icon: "🔷", color: "bg-blue-600 text-white hover:bg-blue-700", webmail: "https://outlook.live.com/mail/0/" },
-    { name: "Yahoo", icon: "🟣", color: "bg-purple-600 text-white hover:bg-purple-700", webmail: "https://mail.yahoo.com" },
-    { name: "AOL", icon: "🔴", color: "bg-red-500 text-white hover:bg-red-600", webmail: "https://mail.aol.com" },
-    { name: "ProtonMail", icon: "🛡️", color: "bg-indigo-700 text-white hover:bg-indigo-800", webmail: "https://mail.proton.me" },
-    { name: "Zoho", icon: "🟠", color: "bg-orange-500 text-white hover:bg-orange-600", webmail: "https://mail.zoho.com" },
-  ];
 
-  const RETURN_URL = "https://gamerproductions.vercel.app/";
 
-  const handleSocialLogin = (webmail) => {
+  const handleSocialLogin = () => {
     localStorage.setItem("pending_profile", JSON.stringify({
       username: "",
       account_type: accountType || "regular",
@@ -100,9 +90,7 @@ export default function Register() {
       preferred_otp_method: "email",
       display_name: "",
     }));
-    // Open inbox in new tab first, then redirect this tab to Base44 login
-    window.open(webmail, "_blank", "noopener,noreferrer");
-    base44.auth.redirectToLogin(RETURN_URL);
+    base44.auth.loginWithProvider("google", "/");
   };
 
   return (
@@ -194,9 +182,9 @@ export default function Register() {
               <div className="flex flex-col items-center gap-3 mt-6">
                 <p className="text-gray-500 text-sm">
                   Already have an account?{" "}
-                  <button onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
+                  <button onClick={() => base44.auth.loginWithProvider("google", "/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
                 </p>
-                <button onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")}
+                <button onClick={() => base44.auth.loginWithProvider("google", "/")}
                   className="w-full py-3 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-sm hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
                   🔐 Sign In to Existing Account
                 </button>
@@ -219,13 +207,17 @@ export default function Register() {
               </div>
 
               {/* Social Providers */}
-              <div className="grid grid-cols-3 gap-2 mb-5">
-                {socialProviders.map((p) => (
-                  <button key={p.name} onClick={() => handleSocialLogin(p.webmail)}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-opacity ${p.color}`}>
-                    <span>{p.icon}</span> {p.name}
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <button onClick={() => handleSocialLogin()}
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-white text-gray-800 hover:bg-gray-100 transition-all">
+                  <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.5 35.3 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.1C9.5 36.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.3 5.3C43.1 34.7 44 29.7 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+                  Continue with Google
+                </button>
+                <button onClick={() => { base44.auth.loginWithProvider("microsoft", "/"); }}
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-all">
+                  <svg width="18" height="18" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+                  Continue with Microsoft
+                </button>
               </div>
 
               <div className="flex items-center gap-3 mb-5">
@@ -365,7 +357,7 @@ export default function Register() {
               </div>
               <p className="text-gray-500 text-xs mb-1">An OTP will be required on each login via <span className="text-purple-400">{form.otpMethod === "email" ? "Email" : "SMS"}</span>.</p>
               <button
-                onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")}
+                onClick={() => base44.auth.loginWithProvider("google", "/")}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity mt-4">
                 <Check className="w-5 h-5" /> Go to Sign In
               </button>
