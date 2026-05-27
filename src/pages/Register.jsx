@@ -90,6 +90,8 @@ export default function Register() {
     { name: "Zoho", icon: "🟠", color: "bg-orange-500 text-white hover:bg-orange-600", webmail: "https://mail.zoho.com" },
   ];
 
+  const RETURN_URL = "https://gamerproductions.vercel.app/";
+
   const handleSocialLogin = (webmail) => {
     localStorage.setItem("pending_profile", JSON.stringify({
       username: "",
@@ -98,9 +100,9 @@ export default function Register() {
       preferred_otp_method: "email",
       display_name: "",
     }));
-    // Trigger platform magic link, then open the CORRECT provider inbox
-    base44.auth.redirectToLogin("/");
+    // Open inbox in new tab first, then redirect this tab to Base44 login
     window.open(webmail, "_blank", "noopener,noreferrer");
+    base44.auth.redirectToLogin(RETURN_URL);
   };
 
   return (
@@ -192,9 +194,9 @@ export default function Register() {
               <div className="flex flex-col items-center gap-3 mt-6">
                 <p className="text-gray-500 text-sm">
                   Already have an account?{" "}
-                  <button onClick={() => base44.auth.redirectToLogin("/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
+                  <button onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
                 </p>
-                <button onClick={() => base44.auth.redirectToLogin("/")}
+                <button onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")}
                   className="w-full py-3 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-sm hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
                   🔐 Sign In to Existing Account
                 </button>
@@ -363,7 +365,7 @@ export default function Register() {
               </div>
               <p className="text-gray-500 text-xs mb-1">An OTP will be required on each login via <span className="text-purple-400">{form.otpMethod === "email" ? "Email" : "SMS"}</span>.</p>
               <button
-                onClick={() => base44.auth.redirectToLogin("/")}
+                onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")}
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity mt-4">
                 <Check className="w-5 h-5" /> Go to Sign In
               </button>

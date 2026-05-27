@@ -52,6 +52,8 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const RETURN_URL = "https://gamerproductions.vercel.app/";
+
   const handleSignUp = (typeId) => {
     setShowSignUpModal(false);
     navigate(`/register?type=${typeId}`);

@@ -29,21 +29,8 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
 
-  useEffect(() => {
-    // After magic-link click, Base44 redirects back here with auth tokens in the URL.
-    // Reload the page cleanly so AuthContext picks up the new session properly.
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const hasToken = url.searchParams.has("token") || url.searchParams.has("access_token") || url.hash.includes("access_token");
-      if (hasToken) {
-        // Strip token params and do a hard reload so the SDK reads the new session
-        url.searchParams.delete("token");
-        url.searchParams.delete("access_token");
-        url.hash = "";
-        window.location.replace(url.toString());
-      }
-    }
-  }, []);
+  // app-params.js reads access_token from URL on load and stores it in localStorage.
+  // We just need to ensure auth runs after that — handled by the initAuth useEffect below.
 
   useEffect(() => {
     const initAuth = async () => {
