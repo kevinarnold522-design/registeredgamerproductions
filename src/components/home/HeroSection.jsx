@@ -4,6 +4,33 @@ import { useNavigate } from "react-router-dom";
 import { Gamepad2, Zap, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
+function CreateListingHeroButton() {
+  const [show, setShow] = useState(false);
+  const [accountType, setAccountType] = useState(null);
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(async (auth) => {
+      if (!auth) return;
+      const me = await base44.auth.me();
+      const { isAdmin } = await import("@/lib/constants");
+      if (isAdmin(me?.email)) { setShow(true); setAccountType("admin"); return; }
+      const profiles = await base44.entities.UserProfile.filter({ user_email: me?.email });
+      const type = profiles[0]?.account_type;
+      if (type === "digital_creator" || type === "business") { setShow(true); setAccountType(type); }
+    });
+  }, []);
+  if (!show) return null;
+  return (
+    <motion.a
+      href="/create-listing"
+      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+      className="px-8 py-4 rounded-xl font-black text-base flex items-center justify-center gap-2 text-white"
+      style={{ background: "linear-gradient(135deg, #059669, #10b981)", boxShadow: "0 0 20px rgba(16,185,129,0.4)" }}
+    >
+      <span>🏪</span> Create Listing
+    </motion.a>
+  );
+}
+
 function SignInHeroButton() {
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -199,6 +226,7 @@ export default function HeroSection() {
           className="px-8 py-4 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-base hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
           <Gamepad2 className="w-5 h-5" /> Browse Categories
         </motion.a>
+        <CreateListingHeroButton />
         </motion.div>
 
         {/* Trust signals */}

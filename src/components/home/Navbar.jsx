@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Radio, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import EmailLoginModal from "@/components/auth/EmailLoginModal";
+import EmailLoginModal from "@/components/auth/EmailLoginModal.jsx";
 
 const navLinks = [
   { label: "Categories", href: "#categories" },

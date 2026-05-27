@@ -13,42 +13,27 @@ const EMAIL_PROVIDERS = [
   { name: "AOL Mail", icon: "🔴", hint: "aol.com", webmail: "https://mail.aol.com", match: ["aol"] },
 ];
 
-// Opens the provider's webmail ONLY — no routing through Google
-function openWebmail(provider) {
-  window.open(provider.webmail, "_blank", "noopener,noreferrer");
-}
-
 export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
-  const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState("email");
   const [error, setError] = useState("");
 
   const detectedProvider = EMAIL_PROVIDERS.find(p =>
     p.match.some(m => email.toLowerCase().includes(m))
   );
 
-  // Sends magic link AND opens correct provider inbox (NOT Google by default)
-  const handleLoginAndOpen = (provider) => {
-    base44.auth.redirectToLogin("/");
-    openWebmail(provider);
-  };
-
-  const handleDirectLogin = () => {
+  // PRIMARY login: redirects to the platform's own login page (magic link), 
+  // then comes BACK to "/" upon success. No extra tab is opened.
+  const handleMagicLogin = () => {
     base44.auth.redirectToLogin("/");
   };
 
-  const handleSendLink = () => {
-    if (!email.trim() || !email.includes("@")) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    setError("");
-    setLoading(true);
-    // Redirect to login (magic link) then show sent state
+  // Send magic link then show "check your email" step, and open inbox in same window
+  const handleSendAndOpenInbox = (provider) => {
+    // Store the return path so after clicking the magic link they land on the site
+    localStorage.setItem("login_return", "/");
+    // Redirect to platform login (sends magic link to their email)
     base44.auth.redirectToLogin("/");
-    setLoading(false);
-    setStep("sent");
   };
 
   if (!isOpen) return null;
@@ -83,25 +68,22 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
 
           {step === "email" && (
             <>
-              <div className="bg-yellow-900/20 border border-yellow-600/40 rounded-xl px-4 py-3 mb-5 text-xs text-yellow-300 leading-relaxed">
-                ⚠️ <strong>New here?</strong> You must{" "}
-                <button onClick={() => { onClose(); onSwitchToSignUp(); }} className="underline text-yellow-200 hover:text-white font-bold">
-                  create a free account first
-                </button>{" "}before logging in.
+              <div className="bg-blue-900/20 border border-blue-600/40 rounded-xl px-4 py-3 mb-5 text-xs text-blue-300 leading-relaxed">
+                💡 <strong>How it works:</strong> Click "Sign In" below — you'll get a magic link sent to your email. Click it to be instantly logged in and brought back to GAMER Productions.
               </div>
 
-              {/* Magic Link Button */}
+              {/* PRIMARY: Direct platform login — stays within the site */}
               <button
-                onClick={handleDirectLogin}
-                className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-sm hover:opacity-90 transition-opacity mb-5"
-                style={{ boxShadow: "0 0 20px rgba(139,92,246,0.4)" }}
+                onClick={handleMagicLogin}
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-base hover:opacity-90 transition-opacity mb-4"
+                style={{ boxShadow: "0 0 24px rgba(139,92,246,0.5)" }}
               >
-                <Zap className="w-4 h-4" /> Log In with Magic Link
+                <Zap className="w-5 h-5" /> Sign In to GAMER Productions
               </button>
 
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-1 h-px bg-gray-800" />
-                <span className="text-gray-600 text-xs">or type your email to open inbox directly</span>
+                <span className="text-gray-600 text-xs">type email to open your inbox after</span>
                 <div className="flex-1 h-px bg-gray-800" />
               </div>
 
@@ -114,9 +96,8 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                     type="email"
                     value={email}
                     onChange={e => { setEmail(e.target.value); setError(""); }}
-                    placeholder="you@example.com"
+                    placeholder="you@gmail.com, you@yahoo.com..."
                     className="w-full bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none transition-colors"
-                    onKeyDown={e => e.key === "Enter" && handleSendLink()}
                   />
                 </div>
                 {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
@@ -130,24 +111,25 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
               {/* Detected provider shortcut */}
               {detectedProvider && (
                 <button
-                  onClick={() => handleLoginAndOpen(detectedProvider)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-900 border border-purple-600/50 hover:bg-gray-800 transition-colors mb-3"
+                  onClick={() => handleSendAndOpenInbox(detectedProvider)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-900/30 border border-purple-600/50 hover:bg-purple-900/50 transition-colors mb-3"
                 >
-                  <span className="text-xl">{detectedProvider.icon}</span>
+                  <span className="text-2xl">{detectedProvider.icon}</span>
                   <div className="flex-1 text-left">
-                    <p className="text-white text-sm font-semibold">Send link &amp; open {detectedProvider.name}</p>
-                    <p className="text-gray-500 text-xs">Opens {detectedProvider.webmail}</p>
+                    <p className="text-white text-sm font-bold">Sign in via {detectedProvider.name}</p>
+                    <p className="text-gray-400 text-xs">Magic link will be sent to your inbox</p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-500" />
+                  <ArrowRight className="w-4 h-4 text-purple-400" />
                 </button>
               )}
 
-              {/* All providers — each opens their OWN inbox */}
-              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+              {/* All providers list */}
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                <p className="text-gray-600 text-[10px] uppercase font-semibold mb-1">Or choose your email provider:</p>
                 {EMAIL_PROVIDERS.map(ep => (
                   <button
                     key={ep.name}
-                    onClick={() => handleLoginAndOpen(ep)}
+                    onClick={() => handleSendAndOpenInbox(ep)}
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 hover:bg-gray-800 transition-colors text-left"
                   >
                     <span className="text-lg">{ep.icon}</span>
@@ -156,36 +138,12 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                       <p className="text-gray-500 text-[10px]">{ep.hint}</p>
                     </div>
                     <span className="text-[10px] bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2 py-1 rounded-lg font-semibold whitespace-nowrap flex items-center gap-1">
-                      Open <ArrowRight className="w-3 h-3" />
+                      Sign In <ArrowRight className="w-3 h-3" />
                     </span>
                   </button>
                 ))}
               </div>
             </>
-          )}
-
-          {step === "sent" && (
-            <div className="text-center py-4">
-              <CheckCircle className="w-14 h-14 text-green-400 mx-auto mb-4" />
-              <h3 className="text-white font-black text-lg mb-2">Check Your Email!</h3>
-              <p className="text-gray-400 text-sm mb-5">
-                Magic login link sent to<br />
-                <span className="text-purple-400 font-semibold">{email || "your inbox"}</span>
-              </p>
-              {detectedProvider && (
-                <button
-                  onClick={() => openWebmail(detectedProvider)}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-900 border border-purple-600/50 text-white font-semibold text-sm hover:bg-gray-800 transition-colors mb-3"
-                >
-                  <span>{detectedProvider.icon}</span>
-                  Open {detectedProvider.name}
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
-                </button>
-              )}
-              <button onClick={() => setStep("email")} className="text-gray-500 text-xs hover:text-gray-300 transition-colors">
-                ← Try a different email
-              </button>
-            </div>
           )}
 
           <div className="border-t border-gray-800 pt-4 mt-4 text-center">

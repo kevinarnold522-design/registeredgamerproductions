@@ -20,6 +20,7 @@ import Footer from "@/components/home/Footer";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import FeedbackWidget from "@/components/shared/FeedbackWidget";
 import AdminLinkScanner from "@/components/admin/AdminLinkScanner";
+import DailyRewards from "@/components/rewards/DailyRewards";
 import { base44 } from "@/api/base44Client";
 
 
@@ -99,6 +100,7 @@ export default function Home() {
             <Footer />
             <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
             <AdminLinkScanner userEmail={user?.email} />
+            <DailyRewards user={user} profile={profile} />
           </div>
         </>
       )}

@@ -8,6 +8,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import PostCard from "@/components/channel/PostCard";
+import ChannelThemePicker, { THEMES } from "@/components/channel/ChannelThemePicker";
 
 const CONTENT_SUBCATEGORIES = [
   "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream", "other"
@@ -53,6 +54,7 @@ export default function Channel() {
   const postFileInputRef = React.useRef(null);
   const [showComments, setShowComments] = useState({});
   const [newComment, setNewComment] = useState({});
+  const [channelTheme, setChannelTheme] = useState(() => localStorage.getItem("channel_theme") || "default");
 
   // Check if viewing someone else's channel via ?email=
   const urlParams = new URLSearchParams(window.location.search);
@@ -83,6 +85,11 @@ export default function Channel() {
   }, []);
 
   const isOwner = !viewEmail || (user && viewEmail === user.email);
+  const currentThemeObj = THEMES.find(t => t.id === channelTheme) || THEMES[0];
+  const handleThemeChange = (themeId) => {
+    setChannelTheme(themeId);
+    localStorage.setItem("channel_theme", themeId);
+  };
 
   const saveSocialLinks = async () => {
     if (!profile?.id) return;
@@ -106,7 +113,7 @@ export default function Channel() {
   const totalViews = videos.reduce((s, v) => s + (v.views || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, minHeight: "100vh" }}>
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-16">
 
@@ -121,17 +128,44 @@ export default function Channel() {
           {/* Grid overlay */}
           <div className="absolute inset-0 opacity-10"
             style={{ backgroundImage: "linear-gradient(rgba(139,92,246,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+          {/* Cover photo upload button */}
+          {isOwner && (
+            <label className="absolute top-3 right-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900/80 border border-gray-700 text-gray-200 text-xs font-semibold cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm">
+              <Upload className="w-4 h-4" /> Change Cover
+              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file || !profile?.id) return;
+                const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
+                setProfile(prev => ({ ...prev, banner_url: file_url }));
+              }} />
+            </label>
+          )}
         </div>
 
         {/* Profile Row */}
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end -mt-12 mb-6">
             {/* Avatar */}
-            <div className="w-24 h-24 rounded-2xl border-4 border-gray-950 bg-gray-800 overflow-hidden flex-shrink-0 shadow-xl">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl">🎮</div>
+            <div className="relative w-24 h-24 flex-shrink-0">
+              <div className="w-24 h-24 rounded-2xl border-4 border-gray-950 bg-gray-800 overflow-hidden shadow-xl">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-4xl">🎮</div>
+                )}
+              </div>
+              {isOwner && (
+                <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-purple-600 border-2 border-gray-950 flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors">
+                  <Upload className="w-3.5 h-3.5 text-white" />
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file || !profile?.id) return;
+                    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                    await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
+                    setProfile(prev => ({ ...prev, avatar_url: file_url }));
+                  }} />
+                </label>
               )}
             </div>
             <div className="flex-1 pb-1">
@@ -163,9 +197,12 @@ export default function Channel() {
               )}
             </div>
             {isOwner && (
-              <a href="/dashboard" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
-                <Edit2 className="w-4 h-4" /> Edit Profile
-              </a>
+              <div className="flex items-center gap-2">
+                <ChannelThemePicker currentTheme={channelTheme} onSelect={handleThemeChange} />
+                <a href="/dashboard" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
+                  <Edit2 className="w-4 h-4" /> Edit Profile
+                </a>
+              </div>
             )}
           </div>
 

@@ -50,6 +50,17 @@ const PLATFORMS = [
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
   },
   {
+    name: "Messenger",
+    icon: () => (
+      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+        <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.975 12-11.111S18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8l3.131 3.26L19.752 8l-6.561 6.963z"/>
+      </svg>
+    ),
+    color: "bg-blue-500 hover:bg-blue-600",
+    getUrl: (url, text) =>
+      `https://www.facebook.com/dialog/send?link=${encodeURIComponent(url)}&app_id=291494419107518&redirect_uri=${encodeURIComponent(url)}`,
+  },
+  {
     name: "Telegram",
     icon: () => (
       <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
