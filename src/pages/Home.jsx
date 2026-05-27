@@ -22,50 +22,41 @@ import FeedbackWidget from "@/components/shared/FeedbackWidget";
 import AdminLinkScanner from "@/components/admin/AdminLinkScanner";
 import DailyRewards from "@/components/rewards/DailyRewards";
 import { base44 } from "@/api/base44Client";
-
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
-  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const { user, isAuthenticated, isLoadingAuth } = useAuth();
 
-  // app-params.js reads access_token from URL on load and stores it in localStorage.
-  // We just need to ensure auth runs after that — handled by the initAuth useEffect below.
-
+  // Load or auto-create user profile once auth is confirmed
   useEffect(() => {
-    const initAuth = async () => {
+    if (!isAuthenticated || !user) return;
+    const loadProfile = async () => {
       try {
-        const me = await base44.auth.me();
-        setUser(me);
-        if (me) {
-          const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
-          if (profiles.length > 0) {
-            setProfile(profiles[0]);
-          } else {
-            // Auto-create minimal profile for existing users
-            // Check for pending profile from registration
-            let pendingProfile = {};
-            try { pendingProfile = JSON.parse(localStorage.getItem("pending_profile") || "{}"); localStorage.removeItem("pending_profile"); } catch {}
-            const newProfile = await base44.entities.UserProfile.create({
-              user_email: me.email,
-              username: pendingProfile.username || me.full_name || me.email.split('@')[0],
-              display_name: pendingProfile.display_name || me.full_name || me.email.split('@')[0],
-              account_type: pendingProfile.account_type || "regular",
-              phone_number: pendingProfile.phone_number || "",
-              preferred_otp_method: pendingProfile.preferred_otp_method || "email",
-              honor_badge: pendingProfile.honor_badge || "founding_member",
-              honor_badge_label: pendingProfile.honor_badge_label || "Founding Member",
-              joined_date: new Date().toISOString(),
-            });
-            setProfile(newProfile);
-          }
+        const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+        if (profiles.length > 0) {
+          setProfile(profiles[0]);
+        } else {
+          let pendingProfile = {};
+          try { pendingProfile = JSON.parse(localStorage.getItem("pending_profile") || "{}"); localStorage.removeItem("pending_profile"); } catch {}
+          const newProfile = await base44.entities.UserProfile.create({
+            user_email: user.email,
+            username: pendingProfile.username || user.full_name || user.email.split('@')[0],
+            display_name: pendingProfile.display_name || user.full_name || user.email.split('@')[0],
+            account_type: pendingProfile.account_type || "regular",
+            phone_number: pendingProfile.phone_number || "",
+            preferred_otp_method: pendingProfile.preferred_otp_method || "email",
+            honor_badge: pendingProfile.honor_badge || "founding_member",
+            honor_badge_label: pendingProfile.honor_badge_label || "Founding Member",
+            joined_date: new Date().toISOString(),
+          });
+          setProfile(newProfile);
         }
-      } catch (e) {
-        // User not authenticated - stay on home page (public)
-      }
+      } catch {}
     };
-    initAuth();
-  }, []);
+    loadProfile();
+  }, [isAuthenticated, user]);
 
   return (
     <div className="min-h-screen text-white relative z-10">
