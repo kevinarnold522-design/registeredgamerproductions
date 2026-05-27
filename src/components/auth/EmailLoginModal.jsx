@@ -6,11 +6,13 @@ import { base44 } from "@/api/base44Client";
 const SAVED_EMAILS_KEY = "gamer_saved_emails";
 const VERCEL_URL = "https://gamerproductions.vercel.app/";
 
-// Base44 only allows its own domains as redirect targets.
-// So we redirect back to the base44.app URL after OAuth, 
-// and that page will forward to Vercel with the token appended.
-const BASE44_RETURN_URL = `https://gamerproductions.base44.app/?vercel_redirect=1`;
-const BASE44_LOGIN_URL = `https://gamerproductions.base44.app/login?from_url=${encodeURIComponent(BASE44_RETURN_URL)}`;
+// Use the SDK's built-in redirectToLogin which uses the configured appBaseUrl
+// so the redirect domain is always valid on Base44's server.
+function loginWithBase44Provider(provider) {
+  // base44.auth.redirectToLogin builds the URL from the configured appBaseUrl
+  // and appends from_url so the user lands back on Vercel after sign-in.
+  base44.auth.redirectToLogin(VERCEL_URL);
+}
 
 function getSavedEmails() {
   try { return JSON.parse(localStorage.getItem(SAVED_EMAILS_KEY) || "[]"); } catch { return []; }
@@ -30,10 +32,6 @@ function emailToUsername(email) {
 function findEmailByUsername(username) {
   const saved = getSavedEmails();
   return saved.find(e => emailToUsername(e) === username.toLowerCase()) || null;
-}
-
-function loginWithBase44Provider(provider) {
-  window.location.href = `${BASE44_LOGIN_URL}&provider=${provider}`;
 }
 
 export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
