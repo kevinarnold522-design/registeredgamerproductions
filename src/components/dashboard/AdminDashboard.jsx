@@ -16,6 +16,7 @@ import AdminTextEditor from "./AdminTextEditor";
 import AdminTransactionsDashboard from "./AdminTransactionsDashboard";
 import AdminSubcategoryManager from "./AdminSubcategoryManager";
 import AdvancedAnalytics from "./AdvancedAnalytics";
+import AdminVisitorAnalytics from "./AdminVisitorAnalytics";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -93,6 +94,8 @@ export default function AdminDashboard({ user, profile }) {
     { id: "payment", label: "💳 Payment Account", icon: Shield },
     { id: "subcategories", label: "📂 Subcategories", icon: Store },
     { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
+    { id: "visitor_analytics", label: "🌍 Visitor Analytics", icon: BarChart2 },
+    { id: "pending_listings", label: `🔍 Pending Review${allListings.filter(l => l.status === "pending").length > 0 ? ` (${allListings.filter(l => l.status === "pending").length})` : ""}`, icon: AlertCircle },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
@@ -322,6 +325,64 @@ export default function AdminDashboard({ user, profile }) {
       {/* Analytics */}
       {tab === "analytics" && (
         <AdvancedAnalytics user={user} profile={profile} sellerOnly={false} />
+      )}
+
+      {/* Visitor Analytics */}
+      {tab === "visitor_analytics" && <AdminVisitorAnalytics />}
+
+      {/* Pending Listings (AI flagged) */}
+      {tab === "pending_listings" && (
+        <div>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-yellow-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-black text-lg">AI-Flagged Listings</h3>
+              <p className="text-gray-400 text-xs">Listings pending review — flagged by AI for potentially illegal or inappropriate content</p>
+            </div>
+          </div>
+          {allListings.filter(l => l.status === "pending").length === 0 ? (
+            <div className="text-center py-16 text-gray-500">
+              <CheckCircle className="w-12 h-12 text-green-500/40 mx-auto mb-3" />
+              <p className="font-semibold">All clear! No listings pending review.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {allListings.filter(l => l.status === "pending").map(l => (
+                <div key={l.id} className="bg-gray-900 rounded-2xl border border-yellow-700/40 p-5 flex items-start gap-4">
+                  {l.images?.[0] && <img src={l.images[0]} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold">{l.title}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{l.seller_username || l.seller_email} · {l.category} · ₱{l.price?.toLocaleString()}</p>
+                    {l.description && <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={async () => {
+                          await base44.entities.Listing.update(l.id, { status: "active", is_approved: true });
+                          setAllListings(prev => prev.map(x => x.id === l.id ? { ...x, status: "active", is_approved: true } : x));
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-900/40 border border-green-700/50 text-green-400 text-xs font-bold hover:bg-green-900/60 transition-colors"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" /> Approve & Publish
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await base44.entities.Listing.update(l.id, { status: "removed", is_approved: false });
+                          setAllListings(prev => prev.map(x => x.id === l.id ? { ...x, status: "removed" } : x));
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-900/40 border border-red-700/50 text-red-400 text-xs font-bold hover:bg-red-900/60 transition-colors"
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Reject & Remove
+                      </button>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-900/50 text-yellow-400 border border-yellow-700/30 flex-shrink-0">⚠️ PENDING</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Reviews */}

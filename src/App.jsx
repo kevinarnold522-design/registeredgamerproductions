@@ -6,6 +6,8 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ShootingStars from '@/components/home/ShootingStars';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { LanguageProvider } from '@/lib/LanguageContext';
+import LanguagePrompt from '@/components/layout/LanguagePrompt';
 // Add page imports here
 import Home from "./pages/Home";
 import Register from "./pages/Register";
@@ -76,17 +78,20 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ShootingStars />
-          <div style={{ position: "relative", zIndex: 10 }}>
-            <AuthenticatedApp />
-          </div>
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <ShootingStars />
+            <div style={{ position: "relative", zIndex: 10 }}>
+              <AuthenticatedApp />
+            </div>
+            <LanguagePrompt />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </LanguageProvider>
   )
 }
 

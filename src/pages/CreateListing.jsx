@@ -142,9 +142,21 @@ export default function CreateListing() {
 
   const removeImage = (idx) => setImages(images.filter((_, i) => i !== idx));
 
+  const [moderationResult, setModerationResult] = useState(null);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    setModerationResult(null);
+
+    // Run AI content moderation first
+    const modRes = await base44.functions.invoke("moderateListing", {
+      title: form.title,
+      description: form.description,
+      category: form.category,
+    });
+    const mod = modRes?.data;
+
     const ytId = extractYouTubeId(form.youtube_url);
     const priceVal = parseFloat(form.price) || 0;
     const data = {
@@ -160,7 +172,9 @@ export default function CreateListing() {
       seller_paypal_email: form.paypal_email || undefined,
       external_link: form.external_link || undefined,
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
-      subcategory: undefined, // Remove old single subcategory field
+      subcategory: undefined,
+      is_approved: mod?.is_approved !== false, // false only if clearly flagged
+      status: mod?.requiresReview ? "pending" : "active",
     };
     if (editId) {
       await base44.entities.Listing.update(editId, data);
@@ -168,7 +182,11 @@ export default function CreateListing() {
       await base44.entities.Listing.create(data);
     }
     setSaving(false);
-    window.location.href = "/dashboard?tab=listings";
+    if (mod?.requiresReview) {
+      setModerationResult(mod);
+    } else {
+      window.location.href = "/dashboard?tab=listings";
+    }
   };
 
   const selectedCat = CATEGORIES.find(c => c.id === form.category);
@@ -528,10 +546,34 @@ export default function CreateListing() {
             </div>
           </div>
 
-          <button type="submit" disabled={saving}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity disabled:opacity-50">
-            {saving ? "Saving..." : editId ? "Update Listing" : "Publish Listing"}
-          </button>
+          {/* Moderation result banner */}
+          {moderationResult && (
+            <div className="bg-yellow-900/30 border-2 border-yellow-500/60 rounded-2xl p-5 space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <p className="text-yellow-300 font-black text-base">Listing Submitted for Admin Review</p>
+                  <p className="text-yellow-200 text-sm mt-1">Your listing was flagged by our AI content system and is pending admin approval before it goes live.</p>
+                  {moderationResult.aiAnalysis?.reason && (
+                    <p className="text-yellow-400 text-xs mt-2">Reason: {moderationResult.aiAnalysis.reason}</p>
+                  )}
+                  {moderationResult.flaggedKeywords?.length > 0 && (
+                    <p className="text-yellow-500 text-xs mt-1">Flagged terms: {moderationResult.flaggedKeywords.join(", ")}</p>
+                  )}
+                </div>
+              </div>
+              <a href="/dashboard?tab=listings" className="block w-full text-center py-3 rounded-xl bg-yellow-600/30 border border-yellow-600/50 text-yellow-300 font-bold text-sm hover:bg-yellow-600/50 transition-colors">
+                Go to My Listings →
+              </a>
+            </div>
+          )}
+
+          {!moderationResult && (
+            <button type="submit" disabled={saving}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+              {saving ? "Checking content & saving..." : editId ? "Update Listing" : "Publish Listing"}
+            </button>
+          )}
         </form>
       </div>
     </div>

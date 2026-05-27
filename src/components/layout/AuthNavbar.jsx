@@ -8,6 +8,7 @@ import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import UserMegaMenu from "@/components/layout/UserMegaMenu";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import LanguageSelector from "@/components/layout/LanguageSelector";
 
 export default function AuthNavbar({ user, profile }) {
   const [cartOpen, setCartOpen] = useState(false);
@@ -122,6 +123,8 @@ export default function AuthNavbar({ user, profile }) {
               Add Listing
             </Link>
           )}
+          {/* Language Selector */}
+          <LanguageSelector />
           {/* Messages */}
           <Link to="/messages" className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-700/50 transition-colors">
             <MessageCircle className="w-4 h-4 text-gray-400" />
