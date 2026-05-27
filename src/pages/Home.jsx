@@ -30,6 +30,19 @@ export default function Home() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
+    // After magic-link click, Base44 lands the user on this page with a token param.
+    // Clean the URL immediately so the token isn't visible, then proceed with auth.
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("token") || url.searchParams.has("access_token")) {
+        url.searchParams.delete("token");
+        url.searchParams.delete("access_token");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const initAuth = async () => {
       try {
         const me = await base44.auth.me();
