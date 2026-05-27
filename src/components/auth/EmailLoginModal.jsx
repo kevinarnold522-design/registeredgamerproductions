@@ -5,7 +5,12 @@ import { base44 } from "@/api/base44Client";
 
 const SAVED_EMAILS_KEY = "gamer_saved_emails";
 const VERCEL_URL = "https://gamerproductions.vercel.app/";
-const BASE44_LOGIN_URL = `https://gamerproductions.base44.app/login?from_url=${encodeURIComponent(VERCEL_URL)}`;
+
+// Base44 only allows its own domains as redirect targets.
+// So we redirect back to the base44.app URL after OAuth, 
+// and that page will forward to Vercel with the token appended.
+const BASE44_RETURN_URL = `https://gamerproductions.base44.app/?vercel_redirect=1`;
+const BASE44_LOGIN_URL = `https://gamerproductions.base44.app/login?from_url=${encodeURIComponent(BASE44_RETURN_URL)}`;
 
 function getSavedEmails() {
   try { return JSON.parse(localStorage.getItem(SAVED_EMAILS_KEY) || "[]"); } catch { return []; }
@@ -19,7 +24,6 @@ function saveEmail(email) {
 function removeSavedEmail(email) {
   localStorage.setItem(SAVED_EMAILS_KEY, JSON.stringify(getSavedEmails().filter(e => e !== email)));
 }
-// Username = everything before @ in email
 function emailToUsername(email) {
   return email.split("@")[0].toLowerCase();
 }
@@ -28,10 +32,8 @@ function findEmailByUsername(username) {
   return saved.find(e => emailToUsername(e) === username.toLowerCase()) || null;
 }
 
-// Redirect to Base44 login page for OAuth (Google/Microsoft)
 function loginWithBase44Provider(provider) {
-  const url = `${BASE44_LOGIN_URL}&provider=${provider}`;
-  window.location.href = url;
+  window.location.href = `${BASE44_LOGIN_URL}&provider=${provider}`;
 }
 
 export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
