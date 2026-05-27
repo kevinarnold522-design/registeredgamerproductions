@@ -4,7 +4,7 @@ import { X, Mail, ArrowRight, Gamepad2, Shield, RefreshCw, CheckCircle, User } f
 import { base44 } from "@/api/base44Client";
 
 const SAVED_EMAILS_KEY = "gamer_saved_emails";
-const VERCEL_URL = "https://gamerproductions.vercel.app/";
+const VERCEL_URL = "https://www.gamer.productions/";
 
 // Use the SDK's built-in redirectToLogin which uses the configured appBaseUrl
 // so the redirect domain is always valid on Base44's server.

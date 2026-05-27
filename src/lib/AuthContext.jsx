@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 
 const AuthContext = createContext();
 
-const APP_URL = "https://gamerproductions.vercel.app/";
+const APP_URL = "https://www.gamer.productions/";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
