@@ -4,15 +4,6 @@ import { X, Mail, ArrowRight, Gamepad2, Shield, RefreshCw, CheckCircle, User } f
 import { base44 } from "@/api/base44Client";
 
 const SAVED_EMAILS_KEY = "gamer_saved_emails";
-const VERCEL_URL = "https://www.gamer.productions/";
-
-// Use the SDK's built-in redirectToLogin which uses the configured appBaseUrl
-// so the redirect domain is always valid on Base44's server.
-function loginWithBase44Provider(provider) {
-  // base44.auth.redirectToLogin builds the URL from the configured appBaseUrl
-  // and appends from_url so the user lands back on Vercel after sign-in.
-  base44.auth.redirectToLogin(VERCEL_URL);
-}
 
 function getSavedEmails() {
   try { return JSON.parse(localStorage.getItem(SAVED_EMAILS_KEY) || "[]"); } catch { return []; }
@@ -35,8 +26,8 @@ function findEmailByUsername(username) {
 }
 
 export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
-  const [tab, setTab] = useState("social"); // "social" | "email" | "username"
-  const [step, setStep] = useState("input"); // "input" | "otp"
+  const [tab, setTab] = useState("social");
+  const [step, setStep] = useState("input");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -62,6 +53,12 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
     cooldownRef.current = setInterval(() => {
       setResendCooldown(prev => { if (prev <= 1) { clearInterval(cooldownRef.current); return 0; } return prev - 1; });
     }, 1000);
+  };
+
+  // Use loginWithProvider which correctly redirects back to the current origin
+  const loginWithProvider = (provider) => {
+    // redirects back to "/" on the current domain (works on Vercel, custom domain, or Base44 preview)
+    base44.auth.loginWithProvider(provider, "/");
   };
 
   const sendOtp = async (targetEmail) => {
@@ -112,14 +109,21 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
     if (pasted.length === 6) setTimeout(() => submitOtp(pasted), 50);
     else otpRefs.current[Math.min(pasted.length, 5)]?.focus();
   };
+
   const submitOtp = async (code) => {
     const finalCode = code || otp.join("");
     if (finalCode.length !== 6) { setError("Enter the 6-digit code from your email."); return; }
     setLoading(true); setError("");
     try {
       const result = await base44.auth.verifyOtp({ email, otpCode: finalCode });
-      if (result?.access_token) base44.auth.setToken(result.access_token, true);
-      window.location.href = VERCEL_URL;
+      if (result?.access_token) {
+        base44.auth.setToken(result.access_token, true);
+        try {
+          localStorage.setItem('base44_access_token', result.access_token);
+          localStorage.setItem('base44_token', result.access_token);
+        } catch (_) {}
+      }
+      window.location.replace("/");
     } catch (e) {
       setError(e?.message || "Invalid code. Please try again.");
       setOtp(["","","","","",""]); setLoading(false);
@@ -159,7 +163,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
             </button>
           </div>
 
-          {/* OTP Step — shown regardless of tab */}
+          {/* OTP Step */}
           {step === "otp" ? (
             <>
               <div className="text-center mb-6">
@@ -223,12 +227,11 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                 ))}
               </div>
 
-              {/* ── SOCIAL TAB ── */}
+              {/* SOCIAL TAB */}
               {tab === "social" && (
                 <>
                   <p className="text-gray-400 text-xs text-center mb-4">Sign in instantly — no password needed</p>
 
-                  {/* Saved accounts quick-access */}
                   {savedEmails.length > 0 && (
                     <div className="mb-4">
                       <p className="text-gray-500 text-[10px] uppercase font-semibold mb-2">Recent accounts</p>
@@ -260,7 +263,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
 
                   <div className="space-y-3">
                     <button
-                      onClick={() => loginWithBase44Provider("google")}
+                      onClick={() => loginWithProvider("google")}
                       className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-white text-gray-800 font-bold text-sm hover:bg-gray-100 transition-all"
                       style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
                     >
@@ -275,7 +278,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                     </button>
 
                     <button
-                      onClick={() => loginWithBase44Provider("microsoft")}
+                      onClick={() => loginWithProvider("microsoft")}
                       className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-gray-900 border border-gray-700 text-white font-bold text-sm hover:bg-gray-800 hover:border-purple-600/50 transition-all"
                     >
                       <svg width="20" height="20" viewBox="0 0 21 21">
@@ -305,7 +308,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                 </>
               )}
 
-              {/* ── USERNAME TAB ── */}
+              {/* USERNAME TAB */}
               {tab === "username" && (
                 <>
                   <p className="text-gray-400 text-xs mb-4 text-center">Sign in using your username (auto-set from your email)</p>
@@ -323,7 +326,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                       />
                     </div>
                     {error && <p className="text-red-400 text-xs mt-1.5">{error}</p>}
-                    <p className="text-gray-600 text-[11px] mt-1.5">Your username is the part before @ in your email (e.g. <span className="text-gray-500">john</span> from john@gmail.com)</p>
+                    <p className="text-gray-600 text-[11px] mt-1.5">Your username is the part before @ in your email</p>
                   </div>
                   <button
                     onClick={handleUsernameSubmit}
@@ -354,7 +357,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                 </>
               )}
 
-              {/* ── EMAIL TAB ── */}
+              {/* EMAIL TAB */}
               {tab === "email" && (
                 <>
                   <p className="text-gray-400 text-xs mb-4 text-center">We'll send a 6-digit sign-in code to your email</p>

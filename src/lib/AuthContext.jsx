@@ -3,20 +3,16 @@ import { base44 } from '@/api/base44Client';
 
 const AuthContext = createContext();
 
-const APP_URL = "https://www.gamer.productions/";
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings] = useState(false); // App is public — no gate needed
+  const [isLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [appPublicSettings] = useState({ id: import.meta.env.VITE_BASE44_APP_ID });
 
   useEffect(() => {
-    // On mount, handle any access_token in the URL (magic link return),
-    // then attempt to load the current user.
     initAuth();
   }, []);
 
@@ -24,10 +20,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoadingAuth(true);
 
-      // If there's a token in localStorage that the SDK hasn't picked up yet, set it explicitly
+      // Ensure SDK has the stored token if it wasn't picked up at init time
       try {
-        const storedToken = localStorage.getItem('base44_access_token') || localStorage.getItem('base44_token');
-        if (storedToken && base44.auth.setToken) {
+        const storedToken =
+          localStorage.getItem('base44_access_token') ||
+          localStorage.getItem('base44_token');
+        if (storedToken && base44.auth?.setToken) {
           base44.auth.setToken(storedToken, true);
         }
       } catch (_) {}
@@ -39,8 +37,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setIsAuthenticated(false);
       }
-    } catch (e) {
-      // Not authenticated — that's fine, app is public
+    } catch (_) {
       setIsAuthenticated(false);
     } finally {
       setIsLoadingAuth(false);
@@ -63,13 +60,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    try {
+      localStorage.removeItem('base44_access_token');
+      localStorage.removeItem('base44_token');
+    } catch (_) {}
     setUser(null);
     setIsAuthenticated(false);
-    base44.auth.logout(APP_URL);
+    base44.auth.logout("/");
   };
 
   const navigateToLogin = () => {
-    base44.auth.redirectToLogin(APP_URL);
+    base44.auth.loginWithProvider('google', '/');
   };
 
   return (
