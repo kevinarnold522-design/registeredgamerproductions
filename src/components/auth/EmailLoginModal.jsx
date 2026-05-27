@@ -83,7 +83,12 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
       startCooldown();
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (e) {
-      setError(e?.message || "Failed to send code. Please try again.");
+      const msg = e?.message || "";
+      if (msg.includes("404") || msg.includes("not found") || msg.includes("NOT_FOUND")) {
+        setError("Email sign-in is not enabled yet. Please use Google or Microsoft to sign in.");
+      } else {
+        setError(msg || "Failed to send code. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -260,13 +265,13 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => base44.auth.loginWithProvider("google", "https://gamerproductions.vercel.app/")}
+                  onClick={() => base44.auth.loginWithProvider("google", window.location.href)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 hover:bg-gray-800 transition-all text-white text-sm font-semibold"
                 >
                   <span className="text-base">🔵</span> Google
                 </button>
                 <button
-                  onClick={() => base44.auth.loginWithProvider("microsoft", "https://gamerproductions.vercel.app/")}
+                  onClick={() => base44.auth.loginWithProvider("microsoft", window.location.href)}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 hover:bg-gray-800 transition-all text-white text-sm font-semibold"
                 >
                   <span className="text-base">🔷</span> Microsoft
