@@ -69,9 +69,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
       setEmail(target); setStep("otp"); startCooldown();
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (e) {
-      // Any failure → fall back to Google OAuth which works on all domains
-      setLoading(false);
-      loginWithProvider("google");
+      setError("Could not send code. Please check your email address and try again.");
     } finally { setLoading(false); }
   };
 
@@ -286,19 +284,22 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                       <ArrowRight className="w-4 h-4 ml-auto text-gray-400" />
                     </button>
 
-                    {/* Yahoo */}
-                    <button
-                      onClick={() => loginWithProvider("yahoo")}
-                      className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white font-bold text-sm hover:opacity-90 transition-all"
-                      style={{ background: "#6001D2" }}
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                        <path d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white"/>
-                      </svg>
-                      <span className="font-black">Y!</span> Continue with Yahoo
-                      <ArrowRight className="w-4 h-4 ml-auto text-purple-200" />
-                    </button>
+                    {/* Yahoo / AOL — use OTP since no OAuth provider */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => { setTab("email"); setError(""); }}
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm text-white hover:opacity-90 transition-all"
+                        style={{ background: "#6001D2" }}
+                      >
+                        <span className="font-black text-base">Y!</span> Yahoo Mail
+                      </button>
+                      <button
+                        onClick={() => { setTab("email"); setError(""); }}
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm text-white bg-gray-800 border border-gray-600 hover:bg-gray-700 transition-all"
+                      >
+                        <span className="font-black text-xs">AOL</span> AOL Mail
+                      </button>
+                    </div>
 
                     {/* Row: Discord + GitHub */}
                     <div className="grid grid-cols-2 gap-3">
@@ -393,30 +394,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
               {/* EMAIL TAB */}
               {tab === "email" && (
                 <>
-                  <p className="text-gray-400 text-xs mb-4 text-center">Enter your email — we'll sign you in securely</p>
-
-                  {/* Recommended: Google sign-in by email */}
-                  <button
-                    onClick={() => loginWithProvider("google")}
-                    className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-white text-gray-800 font-bold text-sm hover:bg-gray-100 transition-all mb-3"
-                    style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 48 48">
-                      <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
-                      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-                      <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.5 35.3 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.1C9.5 36.7 16.3 44 24 44z"/>
-                      <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.3 5.3C43.1 34.7 44 29.7 44 24c0-1.3-.1-2.6-.4-3.9z"/>
-                    </svg>
-                    Sign in with Google (recommended)
-                    <ArrowRight className="w-4 h-4 ml-auto text-gray-500" />
-                  </button>
-
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex-1 h-px bg-gray-800" />
-                    <span className="text-gray-600 text-[11px]">or try email OTP</span>
-                    <div className="flex-1 h-px bg-gray-800" />
-                  </div>
-
+                  <p className="text-gray-400 text-xs mb-4 text-center">Enter your email address — works with Gmail, Yahoo, Outlook, AOL and any email provider</p>
                   <div className="mb-3">
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -425,7 +403,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                         value={email}
                         onChange={e => { setEmail(e.target.value); setError(""); }}
                         onKeyDown={e => e.key === "Enter" && sendOtp()}
-                        placeholder="your@email.com"
+                        placeholder="you@gmail.com / @yahoo.com / @outlook.com..."
                         autoFocus
                         className="w-full bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none transition-colors"
                       />
@@ -435,13 +413,22 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                   <button
                     onClick={() => sendOtp()}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-800 border border-gray-700 text-white font-bold text-sm hover:bg-gray-700 transition-all disabled:opacity-60"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-white text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)", boxShadow: "0 0 20px rgba(124,58,237,0.4)" }}
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-                    {loading ? "Sending code..." : "Send OTP Code"}
+                    {loading ? "Sending code..." : "Send Login Code"}
                     {!loading && <ArrowRight className="w-4 h-4" />}
                   </button>
-                  <p className="text-gray-600 text-[11px] text-center mt-2">OTP may redirect to Google if unavailable on this domain</p>
+                  <div className="flex gap-2 mt-2 flex-wrap justify-center">
+                    {["@gmail.com","@yahoo.com","@outlook.com","@aol.com","@hotmail.com","@icloud.com"].map(suffix => (
+                      <button key={suffix} onClick={() => { const base = email.split("@")[0]; setEmail(base + suffix); }}
+                        className="text-[10px] px-2 py-1 rounded-lg bg-gray-800 text-gray-500 hover:text-purple-300 hover:bg-purple-900/30 transition-colors">
+                        {suffix}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-gray-600 text-[11px] text-center mt-2">A 6-digit code will be sent to your inbox</p>
                 </>
               )}
             </>

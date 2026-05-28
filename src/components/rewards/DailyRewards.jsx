@@ -93,16 +93,16 @@ export default function DailyRewards({ user, profile }) {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating button — top right, below navbar */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-2xl text-white font-black text-sm shadow-2xl"
-        style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)", boxShadow: "0 0 24px rgba(124,58,237,0.6)" }}
+        className="fixed top-[68px] right-4 z-40 flex items-center gap-2 px-3 py-2 rounded-xl text-white font-black text-xs shadow-2xl"
+        style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)", boxShadow: "0 0 18px rgba(124,58,237,0.5)" }}
       >
-        <Gift className="w-5 h-5" />
-        <span className="hidden sm:block">Daily Rewards</span>
+        <Gift className="w-4 h-4" />
+        <span className="hidden sm:block">Rewards</span>
         {canClaimToday() && (
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
         )}
       </button>
 

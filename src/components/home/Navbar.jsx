@@ -75,14 +75,16 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+              <motion.div
+                className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center"
+                animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
+                transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+              >
                 <Gamepad2 className="w-5 h-5 text-white" />
-              </div>
+              </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-sm">GAMER</span>
-                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">
-                  Productions
-                </span>
+                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.PRODUCTIONS</span>
               </div>
             </Link>
 
@@ -199,7 +201,7 @@ export default function Navbar() {
                   </div>
                   <div>
                     <span className="font-black text-white text-sm">GAMER</span>
-                    <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm"> Productions</span>
+                    <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.PRODUCTIONS</span>
                   </div>
                 </div>
                 <button onClick={() => setShowSignUpModal(false)} className="text-gray-600 hover:text-white transition-colors">

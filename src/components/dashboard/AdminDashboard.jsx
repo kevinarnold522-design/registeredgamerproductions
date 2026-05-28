@@ -99,7 +99,6 @@ export default function AdminDashboard({ user, profile }) {
     { id: "payment", label: "💳 Payment Account", icon: Shield },
     { id: "subcategories", label: "📂 Subcategories", icon: Store },
     { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
-    { id: "visitor_analytics", label: "🌍 Visitor Analytics", icon: BarChart2 },
     { id: "pending_listings", label: `🔍 Pending Review${allListings.filter(l => l.status === "pending").length > 0 ? ` (${allListings.filter(l => l.status === "pending").length})` : ""}`, icon: AlertCircle },
     { id: "feedback", label: `💬 Feedback${feedbacks_count > 0 ? ` (${feedbacks_count})` : ""}`, icon: MessageSquare },
     { id: "site_text", label: "Site Text", icon: Shield },
@@ -121,7 +120,7 @@ export default function AdminDashboard({ user, profile }) {
             <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
             <GamerCheckmark accountType="admin" isVerified={true} userEmail={user?.email} size="lg" />
           </div>
-          <p className="text-yellow-400 text-sm font-semibold">👑 CEO & President · GAMER Productions</p>
+          <p className="text-yellow-400 text-sm font-semibold">👑 CEO & President · GAMER.PRODUCTIONS</p>
         </div>
       </div>
 
@@ -138,6 +137,11 @@ export default function AdminDashboard({ user, profile }) {
       {/* Overview */}
       {tab === "overview" && (
         <div>
+          {/* Ad Revenue at top of overview */}
+          <div className="mb-8 bg-gray-900 rounded-2xl border border-gray-800 p-5">
+            <AdRevenueDashboard />
+          </div>
+
           {/* Live indicator */}
           <div className="flex items-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -329,13 +333,13 @@ export default function AdminDashboard({ user, profile }) {
         </div>
       )}
 
-      {/* Analytics */}
+      {/* Analytics — combined */}
       {tab === "analytics" && (
-        <AdvancedAnalytics user={user} profile={profile} sellerOnly={false} />
+        <div className="space-y-8">
+          <AdminVisitorAnalytics />
+          <AdvancedAnalytics user={user} profile={profile} sellerOnly={false} />
+        </div>
       )}
-
-      {/* Visitor Analytics */}
-      {tab === "visitor_analytics" && <AdminVisitorAnalytics />}
 
       {/* Pending Listings (AI flagged) */}
       {tab === "pending_listings" && (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
@@ -55,12 +56,16 @@ export default function AuthNavbar({ user, profile }) {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+          <motion.div
+            className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center"
+            animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
+            transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+          >
             <Gamepad2 className="w-5 h-5 text-white" />
-          </div>
+          </motion.div>
           <div className="hidden sm:flex flex-col leading-tight">
             <span className="font-black text-white text-sm">
-              GAMER<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"> Productions</span>
+              GAMER<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.PRODUCTIONS</span>
             </span>
             {(profile?.is_verified || isAdmin(user?.email)) && (
               <span className="flex items-center gap-1">
