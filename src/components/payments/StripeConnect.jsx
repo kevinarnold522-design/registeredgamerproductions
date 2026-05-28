@@ -14,7 +14,7 @@ const emptyForm = {
   stripe_currency: "usd",
 };
 
-export default function StripeConnect({ profile, onProfileUpdate }) {
+export default function StripeConnect({ profile, onProfileUpdate, forceEdit }) {
   const isConnected = !!(profile?.stripe_connected && profile?.stripe_publishable_key);
 
   const [form, setForm] = useState({
@@ -27,7 +27,7 @@ export default function StripeConnect({ profile, onProfileUpdate }) {
     stripe_currency: profile?.stripe_currency || "usd",
   });
 
-  const [isEditing, setIsEditing] = useState(!isConnected);
+  const [isEditing, setIsEditing] = useState(!isConnected || !!forceEdit);
   const [saving, setSaving] = useState(false);
   const [confirmUnlink, setConfirmUnlink] = useState(false);
   const [unlinking, setUnlinking] = useState(false);

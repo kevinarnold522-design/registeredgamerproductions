@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { CheckCircle, Unlink, Lock, Wallet, Eye, EyeOff, Info } from "lucide-react";
+import { CheckCircle, Unlink, Lock, Wallet, Eye, EyeOff, Info, Pencil } from "lucide-react";
 import StripeConnect from "@/components/payments/StripeConnect";
 import FeedbackWidget from "@/components/shared/FeedbackWidget";
+import AdminPayPalPanel from "@/components/dashboard/AdminPayPalPanel";
+import { isAdmin } from "@/lib/constants";
 
 export default function PaymentPage() {
   const [user, setUser] = useState(null);
@@ -26,6 +28,7 @@ export default function PaymentPage() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [originalForm, setOriginalForm] = useState(null);
+  const [stripeEditing, setStripeEditing] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -347,12 +350,32 @@ export default function PaymentPage() {
         {/* Stripe Section */}
         {profile && (
           <div className="mt-8">
-            <h2 className="text-lg font-black text-white mb-1">💜 Stripe</h2>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-black text-white">💜 Stripe</h2>
+              {profile?.stripe_connected && !stripeEditing && (
+                <button
+                  onClick={() => setStripeEditing(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-900/30 border border-purple-600/40 text-purple-300 text-xs font-bold hover:bg-purple-900/50 transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Edit Stripe
+                </button>
+              )}
+            </div>
             <p className="text-gray-400 text-sm mb-4">Connect Stripe to accept card payments from buyers worldwide.</p>
             <StripeConnect
               profile={profile}
-              onProfileUpdate={(updated) => setProfile(updated)}
+              onProfileUpdate={(updated) => { setProfile(updated); setStripeEditing(false); }}
+              forceEdit={stripeEditing}
             />
+          </div>
+        )}
+
+        {/* Admin Platform PayPal — only for admin */}
+        {isAdmin(user?.email) && (
+          <div className="mt-8">
+            <h2 className="text-lg font-black text-white mb-1">🛡️ Admin Platform PayPal</h2>
+            <p className="text-gray-400 text-sm mb-4">Platform-level PayPal account for receiving the 10% commission fee.</p>
+            <AdminPayPalPanel />
           </div>
         )}
       </div>

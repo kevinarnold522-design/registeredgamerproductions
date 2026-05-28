@@ -14,20 +14,19 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
       <svg
         width={px}
         height={px}
-        viewBox="0 0 100 100"
-        fill="none"
+        viewBox="0 0 22 22"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
       >
-        {/* Solid purple circle */}
-        <circle cx="50" cy="50" r="48" fill="#7c3aed" />
-        {/* White checkmark — bold, centered */}
+        {/* Exact Meta-style purple verified badge */}
+        <circle cx="11" cy="11" r="11" fill="#7c3aed"/>
         <path
-          d="M25 52L42 69L75 32"
+          d="M6.5 11.5L9.5 14.5L15.5 8"
           stroke="white"
-          strokeWidth="10"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
+          fill="none"
         />
       </svg>
 

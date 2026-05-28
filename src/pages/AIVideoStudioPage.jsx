@@ -119,7 +119,14 @@ function CanvasElement({ el, selected, onSelect, onUpdate, scale }) {
 
   return (
     <div style={style} onMouseDown={startDrag}>
-      {el.type === "image" && <img src={el.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none", borderRadius: el.borderRadius || 0 }} />}
+      {el.type === "image" && (
+        <img
+          src={el.src}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "contain", pointerEvents: "none", borderRadius: el.borderRadius || 0, display: "block" }}
+          onError={e => { e.target.style.border = "2px dashed #ef4444"; e.target.alt = "Failed to load"; }}
+        />
+      )}
       {el.type === "text" && (
         <div style={{
           width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: el.textAlign === "left" ? "flex-start" : el.textAlign === "right" ? "flex-end" : "center",
@@ -141,9 +148,26 @@ function CanvasElement({ el, selected, onSelect, onUpdate, scale }) {
         }}>{el.text || "Text"}</div>
       )}
       {el.type === "shape" && (
-        <div style={{ width: "100%", height: "100%", backgroundColor: el.color || "#a855f7", borderRadius: el.borderRadius || 0, border: el.borderWidth ? `${el.borderWidth}px solid ${el.borderColor || "#fff"}` : "none", opacity: el.shapeOpacity ?? 1 }} />
+        <div style={{
+          width: "100%", height: "100%",
+          background: el.color?.startsWith("linear-gradient") ? el.color : undefined,
+          backgroundColor: el.color?.startsWith("linear-gradient") ? undefined : (el.color || "#a855f7"),
+          borderRadius: el.borderRadius || 0,
+          border: el.borderWidth ? `${el.borderWidth}px solid ${el.borderColor || "#fff"}` : "none",
+          opacity: el.shapeOpacity ?? 1
+        }} />
       )}
-      {el.type === "video" && <video src={el.src} style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }} />}
+      {el.type === "video" && (
+        <video
+          src={el.src}
+          style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none", display: "block" }}
+          autoPlay={false}
+          muted
+          loop
+          playsInline
+          onLoadedData={e => e.target.currentTime = 0}
+        />
+      )}
       {selected && (
         <div style={{ position: "absolute", inset: 0, border: "2px solid #a855f7", pointerEvents: "none" }}>
           <div style={{ position: "absolute", bottom: -4, right: -4, width: 10, height: 10, background: "#a855f7", cursor: "se-resize" }} />
@@ -160,8 +184,13 @@ function StudioCanvas({ pages, activePage, elements, selectedId, onSelect, onUpd
   const w = canvasSize.width * scale;
   const h = canvasSize.height * scale;
 
+  // Support both solid colors and gradient strings
+  const bgStyle = bgColor && bgColor.startsWith("linear-gradient")
+    ? { backgroundImage: bgColor }
+    : { backgroundColor: bgColor || "#000000" };
+
   return (
-    <div style={{ width: w, height: h, position: "relative", background: bgColor || "#000", borderRadius: 8, overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.8)", flexShrink: 0 }}
+    <div style={{ width: w, height: h, position: "relative", ...bgStyle, borderRadius: 8, overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.8)", flexShrink: 0 }}
       onClick={() => onSelect(null)}>
       {elems.map(el => (
         <CanvasElement key={el.id} el={{ ...el, x: el.x * scale, y: el.y * scale, width: el.width * scale, height: el.height * scale }} selected={selectedId === el.id} onSelect={() => onSelect(el.id)} onUpdate={(id, upd) => {
