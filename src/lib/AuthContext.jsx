@@ -148,10 +148,25 @@ export const AuthProvider = ({ children }) => {
       if (currentUser) {
         setUser(currentUser);
         setIsAuthenticated(true);
-        // Block ads for admin users
+        // Block ads for admin users permanently
         if (isAdmin(currentUser.email)) {
           window.__adminBlocked = true;
+          window.__adsBlocked = true;
           blockAdsForAdmin();
+        } else {
+          // Check Tier1 and moderator status to block ads for them too
+          try {
+            const [tier1Subs, modMemberships] = await Promise.all([
+              base44.entities.Tier1Subscription.filter({ user_email: currentUser.email, status: "active" }),
+              base44.entities.CommunityMember.filter({ user_email: currentUser.email, is_moderator: true }),
+            ]);
+            const isTier1 = tier1Subs.length > 0;
+            const isModerator = modMemberships.length > 0;
+            if (isTier1 || isModerator) {
+              window.__adsBlocked = true;
+              blockAdsForAdmin();
+            }
+          } catch (_) {}
         }
       } else {
         setIsAuthenticated(false);

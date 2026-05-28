@@ -29,10 +29,88 @@
     <meta name="monetag" content="8cc8ba10765fcb6e991510c0d55f12ff">
     <!-- Google Search Console Verification -->
     <meta name="8cf905e83aaf7d2f25e43d428612a25e7d6ae45c" content="8cf905e83aaf7d2f25e43d428612a25e7d6ae45c" />
-    <!-- Ad delay: hold ads for 7 seconds for non-admin visitors -->
+    <!-- Ad control: delay logic + FB/IG 4-min delay + rotation state -->
     <script>
-      window.__adsHeld = true;
-      setTimeout(function() { window.__adsHeld = false; }, 7000);
+      (function() {
+        // Detect Facebook/Instagram in-app browser or referrer
+        var ua = navigator.userAgent || '';
+        var ref = document.referrer || '';
+        var isSocialTraffic = (
+          ua.indexOf('FBAN') !== -1 || ua.indexOf('FBAV') !== -1 ||
+          ua.indexOf('Instagram') !== -1 || ua.indexOf('FB_IAB') !== -1 ||
+          ref.indexOf('facebook.com') !== -1 || ref.indexOf('instagram.com') !== -1 ||
+          ref.indexOf('l.facebook.com') !== -1 || ref.indexOf('lm.facebook.com') !== -1
+        );
+        // Social traffic gets 4-minute delay; everyone else gets 7-second delay
+        var delayMs = isSocialTraffic ? 240000 : 7000;
+        window.__adsHeld = true;
+        window.__adRotationIndex = 0; // which ad slot is currently active
+        window.__adClosed = false;
+        window.__adCloseTime = 0;
+        setTimeout(function() {
+          if (!window.__adsBlocked && !window.__adminBlocked) {
+            window.__adsHeld = false;
+            loadNextAd();
+          }
+        }, delayMs);
+
+        // Ad scripts — each is loaded ONE AT A TIME in rotation
+        var AD_SCRIPTS = [
+          function() {
+            var s = document.createElement('script');
+            s.src = 'https://elementarywhole.com/bw3JVl0.Po3/pVvUb_m/VCJ/Z_D/0/3wMoDigb1RNzTCQP5VLPTYcqwzOLDKUl1lNLTQMG';
+            s.async = true;
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
+          function() {
+            var s = document.createElement('script');
+            s.src = '//pricklyassociation.com/byXNVHs.dfGllo0QYAWMcO/DeDmS9yuvZFUslVkBP/TkcKwaOpDMUB1/NPTGcmtWN/zMAu4/N/T/Ut2MMlQS';
+            s.async = true;
+            s.referrerPolicy = 'no-referrer-when-downgrade';
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
+          function() {
+            var s = document.createElement('script');
+            s.src = 'https://quge5.com/88/tag.min.js';
+            s.setAttribute('data-zone', '243750');
+            s.setAttribute('data-cfasync', 'false');
+            s.async = true;
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
+        ];
+
+        window.loadNextAd = function() {
+          if (window.__adsBlocked || window.__adminBlocked || window.__adsHeld) return;
+          // Remove previous active ad slot
+          var old = document.getElementById('__ad_slot_active');
+          if (old) old.remove();
+          var idx = window.__adRotationIndex % AD_SCRIPTS.length;
+          AD_SCRIPTS[idx]();
+          window.__adRotationIndex++;
+        };
+
+        // Close button handler — closes current ad and restarts after 4 minutes
+        window.__closeCurrentAd = function() {
+          window.__adClosed = true;
+          window.__adCloseTime = Date.now();
+          var old = document.getElementById('__ad_slot_active');
+          if (old) old.remove();
+          // Also hide any visible ad elements
+          document.querySelectorAll('iframe, ins, [data-zone], [data-cfasync]').forEach(function(el) {
+            el.style.display = 'none';
+          });
+          // Re-enable after 4 minutes (not for admin/mod/tier1)
+          setTimeout(function() {
+            if (!window.__adsBlocked && !window.__adminBlocked) {
+              window.__adClosed = false;
+              loadNextAd();
+            }
+          }, 240000);
+        };
+      })();
     </script>
     <!-- Click-fraud / redirect hijack protection for ALL users -->
     <script>
@@ -92,35 +170,36 @@
       });
     })();
     </script>
-    <!-- Ad Network Scripts — injected after 7s delay, skipped for admin -->
+    <!-- Close Ad Button injected into DOM after ads load (hidden for admin/mod/tier1) -->
     <script>
     (function() {
-      var AD_DOMAINS = ['quge5.com','elementarywhole.com','monetag','pricklyassociation.com'];
-      function loadAds() {
-        if (window.__adminBlocked) return;
-        // Elementary Whole
-        var s1 = document.createElement('script');
-        s1.src = 'https://elementarywhole.com/bw3JVl0.Po3/pVvUb_m/VCJ/Z_D/0/3wMoDigb1RNzTCQP5VLPTYcqwzOLDKUl1lNLTQMG';
-        s1.async = true;
-        document.body.appendChild(s1);
-        // Prickly Association
-        var s2 = document.createElement('script');
-        s2.src = '//pricklyassociation.com/byXNVHs.dfGllo0QYAWMcO/DeDmS9yuvZFUslVkBP/TkcKwaOpDMUB1/NPTGcmtWN/zMAu4/N/T/Ut2MMlQS';
-        s2.async = true;
-        s2.referrerPolicy = 'no-referrer-when-downgrade';
-        document.body.appendChild(s2);
-        // Quge5
-        var s3 = document.createElement('script');
-        s3.src = 'https://quge5.com/88/tag.min.js';
-        s3.setAttribute('data-zone', '243750');
-        s3.setAttribute('data-cfasync', 'false');
-        s3.async = true;
-        document.body.appendChild(s3);
+      // Inject a floating close-ad button after a short delay once ads are active
+      function maybeInjectCloseBtn() {
+        if (window.__adsBlocked || window.__adminBlocked) return;
+        if (document.getElementById('__ad_close_btn')) return;
+        var btn = document.createElement('button');
+        btn.id = '__ad_close_btn';
+        btn.innerHTML = '✕ Close Ad';
+        btn.style.cssText = [
+          'position:fixed','bottom:16px','right:16px','z-index:99999',
+          'background:rgba(30,10,50,0.92)','color:#c084fc','border:1px solid #7c3aed55',
+          'border-radius:9999px','padding:6px 14px','font-size:11px','font-weight:700',
+          'cursor:pointer','backdrop-filter:blur(6px)','transition:all 0.2s'
+        ].join(';');
+        btn.onclick = function() {
+          window.__closeCurrentAd();
+          btn.remove();
+          // Re-show button after 4 minutes
+          setTimeout(function() {
+            if (!window.__adsBlocked && !window.__adminBlocked) maybeInjectCloseBtn();
+          }, 240000);
+        };
+        document.body.appendChild(btn);
       }
-      // 7-second delay for all visitors
+      // Wait for ads to potentially load before showing close button
       setTimeout(function() {
-        if (!window.__adminBlocked) loadAds();
-      }, 7000);
+        if (!window.__adsBlocked && !window.__adminBlocked) maybeInjectCloseBtn();
+      }, 10000);
     })();
     </script>
   </head>

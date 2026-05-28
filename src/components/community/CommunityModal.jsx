@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import CommunityPostCard from "./CommunityPostCard";
 import Tier1Modal from "./Tier1Modal";
+import ModeratorRequestModal from "./ModeratorRequestModal";
 
 function CaptainBadge() {
   return (
@@ -37,6 +38,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
   const [showSectionForm, setShowSectionForm] = useState(false);
   const [isTier1, setIsTier1] = useState(false);
   const [showTier1Modal, setShowTier1Modal] = useState(false);
+  const [showModRequest, setShowModRequest] = useState(false);
   const [communityListings, setCommunityListings] = useState([]);
 
   const admin = isAdmin(user?.email);
@@ -517,25 +519,15 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   ))}
                 </div>
               )}
-              {!isModerator && !admin && isJoined && (
-                <div className="mt-6 p-4 rounded-xl bg-gray-900 border border-gray-800 text-center">
-                  <Shield className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+              {!isModerator && !admin && isJoined && user && (
+                <div className="mt-6 p-4 rounded-xl bg-gray-900 border border-yellow-700/30 text-center">
+                  <Shield className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
                   <p className="text-white font-bold text-sm mb-1">Become a Group Captain?</p>
-                  <p className="text-gray-500 text-xs mb-3">Request moderator status — admin will review and approve.</p>
-                  <button onClick={async () => {
-                    const comm = await ensureCommunity();
-                    await base44.entities.SectionRequest.create({
-                      franchise_id: franchise.id, community_id: comm.id,
-                      requested_by: user.email, requester_username: profile?.username || user.full_name,
-                      section_name: `MOD_REQUEST: ${user.email}`,
-                      section_description: `User requests moderator role in ${franchise.name}`,
-                      status: "pending",
-                    });
-                    alert("Moderator request submitted! Admin will review.");
-                  }}
+                  <p className="text-gray-500 text-xs mb-3">Apply for moderator status. You'll need to answer an interview question and take a pledge. Admin will review.</p>
+                  <button onClick={() => setShowModRequest(true)}
                     className="px-4 py-2 rounded-xl text-xs font-black text-white"
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                    Request Moderator Role
+                    style={{ background: "linear-gradient(135deg, #ca8a04, #7c3aed)" }}>
+                    Apply as Group Captain 🛡️
                   </button>
                 </div>
               )}
@@ -552,6 +544,20 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
             profile={profile}
             onClose={() => setShowTier1Modal(false)}
             onSuccess={() => { setIsTier1(true); setShowTier1Modal(false); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Moderator application modal */}
+      <AnimatePresence>
+        {showModRequest && (
+          <ModeratorRequestModal
+            franchise={franchise}
+            community={community}
+            user={user}
+            profile={profile}
+            onClose={() => setShowModRequest(false)}
+            onSubmitted={() => setShowModRequest(false)}
           />
         )}
       </AnimatePresence>
