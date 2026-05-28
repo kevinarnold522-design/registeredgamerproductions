@@ -71,12 +71,9 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
       setEmail(target); setStep("otp"); startCooldown();
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } catch (e) {
-      const msg = e?.message || "";
-      if (msg.includes("404") || msg.includes("NOT_FOUND") || msg.includes("not found")) {
-        setError("Email sign-in is unavailable. Please use Google or Microsoft to sign in.");
-      } else {
-        setError(msg || "Failed to send code. Please try again.");
-      }
+      // Any failure → fall back to Google OAuth which works on all domains
+      setLoading(false);
+      loginWithProvider("google");
     } finally { setLoading(false); }
   };
 
@@ -239,7 +236,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                         {savedEmails.map(em => (
                           <div key={em} className="flex items-center gap-2">
                             <button
-                              onClick={() => sendOtp(em)}
+                              onClick={() => loginWithProvider("google")}
                               className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-900/25 border border-purple-600/30 hover:bg-purple-900/50 hover:border-purple-500/60 transition-all text-left"
                             >
                               <span className="text-xl">📧</span>
@@ -384,8 +381,31 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
               {/* EMAIL TAB */}
               {tab === "email" && (
                 <>
-                  <p className="text-gray-400 text-xs mb-4 text-center">We'll send a 6-digit sign-in code to your email</p>
-                  <div className="mb-4">
+                  <p className="text-gray-400 text-xs mb-4 text-center">Enter your email — we'll sign you in securely</p>
+
+                  {/* Recommended: Google sign-in by email */}
+                  <button
+                    onClick={() => loginWithProvider("google")}
+                    className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-white text-gray-800 font-bold text-sm hover:bg-gray-100 transition-all mb-3"
+                    style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                      <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+                      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                      <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.5 35.3 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.1C9.5 36.7 16.3 44 24 44z"/>
+                      <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.3 5.3C43.1 34.7 44 29.7 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+                    </svg>
+                    Sign in with Google (recommended)
+                    <ArrowRight className="w-4 h-4 ml-auto text-gray-500" />
+                  </button>
+
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex-1 h-px bg-gray-800" />
+                    <span className="text-gray-600 text-[11px]">or try email OTP</span>
+                    <div className="flex-1 h-px bg-gray-800" />
+                  </div>
+
+                  <div className="mb-3">
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                       <input
@@ -403,16 +423,13 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                   <button
                     onClick={() => sendOtp()}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-sm hover:opacity-90 transition-opacity mb-4 disabled:opacity-60"
-                    style={{ boxShadow: "0 0 20px rgba(139,92,246,0.4)" }}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-800 border border-gray-700 text-white font-bold text-sm hover:bg-gray-700 transition-all disabled:opacity-60"
                   >
                     {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-                    {loading ? "Sending code..." : "Send Sign-In Code"}
+                    {loading ? "Sending code..." : "Send OTP Code"}
                     {!loading && <ArrowRight className="w-4 h-4" />}
                   </button>
-                  <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-3 text-xs text-gray-500">
-                    <strong className="text-gray-400">Tip:</strong> If email code doesn't work, use Google or Microsoft to sign in instead.
-                  </div>
+                  <p className="text-gray-600 text-[11px] text-center mt-2">OTP may redirect to Google if unavailable on this domain</p>
                 </>
               )}
             </>
