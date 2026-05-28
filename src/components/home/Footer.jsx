@@ -25,14 +25,14 @@ const links = {
     { label: "Our Story", href: "/about" },
     { label: "Music Library", href: "/music-library" },
     { label: "Analytics", href: "/analytics" },
-    { label: "Contact", href: "#" },
+    { label: "Contact Us", href: "/contact" },
   ],
   Support: [
-    { label: "Help Center", href: "#" },
-    { label: "Report Issue", href: "#" },
-    { label: "Refund Policy", href: "#" },
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
+    { label: "Help Center", href: "/contact" },
+    { label: "Report Issue", href: "/contact" },
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "DMCA Policy", href: "/terms" },
   ],
 };
 

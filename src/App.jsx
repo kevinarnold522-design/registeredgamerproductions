@@ -25,6 +25,9 @@ import MusicLibrary from "./pages/MusicLibrary";
 import AboutUs from "./pages/AboutUs";
 import Analytics from "./pages/Analytics";
 import AdminWebsiteEditor from "./pages/AdminWebsiteEditor";
+import ContactPage from "./pages/ContactPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsDMCA from "./pages/TermsDMCA";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -68,6 +71,9 @@ const AuthenticatedApp = () => {
       <Route path="/about" element={<AboutUs />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/admin-editor" element={<AdminWebsiteEditor />} />
+      <Route path="/contact" element={<ContactPage />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsDMCA />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

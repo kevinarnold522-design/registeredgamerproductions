@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { isAdmin } from '@/lib/constants';
 
 const AuthContext = createContext();
 
@@ -15,6 +16,22 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     initAuth();
   }, []);
+
+  const blockAdsForAdmin = () => {
+    // Remove Quge5 ad script
+    document.querySelectorAll('script[src*="quge5.com"]').forEach(el => el.remove());
+    // Inject a style to hide any ad iframes/containers that ad networks inject
+    const style = document.createElement('style');
+    style.id = 'admin-ad-block';
+    style.textContent = `
+      iframe[id*="quge"], iframe[src*="quge5"], iframe[src*="monetag"],
+      div[id*="monetag"], div[class*="monetag"], div[id*="adsbygoogle"],
+      ins.adsbygoogle, [data-zone="243750"] { display: none !important; visibility: hidden !important; }
+    `;
+    if (!document.getElementById('admin-ad-block')) {
+      document.head.appendChild(style);
+    }
+  };
 
   const initAuth = async () => {
     try {
@@ -34,6 +51,10 @@ export const AuthProvider = ({ children }) => {
       if (currentUser) {
         setUser(currentUser);
         setIsAuthenticated(true);
+        // Block ads for admin users
+        if (isAdmin(currentUser.email)) {
+          blockAdsForAdmin();
+        }
       } else {
         setIsAuthenticated(false);
       }
@@ -73,10 +94,13 @@ export const AuthProvider = ({ children }) => {
     base44.auth.loginWithProvider('google', '/');
   };
 
+  const isAdminUser = user ? isAdmin(user.email) : false;
+
   return (
     <AuthContext.Provider value={{
       user,
       isAuthenticated,
+      isAdminUser,
       isLoadingAuth,
       isLoadingPublicSettings,
       authError,

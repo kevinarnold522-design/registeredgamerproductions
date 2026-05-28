@@ -20,7 +20,7 @@ const HIGHLIGHTS = [
     color: "from-green-600 to-emerald-500",
     bg: "bg-green-900/20 border-green-600/30",
     title: "$1 Per 1,000 Views",
-    desc: "Once monetized, earn $1 for every 1,000 views on your content. Upload videos, grow your audience, and watch the revenue roll in!",
+    desc: "Once monetized, earn $1 for every 1,000 views on your content. Upload videos, grow your audience, and watch the revenue roll in! ⚠️ Original content is mandatory — monetization will NOT be approved for copied, reposted, or third-party content. All content must be 100% original.",
     cta: "Get Monetized",
     href: "/channel",
     badge: "$1 / 1K views",

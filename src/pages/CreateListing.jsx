@@ -61,6 +61,7 @@ export default function CreateListing() {
     stock: 1,
     location: "",
     tags: "",
+    keywords: "",
     youtube_url: "",
     video_url: "",
     game_name: "",
@@ -97,6 +98,7 @@ export default function CreateListing() {
             stock: l.stock || 1,
             location: l.location || "",
             tags: (l.tags || []).join(", "),
+            keywords: (l.keywords || []).join(", "),
             youtube_url: l.youtube_url || "",
             video_url: l.video_url || "",
             game_name: l.game_name || "",
@@ -165,6 +167,7 @@ export default function CreateListing() {
       is_free: priceVal === 0,
       stock: parseInt(form.stock) || 1,
       tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
+      keywords: form.keywords.split(",").map(t => t.trim()).filter(Boolean),
       images,
       youtube_video_id: ytId || undefined,
       seller_email: user.email,
@@ -507,6 +510,12 @@ export default function CreateListing() {
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Tags (comma separated)</label>
               <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="gaming, mod, fps..."
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">🔍 SEO Keywords (comma separated)</label>
+              <input value={form.keywords} onChange={e => setForm({ ...form, keywords: e.target.value })} placeholder="buy gta mod, ps5 controller cheap, gaming skin..."
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+              <p className="text-gray-600 text-xs mt-1">Keywords help buyers discover your listing via search engines</p>
             </div>
             <label className="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" checked={form.is_premium} onChange={e => setForm({ ...form, is_premium: e.target.checked })} className="w-4 h-4 rounded accent-purple-600" />
