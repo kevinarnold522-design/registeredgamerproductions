@@ -55,9 +55,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
     }, 1000);
   };
 
-  // Use loginWithProvider which correctly redirects back to the current origin
   const loginWithProvider = (provider) => {
-    // redirects back to "/" on the current domain (works on Vercel, custom domain, or Base44 preview)
     base44.auth.loginWithProvider(provider, "/");
   };
 

@@ -4,6 +4,7 @@ import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, Dolla
 import YoutubeConnectHighlight from "@/components/social/YoutubeConnectHighlight";
 import MonetizationHighlights from "@/components/monetization/MonetizationHighlights";
 import StreakTracker from "@/components/rewards/StreakTracker";
+import SellerTrafficInsights from "@/components/dashboard/SellerTrafficInsights";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
 import CreatorAnalyticsTab from "./CreatorAnalyticsTab";
@@ -47,6 +48,7 @@ export default function SellerDashboard({ user, profile }) {
 
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart2 },
+    { id: "traffic", label: "📈 Traffic Insights", icon: BarChart2 },
     { id: "earn", label: "💰 Monetize", icon: DollarSign },
     { id: "rewards", label: "🔥 Daily Streak", icon: Flame },
     { id: "listings", label: "My Listings", icon: Store },
@@ -111,6 +113,10 @@ export default function SellerDashboard({ user, profile }) {
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto px-6 py-8 md:pt-8 pt-20 bg-gray-950">
+
+      {tab === "traffic" && (
+        <SellerTrafficInsights user={user} listings={listings} orders={orders} />
+      )}
 
       {tab === "earn" && (
         <div>

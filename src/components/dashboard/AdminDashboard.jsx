@@ -17,6 +17,7 @@ import AdminTransactionsDashboard from "./AdminTransactionsDashboard";
 import AdminSubcategoryManager from "./AdminSubcategoryManager";
 import AdvancedAnalytics from "./AdvancedAnalytics";
 import AdminVisitorAnalytics from "./AdminVisitorAnalytics";
+import FeedbackDashboard from "./FeedbackDashboard";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -25,15 +26,18 @@ export default function AdminDashboard({ user, profile }) {
   const [allListings, setAllListings] = useState([]);
   const [allOrders, setAllOrders] = useState([]);
   const [pendingVerifications, setPendingVerifications] = useState([]);
+  const [feedbacks_count, setFeedbacksCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const [profiles, listings, orders] = await Promise.all([
+      const [profiles, listings, orders, feedbackList] = await Promise.all([
         base44.entities.UserProfile.list(),
         base44.entities.Listing.list(),
         base44.entities.Order.list(),
+        base44.entities.Feedback.filter({ status: "new" }),
       ]);
+      setFeedbacksCount(feedbackList.length);
       const totalRev = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.amount || 0), 0);
       const totalComm = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.commission || 0), 0);
       setAllUsers(profiles);
@@ -96,6 +100,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
     { id: "visitor_analytics", label: "🌍 Visitor Analytics", icon: BarChart2 },
     { id: "pending_listings", label: `🔍 Pending Review${allListings.filter(l => l.status === "pending").length > 0 ? ` (${allListings.filter(l => l.status === "pending").length})` : ""}`, icon: AlertCircle },
+    { id: "feedback", label: `💬 Feedback${feedbacks_count > 0 ? ` (${feedbacks_count})` : ""}`, icon: MessageSquare },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
@@ -425,6 +430,9 @@ export default function AdminDashboard({ user, profile }) {
           <AdminPayPalPanel />
         </div>
       )}
+
+      {/* Feedback Dashboard */}
+      {tab === "feedback" && <FeedbackDashboard />}
 
       {/* Global Transactions */}
       {tab === "transactions" && (

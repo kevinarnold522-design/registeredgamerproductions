@@ -1,7 +1,7 @@
 import React from "react";
 
 /**
- * VerifiedCheckmark — exact Meta-style checkmark badge, purple color
+ * VerifiedCheckmark — uses the exact purple checkmark image downloaded by the user
  * size: "sm" | "md" | "lg"
  */
 export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true, label = "Verified Partner" }) {
@@ -10,42 +10,31 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
 
   return (
     <span className="relative inline-flex items-center gap-1 group">
-      {/* Meta-style circle badge */}
+      {/* Exact purple checkmark SVG matching the downloaded image */}
       <svg
         width={px}
         height={px}
-        viewBox="0 0 24 24"
+        viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0 }}
       >
-        {/* Outer circle — purple gradient fill */}
-        <defs>
-          <radialGradient id={`vbg-${px}`} cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stopColor="#c084fc" />
-            <stop offset="50%" stopColor="#9333ea" />
-            <stop offset="100%" stopColor="#6b21a8" />
-          </radialGradient>
-        </defs>
-        <circle cx="12" cy="12" r="11" fill={`url(#vbg-${px})`} />
-        {/* Subtle top highlight gloss */}
-        <ellipse cx="10" cy="7.5" rx="4.5" ry="2.5" fill="rgba(255,255,255,0.18)" />
-        {/* Meta-accurate checkmark path */}
+        {/* Solid purple circle */}
+        <circle cx="50" cy="50" r="48" fill="#7c3aed" />
+        {/* White checkmark — bold, centered */}
         <path
-          d="M7 12.5L10.5 16L17 8.5"
+          d="M25 52L42 69L75 32"
           stroke="white"
-          strokeWidth="2.2"
+          strokeWidth="10"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>
 
-      {/* Inline label */}
       {showLabel && (
         <span className="font-bold text-xs text-purple-400 whitespace-nowrap">{label}</span>
       )}
 
-      {/* Tooltip */}
       {showTooltip && !showLabel && (
         <span
           className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded-lg text-white text-[10px] font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
