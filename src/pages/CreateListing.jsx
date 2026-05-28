@@ -70,6 +70,9 @@ export default function CreateListing() {
     external_link: "",
     download_url: "",
     card_animation: "fade",
+    kofi_url: "",
+    buymeacoffee_url: "",
+    patreon_url: "",
   });
 
   useEffect(() => {
@@ -105,6 +108,9 @@ export default function CreateListing() {
             game_platform: l.game_platform || "",
             external_link: l.external_link || "",
             download_url: l.download_url || "",
+            kofi_url: l.kofi_url || "",
+            buymeacoffee_url: l.buymeacoffee_url || "",
+            patreon_url: l.patreon_url || "",
           });
           setImages(l.images || []);
         }
@@ -521,6 +527,38 @@ export default function CreateListing() {
               <input type="checkbox" checked={form.is_premium} onChange={e => setForm({ ...form, is_premium: e.target.checked })} className="w-4 h-4 rounded accent-purple-600" />
               <span className="text-gray-300 text-sm font-medium">Mark as Premium listing</span>
             </label>
+          </div>
+
+          {/* Support / Donation Links */}
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <span className="text-lg">☕</span> Support & Donation Links
+            </h3>
+            <p className="text-gray-500 text-xs">Let your fans support you directly via Ko-fi, Buy Me a Coffee, or Patreon</p>
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                <span className="text-orange-400">☕</span> Ko-fi URL
+              </label>
+              <input value={form.kofi_url} onChange={e => setForm({ ...form, kofi_url: e.target.value })}
+                placeholder="https://ko-fi.com/yourname"
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                <span className="text-yellow-400">☕</span> Buy Me a Coffee URL
+              </label>
+              <input value={form.buymeacoffee_url} onChange={e => setForm({ ...form, buymeacoffee_url: e.target.value })}
+                placeholder="https://buymeacoffee.com/yourname"
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 text-sm" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                <span className="text-red-400">🎖️</span> Patreon URL
+              </label>
+              <input value={form.patreon_url} onChange={e => setForm({ ...form, patreon_url: e.target.value })}
+                placeholder="https://patreon.com/yourname"
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 text-sm" />
+            </div>
           </div>
 
           {/* Card Animation Style */}

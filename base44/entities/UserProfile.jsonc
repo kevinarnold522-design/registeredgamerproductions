@@ -201,20 +201,28 @@
         "price_desc",
         "views_desc"
       ],
-      "default": "newest",
-      "description": "Default sort order for this user's listings/posts when viewed by others"
+      "default": "newest"
     },
     "honor_badge": {
-      "type": "string",
-      "description": "Badge of honor awarded on signup e.g. 'founding_member'"
+      "type": "string"
     },
     "honor_badge_label": {
-      "type": "string",
-      "description": "Display label for honor badge"
+      "type": "string"
     },
     "gaming_accounts": {
-      "type": "object",
-      "description": "Linked gaming platform accounts: steam, psn, xbox, epic, riot, battlenet, nintendo"
+      "type": "object"
+    },
+    "kofi_url": {
+      "type": "string",
+      "description": "Ko-fi page URL e.g. https://ko-fi.com/username"
+    },
+    "buymeacoffee_url": {
+      "type": "string",
+      "description": "Buy Me a Coffee URL e.g. https://buymeacoffee.com/username"
+    },
+    "patreon_url": {
+      "type": "string",
+      "description": "Patreon page URL e.g. https://patreon.com/username"
     }
   },
   "required": [

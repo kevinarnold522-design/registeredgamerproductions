@@ -18,19 +18,47 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const blockAdsForAdmin = () => {
-    // Remove Quge5 ad script
-    document.querySelectorAll('script[src*="quge5.com"]').forEach(el => el.remove());
-    // Inject a style to hide any ad iframes/containers that ad networks inject
-    const style = document.createElement('style');
-    style.id = 'admin-ad-block';
-    style.textContent = `
-      iframe[id*="quge"], iframe[src*="quge5"], iframe[src*="monetag"],
-      div[id*="monetag"], div[class*="monetag"], div[id*="adsbygoogle"],
-      ins.adsbygoogle, [data-zone="243750"] { display: none !important; visibility: hidden !important; }
-    `;
+    // Remove ALL ad scripts from DOM
+    document.querySelectorAll('script[src*="quge5.com"], script[src*="elementarywhole.com"], script[src*="monetag"]').forEach(el => el.remove());
+
+    // Inject aggressive CSS to hide any ad iframes/elements injected at runtime
     if (!document.getElementById('admin-ad-block')) {
+      const style = document.createElement('style');
+      style.id = 'admin-ad-block';
+      style.textContent = `
+        iframe, ins.adsbygoogle,
+        div[id*="monetag"], div[class*="monetag"],
+        div[id*="adsbygoogle"], div[class*="adsbygoogle"],
+        [data-zone], [data-cfasync],
+        div[id*="quge"], div[class*="ad-"],
+        div[id*="pop"], div[class*="pop-up"],
+        div[class*="popup"], div[id*="overlay-ad"] {
+          display: none !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+          opacity: 0 !important;
+          height: 0 !important;
+          width: 0 !important;
+          overflow: hidden !important;
+        }
+      `;
       document.head.appendChild(style);
     }
+
+    // Block future script injections via MutationObserver
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.tagName === 'SCRIPT') {
+            const src = node.src || '';
+            if (src.includes('quge5') || src.includes('elementarywhole') || src.includes('monetag')) {
+              node.remove();
+            }
+          }
+        });
+      });
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
   };
 
   const initAuth = async () => {
