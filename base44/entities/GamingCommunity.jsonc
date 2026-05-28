@@ -1,0 +1,59 @@
+{
+  "name": "GamingCommunity",
+  "type": "object",
+  "properties": {
+    "franchise_id": {
+      "type": "string",
+      "description": "Unique slug e.g. call-of-duty"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "banner_url": {
+      "type": "string"
+    },
+    "genre": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0
+    },
+    "post_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0
+    },
+    "color_primary": {
+      "type": "string",
+      "default": "#7c3aed"
+    },
+    "color_secondary": {
+      "type": "string",
+      "default": "#ec4899"
+    }
+  },
+  "required": [
+    "name",
+    "franchise_id"
+  ]
+}

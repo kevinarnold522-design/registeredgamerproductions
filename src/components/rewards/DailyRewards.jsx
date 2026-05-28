@@ -31,17 +31,32 @@ export default function DailyRewards({ user, profile }) {
   const [lastClaim, setLastClaim] = useState(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationItem, setCelebrationItem] = useState(null);
+  const [totalStreak, setTotalStreak] = useState(0);
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [showPaypalSetup, setShowPaypalSetup] = useState(false);
 
   useEffect(() => {
+    if (!user?.email) return;
     // Load from localStorage
     const data = JSON.parse(localStorage.getItem(`gp_rewards_${user?.email}`) || "{}");
     setClaimedDays(data.claimedDays || []);
     setClaimedShares(data.claimedShares || []);
     setLastClaim(data.lastClaim || null);
+    setTotalStreak(data.totalStreak || 0);
+
+    // Auto-pop for consistent users (3+ consecutive days)
+    const streak = data.totalStreak || 0;
+    const lastDate = data.lastClaim ? new Date(data.lastClaim).toDateString() : null;
+    const todayStr = new Date().toDateString();
+    const canClaim = !lastDate || lastDate !== todayStr;
+    if (streak >= 3 && canClaim) {
+      // Auto-open after short delay
+      setTimeout(() => setOpen(true), 2000);
+    }
   }, [user?.email]);
 
   const save = (days, shares, last) => {
-    localStorage.setItem(`gp_rewards_${user?.email}`, JSON.stringify({ claimedDays: days, claimedShares: shares, lastClaim: last }));
+    localStorage.setItem(`gp_rewards_${user?.email}`, JSON.stringify({ claimedDays: days, claimedShares: shares, lastClaim: last, totalStreak }));
   };
 
   const canClaimToday = () => {
@@ -58,13 +73,19 @@ export default function DailyRewards({ user, profile }) {
     if (!canClaimToday() || claimedDays.includes(nextDay)) return;
     setClaiming(true);
     const newDays = [...claimedDays, nextDay];
+    const newStreak = totalStreak + 1;
     const now = new Date().toISOString();
     setClaimedDays(newDays);
     setLastClaim(now);
-    save(newDays, claimedShares, now);
+    setTotalStreak(newStreak);
+    localStorage.setItem(`gp_rewards_${user?.email}`, JSON.stringify({ claimedDays: newDays, claimedShares, lastClaim: now, totalStreak: newStreak }));
     setCelebrationItem(currentReward);
     setShowCelebration(true);
     setTimeout(() => setShowCelebration(false), 3000);
+    // Show PayPal setup prompt at 365 consecutive days
+    if (newStreak === 365) {
+      setTimeout(() => setShowPaypalSetup(true), 3500);
+    }
     setClaiming(false);
   };
 
@@ -93,6 +114,47 @@ export default function DailyRewards({ user, profile }) {
 
   return (
     <>
+      {/* 365-day PayPal setup modal */}
+      <AnimatePresence>
+        {showPaypalSetup && (
+          <motion.div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+            style={{ background: "rgba(0,0,0,0.92)" }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              className="bg-gray-950 border-2 border-yellow-500/50 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl"
+              style={{ boxShadow: "0 0 60px rgba(234,179,8,0.3)" }}
+              initial={{ scale: 0.8, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8 }}
+            >
+              <p className="text-5xl mb-4">🎉</p>
+              <h2 className="text-yellow-400 font-black text-2xl mb-2">365-Day Legend!</h2>
+              <p className="text-white font-bold text-lg mb-1">You've earned $10 USD!</p>
+              <p className="text-gray-400 text-sm mb-5">Set up your PayPal to receive your reward. This is a one-time payout for your incredible 365-day streak!</p>
+              <input
+                type="email"
+                value={paypalEmail}
+                onChange={e => setPaypalEmail(e.target.value)}
+                placeholder="Your PayPal email address"
+                className="w-full bg-gray-900 border border-yellow-500/40 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-yellow-400 mb-4"
+              />
+              <button
+                onClick={async () => {
+                  if (!paypalEmail) return;
+                  await base44.entities.UserProfile.filter({ user_email: user.email }).then(async (p) => {
+                    if (p[0]) await base44.entities.UserProfile.update(p[0].id, { paypal_email: paypalEmail });
+                  });
+                  setShowPaypalSetup(false);
+                }}
+                className="w-full py-3.5 rounded-xl font-black text-white text-base"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #ef4444)" }}
+              >
+                💰 Submit PayPal & Claim $10
+              </button>
+              <button onClick={() => setShowPaypalSetup(false)} className="mt-3 text-gray-600 text-xs hover:text-gray-400">Do this later</button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Floating button — top right, below navbar */}
       <button
         onClick={() => setOpen(true)}
@@ -168,7 +230,25 @@ export default function DailyRewards({ user, profile }) {
                 {/* Daily Login Tab */}
                 {tab === "daily" && (
                   <div>
-                    <p className="text-gray-400 text-xs mb-4 text-center">Log in every day to claim rewards. Day {Math.min(nextDay, 7)} of 7</p>
+                    <p className="text-gray-400 text-xs mb-4 text-center">
+                      Log in every day to claim rewards. Day {Math.min(nextDay, 7)} of 7
+                      {totalStreak > 0 && <span className="ml-2 text-yellow-400 font-bold">🔥 {totalStreak} day streak!</span>}
+                    </p>
+                    {/* 365-day milestone */}
+                    <div className="mb-4 p-3 rounded-xl bg-yellow-900/20 border border-yellow-500/30">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-yellow-300 font-black text-sm">🏆 365-Day Streak Reward</p>
+                          <p className="text-gray-400 text-xs mt-0.5">Stay consistent every day for 1 year — earn $10 USD via PayPal!</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-yellow-400 font-black text-lg">{totalStreak}/365</p>
+                          <div className="w-20 h-1.5 bg-gray-800 rounded-full mt-1">
+                            <div className="h-1.5 rounded-full bg-gradient-to-r from-yellow-500 to-orange-400" style={{ width: `${Math.min(100, (totalStreak / 365) * 100)}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* 7-day grid */}
                     <div className="grid grid-cols-7 gap-1.5 mb-6">

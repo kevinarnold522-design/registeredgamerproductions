@@ -49,51 +49,54 @@ function SignInHeroButton() {
 }
 
 function LiveStats() {
-  const [stats, setStats] = useState({ users: 0, listings: 0 });
+  const [stats, setStats] = useState({ listings: 0 });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminUserCount, setAdminUserCount] = useState(0);
+
   useEffect(() => {
     const load = async () => {
       try {
-        const [profiles, listings] = await Promise.all([
-          base44.entities.UserProfile.list(),
-          base44.entities.Listing.list(),
-        ]);
-        setStats({ users: profiles.length, listings: listings.filter(l => l.status === "active").length });
+        const auth = await base44.auth.isAuthenticated();
+        if (auth) {
+          const me = await base44.auth.me();
+          const { isAdmin: checkAdmin } = await import("@/lib/constants");
+          if (checkAdmin(me?.email)) {
+            setIsAdmin(true);
+            const profiles = await base44.entities.UserProfile.list();
+            setAdminUserCount(profiles.length);
+          }
+        }
+        const listings = await base44.entities.Listing.list();
+        setStats({ listings: listings.filter(l => l.status === "active").length });
       } catch {}
     };
     load();
-    const interval = setInterval(load, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
       className="flex flex-wrap justify-center gap-8 mb-14 text-center">
-      {/* Registered Gamers — glowing futuristic */}
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        className="relative px-6 py-3 rounded-2xl"
-        style={{
-          background: "linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1))",
-          border: "1px solid rgba(139,92,246,0.4)",
-          boxShadow: "0 0 20px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.1), inset 0 0 20px rgba(139,92,246,0.05)",
-        }}
-      >
+      {/* Registered Gamers — admin only */}
+      {isAdmin && (
         <motion.div
-          animate={{ textShadow: ["0 0 10px #a855f7", "0 0 30px #ec4899", "0 0 10px #a855f7"] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+          whileHover={{ scale: 1.05 }}
+          className="relative px-6 py-3 rounded-2xl"
+          style={{
+            background: "linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1))",
+            border: "1px solid rgba(139,92,246,0.4)",
+            boxShadow: "0 0 20px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.1)",
+          }}
         >
-          {stats.users > 0 ? stats.users.toLocaleString() : "—"}
+          <motion.div
+            animate={{ textShadow: ["0 0 10px #a855f7", "0 0 30px #ec4899", "0 0 10px #a855f7"] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
+          >
+            {adminUserCount > 0 ? adminUserCount.toLocaleString() : "—"}
+          </motion.div>
+          <div className="text-xs text-purple-300 uppercase tracking-wider mt-1 font-semibold">⚡ Registered Gamers</div>
         </motion.div>
-        <div className="text-xs text-purple-300 uppercase tracking-wider mt-1 font-semibold">
-          ⚡ Registered Gamers
-        </div>
-        {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-purple-400 rounded-tl-lg" />
-        <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-pink-400 rounded-tr-lg" />
-        <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-purple-400 rounded-bl-lg" />
-        <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-pink-400 rounded-br-lg" />
-      </motion.div>
+      )}
 
       <div className="text-center">
         <div className="text-3xl font-black text-white">{stats.listings > 0 ? stats.listings.toLocaleString() : "—"}</div>
@@ -173,7 +176,7 @@ export default function HeroSection() {
               animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
               transition={{ duration: 4, repeat: Infinity }}
             >
-              GAMER Productions
+              GAMER.Productions
             </motion.span>
           </h1>
           {/* Animated tagline */}

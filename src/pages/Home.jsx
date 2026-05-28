@@ -30,6 +30,25 @@ export default function Home() {
   const [profile, setProfile] = useState(null);
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
 
+  // Flood ads for non-signed-in users after 1 minute
+  useEffect(() => {
+    if (isAuthenticated) return; // signed-in users: no flood
+    const timer = setTimeout(() => {
+      if (window.__adminBlocked) return;
+      // Inject ad zone placeholders into visible ad slots
+      const adZones = document.querySelectorAll('[data-ad-slot]');
+      adZones.forEach(el => { el.style.display = 'block'; });
+      // Trigger any held ad scripts
+      window.__adsHeld = false;
+      // Load an extra banner ad unit
+      const adDiv = document.createElement('div');
+      adDiv.setAttribute('data-zone', '243750');
+      adDiv.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;';
+      document.body.appendChild(adDiv);
+    }, 60000); // 1 minute
+    return () => clearTimeout(timer);
+  }, [isAuthenticated]);
+
   // Load or auto-create user profile once auth is confirmed
   useEffect(() => {
     if (!isAuthenticated || !user) return;

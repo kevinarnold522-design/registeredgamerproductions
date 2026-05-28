@@ -20,6 +20,19 @@ const moddingCategory = {
   tags: ["PPSSPP", "GTA 5", "FIFA", "NBA2K", "Minecraft", "Android"],
 };
 
+const communityCategory = {
+  icon: () => <span style={{ fontSize: 32 }}>🌐</span>,
+  iconColor: "#a78bfa",
+  title: "Gaming Community",
+  sub: "50+ Franchise Communities · CoD, FIFA, Minecraft & more",
+  color: "from-violet-950 to-purple-900",
+  borderColor: "border-violet-500/60",
+  glowColor: "rgba(139,92,246,0.7)",
+  href: "/gaming-community",
+  badge: "NEW",
+  isNew: true,
+};
+
 const otherCategories = [
   {
     icon: IconController, iconColor: "#a855f7",
@@ -144,7 +157,7 @@ export default function CategoryCards() {
 
       <div className="max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
-          <p className="text-purple-400 text-xs font-semibold uppercase tracking-widest mb-2">GAMER Productions</p>
+          <p className="text-purple-400 text-xs font-semibold uppercase tracking-widest mb-2">GAMER.Productions</p>
           <h2 className="text-3xl md:text-4xl font-black text-white">
             Browse by <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Category</span>
           </h2>
@@ -202,6 +215,42 @@ export default function CategoryCards() {
             <div className="hidden md:flex items-center gap-2 text-orange-300 font-bold text-sm">
               Explore → 
             </div>
+          </div>
+        </motion.div>
+
+        {/* Gaming Community — second hero card */}
+        <motion.div
+          onClick={() => navigate(communityCategory.href)}
+          initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden"
+          style={{
+            height: "200px",
+            border: "2px solid rgba(139,92,246,0.5)",
+            boxShadow: "0 0 30px rgba(139,92,246,0.15)",
+          }}
+          whileHover={{ scale: 1.005, boxShadow: "0 0 60px rgba(139,92,246,0.35)" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-950 to-gray-950" />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(139,92,246,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.6) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+          <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent)" }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />
+          <div className="relative z-10 h-full flex items-center px-8 md:px-16 gap-8">
+            <div className="w-20 h-20 rounded-2xl bg-purple-900/40 border-2 border-purple-500/50 flex items-center justify-center text-4xl"
+              style={{ boxShadow: "0 0 30px rgba(139,92,246,0.4)" }}>
+              🌐
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-black uppercase tracking-wider">NEW</span>
+                <span className="px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-black uppercase">50+ Franchises</span>
+              </div>
+              <h3 className="text-white font-black text-3xl md:text-4xl mb-2">Gaming Community</h3>
+              <p className="text-purple-200/70 text-base max-w-xl">
+                Join communities for <strong className="text-purple-300">Call of Duty, Minecraft, GTA, Valorant, FIFA, NBA2K, UFC, WWE, Mario</strong> & 40+ more franchises.
+              </p>
+            </div>
+            <div className="hidden md:flex items-center gap-2 text-purple-300 font-bold text-sm">Explore →</div>
           </div>
         </motion.div>
 

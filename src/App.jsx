@@ -9,6 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import LanguagePrompt from '@/components/layout/LanguagePrompt';
 // Add page imports here
+import GamingCommunity from "./pages/GamingCommunity";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsDMCA />} />
+      <Route path="/gaming-community" element={<GamingCommunity />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
