@@ -1,0 +1,22 @@
+{
+  "name": "PostRating",
+  "type": "object",
+  "properties": {
+    "post_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    }
+  },
+  "required": [
+    "post_id",
+    "user_email",
+    "rating"
+  ]
+}

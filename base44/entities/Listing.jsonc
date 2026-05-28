@@ -171,8 +171,20 @@
         "rotate",
         "none"
       ],
-      "default": "fade",
-      "description": "Animation style used when this listing card appears on screen"
+      "default": "fade"
+    },
+    "kofi_url": {
+      "type": "string"
+    },
+    "buymeacoffee_url": {
+      "type": "string"
+    },
+    "patreon_url": {
+      "type": "string"
+    },
+    "community_franchise_id": {
+      "type": "string",
+      "description": "If set, this listing is auto-shared to the selected gaming community group"
     }
   },
   "required": [

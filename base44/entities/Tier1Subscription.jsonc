@@ -1,0 +1,41 @@
+{
+  "name": "Tier1Subscription",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "paypal_order_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "pending"
+      ],
+      "default": "pending"
+    },
+    "start_date": {
+      "type": "string"
+    },
+    "expiry_date": {
+      "type": "string"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

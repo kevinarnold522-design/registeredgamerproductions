@@ -24,6 +24,7 @@ const PHYSICAL_SUBCATEGORIES = [
   { id: "other", label: "Other Physical" },
 ];
 import AuthNavbar from "@/components/layout/AuthNavbar";
+import { TOP_FRANCHISES } from "@/lib/franchises";
 
 function extractYouTubeId(url) {
   if (!url) return null;
@@ -73,6 +74,7 @@ export default function CreateListing() {
     kofi_url: "",
     buymeacoffee_url: "",
     patreon_url: "",
+    community_franchise_id: "",
   });
 
   useEffect(() => {
@@ -111,6 +113,7 @@ export default function CreateListing() {
             kofi_url: l.kofi_url || "",
             buymeacoffee_url: l.buymeacoffee_url || "",
             patreon_url: l.patreon_url || "",
+            community_franchise_id: l.community_franchise_id || "",
           });
           setImages(l.images || []);
         }
@@ -455,6 +458,24 @@ export default function CreateListing() {
                 </select>
                 {form.physical_subcategory && (
                   <p className="text-pink-400 text-xs mt-2">This will be auto-categorized under Physical → {PHYSICAL_SUBCATEGORIES.find(s => s.id === form.physical_subcategory)?.label}</p>
+                )}
+              </div>
+            )}
+
+            {/* Community Group — digital products only */}
+            {form.product_type === "digital" && (
+              <div className="bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4">
+                <label className="text-cyan-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                  🎮 Auto-post to Gaming Community (optional)
+                </label>
+                <p className="text-gray-500 text-xs mb-2">Select a community and your listing will automatically appear in that group's feed.</p>
+                <select value={form.community_franchise_id} onChange={e => setForm({ ...form, community_franchise_id: e.target.value })}
+                  className="w-full bg-gray-800 border border-cyan-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 text-sm">
+                  <option value="">— Don't post to a community —</option>
+                  {TOP_FRANCHISES.map(f => <option key={f.id} value={f.id}>{f.emoji} {f.name} ({f.genre})</option>)}
+                </select>
+                {form.community_franchise_id && (
+                  <p className="text-cyan-400 text-xs mt-2">✓ Listing will be shared with the {TOP_FRANCHISES.find(f => f.id === form.community_franchise_id)?.name} community</p>
                 )}
               </div>
             )}
