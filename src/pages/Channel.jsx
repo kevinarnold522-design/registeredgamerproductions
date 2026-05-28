@@ -171,19 +171,21 @@ export default function Channel() {
               )}
             </div>
             <div className="flex-1 pb-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-black text-white">{displayName}</h1>
+              <div className="flex items-center gap-2 flex-wrap" style={{ lineHeight: 1 }}>
+                <h1 className="text-2xl font-black text-white leading-none">{displayName}</h1>
                 {(profile?.is_verified || isAdmin(user?.email)) && (
-                  <GamerCheckmark
-                    isVerified={profile?.is_verified}
-                    userEmail={user?.email}
-                    size="md"
-                    showTooltip={true}
-                    showLabel={false}
-                  />
+                  <span className="inline-flex items-center" style={{ marginTop: 1 }}>
+                    <GamerCheckmark
+                      isVerified={profile?.is_verified}
+                      userEmail={user?.email}
+                      size="md"
+                      showTooltip={true}
+                      showLabel={false}
+                    />
+                  </span>
                 )}
                 {profile?.gaming_checkmark && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-900/30 border border-purple-600/40 text-purple-300 text-xs font-bold">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-900/30 border border-purple-600/40 text-purple-300 text-xs font-bold">
                     🎮 Gaming
                   </span>
                 )}

@@ -18,6 +18,7 @@ import AdminSubcategoryManager from "./AdminSubcategoryManager";
 import AdvancedAnalytics from "./AdvancedAnalytics";
 import AdminVisitorAnalytics from "./AdminVisitorAnalytics";
 import FeedbackDashboard from "./FeedbackDashboard";
+import AdRevenueDashboard from "./AdRevenueDashboard";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -103,6 +104,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "feedback", label: `💬 Feedback${feedbacks_count > 0 ? ` (${feedbacks_count})` : ""}`, icon: MessageSquare },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
+    { id: "ad_revenue", label: "💰 Ad Revenue", icon: BarChart2 },
   ];
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" /></div>;
@@ -437,6 +439,13 @@ export default function AdminDashboard({ user, profile }) {
       {/* Global Transactions */}
       {tab === "transactions" && (
         <AdminTransactionsDashboard user={user} />
+      )}
+
+      {/* Ad Revenue Dashboard */}
+      {tab === "ad_revenue" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <AdRevenueDashboard />
+        </div>
       )}
 
       {/* Orders full tab */}
