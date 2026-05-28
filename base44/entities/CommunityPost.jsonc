@@ -30,9 +30,24 @@
       "type": "number",
       "default": 0
     },
-    "is_approved": {
-      "type": "boolean",
-      "default": true
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "flagged",
+        "removed",
+        "pending_review"
+      ],
+      "default": "active"
+    },
+    "flagged_reason": {
+      "type": "string"
+    },
+    "flagged_by": {
+      "type": "string"
+    },
+    "section_id": {
+      "type": "string"
     }
   },
   "required": [

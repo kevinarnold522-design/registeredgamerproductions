@@ -16,6 +16,10 @@
     },
     "avatar_url": {
       "type": "string"
+    },
+    "is_moderator": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

@@ -1,0 +1,41 @@
+{
+  "name": "SectionRequest",
+  "type": "object",
+  "properties": {
+    "franchise_id": {
+      "type": "string"
+    },
+    "community_id": {
+      "type": "string"
+    },
+    "requested_by": {
+      "type": "string"
+    },
+    "requester_username": {
+      "type": "string"
+    },
+    "section_name": {
+      "type": "string"
+    },
+    "section_description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "admin_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "franchise_id",
+    "requested_by",
+    "section_name"
+  ]
+}
