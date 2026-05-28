@@ -1,8 +1,8 @@
 import React from "react";
 
 /**
- * Meta-style purple verified checkmark with glow effect
- * Matches the Meta verified badge design — solid purple circle, bold white checkmark, purple glow
+ * Verified Partner-style purple verified checkmark with glow effect
+ * Matches the Verified Partner verified badge design — solid purple circle, bold white checkmark, purple glow
  * size: "sm" | "md" | "lg"
  */
 export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true, label = "Verified Partner" }) {
@@ -36,7 +36,7 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
         xmlns="http://www.w3.org/2000/svg"
         style={{ flexShrink: 0, position: "relative", zIndex: 1 }}
       >
-        {/* Outer circle — deep Meta purple */}
+        {/* Outer circle — deep Verified Partner purple */}
         <circle cx="12" cy="12" r="12" fill="#7c3aed" />
         {/* Gradient overlay for depth */}
         <defs>

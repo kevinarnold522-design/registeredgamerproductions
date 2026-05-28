@@ -3,7 +3,7 @@ import { isAdmin } from "@/lib/constants";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
 
 /**
- * GamerCheckmark — ALL verified badges use Meta-style purple checkmark.
+ * GamerCheckmark — ALL verified badges use Verified Partner purple checkmark.
  * Admin gets purple + CEO tooltip. Verified partners get purple + "Verified Partner" tooltip.
  */
 export default function GamerCheckmark({ accountType, isVerified, userEmail, size = "sm", showTooltip = true, showLabel = false }) {

@@ -7,13 +7,13 @@ const ADMIN_PAYPAL = "kevinjersey2019@gmail.com";
 
 const TIER1_BENEFITS = [
   { icon: MessageCircle, text: "Post & comment in all Gaming Communities" },
-  { icon: Shield, text: "Meta Purple Verified Checkmark" },
+  { icon: Shield, text: "Verified Partner Purple Checkmark" },
   { icon: Zap, text: "Access to exclusive Group Chat (Tier 1 only)" },
-  { icon: Star, text: "No advertisements — ad-free experience" },
+  { icon: Star, text: "🚫 Ad-free experience — all ads removed" },
   { icon: Check, text: "Automatic email alerts for new listings in your groups" },
   { icon: Check, text: "Chat any user on the platform" },
   { icon: Check, text: "Request new gaming categories & subcategories" },
-  { icon: Check, text: "Unlock free skins & profile cosmetics" },
+  { icon: Check, text: "Unlock free skins & animated profile avatars" },
 ];
 
 export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
@@ -23,7 +23,6 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
   const [error, setError] = useState("");
 
   const handlePurchase = async () => {
-    if (!paypalEmail.trim()) { setError("Please enter your PayPal email to confirm payment."); return; }
     setPaying(true);
     setError("");
     try {
@@ -60,8 +59,8 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
             // Send thank-you email
             await base44.integrations.Core.SendEmail({
               to: user.email,
-              subject: "🎮 Welcome to Tier 1 — GAMER.PRODUCTIONS",
-              body: `Hi ${profile?.username || user.full_name},\n\nThank you for subscribing to Tier 1!\n\n✅ Your subscription is now active.\n📅 Expiry: ${expiry.toLocaleDateString()}\n\nBenefits:\n• Post & comment in all Gaming Communities\n• Meta Purple Verified Checkmark\n• Ad-free experience\n• Exclusive Group Chat access\n• Email alerts for new listings\n• Chat any user on the platform\n\nThank you for supporting GAMER.PRODUCTIONS!\n\n— Kevin & The Team`,
+              subject: "🎮 Welcome to Tier 1 Verified Partner — GAMER.PRODUCTIONS",
+              body: `Hi ${profile?.username || user.full_name},\n\nThank you for subscribing to the $1 Tier 1 Verified Partner Subscription!\n\n✅ Your subscription is now ACTIVE.\n📅 Expiry Date: ${expiry.toLocaleDateString()}\n\n🌟 YOUR TIER 1 BENEFITS:\n✓ Post & comment in ALL Gaming Communities\n✓ Verified Partner Purple Checkmark badge\n🚫 Ad-Free Experience — All advertisements removed\n✓ Exclusive Tier 1 Group Chat access\n✓ Automatic email alerts for new listings in your joined groups\n✓ Chat any user on the platform\n✓ Request new gaming categories & subcategories\n✓ Unlock animated profile avatars & skins\n\nWelcome to the family!\n\n— Kevin & The GAMER.PRODUCTIONS Team`,
             });
             setStep("done");
             onSuccess?.();
@@ -112,7 +111,7 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
                 <Shield className="w-10 h-10 text-purple-400" />
               </div>
               <h2 className="text-white font-black text-2xl mb-2">You're Verified! 🎉</h2>
-              <p className="text-gray-400 text-sm mb-6">Welcome to Tier 1. Your purple checkmark is now active.</p>
+              <p className="text-gray-400 text-sm mb-6">Welcome to Tier 1 Verified Partner. Your purple checkmark & ad-free experience are now active.</p>
               <button onClick={onClose}
                 className="w-full py-3 rounded-2xl font-black text-white text-sm"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
@@ -151,25 +150,19 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
 
               {/* Payment */}
               <div className="px-5 pb-5 space-y-3">
-                <div>
-                  <label className="text-gray-500 text-xs mb-1 block">Your PayPal email (confirmation)</label>
-                  <input
-                    value={paypalEmail}
-                    onChange={e => { setPaypalEmail(e.target.value); setError(""); }}
-                    placeholder="your@paypal.com"
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500"
-                  />
+                <div className="p-3 rounded-xl bg-green-900/20 border border-green-700/40 text-xs text-green-300 text-center">
+                  🔒 Payment is securely processed via PayPal — your card info stays with PayPal only.
                 </div>
                 {error && <p className="text-red-400 text-xs">{error}</p>}
                 <button
                   onClick={handlePurchase}
                   disabled={paying}
-                  className="w-full py-3 rounded-2xl font-black text-white text-sm disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-2xl font-black text-white text-base disabled:opacity-60 flex items-center justify-center gap-2"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)", boxShadow: "0 0 20px rgba(124,58,237,0.4)" }}
                 >
-                  {paying ? "Processing..." : "Pay $1 via PayPal →"}
+                  {paying ? "Redirecting to PayPal..." : "✨ Avail Tier 1 — Pay $1/yr →"}
                 </button>
-                <p className="text-gray-600 text-[10px] text-center">Secure payment via PayPal · Annual subscription · Cancel anytime</p>
+                <p className="text-gray-600 text-[10px] text-center">Secure payment via PayPal · 1-year subscription · All ads removed</p>
               </div>
             </>
           )}

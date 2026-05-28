@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Heart, MessageCircle, Share2, Star, Trash2, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
+import UserAvatar from "@/components/shared/UserAvatar";
 
 function StarRating({ postId, userEmail, initialRating = 0 }) {
   const [rating, setRating] = useState(initialRating);
@@ -158,13 +159,7 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
   return (
     <div className="px-5 py-4 flex gap-3 group relative">
       {/* Avatar */}
-      <div className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-sm font-black text-white flex-shrink-0"
-        style={{ border: `1px solid ${accentColor || "#7c3aed"}44` }}>
-        {post.author_avatar
-          ? <img src={post.author_avatar} className="w-full h-full rounded-full object-cover" alt="" />
-          : post.author_username?.[0]?.toUpperCase() || "?"
-        }
-      </div>
+      <UserAvatar avatarUrl={post.author_avatar} username={post.author_username} size={36} />
 
       <div className="flex-1 min-w-0">
         {/* Author row */}

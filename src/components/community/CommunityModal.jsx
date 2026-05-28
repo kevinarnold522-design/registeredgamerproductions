@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Users, Shield, Trash2, Flag, Plus, Camera, Check, Lock } from "lucide-react";
+import { X, Send, Users, Shield, Trash2, Flag, Plus, Camera, Check, Lock, Pencil, LayoutGrid } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import CommunityPostCard from "./CommunityPostCard";
@@ -175,13 +175,21 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
   const handleRequestSection = async () => {
     if (!sectionName.trim()) return;
     const comm = await ensureCommunity();
-    await base44.entities.SectionRequest.create({
-      franchise_id: franchise.id, community_id: comm.id,
-      requested_by: user.email, requester_username: profile?.username || user.full_name,
-      section_name: sectionName, section_description: sectionDesc, status: "pending",
-    });
+    if (canManage) {
+      // Admin/mod: add directly to sections array
+      const newSection = { id: Date.now().toString(), name: sectionName, description: sectionDesc };
+      const updatedSections = [...(comm.sections || []), newSection];
+      const updated = await base44.entities.GamingCommunity.update(comm.id, { sections: updatedSections });
+      setCommunity(updated);
+    } else {
+      await base44.entities.SectionRequest.create({
+        franchise_id: franchise.id, community_id: comm.id,
+        requested_by: user.email, requester_username: profile?.username || user.full_name,
+        section_name: sectionName, section_description: sectionDesc, status: "pending",
+      });
+      alert("Section request submitted for admin approval!");
+    }
     setSectionName(""); setSectionDesc(""); setShowSectionForm(false);
-    alert("Section request submitted for admin approval!");
   };
 
   const coverStyle = community?.cover_url
@@ -237,7 +245,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold" style={{ background: `${franchise.accent}22`, color: franchise.accent }}>{franchise.genre}</span>
                   {isModerator && !admin && <CaptainBadge />}
                   {admin && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">👑 Admin</span>}
-                  {isTier1 && !admin && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-purple-500/20 border border-purple-500/50 text-purple-300">✓ Tier 1</span>}
+                  {isTier1 && !admin && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-purple-500/20 border border-purple-500/50 text-purple-300">✓ Verified Partner</span>}
                 </p>
               </div>
               <div className="flex flex-col gap-1.5 flex-shrink-0">
@@ -254,7 +262,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <button onClick={() => setShowTier1Modal(true)}
                     className="px-3 py-1.5 rounded-xl text-xs font-black text-white transition-all flex items-center gap-1"
                     style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                    <Shield className="w-3 h-3" /> Tier 1 — $1/yr
+                    <Shield className="w-3 h-3" /> Avail Tier 1 — $1/yr
                   </button>
                 )}
               </div>
@@ -328,7 +336,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   ) : (
                     <button onClick={() => setShowTier1Modal(true)}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-700/50 bg-purple-900/20 text-purple-300 text-sm font-bold hover:bg-purple-900/40 transition-all">
-                      <Lock className="w-4 h-4" /> Upgrade to Tier 1 to post — $1/year
+                      <Lock className="w-4 h-4" /> Avail Tier 1 Verified Partner to post — $1/year
                     </button>
                   )}
                 </div>
@@ -400,14 +408,31 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
           {/* SECTIONS TAB */}
           {activeTab === "sections" && (
             <div className="overflow-y-auto flex-1 p-5">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <h3 className="text-white font-bold text-sm">Community Sections</h3>
-                {(canManage || isJoined) && user && (
-                  <button onClick={() => setShowSectionForm(!showSectionForm)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-purple-300 bg-purple-900/30 border border-purple-700/40 hover:bg-purple-900/50">
-                    <Plus className="w-3.5 h-3.5" /> Request Section
-                  </button>
-                )}
+                <div className="flex gap-2">
+                  {/* Purple button — admin/mod: add subcategory directly */}
+                  {canManage && (
+                    <button onClick={() => setShowSectionForm(!showSectionForm)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-white"
+                      style={{ background: "#7c3aed" }}>
+                      <Plus className="w-3.5 h-3.5" /> Add Subcategory
+                    </button>
+                  )}
+                  {/* Blue button — normal listing */}
+                  <a href="/create-listing"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-white"
+                    style={{ background: "#2563eb" }}>
+                    <LayoutGrid className="w-3.5 h-3.5" /> Add Listing
+                  </a>
+                  {/* Tier 1: request section */}
+                  {isTier1 && !canManage && isJoined && user && (
+                    <button onClick={() => setShowSectionForm(!showSectionForm)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-purple-300 bg-purple-900/30 border border-purple-700/40 hover:bg-purple-900/50">
+                      <Plus className="w-3.5 h-3.5" /> Request Section
+                    </button>
+                  )}
+                </div>
               </div>
               {showSectionForm && (
                 <div className="mb-4 p-4 rounded-xl bg-gray-900 border border-gray-700 space-y-3">

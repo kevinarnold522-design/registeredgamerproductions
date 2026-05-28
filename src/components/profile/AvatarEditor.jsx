@@ -1,10 +1,14 @@
 import React, { useState, useRef } from "react";
-import { Camera, Trash2, Upload, X, User } from "lucide-react";
+import { Camera, Trash2, Upload, Smile } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { AnimatePresence } from "framer-motion";
+import AvatarPickerModal from "@/components/community/AvatarPickerModal";
+import UserAvatar from "@/components/shared/UserAvatar";
 
-export default function AvatarEditor({ profile, onUpdated }) {
+export default function AvatarEditor({ profile, onUpdated, user }) {
   const [uploading, setUploading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const fileRef = useRef(null);
 
   const handleFile = async (e) => {
@@ -44,10 +48,8 @@ export default function AvatarEditor({ profile, onUpdated }) {
       >
         {uploading ? (
           <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-        ) : profile?.avatar_url ? (
-          <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
         ) : (
-          <span className="text-3xl">{profile?.username?.[0]?.toUpperCase() || "🎮"}</span>
+          <UserAvatar avatarUrl={profile?.avatar_url} username={profile?.username} size={80} />
         )}
         {/* Camera overlay */}
         <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -59,24 +61,42 @@ export default function AvatarEditor({ profile, onUpdated }) {
       {showMenu && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-          <div className="absolute left-0 top-full mt-2 z-50 bg-gray-900 border border-gray-700 rounded-xl shadow-xl overflow-hidden w-44">
+          <div className="absolute left-0 top-full mt-2 z-50 bg-gray-900 border border-gray-700 rounded-xl shadow-xl overflow-hidden w-52">
+            <button
+              onClick={() => { setShowMenu(false); setShowAvatarPicker(true); }}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-white text-sm hover:bg-gray-800 transition-colors"
+            >
+              <Smile className="w-4 h-4 text-purple-400" /> 🎭 Animated Avatars
+            </button>
             <button
               onClick={() => { setShowMenu(false); fileRef.current?.click(); }}
               className="w-full flex items-center gap-2 px-4 py-2.5 text-white text-sm hover:bg-gray-800 transition-colors"
             >
-              <Upload className="w-4 h-4 text-purple-400" /> Upload Photo
+              <Upload className="w-4 h-4 text-blue-400" /> Upload Photo
             </button>
             {profile?.avatar_url && (
               <button
                 onClick={handleRemove}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-red-400 text-sm hover:bg-gray-800 transition-colors"
               >
-                <Trash2 className="w-4 h-4" /> Remove Photo
+                <Trash2 className="w-4 h-4" /> Remove
               </button>
             )}
           </div>
         </>
       )}
+
+      {/* Animated Avatar Picker */}
+      <AnimatePresence>
+        {showAvatarPicker && (
+          <AvatarPickerModal
+            user={user}
+            profile={profile}
+            onClose={() => setShowAvatarPicker(false)}
+            onSelect={(url) => onUpdated({ ...profile, avatar_url: url })}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

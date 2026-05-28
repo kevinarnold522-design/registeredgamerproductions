@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Filter } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -9,62 +9,130 @@ import { isAdmin } from "@/lib/constants";
 import CommunityModal from "@/components/community/CommunityModal";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 
-function CommunityCard({ franchise, memberCount, isJoined, isModerator, onJoin, onClick }) {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin, community, onJoin, onClick, onSaveProfile }) {
   const cardRef = useRef(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editLogo, setEditLogo] = useState(community?.logo_url || "");
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleMouseMove = (e) => {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = ((e.clientX - rect.left) / rect.width - 0.5) * 18;
-    const y = ((e.clientY - rect.top) / rect.height - 0.5) * -18;
-    setTilt({ x, y });
+  const handlePencilClick = (e) => {
+    e.stopPropagation();
+    setEditMode(true);
   };
+
+  const handleFileUpload = async (e) => {
+    e.stopPropagation();
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setEditLogo(file_url);
+    setUploading(false);
+  };
+
+  const handleSave = async (e) => {
+    e.stopPropagation();
+    await onSaveProfile?.(franchise.id, { logo_url: editLogo }, community);
+    setEditMode(false);
+  };
+
+  const logoSrc = community?.logo_url || editLogo || null;
 
   return (
     <motion.div
       ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-      onClick={onClick}
-      className="relative cursor-pointer rounded-2xl overflow-hidden"
+      onClick={editMode ? undefined : onClick}
+      className="relative cursor-pointer rounded-2xl overflow-hidden group"
       style={{
-        transform: `perspective(600px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
-        transition: "transform 0.1s ease-out",
         background: `linear-gradient(135deg, ${franchise.color}, ${franchise.color}dd)`,
         border: `2px solid ${franchise.accent}44`,
         boxShadow: `0 0 16px ${franchise.accent}18`,
+        minHeight: 160,
       }}
-      whileHover={{ scale: 1.03, boxShadow: `0 0 32px ${franchise.accent}55` }}
+      whileHover={{ scale: 1.02, boxShadow: `0 0 32px ${franchise.accent}55` }}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
     >
-      <div className="absolute inset-0 opacity-20"
-        style={{ background: `radial-gradient(circle at 50% 30%, ${franchise.accent}, transparent 70%)` }} />
+      {/* Cover/gradient bg */}
+      {community?.cover_url ? (
+        <div className="absolute inset-0 opacity-30"
+          style={{ backgroundImage: `url(${community.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+      ) : (
+        <div className="absolute inset-0 opacity-20"
+          style={{ background: `radial-gradient(circle at 50% 30%, ${franchise.accent}, transparent 70%)` }} />
+      )}
 
-      <div className="relative p-4 flex flex-col gap-3">
-        <div className="flex items-start justify-between">
-          <div className="w-13 h-13 rounded-xl flex items-center justify-center text-3xl"
-            style={{ background: `${franchise.accent}22`, border: `1px solid ${franchise.accent}55`, width: 52, height: 52 }}>
-            {franchise.emoji}
+      {/* Pencil icon — admin/mod only */}
+      {canAdmin && !editMode && (
+        <button
+          onClick={handlePencilClick}
+          className="absolute top-2 right-2 z-10 w-7 h-7 rounded-lg bg-black/60 hover:bg-purple-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+          title="Edit profile picture">
+          <Pencil className="w-3.5 h-3.5 text-white" />
+        </button>
+      )}
+
+      {/* Inline edit overlay */}
+      {editMode && (
+        <div className="absolute inset-0 z-20 bg-black/90 rounded-2xl flex flex-col items-center justify-center gap-2 p-3" onClick={e => e.stopPropagation()}>
+          <p className="text-white text-xs font-bold">Edit Profile Picture</p>
+          {editLogo && <img src={editLogo} className="w-14 h-14 rounded-xl object-cover" alt="" />}
+          <button onClick={() => fileRef.current?.click()}
+            className="px-3 py-1.5 rounded-lg bg-purple-700 text-white text-[10px] font-bold">
+            {uploading ? "Uploading..." : "📸 Upload"}
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+          <div className="flex gap-2">
+            <button onClick={handleSave}
+              className="px-3 py-1 rounded-lg bg-green-700 text-white text-[10px] font-bold flex items-center gap-1">
+              <Check className="w-3 h-3" /> Save
+            </button>
+            <button onClick={e => { e.stopPropagation(); setEditMode(false); }}
+              className="px-3 py-1 rounded-lg bg-gray-700 text-white text-[10px] font-bold">
+              Cancel
+            </button>
           </div>
-          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
-            style={{ background: `${franchise.accent}22`, color: franchise.accent, border: `1px solid ${franchise.accent}44` }}>
-            {franchise.genre}
-          </span>
         </div>
-        <div>
-          <h3 className="text-white font-black text-xs leading-tight">{franchise.name}</h3>
+      )}
+
+      <div className="relative p-4 flex gap-3 items-start">
+        {/* Logo */}
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden"
+          style={{ background: `${franchise.accent}22`, border: `1px solid ${franchise.accent}55` }}>
+          {logoSrc
+            ? <img src={logoSrc} className="w-full h-full object-cover" alt="" />
+            : <span>{franchise.emoji}</span>
+          }
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-1">
+            <div className="min-w-0">
+              <h3 className="text-white font-black text-sm leading-tight truncate">{franchise.name}</h3>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold mt-0.5 inline-block"
+                style={{ background: `${franchise.accent}22`, color: franchise.accent, border: `1px solid ${franchise.accent}44` }}>
+                {franchise.genre}
+              </span>
+            </div>
+          </div>
+
           {isModerator && (
-            <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 font-bold mt-0.5">
+            <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 font-bold mt-1">
               🛡️ Captain
             </span>
           )}
-          <p className="text-white/40 text-[10px] mt-0.5 flex items-center gap-1">
-            <Users className="w-2.5 h-2.5" /> {memberCount > 0 ? memberCount.toLocaleString() : "0"}
+          <p className="text-white/40 text-[10px] mt-1 flex items-center gap-1">
+            <Users className="w-2.5 h-2.5" /> {memberCount > 0 ? memberCount.toLocaleString() : "0"} members
           </p>
+          {community?.description && (
+            <p className="text-white/30 text-[10px] mt-0.5 line-clamp-2 leading-tight">{community.description}</p>
+          )}
         </div>
+      </div>
+
+      <div className="relative px-4 pb-4">
         <button
           onClick={e => { e.stopPropagation(); onJoin(); }}
           className="w-full py-1.5 rounded-xl text-[10px] font-black transition-all"
@@ -72,7 +140,7 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, onJoin, 
             ? { background: `${franchise.accent}22`, color: franchise.accent, border: `1px solid ${franchise.accent}55` }
             : { background: franchise.accent, color: "#fff" }
           }>
-          {isJoined ? "✓ Joined" : "Join"}
+          {isJoined ? "✓ Joined" : "+ Join"}
         </button>
       </div>
     </motion.div>
@@ -89,6 +157,11 @@ export default function GamingCommunity() {
   const [joinedIds, setJoinedIds] = useState(new Set());
   const [moderatorIds, setModeratorIds] = useState(new Set());
   const [communities, setCommunities] = useState({});
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatEmoji, setNewCatEmoji] = useState("🎮");
+  const [newCatGenre, setNewCatGenre] = useState("Gaming");
+  const [extraFranchises, setExtraFranchises] = useState([]);
   const admin = isAdmin(user?.email);
 
   useEffect(() => {
@@ -120,8 +193,54 @@ export default function GamingCommunity() {
     setModeratorIds(modSet);
   }, [communities, user?.email]);
 
-  const allGenres = ["All", ...Array.from(new Set(TOP_FRANCHISES.map(f => f.genre)))];
-  const filtered = TOP_FRANCHISES.filter(f => {
+  const handleSaveProfile = async (franchiseId, data, existingCommunity) => {
+    if (existingCommunity?.id) {
+      const updated = await base44.entities.GamingCommunity.update(existingCommunity.id, data);
+      setCommunities(prev => ({ ...prev, [franchiseId]: updated }));
+    } else {
+      const franchise = [...TOP_FRANCHISES, ...extraFranchises].find(f => f.id === franchiseId);
+      const nc = await base44.entities.GamingCommunity.create({
+        franchise_id: franchiseId, name: franchise?.name || franchiseId,
+        color_primary: franchise?.color || "#1a1a2e", color_secondary: franchise?.accent || "#7c3aed",
+        genre: franchise?.genre || "Gaming", moderator_emails: [], sections: [], ...data,
+      });
+      setCommunities(prev => ({ ...prev, [franchiseId]: nc }));
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCatName.trim()) return;
+    const id = newCatName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const newFranchise = { id, name: newCatName, emoji: newCatEmoji, color: "#1a1a2e", accent: "#7c3aed", genre: newCatGenre };
+    // Save as GamingCommunity record so it persists
+    const nc = await base44.entities.GamingCommunity.create({
+      franchise_id: id, name: newCatName, genre: newCatGenre,
+      color_primary: "#1a1a2e", color_secondary: "#7c3aed",
+      moderator_emails: [], sections: [],
+    });
+    setExtraFranchises(prev => [...prev, newFranchise]);
+    setCommunities(prev => ({ ...prev, [id]: nc }));
+    setNewCatName(""); setNewCatEmoji("🎮"); setNewCatGenre("Gaming");
+    setShowAddCategory(false);
+  };
+
+  // Load extra communities that were admin-created (not in TOP_FRANCHISES)
+  useEffect(() => {
+    base44.entities.GamingCommunity.list().then(comms => {
+      const knownIds = new Set(TOP_FRANCHISES.map(f => f.id));
+      const extra = comms.filter(c => !knownIds.has(c.franchise_id));
+      const newFranchises = extra.map(c => ({
+        id: c.franchise_id, name: c.name, emoji: "🎮",
+        color: c.color_primary || "#1a1a2e", accent: c.color_secondary || "#7c3aed",
+        genre: c.genre || "Gaming",
+      }));
+      setExtraFranchises(newFranchises);
+    });
+  }, []);
+
+  const allFranchises = [...TOP_FRANCHISES, ...extraFranchises];
+  const allGenres = ["All", ...Array.from(new Set(allFranchises.map(f => f.genre)))];
+  const filtered = allFranchises.filter(f => {
     const matchSearch = f.name.toLowerCase().includes(search.toLowerCase());
     const matchGenre = selectedGenre === "All" || f.genre === selectedGenre;
     return matchSearch && matchGenre;
@@ -155,6 +274,10 @@ export default function GamingCommunity() {
       setJoinedIds(prev => new Set([...prev, franchise.id]));
       setMemberCounts(prev => ({ ...prev, [franchise.id]: (prev[franchise.id] || 0) + 1 }));
     }
+  };
+
+  const isModerator = (franchiseId) => {
+    return moderatorIds.has(franchiseId) || (communities[franchiseId]?.moderator_emails || []).includes(user?.email);
   };
 
   return (
@@ -209,31 +332,73 @@ export default function GamingCommunity() {
 
       {/* Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
           <p className="text-gray-500 text-sm">
             <span className="text-white font-bold">{filtered.length}</span> communities
             {selectedGenre !== "All" && <span className="ml-1 text-purple-400">in {selectedGenre}</span>}
             {search && <span className="ml-1 text-purple-400">matching "{search}"</span>}
           </p>
-          {!user && (
-            <button onClick={() => base44.auth.redirectToLogin()}
-              className="px-4 py-2 rounded-xl text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-              Sign In to Join
-            </button>
-          )}
+          <div className="flex gap-2">
+            {admin && (
+              <button onClick={() => setShowAddCategory(true)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-black text-white"
+                style={{ background: "#7c3aed" }}>
+                <Plus className="w-4 h-4" /> Add Category
+              </button>
+            )}
+            {!user && (
+              <button onClick={() => base44.auth.redirectToLogin()}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                Sign In to Join
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        {/* Admin Add Category Form */}
+        <AnimatePresence>
+          {showAddCategory && admin && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="mb-6 p-5 rounded-2xl bg-gray-900 border border-purple-700/50">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-black text-sm">Add New Gaming Category</h3>
+                <button onClick={() => setShowAddCategory(false)}><X className="w-4 h-4 text-gray-400" /></button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input value={newCatName} onChange={e => setNewCatName(e.target.value)}
+                  placeholder="Category name (e.g. Tekken 8)"
+                  className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                <input value={newCatEmoji} onChange={e => setNewCatEmoji(e.target.value)}
+                  placeholder="Emoji (e.g. 🥋)"
+                  className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                <input value={newCatGenre} onChange={e => setNewCatGenre(e.target.value)}
+                  placeholder="Genre (e.g. Fighting)"
+                  className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+              </div>
+              <button onClick={handleAddCategory}
+                className="mt-3 px-5 py-2.5 rounded-xl font-black text-white text-sm"
+                style={{ background: "#7c3aed" }}>
+                <Plus className="w-4 h-4 inline mr-1" /> Create Category
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map((franchise) => (
             <CommunityCard
               key={franchise.id}
               franchise={franchise}
               memberCount={memberCounts[franchise.id] || 0}
               isJoined={joinedIds.has(franchise.id)}
-              isModerator={moderatorIds.has(franchise.id)}
+              isModerator={isModerator(franchise.id)}
+              canAdmin={admin || isModerator(franchise.id)}
+              community={communities[franchise.id] || null}
               onJoin={() => handleJoinCard(franchise)}
               onClick={() => setSelectedFranchise(franchise)}
+              onSaveProfile={handleSaveProfile}
             />
           ))}
         </div>
