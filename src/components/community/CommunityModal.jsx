@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Users, Shield, Trash2, Flag, Plus, Camera, Check, Lock, Pencil, LayoutGrid } from "lucide-react";
+import { X, Send, Users, Shield, Plus, Camera, Check, Lock, LayoutGrid, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import CommunityPostCard from "./CommunityPostCard";
@@ -40,6 +40,11 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
   const [showTier1Modal, setShowTier1Modal] = useState(false);
   const [showModRequest, setShowModRequest] = useState(false);
   const [communityListings, setCommunityListings] = useState([]);
+  const [modGroupCount, setModGroupCount] = useState(0);
+  const logoFileRef = useRef(null);
+  const coverFileRef = useRef(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const admin = isAdmin(user?.email);
   const canManage = admin || isModerator;
@@ -66,12 +71,16 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
         .sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50);
       setPosts(activePosts);
       if (user?.email) {
-      const myMember = membersData.find(m => m.user_email === user.email);
-      setIsJoined(!!myMember);
-      setIsModerator(myMember?.is_moderator || (comm?.moderator_emails || []).includes(user.email));
-      // Check Tier 1
-      const subs = await base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" });
-      setIsTier1(admin || subs.length > 0);
+        const myMember = membersData.find(m => m.user_email === user.email);
+        setIsJoined(!!myMember);
+        setIsModerator(myMember?.is_moderator || (comm?.moderator_emails || []).includes(user.email));
+        // Check Tier 1 + count how many groups this user moderates
+        const [subs, allModGroups] = await Promise.all([
+          base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" }),
+          base44.entities.CommunityMember.filter({ user_email: user.email, is_moderator: true }),
+        ]);
+        setIsTier1(admin || subs.length > 0);
+        setModGroupCount(allModGroups.length);
       }
       // Load listings for this community
       try {
@@ -112,8 +121,29 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
     }
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setEditLogoUrl(file_url);
+    setUploadingLogo(false);
+  };
+
+  const handleCoverUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingCover(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setEditCoverUrl(file_url);
+    setUploadingCover(false);
+  };
+
   const handlePost = async () => {
-    if (!newPost.trim() || !user || !isTier1) return;
+    if (!newPost.trim() || !user) return;
+    // Allow admin, tier1, or moderator to post (no join requirement for privileged users)
+    const canPost = admin || isTier1 || isModerator;
+    if (!canPost) return;
     setPosting(true);
     const comm = await ensureCommunity();
     const spamWords = ["spam", "scam", "buy now", "click here", "free money", "earn fast"];
@@ -156,6 +186,12 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
     const comm = await ensureCommunity();
     const currentMods = comm.moderator_emails || [];
     if (currentMods.includes(newModEmail)) return;
+    // Check how many groups this user already moderates (max 3)
+    const existingModGroups = await base44.entities.CommunityMember.filter({ user_email: newModEmail, is_moderator: true });
+    if (existingModGroups.length >= 3) {
+      alert(`This user is already moderating ${existingModGroups.length} groups (max 3). They must step down from another group first.`);
+      return;
+    }
     const newMods = [...currentMods, newModEmail];
     await base44.entities.GamingCommunity.update(comm.id, { moderator_emails: newMods });
     setCommunity(prev => ({ ...prev, moderator_emails: newMods }));
@@ -281,19 +317,39 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <button onClick={() => setShowEditProfile(false)}><X className="w-5 h-5 text-gray-400" /></button>
                 </div>
                 <div className="space-y-3 flex-1 overflow-y-auto">
+                  {/* Logo Upload */}
                   <div>
-                    <label className="text-gray-400 text-xs mb-1 block">Logo Image URL</label>
-                    <input value={editLogoUrl} onChange={e => setEditLogoUrl(e.target.value)}
-                      placeholder="https://..." className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                    <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Group Logo</label>
+                    <div className="flex items-center gap-3">
+                      {editLogoUrl
+                        ? <img src={editLogoUrl} className="w-14 h-14 rounded-xl object-cover border border-gray-700" alt="logo" />
+                        : <div className="w-14 h-14 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-2xl">{franchise.emoji}</div>
+                      }
+                      <div className="flex-1 space-y-1.5">
+                        <button type="button" onClick={() => logoFileRef.current?.click()}
+                          className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-purple-700/60 bg-purple-900/20 text-purple-300 text-xs font-bold hover:bg-purple-900/40 transition-all">
+                          <Upload className="w-3.5 h-3.5" /> {uploadingLogo ? "Uploading..." : "Upload from Device"}
+                        </button>
+                        <input value={editLogoUrl} onChange={e => setEditLogoUrl(e.target.value)}
+                          placeholder="or paste image URL..." className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                      </div>
+                    </div>
+                    <input ref={logoFileRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                   </div>
+                  {/* Cover Upload */}
                   <div>
-                    <label className="text-gray-400 text-xs mb-1 block">Cover Photo URL</label>
+                    <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Cover Photo</label>
+                    <button type="button" onClick={() => coverFileRef.current?.click()}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-all mb-1.5">
+                      <Upload className="w-3.5 h-3.5" /> {uploadingCover ? "Uploading..." : "Upload Cover from Device"}
+                    </button>
                     <input value={editCoverUrl} onChange={e => setEditCoverUrl(e.target.value)}
-                      placeholder="https://..." className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                      placeholder="or paste cover photo URL..." className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
                     {editCoverUrl && <img src={editCoverUrl} className="mt-2 w-full h-24 object-cover rounded-lg opacity-70" alt="cover preview" />}
+                    <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
                   </div>
                   <div>
-                    <label className="text-gray-400 text-xs mb-1 block">Description</label>
+                    <label className="text-gray-400 text-xs mb-1 block font-semibold">Description</label>
                     <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={3}
                       placeholder="Describe this community..." className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 resize-none" />
                   </div>
@@ -320,10 +376,10 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
           {/* FEED TAB */}
           {activeTab === "feed" && (
             <>
-              {/* Post input — Tier 1 gated */}
-              {user && isJoined && (
+              {/* Post input — Tier 1 / admin / moderator can post */}
+              {user && (admin || isTier1 || isModerator || isJoined) && (
                 <div className="px-5 py-3 border-b border-gray-800 flex-shrink-0">
-                  {isTier1 ? (
+                  {(admin || isTier1 || isModerator) ? (
                     <div className="flex gap-3 items-center">
                       <input value={newPost} onChange={e => setNewPost(e.target.value)}
                         onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
@@ -343,7 +399,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   )}
                 </div>
               )}
-              {user && !isJoined && (
+              {user && !admin && !isTier1 && !isModerator && !isJoined && (
                 <div className="px-5 py-3 border-b border-gray-800 text-center text-gray-500 text-sm flex-shrink-0">
                   Join this community first to interact
                 </div>
@@ -457,13 +513,18 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
               ) : (
                 <div className="space-y-2">
                   {sections.map((sec, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-gray-900 border border-gray-800 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: `${franchise.accent}22` }}>#</div>
-                      <div>
-                        <p className="text-white font-bold text-sm">{sec.name}</p>
+                    <a
+                      key={i}
+                      href={`/community-section?franchise=${franchise.id}&section=${encodeURIComponent(sec.id || sec.name)}&name=${encodeURIComponent(sec.name)}`}
+                      className="p-3 rounded-xl bg-gray-900 border border-gray-800 flex items-center gap-3 hover:border-purple-600/50 hover:bg-gray-900/80 transition-all group cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black" style={{ background: `${franchise.accent}22`, color: franchise.accent }}>#</div>
+                      <div className="flex-1">
+                        <p className="text-white font-bold text-sm group-hover:text-purple-300 transition-colors">{sec.name}</p>
                         {sec.description && <p className="text-gray-500 text-xs">{sec.description}</p>}
                       </div>
-                    </div>
+                      <span className="text-gray-600 text-xs group-hover:text-purple-400 transition-colors">View →</span>
+                    </a>
                   ))}
                 </div>
               )}

@@ -134,6 +134,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoadingAuth(true);
 
+      // Handle OAuth callback tokens (Yahoo, Outlook, Google) — parse from URL hash/query
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+        const urlToken = params.get('access_token') || hashParams.get('access_token') || params.get('token');
+        if (urlToken && base44.auth?.setToken) {
+          base44.auth.setToken(urlToken, true);
+          localStorage.setItem('base44_access_token', urlToken);
+          // Clean URL
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, '', cleanUrl);
+        }
+      } catch (_) {}
+
       // Ensure SDK has the stored token if it wasn't picked up at init time
       try {
         const storedToken =
@@ -203,8 +217,10 @@ export const AuthProvider = ({ children }) => {
     base44.auth.logout("/");
   };
 
-  const navigateToLogin = () => {
-    base44.auth.loginWithProvider('google', '/');
+  const navigateToLogin = (provider) => {
+    // Default to google; support yahoo and outlook via their respective providers
+    const p = provider || 'google';
+    base44.auth.loginWithProvider(p, window.location.pathname + window.location.search || '/');
   };
 
   const isAdminUser = user ? isAdmin(user.email) : false;

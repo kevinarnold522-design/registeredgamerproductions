@@ -92,6 +92,13 @@
           window.__adRotationIndex++;
         };
 
+        // Reshuffle/rotate ads every 2 minutes for non-admin/non-tier1 users
+        var adShuffleTimer = setInterval(function() {
+          if (!window.__adsBlocked && !window.__adminBlocked && !window.__adsHeld && !window.__adClosed) {
+            window.loadNextAd();
+          }
+        }, 120000);
+
         // Close button handler — closes current ad and restarts after 4 minutes
         window.__closeCurrentAd = function() {
           window.__adClosed = true;

@@ -29,6 +29,7 @@ import AdminWebsiteEditor from "./pages/AdminWebsiteEditor";
 import ContactPage from "./pages/ContactPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsDMCA from "./pages/TermsDMCA";
+import CommunitySectionPage from "./pages/CommunitySectionPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -76,6 +77,7 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsDMCA />} />
       <Route path="/gaming-community" element={<GamingCommunity />} />
+      <Route path="/community-section" element={<CommunitySectionPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
