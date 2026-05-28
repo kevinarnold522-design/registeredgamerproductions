@@ -64,7 +64,8 @@ export default function AuthNavbar({ user, profile }) {
             </span>
             {(profile?.is_verified || isAdmin(user?.email)) && (
               <span className="flex items-center gap-1">
-                <GamerCheckmark isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showLabel={true} showTooltip={false} />
+                <GamerCheckmark isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showTooltip={false} />
+                <span className={`text-[10px] font-bold ${isAdmin(user?.email) ? "text-yellow-400" : "text-purple-400"}`}>Verified</span>
               </span>
             )}
           </div>

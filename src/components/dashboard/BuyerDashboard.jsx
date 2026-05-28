@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, ClipboardList, User, Link2, Youtube, LogOut, Settings } from "lucide-react";
+import { Heart, ClipboardList, User, Link2, Youtube, LogOut, Settings, Flame, DollarSign } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
 import LinkShortenerDashboard from "./LinkShortenerDashboard";
+import StreakTracker from "@/components/rewards/StreakTracker";
+import YoutubeConnectHighlight from "@/components/social/YoutubeConnectHighlight";
+import MonetizationHighlights from "@/components/monetization/MonetizationHighlights";
 
 
 export default function BuyerDashboard({ user, profile }) {
@@ -29,6 +32,8 @@ export default function BuyerDashboard({ user, profile }) {
     { id: "overview", label: "Overview", icon: User },
     { id: "orders", label: "Orders & History", icon: ClipboardList },
     { id: "favorites", label: "Favourites", icon: Heart },
+    { id: "rewards", label: "🔥 Daily Streak", icon: Flame },
+    { id: "earn", label: "💰 Earn Money", icon: DollarSign },
     { id: "links", label: "🔗 Link Shortener", icon: Link2 },
     { id: "videos", label: "📹 Share Videos", icon: Youtube },
     { id: "settings", label: "Settings", icon: Settings },
@@ -82,7 +87,9 @@ export default function BuyerDashboard({ user, profile }) {
         <div className="max-w-4xl">
 
       {tab === "overview" && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+          <YoutubeConnectHighlight profile={profile} user={user} />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
             { label: "Total Orders", value: orders.length, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
             { label: "Favourites", value: favorites.length, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
@@ -93,6 +100,33 @@ export default function BuyerDashboard({ user, profile }) {
               <p className={`text-3xl font-black ${s.color}`}>{s.value}</p>
             </div>
           ))}
+          </div>
+          <div className="mt-6">
+            <StreakTracker userEmail={user?.email} />
+          </div>
+        </div>
+      )}
+
+      {tab === "rewards" && (
+        <div className="max-w-lg">
+          <h3 className="text-white font-black text-lg mb-4">Daily Login Streak 🔥</h3>
+          <StreakTracker userEmail={user?.email} />
+          <div className="mt-4 bg-gray-900 border border-gray-800 rounded-2xl p-5">
+            <h4 className="text-white font-bold mb-2">How it works</h4>
+            <ul className="text-gray-400 text-sm space-y-2">
+              <li>🔥 Log in every day to build your streak</li>
+              <li>📅 365 consecutive days = <strong className="text-yellow-400">$10 cash reward</strong></li>
+              <li>❌ Missing one day resets your streak to 0</li>
+              <li>🏆 Longest streak is always saved</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {tab === "earn" && (
+        <div>
+          <h3 className="text-white font-black text-lg mb-4">Ways to Earn 💰</h3>
+          <MonetizationHighlights />
         </div>
       )}
 

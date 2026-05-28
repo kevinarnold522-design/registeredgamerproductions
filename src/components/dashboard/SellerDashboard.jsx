@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, DollarSign, Youtube, LogOut } from "lucide-react";
+import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, DollarSign, Youtube, LogOut, Flame } from "lucide-react";
+import YoutubeConnectHighlight from "@/components/social/YoutubeConnectHighlight";
+import MonetizationHighlights from "@/components/monetization/MonetizationHighlights";
+import StreakTracker from "@/components/rewards/StreakTracker";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
 import CreatorAnalyticsTab from "./CreatorAnalyticsTab";
@@ -44,6 +47,8 @@ export default function SellerDashboard({ user, profile }) {
 
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart2 },
+    { id: "earn", label: "💰 Monetize", icon: DollarSign },
+    { id: "rewards", label: "🔥 Daily Streak", icon: Flame },
     { id: "listings", label: "My Listings", icon: Store },
     { id: "orders", label: "Orders", icon: Package },
     { id: "sales", label: "📈 Sales Dashboard", icon: DollarSign },
@@ -107,9 +112,36 @@ export default function SellerDashboard({ user, profile }) {
       {/* Main content */}
       <main className="flex-1 overflow-y-auto px-6 py-8 md:pt-8 pt-20 bg-gray-950">
 
+      {tab === "earn" && (
+        <div>
+          <h3 className="text-white font-black text-lg mb-4">Monetization Options 💰</h3>
+          <div className="mb-5 bg-green-900/20 border border-green-600/30 rounded-2xl p-4">
+            <p className="text-green-300 font-black text-sm mb-1">💵 $1 per 1,000 Views — Once Monetized</p>
+            <p className="text-gray-400 text-xs">Upload content, grow your audience, and earn $1 for every 1,000 views. Apply for monetization from your channel settings.</p>
+          </div>
+          <MonetizationHighlights />
+        </div>
+      )}
+
+      {tab === "rewards" && (
+        <div className="max-w-lg">
+          <h3 className="text-white font-black text-lg mb-4">Daily Login Streak 🔥</h3>
+          <StreakTracker userEmail={user?.email} />
+          <div className="mt-4 bg-gray-900 border border-gray-800 rounded-2xl p-5">
+            <h4 className="text-white font-bold mb-2">How it works</h4>
+            <ul className="text-gray-400 text-sm space-y-2">
+              <li>🔥 Log in every day to build your streak</li>
+              <li>📅 365 consecutive days = <strong className="text-yellow-400">$10 cash reward</strong></li>
+              <li>❌ Missing one day resets your streak to 0</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
       {/* Overview */}
       {tab === "overview" && (
         <div>
+          <YoutubeConnectHighlight profile={profile} user={user} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { label: "Total Revenue", value: `₱${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },

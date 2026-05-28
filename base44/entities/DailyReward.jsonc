@@ -1,0 +1,43 @@
+{
+  "name": "DailyReward",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "current_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "longest_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "last_checkin_date": {
+      "type": "string",
+      "description": "ISO date string YYYY-MM-DD"
+    },
+    "total_checkins": {
+      "type": "number",
+      "default": 0
+    },
+    "reward_unlocked": {
+      "type": "boolean",
+      "default": false
+    },
+    "reward_claimed": {
+      "type": "boolean",
+      "default": false
+    },
+    "streak_history": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of ISO date strings for each check-in"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

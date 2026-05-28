@@ -21,6 +21,7 @@ import AIAssistBanner from "@/components/home/AIAssistBanner";
 import FeedbackWidget from "@/components/shared/FeedbackWidget";
 import AdminLinkScanner from "@/components/admin/AdminLinkScanner";
 import DailyRewards from "@/components/rewards/DailyRewards";
+import DailyRewardPopup from "@/components/rewards/DailyRewardPopup";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -95,6 +96,7 @@ export default function Home() {
             <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
             <AdminLinkScanner userEmail={user?.email} />
             <DailyRewards user={user} profile={profile} />
+            {user && <DailyRewardPopup user={user} />}
           </div>
         </>
       )}
