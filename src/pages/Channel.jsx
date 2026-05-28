@@ -9,6 +9,8 @@ import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import PostCard from "@/components/channel/PostCard";
 import ChannelThemePicker, { THEMES } from "@/components/channel/ChannelThemePicker";
+import GamerCheckmark from "@/components/shared/GamerCheckmark";
+import { isAdmin } from "@/lib/constants";
 
 const CONTENT_SUBCATEGORIES = [
   "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream", "other"
@@ -171,14 +173,18 @@ export default function Channel() {
             <div className="flex-1 pb-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-black text-white">{displayName}</h1>
-                {profile?.gaming_checkmark && (
-                  <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-300 text-xs font-bold">
-                    🎮 Gaming Checkmark
-                  </span>
+                {(profile?.is_verified || isAdmin(user?.email)) && (
+                  <GamerCheckmark
+                    isVerified={profile?.is_verified}
+                    userEmail={user?.email}
+                    size="md"
+                    showTooltip={true}
+                    showLabel={false}
+                  />
                 )}
-                {profile?.is_verified && (
-                  <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-bold">
-                    ✅ Verified
+                {profile?.gaming_checkmark && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-900/30 border border-purple-600/40 text-purple-300 text-xs font-bold">
+                    🎮 Gaming
                   </span>
                 )}
               </div>
@@ -193,6 +199,29 @@ export default function Channel() {
                     {profile.youtube_subscribers > 0 ? `${profile.youtube_subscribers.toLocaleString()} subscribers` : "YouTube Channel"}
                     <ExternalLink className="w-3 h-3" />
                   </a>
+                </div>
+              )}
+              {/* Support Links: Ko-fi, Buy Me a Coffee, Patreon */}
+              {(profile?.kofi_url || profile?.buymeacoffee_url || profile?.patreon_url) && (
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  {profile.kofi_url && (
+                    <a href={profile.kofi_url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-900/20 border border-orange-700/40 text-orange-300 text-xs font-bold hover:bg-orange-900/40 transition-colors">
+                      ☕ Ko-fi <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                  {profile.buymeacoffee_url && (
+                    <a href={profile.buymeacoffee_url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-900/20 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:bg-yellow-900/40 transition-colors">
+                      ☕ Buy Me a Coffee <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                  {profile.patreon_url && (
+                    <a href={profile.patreon_url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-900/20 border border-red-600/40 text-red-300 text-xs font-bold hover:bg-red-900/40 transition-colors">
+                      🎖️ Patreon <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
               )}
             </div>

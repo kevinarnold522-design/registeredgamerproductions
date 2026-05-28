@@ -18,47 +18,72 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const blockAdsForAdmin = () => {
-    // Remove ALL ad scripts from DOM
-    document.querySelectorAll('script[src*="quge5.com"], script[src*="elementarywhole.com"], script[src*="monetag"]').forEach(el => el.remove());
+    // Remove ALL ad & tracking scripts from DOM immediately
+    const adDomains = ['quge5.com', 'elementarywhole.com', 'monetag', 'pricklyassociation.com', 'adsbygoogle'];
+    document.querySelectorAll('script').forEach(el => {
+      const src = el.src || '';
+      if (adDomains.some(d => src.includes(d))) el.remove();
+    });
 
-    // Inject aggressive CSS to hide any ad iframes/elements injected at runtime
+    // Nuke all iframes that might be ad containers
+    document.querySelectorAll('iframe').forEach(el => el.remove());
+
+    // Inject aggressive CSS to permanently hide ALL ad injections
     if (!document.getElementById('admin-ad-block')) {
       const style = document.createElement('style');
       style.id = 'admin-ad-block';
       style.textContent = `
-        iframe, ins.adsbygoogle,
+        iframe, ins.adsbygoogle, ins[class*="ad"],
         div[id*="monetag"], div[class*="monetag"],
         div[id*="adsbygoogle"], div[class*="adsbygoogle"],
+        div[id*="ad-"], div[class*="ad-banner"],
         [data-zone], [data-cfasync],
-        div[id*="quge"], div[class*="ad-"],
+        div[id*="quge"], div[class*="quge"],
         div[id*="pop"], div[class*="pop-up"],
-        div[class*="popup"], div[id*="overlay-ad"] {
+        div[class*="popup"], div[id*="overlay-ad"],
+        div[class*="overlay-ad"], div[id*="pricklyas"],
+        div[class*="pricklyas"] {
           display: none !important;
           visibility: hidden !important;
           pointer-events: none !important;
           opacity: 0 !important;
-          height: 0 !important;
-          width: 0 !important;
+          max-height: 0 !important;
+          max-width: 0 !important;
           overflow: hidden !important;
+        }
+        /* Block redirect-click hijacking */
+        a[href*="pricklyassociation"], a[href*="quge5"],
+        a[href*="elementarywhole"] {
+          pointer-events: none !important;
+          cursor: default !important;
         }
       `;
       document.head.appendChild(style);
     }
 
-    // Block future script injections via MutationObserver
+    // MutationObserver: block any script/iframe injected later
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
+          if (!node.tagName) return;
           if (node.tagName === 'SCRIPT') {
-            const src = node.src || '';
-            if (src.includes('quge5') || src.includes('elementarywhole') || src.includes('monetag')) {
-              node.remove();
-            }
+            const src = node.src || node.textContent || '';
+            if (adDomains.some(d => src.includes(d))) { node.remove(); return; }
           }
+          if (node.tagName === 'IFRAME') { node.remove(); return; }
         });
       });
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    // Override window.open to block ad popups
+    const _originalOpen = window.open;
+    window.open = function(url, ...args) {
+      if (!url) return null;
+      const blocked = adDomains.some(d => String(url).includes(d));
+      if (blocked) return null;
+      return _originalOpen.apply(window, [url, ...args]);
+    };
   };
 
   const initAuth = async () => {

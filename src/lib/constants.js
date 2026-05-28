@@ -11,7 +11,7 @@ export const CATEGORIES = [
     id: "games",
     label: "🎮 Games",
     icon: "🎮",
-    subcategories: ["PC", "PlayStation", "Xbox", "Nintendo Switch", "Mobile"],
+    subcategories: ["PC", "PlayStation", "Xbox", "Nintendo Switch", "Mobile", "How To / Guides"],
   },
   {
     id: "gear",
@@ -37,6 +37,7 @@ export const CATEGORIES = [
       "Premium Mods - WWE2K", "Premium Mods - GTA 5", "Premium Mods - GTA SA",
       "Premium Mods - FIFA", "Premium Mods - PES", "Premium Mods - NBA2K",
       "Premium Mods - Football Life", "Premium Mods - PPSSPP/PSP",
+      "Accessories", "Top Tech Equipment",
     ],
   },
   {
