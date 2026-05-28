@@ -467,16 +467,18 @@ export default function CreateListing() {
                 <div className="flex flex-wrap gap-2">
                   {selectedCat.subcategories.map(s => {
                     const isSelected = form.subcategories.includes(s);
+                    const atMax = form.subcategories.length >= 3 && !isSelected;
                     return (
                       <button key={s} type="button"
+                        disabled={atMax}
                         onClick={() => {
                           if (isSelected) {
                             setForm(f => ({ ...f, subcategories: f.subcategories.filter(x => x !== s) }));
-                          } else {
+                          } else if (!atMax) {
                             setForm(f => ({ ...f, subcategories: [...f.subcategories, s] }));
                           }
                         }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isSelected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}>
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isSelected ? "bg-purple-600 text-white" : atMax ? "bg-gray-800/40 text-gray-600 cursor-not-allowed" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}>
                         {s} {isSelected && "✓"}
                       </button>
                     );
@@ -485,9 +487,14 @@ export default function CreateListing() {
               ) : (
                 <p className="text-gray-500 text-xs italic">No subcategories available for this category</p>
               )}
-              {form.subcategories.length > 0 && (
-                <p className="text-green-400 text-xs mt-2">✓ Showing in {form.subcategories.length} additional subcategories</p>
-              )}
+              <div className="flex items-center justify-between mt-2">
+                {form.subcategories.length > 0 && (
+                  <p className="text-green-400 text-xs">✓ {form.subcategories.length}/3 subcategories selected</p>
+                )}
+                {form.subcategories.length >= 3 && (
+                  <p className="text-yellow-400 text-xs">Maximum 3 subcategories reached</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

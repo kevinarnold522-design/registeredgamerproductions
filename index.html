@@ -29,24 +29,45 @@
     <meta name="monetag" content="8cc8ba10765fcb6e991510c0d55f12ff">
     <!-- Google Search Console Verification -->
     <meta name="8cf905e83aaf7d2f25e43d428612a25e7d6ae45c" content="8cf905e83aaf7d2f25e43d428612a25e7d6ae45c" />
-    <!-- Ad Network Scripts (non-admin users only) -->
-    <script async src="https://elementarywhole.com/bw3JVl0.Po3/pVvUb_m/VCJ/Z_D/0/3wMoDigb1RNzTCQP5VLPTYcqwzOLDKUl1lNLTQMG"></script>
+    <!-- Ad delay: hold ads for 7 seconds for non-admin visitors -->
     <script>
-(function(itfc){
-var d = document,
-    s = d.createElement('script'),
-    l = d.scripts[d.scripts.length - 1];
-s.settings = itfc || {};
-s.src = "\/\/pricklyassociation.com\/byXNVHs.dfGllo0QYAWMcO\/DeDmS9yuvZFUslVkBP\/TkcKwaOpDMUB1\/NPTGcmtWN\/zMAu4\/N\/T\/Ut2MMlQS";
-s.async = true;
-s.referrerPolicy = 'no-referrer-when-downgrade';
-l.parentNode.insertBefore(s, l);
-})({})
+      window.__adsHeld = true;
+      setTimeout(function() { window.__adsHeld = false; }, 7000);
+    </script>
+    <!-- Ad Network Scripts — injected after 7s delay, skipped for admin -->
+    <script>
+    (function() {
+      var AD_DOMAINS = ['quge5.com','elementarywhole.com','monetag','pricklyassociation.com'];
+      function loadAds() {
+        if (window.__adminBlocked) return;
+        // Elementary Whole
+        var s1 = document.createElement('script');
+        s1.src = 'https://elementarywhole.com/bw3JVl0.Po3/pVvUb_m/VCJ/Z_D/0/3wMoDigb1RNzTCQP5VLPTYcqwzOLDKUl1lNLTQMG';
+        s1.async = true;
+        document.body.appendChild(s1);
+        // Prickly Association
+        var s2 = document.createElement('script');
+        s2.src = '//pricklyassociation.com/byXNVHs.dfGllo0QYAWMcO/DeDmS9yuvZFUslVkBP/TkcKwaOpDMUB1/NPTGcmtWN/zMAu4/N/T/Ut2MMlQS';
+        s2.async = true;
+        s2.referrerPolicy = 'no-referrer-when-downgrade';
+        document.body.appendChild(s2);
+        // Quge5
+        var s3 = document.createElement('script');
+        s3.src = 'https://quge5.com/88/tag.min.js';
+        s3.setAttribute('data-zone', '243750');
+        s3.setAttribute('data-cfasync', 'false');
+        s3.async = true;
+        document.body.appendChild(s3);
+      }
+      // 7-second delay for all visitors
+      setTimeout(function() {
+        if (!window.__adminBlocked) loadAds();
+      }, 7000);
+    })();
     </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script src="https://quge5.com/88/tag.min.js" data-zone="243750" async data-cfasync="false"></script>
   </body>
 </html>

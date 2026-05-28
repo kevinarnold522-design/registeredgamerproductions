@@ -282,8 +282,22 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                         <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
                         <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
                       </svg>
-                      Continue with Microsoft
+                      Continue with Microsoft / Outlook / Hotmail
                       <ArrowRight className="w-4 h-4 ml-auto text-gray-400" />
+                    </button>
+
+                    {/* Yahoo */}
+                    <button
+                      onClick={() => loginWithProvider("yahoo")}
+                      className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white font-bold text-sm hover:opacity-90 transition-all"
+                      style={{ background: "#6001D2" }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white"/>
+                      </svg>
+                      <span className="font-black">Y!</span> Continue with Yahoo
+                      <ArrowRight className="w-4 h-4 ml-auto text-purple-200" />
                     </button>
 
                     {/* Row: Discord + GitHub */}

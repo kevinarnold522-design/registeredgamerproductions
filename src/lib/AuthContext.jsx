@@ -18,31 +18,51 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const blockAdsForAdmin = () => {
-    // Remove ALL ad & tracking scripts from DOM immediately
-    const adDomains = ['quge5.com', 'elementarywhole.com', 'monetag', 'pricklyassociation.com', 'adsbygoogle'];
-    document.querySelectorAll('script').forEach(el => {
-      const src = el.src || '';
-      if (adDomains.some(d => src.includes(d))) el.remove();
+    // Full list of ad domains to block
+    const adDomains = [
+      'quge5.com', 'elementarywhole.com', 'monetag', 'pricklyassociation.com',
+      'adsbygoogle', 'doubleclick.net', 'googlesyndication.com', 'adnxs.com',
+      'bidvertiser', 'popads', 'popcash', 'propellerads', 'adskeeper'
+    ];
+
+    const isAdNode = (node) => {
+      if (!node || !node.tagName) return false;
+      const tag = node.tagName.toUpperCase();
+      if (tag === 'SCRIPT') {
+        const src = node.src || node.textContent || '';
+        return adDomains.some(d => src.includes(d));
+      }
+      if (tag === 'IFRAME') return true; // block ALL iframes for admin
+      if (tag === 'INS') return true;
+      return false;
+    };
+
+    // Remove all existing ad scripts/iframes immediately
+    document.querySelectorAll('script, iframe, ins').forEach(el => {
+      if (isAdNode(el)) el.remove();
     });
 
-    // Nuke all iframes that might be ad containers
-    document.querySelectorAll('iframe').forEach(el => el.remove());
+    // Remove Monetag meta tag
+    document.querySelectorAll('meta[name="monetag"]').forEach(el => el.remove());
 
-    // Inject aggressive CSS to permanently hide ALL ad injections
+    // Inject aggressive CSS — covers everything
     if (!document.getElementById('admin-ad-block')) {
       const style = document.createElement('style');
       style.id = 'admin-ad-block';
       style.textContent = `
-        iframe, ins.adsbygoogle, ins[class*="ad"],
+        iframe, ins, ins.adsbygoogle, ins[class*="ad"],
         div[id*="monetag"], div[class*="monetag"],
         div[id*="adsbygoogle"], div[class*="adsbygoogle"],
-        div[id*="ad-"], div[class*="ad-banner"],
+        div[id*="ad-"], div[class*="ad-banner"], div[class*="ad_"],
         [data-zone], [data-cfasync],
         div[id*="quge"], div[class*="quge"],
-        div[id*="pop"], div[class*="pop-up"],
+        div[id*="pop"], div[class*="pop-up"], div[id*="popup"],
         div[class*="popup"], div[id*="overlay-ad"],
         div[class*="overlay-ad"], div[id*="pricklyas"],
-        div[class*="pricklyas"] {
+        div[class*="pricklyas"], div[id*="bidvertiser"],
+        div[class*="propeller"], div[id*="propeller"],
+        #BodyAdWrapper, .ad-wrapper, .ad-container,
+        [id*="google_ads"], [class*="google_ads"] {
           display: none !important;
           visibility: hidden !important;
           pointer-events: none !important;
@@ -50,10 +70,14 @@ export const AuthProvider = ({ children }) => {
           max-height: 0 !important;
           max-width: 0 !important;
           overflow: hidden !important;
+          position: absolute !important;
+          left: -9999px !important;
         }
-        /* Block redirect-click hijacking */
+        /* Block ALL redirect-click hijacking for admin */
         a[href*="pricklyassociation"], a[href*="quge5"],
-        a[href*="elementarywhole"] {
+        a[href*="elementarywhole"], a[href*="doubleclick"],
+        a[href*="googlesyndication"], a[href*="monetag"],
+        a[href*="bidvertiser"], a[href*="propellerads"] {
           pointer-events: none !important;
           cursor: default !important;
         }
@@ -61,29 +85,49 @@ export const AuthProvider = ({ children }) => {
       document.head.appendChild(style);
     }
 
-    // MutationObserver: block any script/iframe injected later
+    // MutationObserver: intercept ANY new injected ad node
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
-          if (!node.tagName) return;
-          if (node.tagName === 'SCRIPT') {
-            const src = node.src || node.textContent || '';
-            if (adDomains.some(d => src.includes(d))) { node.remove(); return; }
+          if (isAdNode(node)) {
+            node.remove();
+            return;
           }
-          if (node.tagName === 'IFRAME') { node.remove(); return; }
+          // Also scan children of added nodes
+          if (node.querySelectorAll) {
+            node.querySelectorAll('script, iframe, ins').forEach(child => {
+              if (isAdNode(child)) child.remove();
+            });
+          }
         });
       });
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
 
-    // Override window.open to block ad popups
+    // Override window.open — block ALL ad popup windows
     const _originalOpen = window.open;
     window.open = function(url, ...args) {
       if (!url) return null;
-      const blocked = adDomains.some(d => String(url).includes(d));
-      if (blocked) return null;
+      const urlStr = String(url);
+      // Allow only same-origin and known-safe navigations
+      if (adDomains.some(d => urlStr.includes(d))) return null;
+      // Block blank popups that are typical ad behavior
+      if (args[0] === '_blank' && !urlStr.startsWith(window.location.origin) &&
+          !urlStr.startsWith('https://') && !urlStr.startsWith('http://localhost')) {
+        return null;
+      }
       return _originalOpen.apply(window, [url, ...args]);
     };
+
+    // Delay-loaded ads: re-sweep every 2 seconds for first 30 seconds
+    let sweepCount = 0;
+    const sweepInterval = setInterval(() => {
+      document.querySelectorAll('script, iframe, ins').forEach(el => {
+        if (isAdNode(el)) el.remove();
+      });
+      sweepCount++;
+      if (sweepCount >= 15) clearInterval(sweepInterval);
+    }, 2000);
   };
 
   const initAuth = async () => {
@@ -106,6 +150,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         // Block ads for admin users
         if (isAdmin(currentUser.email)) {
+          window.__adminBlocked = true;
           blockAdsForAdmin();
         }
       } else {
