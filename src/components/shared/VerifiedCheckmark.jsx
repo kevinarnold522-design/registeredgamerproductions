@@ -1,7 +1,9 @@
 import React from "react";
 
+const CHECKMARK_IMG = "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/de4dddc04_download.png";
+
 /**
- * VerifiedCheckmark — uses the exact purple checkmark image downloaded by the user
+ * VerifiedCheckmark — uses the uploaded checkmark image
  * size: "sm" | "md" | "lg"
  */
 export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true, label = "Verified Partner" }) {
@@ -10,25 +12,13 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
 
   return (
     <span className="relative inline-flex items-center gap-1 group">
-      {/* Exact purple checkmark SVG matching the downloaded image */}
-      <svg
+      <img
+        src={CHECKMARK_IMG}
+        alt="Verified"
         width={px}
         height={px}
-        viewBox="0 0 22 22"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ flexShrink: 0 }}
-      >
-        {/* Exact Meta-style purple verified badge */}
-        <circle cx="11" cy="11" r="11" fill="#7c3aed"/>
-        <path
-          d="M6.5 11.5L9.5 14.5L15.5 8"
-          stroke="white"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      </svg>
+        style={{ flexShrink: 0, display: "inline-block" }}
+      />
 
       {showLabel && (
         <span className="font-bold text-xs text-purple-400 whitespace-nowrap">{label}</span>
