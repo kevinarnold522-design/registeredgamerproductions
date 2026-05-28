@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Star, Shield, Check, MessageCircle, Share2, Zap } from "lucide-react";
+import { X, Star, Shield, Check, MessageCircle, Zap } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-
-const ADMIN_PAYPAL = "kevinjersey2019@gmail.com";
 
 const TIER1_BENEFITS = [
   { icon: MessageCircle, text: "Post & comment in all Gaming Communities" },
@@ -17,78 +15,62 @@ const TIER1_BENEFITS = [
 ];
 
 export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
-  const [step, setStep] = useState("info"); // info | paying | done
+  const [step, setStep] = useState("info"); // info | waiting | done | error
   const [paying, setPaying] = useState(false);
-  const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || "");
   const [error, setError] = useState("");
+  const [statusMsg, setStatusMsg] = useState("");
 
   const handlePurchase = async () => {
     setPaying(true);
     setError("");
-    try {
-      // Create order via our existing PayPal backend
-      const res = await base44.functions.invoke("createPaypalOrder", {
-        amount: "1.00",
-        currency: "USD",
-        description: "Tier 1 Annual Subscription — GAMER.PRODUCTIONS",
-        seller_paypal_email: ADMIN_PAYPAL,
-        buyer_email: user.email,
-      });
-      const orderData = res?.data;
-      if (orderData?.approvalUrl) {
-        // Open PayPal in popup
-        const popup = window.open(orderData.approvalUrl, "_blank", "width=600,height=700");
-        // Poll for completion
-        const timer = setInterval(async () => {
-          if (!popup || popup.closed) {
-            clearInterval(timer);
-            // Create subscription record as pending (admin can verify)
-            const now = new Date();
-            const expiry = new Date(now);
-            expiry.setFullYear(expiry.getFullYear() + 1);
-            await base44.entities.Tier1Subscription.create({
-              user_email: user.email,
-              username: profile?.username || user.full_name,
-              paypal_order_id: orderData.orderId || "",
-              amount: 1,
-              status: "active",
-              start_date: now.toISOString(),
-              expiry_date: expiry.toISOString(),
-              is_verified: true,
-            });
-            // Send thank-you email
-            await base44.integrations.Core.SendEmail({
-              to: user.email,
-              subject: "🎮 Welcome to Tier 1 Verified Partner — GAMER.PRODUCTIONS",
-              body: `Hi ${profile?.username || user.full_name},\n\nThank you for subscribing to the $1 Tier 1 Verified Partner Subscription!\n\n✅ Your subscription is now ACTIVE.\n📅 Expiry Date: ${expiry.toLocaleDateString()}\n\n🌟 YOUR TIER 1 BENEFITS:\n✓ Post & comment in ALL Gaming Communities\n✓ Verified Partner Purple Checkmark badge\n🚫 Ad-Free Experience — All advertisements removed\n✓ Exclusive Tier 1 Group Chat access\n✓ Automatic email alerts for new listings in your joined groups\n✓ Chat any user on the platform\n✓ Request new gaming categories & subcategories\n✓ Unlock animated profile avatars & skins\n\nWelcome to the family!\n\n— Kevin & The GAMER.PRODUCTIONS Team`,
-            });
-            setStep("done");
-            onSuccess?.();
-            setPaying(false);
-          }
-        }, 1000);
-      } else {
-        // Fallback: just create sub record (for testing / manual verify)
-        const now = new Date();
-        const expiry = new Date(now);
-        expiry.setFullYear(expiry.getFullYear() + 1);
-        await base44.entities.Tier1Subscription.create({
-          user_email: user.email,
-          username: profile?.username || user.full_name,
-          amount: 1,
-          status: "active",
-          start_date: now.toISOString(),
-          expiry_date: expiry.toISOString(),
-          is_verified: true,
-        });
-        setStep("done");
-        onSuccess?.();
-        setPaying(false);
-      }
-    } catch (e) {
-      setError("Payment failed. Please try again.");
+    setStatusMsg("Creating secure PayPal order...");
+
+    // Step 1: Create the PayPal order via backend (uses stored PAYPAL_CLIENT_ID / SECRET)
+    const res = await base44.functions.invoke("createTier1Order", {});
+    const orderData = res?.data;
+
+    if (orderData?.error) {
+      setError(orderData.error);
       setPaying(false);
+      setStatusMsg("");
+      return;
     }
+
+    if (!orderData?.approvalUrl || !orderData?.orderId) {
+      setError("Could not create PayPal order. Please try again.");
+      setPaying(false);
+      setStatusMsg("");
+      return;
+    }
+
+    // Step 2: Open PayPal approval in a popup
+    setStatusMsg("Waiting for PayPal payment...");
+    setStep("waiting");
+    const popup = window.open(orderData.approvalUrl, "paypal_tier1", "width=620,height=720");
+
+    // Step 3: Poll for popup close, then capture payment on backend
+    const timer = setInterval(async () => {
+      if (!popup || popup.closed) {
+        clearInterval(timer);
+        setStatusMsg("Verifying payment with PayPal...");
+
+        // Step 4: Securely capture & verify on backend
+        const captureRes = await base44.functions.invoke("captureTier1Payment", {
+          orderId: orderData.orderId,
+        });
+        const captureData = captureRes?.data;
+
+        if (captureData?.success) {
+          setStep("done");
+          onSuccess?.();
+        } else {
+          setError(captureData?.error || "Payment could not be verified. If you paid, contact support.");
+          setStep("info");
+        }
+        setPaying(false);
+        setStatusMsg("");
+      }
+    }, 1000);
   };
 
   return (
@@ -97,7 +79,7 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
         className="fixed inset-0 z-[100] flex items-center justify-center px-4"
         style={{ background: "rgba(0,0,0,0.92)" }}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose}
+        onClick={!paying ? onClose : undefined}
       >
         <motion.div
           className="w-full max-w-md bg-gray-950 rounded-3xl overflow-hidden border border-purple-700/50"
@@ -105,22 +87,36 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
           initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9 }}
           onClick={e => e.stopPropagation()}
         >
-          {step === "done" ? (
+          {/* ── SUCCESS ── */}
+          {step === "done" && (
             <div className="p-8 text-center">
               <div className="w-20 h-20 rounded-full bg-purple-900/40 border-2 border-purple-500 flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-10 h-10 text-purple-400" />
               </div>
               <h2 className="text-white font-black text-2xl mb-2">You're Verified! 🎉</h2>
-              <p className="text-gray-400 text-sm mb-6">Welcome to Tier 1 Verified Partner. Your purple checkmark & ad-free experience are now active.</p>
+              <p className="text-gray-400 text-sm mb-2">Welcome to Tier 1 Verified Partner.</p>
+              <p className="text-gray-500 text-xs mb-6">Your purple checkmark & ad-free experience are now active. Check your email for a confirmation.</p>
               <button onClick={onClose}
                 className="w-full py-3 rounded-2xl font-black text-white text-sm"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                Start Posting!
+                Start Posting! 🚀
               </button>
             </div>
-          ) : (
+          )}
+
+          {/* ── WAITING / PROCESSING ── */}
+          {step === "waiting" && (
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full border-4 border-purple-500 border-t-transparent animate-spin mx-auto mb-4" />
+              <h2 className="text-white font-black text-lg mb-2">Complete Payment in PayPal</h2>
+              <p className="text-gray-400 text-sm mb-1">{statusMsg || "Waiting for PayPal..."}</p>
+              <p className="text-gray-600 text-xs mt-4">After you approve the payment in the PayPal popup, your subscription will be automatically activated and verified.</p>
+            </div>
+          )}
+
+          {/* ── INFO / PAY ── */}
+          {(step === "info") && (
             <>
-              {/* Header */}
               <div className="relative p-6 text-center" style={{ background: "linear-gradient(135deg, #1a0a2a, #0a1040)" }}>
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white">
                   <X className="w-5 h-5" />
@@ -133,10 +129,9 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
                   <span className="text-4xl font-black text-purple-400">$1</span>
                   <span className="text-gray-500 text-sm">/ year</span>
                 </div>
-                <p className="text-gray-400 text-xs mt-1">One-time annual payment — all payments go to admin</p>
+                <p className="text-gray-400 text-xs mt-1">Secure one-time annual payment via PayPal</p>
               </div>
 
-              {/* Benefits */}
               <div className="p-5 space-y-2">
                 {TIER1_BENEFITS.map((b, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -148,21 +143,24 @@ export default function Tier1Modal({ user, profile, onClose, onSuccess }) {
                 ))}
               </div>
 
-              {/* Payment */}
               <div className="px-5 pb-5 space-y-3">
                 <div className="p-3 rounded-xl bg-green-900/20 border border-green-700/40 text-xs text-green-300 text-center">
-                  🔒 Payment is securely processed via PayPal — your card info stays with PayPal only.
+                  🔒 Fully secured via PayPal — your payment goes directly to the admin account. Card info never touches our servers.
                 </div>
-                {error && <p className="text-red-400 text-xs">{error}</p>}
+                {error && (
+                  <div className="p-3 rounded-xl bg-red-900/20 border border-red-700/40 text-xs text-red-300">
+                    ⚠️ {error}
+                  </div>
+                )}
                 <button
                   onClick={handlePurchase}
                   disabled={paying}
                   className="w-full py-4 rounded-2xl font-black text-white text-base disabled:opacity-60 flex items-center justify-center gap-2"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)", boxShadow: "0 0 20px rgba(124,58,237,0.4)" }}
                 >
-                  {paying ? "Redirecting to PayPal..." : "✨ Avail Tier 1 — Pay $1/yr →"}
+                  {paying ? "Creating secure order..." : "✨ Avail Tier 1 — Pay $1/yr via PayPal →"}
                 </button>
-                <p className="text-gray-600 text-[10px] text-center">Secure payment via PayPal · 1-year subscription · All ads removed</p>
+                <p className="text-gray-600 text-[10px] text-center">Secure payment via PayPal · 1-year subscription · Payment verified server-side</p>
               </div>
             </>
           )}

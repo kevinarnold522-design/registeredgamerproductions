@@ -86,4 +86,9 @@ module.exports = {
   	}
   },
   plugins: [require("tailwindcss-animate")],
+  safelist: [
+    "animate-[sway_1.5s_ease-in-out_infinite]",
+    "animate-[float_2s_ease-in-out_infinite]",
+    "animate-[roar_0.8s_ease-in-out_infinite]",
+  ],
 }
