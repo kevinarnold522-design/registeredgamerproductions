@@ -83,12 +83,38 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((listing, i) => (
+          {filtered.map((listing, i) => {
+            const anim = listing.card_animation || "fade";
+            const initMap = {
+              fade: { opacity: 0 },
+              slide_up: { opacity: 0, y: 40 },
+              slide_left: { opacity: 0, x: -40 },
+              zoom: { opacity: 0, scale: 0.8 },
+              flip: { opacity: 0, rotateY: 90 },
+              bounce: { opacity: 0, y: -30 },
+              glow: { opacity: 0 },
+              rotate: { opacity: 0, rotate: -15 },
+              none: {},
+            };
+            const animMap = {
+              fade: { opacity: 1 },
+              slide_up: { opacity: 1, y: 0 },
+              slide_left: { opacity: 1, x: 0 },
+              zoom: { opacity: 1, scale: 1 },
+              flip: { opacity: 1, rotateY: 0 },
+              bounce: { opacity: 1, y: 0 },
+              glow: { opacity: 1 },
+              rotate: { opacity: 1, rotate: 0 },
+              none: {},
+            };
+            const glowStyle = anim === "glow" ? { boxShadow: "0 0 24px 4px rgba(139,92,246,0.5)" } : {};
+            return (
             <motion.div
               key={listing.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              initial={initMap[anim] || { opacity: 0, y: 20 }}
+              animate={animMap[anim] || { opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, type: anim === "bounce" ? "spring" : "tween", stiffness: 200, bounce: 0.5 }}
+              style={glowStyle}
               className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors"
             >
               {listing.images?.[0] ? (
@@ -111,7 +137,8 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
                 </div>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

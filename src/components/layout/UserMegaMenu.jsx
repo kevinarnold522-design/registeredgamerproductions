@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   User, LogOut, Store, BarChart2, Shield, Heart, ShoppingCart,
   ClipboardList, CreditCard, Play, Upload, ChevronRight,
-  Package, Settings, X, MessageCircle, Edit3
+  Package, Settings, X, MessageCircle, Share2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
@@ -185,6 +185,9 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
                       </Link>
                       <Link to="/admin-editor" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-yellow-300 hover:bg-yellow-900/20 text-sm font-semibold transition-colors">
                         <Settings className="w-4 h-4" /> Website Editor
+                      </Link>
+                      <Link to="/social-manager" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-300 hover:bg-blue-900/20 text-sm font-semibold transition-colors">
+                        <Share2 className="w-4 h-4" /> Social Media Manager
                       </Link>
                     </>
                   )}

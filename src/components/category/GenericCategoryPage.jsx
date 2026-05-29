@@ -117,7 +117,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       </div>
 
       {/* Subcategory cards grid */}
-      {!sub && <SubcategoryCards cat={cat} categoryName={meta.title} />}
+      {!sub && <SubcategoryCards cat={cat} categoryName={meta.title} userEmail={user?.email} />}
 
       {/* Subcategory tabs */}
       {categoryData?.subcategories?.length > 0 && !sub && (
@@ -162,8 +162,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((l, i) => (
-              <motion.div key={l.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}
+            {filtered.map((l, i) => {
+              const anim = l.card_animation || "slide_up";
+              const initMap = { fade: { opacity: 0 }, slide_up: { opacity: 0, y: 30 }, slide_left: { opacity: 0, x: -30 }, zoom: { opacity: 0, scale: 0.85 }, flip: { opacity: 0, rotateY: 90 }, bounce: { opacity: 0, y: -20 }, glow: { opacity: 0 }, rotate: { opacity: 0, rotate: -10 }, none: {} };
+              const animMap = { fade: { opacity: 1 }, slide_up: { opacity: 1, y: 0 }, slide_left: { opacity: 1, x: 0 }, zoom: { opacity: 1, scale: 1 }, flip: { opacity: 1, rotateY: 0 }, bounce: { opacity: 1, y: 0 }, glow: { opacity: 1 }, rotate: { opacity: 1, rotate: 0 }, none: {} };
+              const glowStyle = anim === "glow" ? { boxShadow: "0 0 20px 3px rgba(139,92,246,0.4)" } : {};
+              return (
+              <motion.div key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
+                style={glowStyle}
                 className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors">
                 {l.images?.[0] && (
                   <div className="h-36 overflow-hidden">
@@ -179,10 +185,11 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  </div>
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
                  <ListingSellerBadge sellerEmail={l.seller_email} sellerUsername={l.seller_username} />
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                 </div>
+                 </motion.div>
+                 );
+                 })}
+                 </div>
         )}
       </div>
     </div>

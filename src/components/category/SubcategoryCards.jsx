@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { Pencil, Check, Upload, X } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { isAdmin } from "@/lib/constants";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
@@ -78,13 +81,82 @@ const SUBCATEGORY_CONFIG = {
   ],
 };
 
-function SubcardItem({ item, cat, index }) {
+// Admin edit overlay for a subcategory card
+function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
+  const [logoUrl, setLogoUrl] = useState(item.customLogo || "");
+  const [coverUrl, setCoverUrl] = useState(item.customCover || "");
+  const [uploading, setUploading] = useState(null);
+  const logoRef = useRef(null);
+  const coverRef = useRef(null);
+
+  const handleUpload = async (file, type) => {
+    if (!file) return;
+    setUploading(type);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    if (type === "logo") setLogoUrl(file_url);
+    else setCoverUrl(file_url);
+    setUploading(null);
+  };
+
+  const handleSave = async () => {
+    // Save to GamingCommunity-like entity using SiteSettings or a custom record
+    // We'll store in localStorage for subcategory customisation
+    const key = `subcat_${cat}_${item.id}`;
+    const data = { logo: logoUrl, cover: coverUrl };
+    localStorage.setItem(key, JSON.stringify(data));
+    onSaved({ ...item, customLogo: logoUrl, customCover: coverUrl });
+    onClose();
+  };
+
+  return (
+    <div className="absolute inset-0 z-20 bg-black/95 rounded-2xl p-3 flex flex-col gap-2" onClick={e => e.preventDefault()}>
+      <div className="flex items-center justify-between">
+        <p className="text-white text-xs font-black">Edit Card</p>
+        <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-3.5 h-3.5" /></button>
+      </div>
+      <div>
+        <p className="text-gray-500 text-[10px] mb-1">Logo/Icon URL</p>
+        <div className="flex gap-1">
+          <input value={logoUrl} onChange={e => setLogoUrl(e.target.value)}
+            placeholder="paste image URL..."
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none focus:border-purple-500" />
+          <button onClick={() => logoRef.current?.click()} className="px-2 py-1 rounded-lg bg-purple-700 text-white text-[10px]">
+            {uploading === "logo" ? "..." : <Upload className="w-3 h-3" />}
+          </button>
+          <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={e => handleUpload(e.target.files[0], "logo")} />
+        </div>
+        {logoUrl && <img src={logoUrl} className="mt-1 w-10 h-10 rounded-lg object-cover" alt="" />}
+      </div>
+      <div>
+        <p className="text-gray-500 text-[10px] mb-1">Cover/BG URL</p>
+        <div className="flex gap-1">
+          <input value={coverUrl} onChange={e => setCoverUrl(e.target.value)}
+            placeholder="paste cover URL..."
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none focus:border-blue-500" />
+          <button onClick={() => coverRef.current?.click()} className="px-2 py-1 rounded-lg bg-blue-700 text-white text-[10px]">
+            {uploading === "cover" ? "..." : <Upload className="w-3 h-3" />}
+          </button>
+          <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={e => handleUpload(e.target.files[0], "cover")} />
+        </div>
+        {coverUrl && <img src={coverUrl} className="mt-1 w-full h-12 rounded-lg object-cover opacity-70" alt="" />}
+      </div>
+      <button onClick={handleSave} className="w-full py-1.5 rounded-lg bg-green-700 text-white text-[10px] font-black flex items-center justify-center gap-1">
+        <Check className="w-3 h-3" /> Save
+      </button>
+    </div>
+  );
+}
+
+function SubcardItem({ item, cat, index, canAdmin, onItemUpdate }) {
   const [hovered, setHovered] = useState(false);
+  const [editing, setEditing] = useState(false);
+  // Load saved custom assets from localStorage
+  const saved = (() => { try { return JSON.parse(localStorage.getItem(`subcat_${cat}_${item.id}`) || "{}"); } catch { return {}; } })();
+  const displayItem = { ...item, customLogo: saved.logo || item.customLogo, customCover: saved.cover || item.customCover };
   const href = `/category?cat=${cat}&sub=${encodeURIComponent(item.id)}`;
 
   return (
-    <motion.a
-      href={href}
+    <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -92,59 +164,97 @@ function SubcardItem({ item, cat, index }) {
       whileHover={{ y: -6, scale: 1.02 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="relative block rounded-2xl cursor-pointer"
+      className="relative block rounded-2xl cursor-pointer group"
     >
       {/* Glow */}
       <div
         className="absolute inset-0 rounded-2xl pointer-events-none transition-all duration-300"
-        style={{ opacity: hovered ? 1 : 0, boxShadow: `0 0 32px 8px ${item.glow}` }}
+        style={{ opacity: hovered ? 1 : 0, boxShadow: `0 0 32px 8px ${displayItem.glow}` }}
       />
 
-      <div className={`relative h-48 rounded-2xl border-2 ${item.border} bg-gradient-to-br ${item.color} p-5 flex flex-col justify-between transition-all duration-300 overflow-hidden`}>
-        {/* Badge */}
-        <div className="flex justify-between items-start">
-          <span className="px-2 py-0.5 rounded-full bg-black/40 text-white/70 text-[9px] font-bold uppercase tracking-wide">
-            {item.badge}
-          </span>
-          <motion.span
-            className="text-white/20 text-xs font-bold"
-            animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : 4 }}
-            transition={{ duration: 0.2 }}
-          >
-            →
-          </motion.span>
-        </div>
-
-        {/* Emoji */}
-        <motion.div
-          className="text-4xl"
-          animate={hovered ? { scale: 1.25, rotate: [0, -8, 8, 0] } : { scale: 1, rotate: 0 }}
-          transition={{ duration: 0.35 }}
+      {/* Admin pencil */}
+      {canAdmin && !editing && (
+        <button
+          onClick={e => { e.preventDefault(); setEditing(true); }}
+          className="absolute top-2 right-2 z-10 w-6 h-6 rounded-lg bg-black/60 hover:bg-purple-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
         >
-          {item.emoji}
-        </motion.div>
+          <Pencil className="w-3 h-3 text-white" />
+        </button>
+      )}
 
-        {/* Text */}
-        <div>
-          <p className="text-white font-black text-base leading-tight">{item.title}</p>
-          <p className="text-white/40 text-[10px] mt-0.5 leading-tight line-clamp-2">{item.desc}</p>
+      {/* Edit overlay */}
+      {editing && (
+        <SubcardEditOverlay item={displayItem} cat={cat} onClose={() => setEditing(false)} onSaved={(updated) => { onItemUpdate?.(updated); }} />
+      )}
+
+      <a href={editing ? undefined : href} onClick={editing ? e => e.preventDefault() : undefined}>
+        <div className={`relative h-48 rounded-2xl border-2 ${displayItem.border} bg-gradient-to-br ${displayItem.color} p-5 flex flex-col justify-between transition-all duration-300 overflow-hidden`}>
+          {/* Cover bg */}
+          {displayItem.customCover && (
+            <div className="absolute inset-0 opacity-30 rounded-2xl" style={{ backgroundImage: `url(${displayItem.customCover})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+          )}
+          {/* Badge */}
+          <div className="relative flex justify-between items-start">
+            <span className="px-2 py-0.5 rounded-full bg-black/40 text-white/70 text-[9px] font-bold uppercase tracking-wide">
+              {displayItem.badge}
+            </span>
+            <motion.span
+              className="text-white/20 text-xs font-bold"
+              animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : 4 }}
+              transition={{ duration: 0.2 }}
+            >
+              →
+            </motion.span>
+          </div>
+
+          {/* Logo or Emoji */}
+          <motion.div
+            className="relative text-4xl"
+            animate={hovered ? { scale: 1.25, rotate: [0, -8, 8, 0] } : { scale: 1, rotate: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            {displayItem.customLogo
+              ? <img src={displayItem.customLogo} className="w-10 h-10 rounded-xl object-cover" alt="" />
+              : displayItem.emoji
+            }
+          </motion.div>
+
+          {/* Text */}
+          <div className="relative">
+            <p className="text-white font-black text-base leading-tight">{displayItem.title}</p>
+            <p className="text-white/40 text-[10px] mt-0.5 leading-tight line-clamp-2">{displayItem.desc}</p>
+          </div>
+
+          {/* Bottom shimmer on hover */}
+          <motion.div
+            className="absolute inset-x-0 bottom-0 h-px"
+            style={{ background: `linear-gradient(90deg, transparent, ${displayItem.glow}, transparent)` }}
+            animate={{ opacity: hovered ? 1 : 0 }}
+          />
         </div>
-
-        {/* Bottom shimmer on hover */}
-        <motion.div
-          className="absolute inset-x-0 bottom-0 h-px"
-          style={{ background: `linear-gradient(90deg, transparent, ${item.glow}, transparent)` }}
-          animate={{ opacity: hovered ? 1 : 0 }}
-        />
-      </div>
-    </motion.a>
+      </a>
+    </motion.div>
   );
 }
 
-export default function SubcategoryCards({ cat, categoryName }) {
-  const items = SUBCATEGORY_CONFIG[cat] || [];
+export default function SubcategoryCards({ cat, categoryName, userEmail }) {
+  const [items, setItems] = useState(() => {
+    const base = SUBCATEGORY_CONFIG[cat] || [];
+    return base.map(item => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(`subcat_${cat}_${item.id}`) || "{}");
+        return { ...item, customLogo: saved.logo || "", customCover: saved.cover || "" };
+      } catch { return item; }
+    });
+  });
+
+  const canAdmin = isAdmin(userEmail);
 
   if (!items.length) return null;
+
+  const handleItemUpdate = (updated) => {
+    setItems(prev => prev.map(it => it.id === updated.id ? updated : it));
+  };
 
   return (
     <div className="px-4 py-10 max-w-7xl mx-auto relative z-10">
@@ -158,12 +268,12 @@ export default function SubcategoryCards({ cat, categoryName }) {
         <h2 className="text-2xl md:text-3xl font-black text-white">
           {categoryName} <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Subcategories</span>
         </h2>
-        <p className="text-gray-500 text-sm mt-1">Click a card to explore listings</p>
+        <p className="text-gray-500 text-sm mt-1">Click a card to explore listings{canAdmin ? " · Hover to edit" : ""}</p>
       </motion.div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {items.map((item, i) => (
-          <SubcardItem key={item.id} item={item} cat={cat} index={i} />
+          <SubcardItem key={item.id} item={item} cat={cat} index={i} canAdmin={canAdmin} onItemUpdate={handleItemUpdate} />
         ))}
       </div>
     </div>
