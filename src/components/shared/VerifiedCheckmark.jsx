@@ -29,7 +29,7 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
 
   return (
     <span className="relative inline-flex items-center gap-1 group" style={{ verticalAlign: "middle" }}>
-      {/* Radiant rotating ambient glow — single arc sweeping around badge */}
+      {/* Single radiant rotating glow — one sweeping arc of light around the badge */}
       <span
         style={{
           position: "absolute",
@@ -41,28 +41,10 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
           transform: "translate(-50%, -50%)",
           pointerEvents: "none",
           zIndex: 0,
-          background: "conic-gradient(from 0deg, #ff00cc99, #7c3aed99, #00ccff99, #ffcc0099, #ff00cc99)",
-          animation: "verified-ring-spin 2.4s linear infinite",
-          filter: `blur(${px * 0.35}px)`,
-          opacity: 0.85,
-        }}
-      />
-      {/* Inner tighter bright ring */}
-      <span
-        style={{
-          position: "absolute",
-          width: px * 1.8,
-          height: px * 1.8,
-          borderRadius: "50%",
-          top: "50%",
-          left: px / 2,
-          transform: "translate(-50%, -50%)",
-          pointerEvents: "none",
-          zIndex: 0,
-          background: "conic-gradient(from 180deg, #ec489900, #a855f7ff, #ec489900)",
-          animation: "verified-ring-spin 1.8s linear infinite reverse",
-          filter: `blur(${px * 0.18}px)`,
-          opacity: 0.9,
+          background: "conic-gradient(from 0deg, transparent 0deg, transparent 200deg, #a855f7ff 260deg, #ec4899ff 300deg, #00ccffcc 320deg, transparent 360deg)",
+          animation: "verified-ring-spin 2s linear infinite",
+          filter: `blur(${px * 0.28}px)`,
+          opacity: 1,
         }}
       />
 
