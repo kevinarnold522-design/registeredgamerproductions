@@ -48,35 +48,54 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
         }}
       />
 
-      {/* Always-on tight orbiting dot */}
-      <span
-        style={{
-          position: "absolute",
-          width: orbitR * 2 + dotSize,
-          height: orbitR * 2 + dotSize,
-          top: "50%",
-          left: px / 2,
-          transform: "translate(-50%, -50%)",
-          pointerEvents: "none",
-          zIndex: 2,
-        }}
-      >
+      {/* Hover-only orbiting dot */}
+      {hovered && (
         <span
           style={{
             position: "absolute",
-            width: dotSize,
-            height: dotSize,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, #ffffff 0%, #c084fc 45%, #7c3aed 100%)",
-            boxShadow: `0 0 ${dotSize * 1.5}px ${dotSize * 0.8}px #a855f7aa`,
-            top: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            animation: "dot-orbit 2.5s linear infinite",
-            transformOrigin: `0 ${orbitR + dotSize / 2}px`,
+            width: orbitR * 2 + dotSize,
+            height: orbitR * 2 + dotSize,
+            top: "50%",
+            left: px / 2,
+            transform: "translate(-50%, -50%)",
+            pointerEvents: "none",
+            zIndex: 2,
           }}
-        />
-      </span>
+        >
+          <span
+            style={{
+              position: "absolute",
+              width: dotSize,
+              height: dotSize,
+              borderRadius: "50%",
+              background: "radial-gradient(circle, #ffffff 0%, #c084fc 45%, #7c3aed 100%)",
+              boxShadow: `0 0 ${dotSize * 1.5}px ${dotSize * 0.8}px #a855f7aa`,
+              top: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              animation: "dot-orbit 2.5s linear infinite",
+              transformOrigin: `0 ${orbitR + dotSize / 2}px`,
+            }}
+          />
+        </span>
+      )}
+
+      {/* Always-on gradient light ring revolving around the badge */}
+      <span
+        style={{
+          position: "absolute",
+          width: px * 1.5,
+          height: px * 1.5,
+          borderRadius: "50%",
+          top: "50%",
+          left: px / 2,
+          transform: "translate(-50%, -50%)",
+          background: "conic-gradient(from 0deg, transparent 60%, rgba(168,85,247,0.6) 80%, rgba(236,72,153,0.5) 90%, transparent 100%)",
+          animation: "ring-spin 3s linear infinite",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
 
       {/* Hover: brighter glow burst */}
       {hovered && (
@@ -157,6 +176,10 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
           0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.6); }
           60%  { opacity: 1; }
           100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+        }
+        @keyframes ring-spin {
+          0%   { transform: translate(-50%,-50%) rotate(0deg); }
+          100% { transform: translate(-50%,-50%) rotate(360deg); }
         }
       `}</style>
     </span>

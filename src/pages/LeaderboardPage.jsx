@@ -193,6 +193,8 @@ export default function LeaderboardPage() {
 
   const current = tabConfig[tab];
 
+  const top10 = leaderboard.slice(0, 10);
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
@@ -201,7 +203,7 @@ export default function LeaderboardPage() {
       <div className="pt-16 relative overflow-hidden">
         <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, #050510, #0a0518, #050510)` }} />
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(124,58,237,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <div className="relative max-w-4xl mx-auto px-4 pt-10 pb-10 text-center">
+        <div className="relative max-w-7xl mx-auto px-4 pt-10 pb-8 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <div className="flex justify-center mb-4">
               <Crown className="w-14 h-14 text-yellow-400" style={{ filter: "drop-shadow(0 0 20px rgba(234,179,8,0.6))" }} />
@@ -218,84 +220,140 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="flex gap-2 bg-gray-900 rounded-2xl p-1.5 mb-6">
-          {TABS.map(t => {
-            const Icon = t.icon;
-            return (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === t.id ? "bg-purple-700 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
-                <Icon className="w-4 h-4" /> {t.label}
-              </button>
-            );
-          })}
+      <div className="max-w-7xl mx-auto px-4 pb-16">
+        {/* Two-column layout: Top 10 sidebar + main content */}
+        <div className="flex gap-6 flex-col lg:flex-row">
+
+          {/* LEFT: Top 10 Leaders — always visible, large, prominent */}
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="sticky top-20">
+              <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(135deg, #1a0a2e, #0a1a2e)", border: "1px solid rgba(124,58,237,0.3)" }}>
+                <div className="p-4 border-b border-purple-900/40" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(236,72,153,0.1))" }}>
+                  <div className="flex items-center gap-2">
+                    <Crown className="w-5 h-5 text-yellow-400" />
+                    <h2 className="text-white font-black text-lg">Top 10 Leaders</h2>
+                  </div>
+                  <p className="text-gray-400 text-xs mt-1">{tabConfig[tab]?.title} Rankings</p>
+                </div>
+                <div className="p-3 space-y-2">
+                  {loading ? (
+                    [1,2,3,4,5,6,7,8,9,10].map(i => <div key={i} className="h-14 rounded-xl bg-gray-800/50 animate-pulse" />)
+                  ) : top10.length === 0 ? (
+                    <p className="text-gray-500 text-sm text-center py-8">No data yet</p>
+                  ) : top10.map((entry, rank) => (
+                    <motion.div
+                      key={entry.email}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: rank * 0.05 }}
+                      className={`flex items-center gap-3 p-3 rounded-xl transition-all ${rank < 3 ? "bg-gradient-to-r from-purple-900/40 to-pink-900/20 border border-purple-700/30" : "bg-gray-800/30"}`}
+                    >
+                      <div className="w-8 text-center flex-shrink-0">
+                        {rank === 0 ? <span className="text-xl">🥇</span>
+                          : rank === 1 ? <span className="text-xl">🥈</span>
+                          : rank === 2 ? <span className="text-xl">🥉</span>
+                          : <span className="text-gray-400 font-black text-sm">#{rank+1}</span>}
+                      </div>
+                      <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-sm border-2 ${rank < 3 ? "border-purple-500/60" : "border-gray-700"}`}
+                        style={{ background: rank < 3 ? "linear-gradient(135deg,#7c3aed,#ec4899)" : "#1f2937" }}>
+                        {entry.avatar_url
+                          ? <img src={entry.avatar_url} className="w-full h-full rounded-full object-cover" alt="" />
+                          : (entry.username || "G")[0].toUpperCase()
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
+                        {entry.is_verified && <span className="text-[9px] text-purple-300">✓ Verified</span>}
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-black text-base" style={{ background: "linear-gradient(135deg,#a855f7,#ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                          {entry.score.toLocaleString()}
+                        </p>
+                        <p className="text-gray-600 text-[9px]">pts</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                {!user && (
+                  <div className="p-4 border-t border-purple-900/30 text-center">
+                    <p className="text-gray-400 text-xs mb-2">Join to climb the ranks!</p>
+                    <button onClick={() => base44.auth.redirectToLogin()}
+                      className="w-full py-2 rounded-xl text-sm font-black text-white"
+                      style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                      Sign Up Free
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Main leaderboard content */}
+          <div className="flex-1 min-w-0">
+            {/* Tabs */}
+            <div className="flex gap-2 bg-gray-900 rounded-2xl p-1.5 mb-6">
+              {TABS.map(t => {
+                const Icon = t.icon;
+                return (
+                  <button key={t.id} onClick={() => setTab(t.id)}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === t.id ? "bg-purple-700 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
+                    <Icon className="w-4 h-4" /> {t.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Top 3 podium */}
+            {!loading && leaderboard.length >= 3 && (
+              <div className="flex justify-center items-end gap-4 mb-8">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                  className="flex flex-col items-center gap-2">
+                  <div className="w-16 h-16 rounded-full border-4 border-slate-400 overflow-hidden bg-gray-800 flex items-center justify-center text-xl font-black">
+                    {leaderboard[1]?.avatar_url ? <img src={leaderboard[1].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[1]?.username?.[0] || "?")}
+                  </div>
+                  <p className="text-white text-xs font-bold text-center max-w-20 truncate">{leaderboard[1]?.username}</p>
+                  <div className="w-20 bg-slate-600 rounded-t-xl flex flex-col items-center py-2" style={{ height: 60 }}><span className="text-2xl">🥈</span></div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center gap-2">
+                  <div className="w-20 h-20 rounded-full border-4 border-yellow-400 overflow-hidden bg-gray-800 flex items-center justify-center text-2xl font-black"
+                    style={{ boxShadow: "0 0 20px rgba(234,179,8,0.5)" }}>
+                    {leaderboard[0]?.avatar_url ? <img src={leaderboard[0].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[0]?.username?.[0] || "?")}
+                  </div>
+                  <p className="text-yellow-300 text-sm font-black text-center max-w-24 truncate">{leaderboard[0]?.username}</p>
+                  <div className="w-24 rounded-t-xl flex flex-col items-center py-2"
+                    style={{ height: 80, background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}><span className="text-2xl">🥇</span></div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                  className="flex flex-col items-center gap-2">
+                  <div className="w-16 h-16 rounded-full border-4 border-amber-700 overflow-hidden bg-gray-800 flex items-center justify-center text-xl font-black">
+                    {leaderboard[2]?.avatar_url ? <img src={leaderboard[2].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[2]?.username?.[0] || "?")}
+                  </div>
+                  <p className="text-white text-xs font-bold text-center max-w-20 truncate">{leaderboard[2]?.username}</p>
+                  <div className="w-20 bg-amber-800 rounded-t-xl flex flex-col items-center py-2" style={{ height: 48 }}><span className="text-2xl">🥉</span></div>
+                </motion.div>
+              </div>
+            )}
+
+            {/* Full list */}
+            {loading ? (
+              <div className="space-y-3">
+                {[1,2,3,4,5].map(i => <div key={i} className="h-16 rounded-2xl bg-gray-900 animate-pulse" />)}
+              </div>
+            ) : leaderboard.length === 0 ? (
+              <div className="text-center py-20 text-gray-500">
+                <Trophy className="w-12 h-12 mx-auto opacity-30 mb-3" />
+                <p className="font-semibold">No data yet — be the first to contribute!</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {leaderboard.map((entry, rank) => (
+                  <LeaderRow key={entry.email} entry={entry} rank={rank} tab={tab} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-
-        {/* Section header */}
-        <div className="mb-5">
-          <h2 className="text-xl font-black text-white">{current.title} Leaderboard</h2>
-          <p className="text-gray-500 text-sm">{current.subtitle}</p>
-        </div>
-
-        {/* Top 3 podium */}
-        {!loading && leaderboard.length >= 3 && (
-          <div className="flex justify-center items-end gap-4 mb-8">
-            {/* 2nd */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-full border-4 border-slate-400 overflow-hidden bg-gray-800 flex items-center justify-center text-xl font-black">
-                {leaderboard[1]?.avatar_url ? <img src={leaderboard[1].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[1]?.username?.[0] || "?")}
-              </div>
-              <p className="text-white text-xs font-bold text-center max-w-20 truncate">{leaderboard[1]?.username}</p>
-              <div className="w-20 bg-slate-600 rounded-t-xl flex flex-col items-center py-2" style={{ height: 60 }}>
-                <span className="text-2xl">🥈</span>
-              </div>
-            </motion.div>
-            {/* 1st */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center gap-2">
-              <div className="w-20 h-20 rounded-full border-4 border-yellow-400 overflow-hidden bg-gray-800 flex items-center justify-center text-2xl font-black"
-                style={{ boxShadow: "0 0 20px rgba(234,179,8,0.5)" }}>
-                {leaderboard[0]?.avatar_url ? <img src={leaderboard[0].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[0]?.username?.[0] || "?")}
-              </div>
-              <p className="text-yellow-300 text-sm font-black text-center max-w-24 truncate">{leaderboard[0]?.username}</p>
-              <div className="w-24 rounded-t-xl flex flex-col items-center py-2"
-                style={{ height: 80, background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                <span className="text-2xl">🥇</span>
-              </div>
-            </motion.div>
-            {/* 3rd */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="flex flex-col items-center gap-2">
-              <div className="w-16 h-16 rounded-full border-4 border-amber-700 overflow-hidden bg-gray-800 flex items-center justify-center text-xl font-black">
-                {leaderboard[2]?.avatar_url ? <img src={leaderboard[2].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[2]?.username?.[0] || "?")}
-              </div>
-              <p className="text-white text-xs font-bold text-center max-w-20 truncate">{leaderboard[2]?.username}</p>
-              <div className="w-20 bg-amber-800 rounded-t-xl flex flex-col items-center py-2" style={{ height: 48 }}>
-                <span className="text-2xl">🥉</span>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Full list */}
-        {loading ? (
-          <div className="space-y-3">
-            {[1,2,3,4,5].map(i => <div key={i} className="h-16 rounded-2xl bg-gray-900 animate-pulse" />)}
-          </div>
-        ) : leaderboard.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <Trophy className="w-12 h-12 mx-auto opacity-30 mb-3" />
-            <p className="font-semibold">No data yet — be the first to contribute!</p>
-          </div>
-        ) : (
-          <div className="space-y-2 pb-16">
-            {leaderboard.map((entry, rank) => (
-              <LeaderRow key={entry.email} entry={entry} rank={rank} tab={tab} />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

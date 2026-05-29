@@ -116,10 +116,10 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Right: User */}
         <div className="flex items-center gap-2">
-          {/* Analytics */}
-          <Link to="/analytics" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 text-sm font-bold hover:text-purple-200 transition-all glass-3d-btn">
-            <PieChart className="w-4 h-4" />
-            <span className="hidden lg:block">Analytics</span>
+          {/* My Channel/Profile */}
+          <Link to="/profile" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 text-sm font-bold hover:text-purple-200 transition-all glass-3d-btn">
+            <User className="w-4 h-4" />
+            <span className="hidden lg:block">My Channel</span>
           </Link>
           {/* AI Video Studio — for all logged-in users */}
           <Link

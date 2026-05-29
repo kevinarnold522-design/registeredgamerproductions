@@ -149,6 +149,8 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
       window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
     } else if (platform === "telegram") {
       window.open(`https://t.me/share/url?url=${url}&text=${text}`, "_blank");
+    } else if (platform === "viber") {
+      window.open(`viber://forward?text=${text}%20${url}`, "_blank");
     } else if (platform === "instagram") {
       navigator.clipboard?.writeText(`${post.content}\n\n🎮 GAMER.PRODUCTIONS`);
       alert("Post copied to clipboard! Paste it in Instagram.");
@@ -222,6 +224,10 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
                 <button onClick={() => { handleShare("telegram"); setShareOpen(false); }}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-900/40 hover:bg-sky-900/70 text-sky-400 text-xs font-bold transition-all">
                   ✈ Telegram
+                </button>
+                <button onClick={() => { handleShare("viber"); setShareOpen(false); }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-900/40 hover:bg-violet-900/70 text-violet-300 text-xs font-bold transition-all">
+                  📲 Viber
                 </button>
                 <button onClick={() => { handleShare("instagram"); setShareOpen(false); }}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pink-900/40 hover:bg-pink-900/70 text-pink-400 text-xs font-bold transition-all">

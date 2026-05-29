@@ -146,27 +146,29 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
     setUploadingCover(false);
   };
 
+  const [postYoutubeUrl, setPostYoutubeUrl] = useState("");
+
   const handlePost = async () => {
     if (!newPost.trim() || !user) return;
-    // Allow admin, tier1, or moderator to post (no join requirement for privileged users)
-    const canPost = admin || isTier1 || isModerator;
-    if (!canPost) return;
+    // All joined users can post freely — posting is free for everyone
+    if (!isJoined && !admin && !isModerator) return;
     setPosting(true);
     const comm = await ensureCommunity();
     const spamWords = ["spam", "scam", "buy now", "click here", "free money", "earn fast"];
     const isSpam = spamWords.some(w => newPost.toLowerCase().includes(w));
+    const postContent = postYoutubeUrl ? `${newPost}\n📺 ${postYoutubeUrl}` : newPost;
     const post = await base44.entities.CommunityPost.create({
       community_id: comm.id, franchise_id: franchise.id,
       author_email: user.email,
       author_username: profile?.username || user.full_name || "Gamer",
       author_avatar: profile?.avatar_url || "",
-      content: newPost, likes: 0,
+      content: postContent, likes: 0,
       status: isSpam ? "flagged" : "active",
       flagged_reason: isSpam ? "AI: possible spam" : "",
     });
     if (!isSpam) setPosts(prev => [post, ...prev]);
     else alert("⚠️ Your post was flagged for review by our AI system.");
-    setNewPost(""); setPosting(false);
+    setNewPost(""); setPostYoutubeUrl(""); setPosting(false);
   };
 
   const handleFlagPost = async (post) => {
@@ -310,7 +312,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <button onClick={() => setShowTier1Modal(true)}
                     className="px-3 py-1.5 rounded-xl text-xs font-black text-white transition-all flex items-center gap-1"
                     style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                    <Shield className="w-3 h-3" /> Avail Tier 1 — $1/yr
+                    <Shield className="w-3 h-3" /> Get Verified — $1/yr
                   </button>
                 )}
               </div>
@@ -386,32 +388,28 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
           {/* FEED TAB */}
           {activeTab === "feed" && (
             <>
-              {/* Post input — Tier 1 / admin / moderator can post */}
-              {user && (admin || isTier1 || isModerator || isJoined) && (
-                <div className="px-5 py-3 border-b border-gray-800 flex-shrink-0">
-                  {(admin || isTier1 || isModerator) ? (
-                    <div className="flex gap-3 items-center">
-                      <input value={newPost} onChange={e => setNewPost(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
-                        placeholder={`Post in ${franchise.name}...`}
-                        className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-                      <button onClick={handlePost} disabled={!newPost.trim() || posting}
-                        className="w-9 h-9 rounded-xl flex items-center justify-center disabled:opacity-50"
-                        style={{ background: franchise.accent }}>
-                        <Send className="w-4 h-4 text-white" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setShowTier1Modal(true)}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-700/50 bg-purple-900/20 text-purple-300 text-sm font-bold hover:bg-purple-900/40 transition-all">
-                      <Lock className="w-4 h-4" /> Avail Tier 1 Verified Partner to post — $1/year
+              {/* Post input — free for all joined users */}
+              {user && (admin || isModerator || isJoined) && (
+                <div className="px-5 py-3 border-b border-gray-800 flex-shrink-0 space-y-2">
+                  <div className="flex gap-3 items-center">
+                    <input value={newPost} onChange={e => setNewPost(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
+                      placeholder={`Post in ${franchise.name}...`}
+                      className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                    <button onClick={handlePost} disabled={!newPost.trim() || posting}
+                      className="w-9 h-9 rounded-xl flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+                      style={{ background: franchise.accent }}>
+                      <Send className="w-4 h-4 text-white" />
                     </button>
-                  )}
+                  </div>
+                  <input value={postYoutubeUrl} onChange={e => setPostYoutubeUrl(e.target.value)}
+                    placeholder="📺 YouTube link (optional)"
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-red-500" />
                 </div>
               )}
-              {user && !admin && !isTier1 && !isModerator && !isJoined && (
+              {user && !admin && !isModerator && !isJoined && (
                 <div className="px-5 py-3 border-b border-gray-800 text-center text-gray-500 text-sm flex-shrink-0">
-                  Join this community first to interact
+                  Join this community to post
                 </div>
               )}
 
@@ -422,12 +420,8 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <div className="p-8 text-center">
                     <p className="text-4xl mb-3">{franchise.emoji}</p>
                     <p className="text-gray-400 font-semibold">Be the first to post!</p>
-                    {!isTier1 && user && (
-                      <button onClick={() => setShowTier1Modal(true)}
-                        className="mt-3 px-4 py-2 rounded-xl text-xs font-black text-white"
-                        style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                        Get Tier 1 — $1/year to post
-                      </button>
+                    {!isJoined && user && (
+                      <p className="text-gray-500 text-xs mt-2">Join this community to post</p>
                     )}
                   </div>
                 ) : (

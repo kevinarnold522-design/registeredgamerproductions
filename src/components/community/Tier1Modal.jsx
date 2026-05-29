@@ -4,14 +4,16 @@ import { X, Star, Shield, Check, MessageCircle, Zap } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const TIER1_BENEFITS = [
-  { icon: MessageCircle, text: "Post & comment in all Gaming Communities" },
-  { icon: Shield, text: "Verified Partner Purple Checkmark" },
-  { icon: Zap, text: "Access to exclusive Group Chat (Tier 1 only)" },
+  { icon: Shield, text: "Verified Partner Purple Checkmark ✓" },
   { icon: Star, text: "🚫 Ad-free experience — all ads removed" },
+  { icon: Zap, text: "Access to exclusive Group Chat (Tier 1 only)" },
+  { icon: Check, text: "Comment on community posts" },
   { icon: Check, text: "Automatic email alerts for new listings in your groups" },
   { icon: Check, text: "Chat any user on the platform" },
   { icon: Check, text: "Request new gaming categories & subcategories" },
-  { icon: Check, text: "Unlock free skins & animated profile avatars" },
+  { icon: Check, text: "Unlock free animated faces — footballers, birds, cartoons & animals" },
+  { icon: Check, text: "🎨 Free premium animated profile avatars" },
+  { icon: Check, text: "🏆 Access AI Video Studio & Social Media Studio" },
 ];
 
 export default function Tier1Modal({ user, profile, onClose, onSuccess }) {

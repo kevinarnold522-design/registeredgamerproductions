@@ -130,10 +130,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
               <div className="p-2">
                   {/* Quick nav */}
                   <Link to="/profile" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                    <User className="w-4 h-4 text-blue-400" /> My Profile
-                  </Link>
-                  <Link to="/channel" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
-                    <Play className="w-4 h-4 text-red-400" /> My Channel
+                    <User className="w-4 h-4 text-blue-400" /> My Channel / Profile
                   </Link>
                   <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors">
                     <BarChart2 className="w-4 h-4 text-purple-400" /> Dashboard

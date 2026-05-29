@@ -75,6 +75,7 @@ export default function CreateListing() {
     buymeacoffee_url: "",
     patreon_url: "",
     community_franchise_id: "",
+    modding_subcategory: "",
   });
 
   useEffect(() => {
@@ -114,6 +115,7 @@ export default function CreateListing() {
             buymeacoffee_url: l.buymeacoffee_url || "",
             patreon_url: l.patreon_url || "",
             community_franchise_id: l.community_franchise_id || "",
+            modding_subcategory: l.modding_subcategory || "",
           });
           setImages(l.images || []);
         }
@@ -184,6 +186,7 @@ export default function CreateListing() {
       seller_paypal_email: form.paypal_email || undefined,
       external_link: form.external_link || undefined,
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
+      modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
       is_approved: mod?.is_approved !== false, // false only if clearly flagged
       status: mod?.requiresReview ? "pending" : "active",
@@ -462,23 +465,48 @@ export default function CreateListing() {
               </div>
             )}
 
-            {/* Community Group — digital products only */}
-            {form.product_type === "digital" && (
-              <div className="bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4">
-                <label className="text-cyan-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                  🎮 Auto-post to Gaming Community (optional)
-                </label>
-                <p className="text-gray-500 text-xs mb-2">Select a community and your listing will automatically appear in that group's feed.</p>
-                <select value={form.community_franchise_id} onChange={e => setForm({ ...form, community_franchise_id: e.target.value })}
-                  className="w-full bg-gray-800 border border-cyan-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 text-sm">
-                  <option value="">— Don't post to a community —</option>
-                  {TOP_FRANCHISES.map(f => <option key={f.id} value={f.id}>{f.emoji} {f.name} ({f.genre})</option>)}
-                </select>
-                {form.community_franchise_id && (
-                  <p className="text-cyan-400 text-xs mt-2">✓ Listing will be shared with the {TOP_FRANCHISES.find(f => f.id === form.community_franchise_id)?.name} community</p>
-                )}
-              </div>
-            )}
+            {/* Gaming Community — MANDATORY for all listings */}
+            <div className="bg-cyan-900/20 border border-cyan-500/60 rounded-xl p-4">
+              <label className="text-cyan-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                🎮 Gaming Community <span className="text-red-400 ml-1">*</span>
+              </label>
+              <p className="text-gray-500 text-xs mb-2">Your listing will appear in the selected gaming community feed. Required.</p>
+              <select value={form.community_franchise_id} onChange={e => setForm({ ...form, community_franchise_id: e.target.value })}
+                required
+                className="w-full bg-gray-800 border border-cyan-500/70 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 text-sm">
+                <option value="">— Select a Gaming Community —</option>
+                {TOP_FRANCHISES.map(f => <option key={f.id} value={f.id}>{f.emoji} {f.name} ({f.genre})</option>)}
+              </select>
+              {form.community_franchise_id && (
+                <p className="text-cyan-400 text-xs mt-2">✓ Will be shared with {TOP_FRANCHISES.find(f => f.id === form.community_franchise_id)?.name}</p>
+              )}
+            </div>
+
+            {/* Modding Community Subcategory — optional */}
+            <div className="bg-orange-900/20 border border-orange-700/40 rounded-xl p-4">
+              <label className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                🔧 Modding Community Subcategory (Optional)
+              </label>
+              <select value={form.modding_subcategory} onChange={e => setForm({ ...form, modding_subcategory: e.target.value })}
+                className="w-full bg-gray-800 border border-orange-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500 text-sm">
+                <option value="">— Not a mod listing —</option>
+                <option value="WWE2K">🤼 WWE2K Mods</option>
+                <option value="Football Life">⚽ Football Life / PES Mods</option>
+                <option value="GTA 5">🏙️ GTA 5 Mods</option>
+                <option value="GTA SA">🌴 GTA San Andreas Mods</option>
+                <option value="GTA 4">🚗 GTA 4 Mods</option>
+                <option value="FIFA">🥅 FIFA / EA FC Mods</option>
+                <option value="NBA2K">🏀 NBA2K Mods</option>
+                <option value="PES">🏟️ PES Option Files</option>
+                <option value="PPSSPP/PSP">🎮 PPSSPP / PSP ISOs</option>
+                <option value="PS2">🕹️ PS2 Mods</option>
+                <option value="Android">📱 Android Mods / APKs</option>
+                <option value="PC">🖥️ PC Mods &amp; Trainers</option>
+              </select>
+              {form.modding_subcategory && (
+                <p className="text-orange-400 text-xs mt-2">✓ Also listed in Modding → {form.modding_subcategory}</p>
+              )}
+            </div>
 
             {/* Additional subcategories (multi-select) */}
             <div>
