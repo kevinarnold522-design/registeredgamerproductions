@@ -223,17 +223,10 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
             <div className="absolute inset-0 opacity-30 rounded-2xl" style={{ backgroundImage: `url(${displayItem.customCover})`, backgroundSize: "cover", backgroundPosition: "center" }} />
           )}
           {/* Badge */}
-          <div className="relative flex justify-between items-start">
+          <div className="relative">
             <span className="px-2 py-0.5 rounded-full bg-black/40 text-white/70 text-[9px] font-bold uppercase tracking-wide">
               {displayItem.badge}
             </span>
-            <motion.span
-              className="text-white/20 text-xs font-bold"
-              animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : 4 }}
-              transition={{ duration: 0.2 }}
-            >
-              →
-            </motion.span>
           </div>
 
           {/* Logo or Emoji */}

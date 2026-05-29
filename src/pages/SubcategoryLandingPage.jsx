@@ -223,7 +223,6 @@ function AddCardModal({ onClose, onAdd }) {
 export default function SubcategoryLandingPage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
-  // user is needed for "Add Listing" button visibility
   const params = new URLSearchParams(window.location.search);
   const cat = params.get("cat") || "";
   const sub = params.get("sub") || "";
