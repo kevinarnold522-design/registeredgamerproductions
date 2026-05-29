@@ -217,7 +217,7 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
       </AnimatePresence>
 
       <a href={editing ? undefined : href} onClick={editing ? e => e.preventDefault() : undefined}>
-        <div className={`relative h-48 rounded-2xl border-2 ${displayItem.border} bg-gradient-to-br ${displayItem.color} p-5 flex flex-col justify-between transition-all duration-300 overflow-hidden`}>
+        <div className={`relative h-56 rounded-2xl border-2 ${displayItem.border} bg-gradient-to-br ${displayItem.color} p-5 flex flex-col justify-between transition-all duration-300 overflow-hidden`}>
           {/* Cover bg */}
           {displayItem.customCover && (
             <div className="absolute inset-0 opacity-30 rounded-2xl" style={{ backgroundImage: `url(${displayItem.customCover})`, backgroundSize: "cover", backgroundPosition: "center" }} />
@@ -238,8 +238,8 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
 
           {/* Logo or Emoji */}
           <motion.div
-            className="relative text-4xl"
-            animate={hovered ? { scale: 1.25, rotate: [0, -8, 8, 0] } : { scale: 1, rotate: 0 }}
+            className="relative text-5xl"
+            animate={hovered ? { scale: 1.2, rotate: [0, -8, 8, 0] } : { scale: 1, rotate: 0 }}
             transition={{ duration: 0.35 }}
           >
             {displayItem.customLogo
@@ -252,6 +252,35 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
           <div className="relative">
             <p className="text-white font-black text-base leading-tight">{displayItem.title}</p>
             <p className="text-white/40 text-[10px] mt-0.5 leading-tight line-clamp-2">{displayItem.desc}</p>
+          </div>
+
+          {/* Share + Add Listing row */}
+          <div className="relative flex items-center justify-between">
+            <motion.span
+              className="text-white/20 text-xs font-bold"
+              animate={{ opacity: hovered ? 1 : 0, x: hovered ? 0 : 4 }}
+              transition={{ duration: 0.2 }}
+            >
+              →
+            </motion.span>
+            <div className="flex gap-1" style={{ opacity: hovered ? 1 : 0, transition: "opacity 0.2s" }}>
+              <button
+                onClick={e => {
+                  e.preventDefault(); e.stopPropagation();
+                  const url = encodeURIComponent(window.location.href);
+                  const text = encodeURIComponent(`Check out ${displayItem.title} on GAMER.PRODUCTIONS 🎮`);
+                  window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
+                }}
+                className="w-5 h-5 rounded bg-green-700/70 flex items-center justify-center text-[9px] text-white"
+                title="Share on WhatsApp"
+              >💬</button>
+              <a
+                href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(displayItem.id)}`}
+                onClick={e => e.stopPropagation()}
+                className="w-5 h-5 rounded bg-purple-700/70 flex items-center justify-center text-[9px] text-white"
+                title="Add Listing"
+              >+</a>
+            </div>
           </div>
 
           {/* Bottom shimmer on hover */}
@@ -387,7 +416,7 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {items.map((item, i) => (
           <SubcardItem
             key={item.id} item={{ ...item, _userEmail: userEmail }} cat={cat} index={i}

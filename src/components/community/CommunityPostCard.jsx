@@ -145,8 +145,11 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
     const url = encodeURIComponent(window.location.href);
     if (platform === "facebook") {
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, "_blank");
+    } else if (platform === "whatsapp") {
+      window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
+    } else if (platform === "telegram") {
+      window.open(`https://t.me/share/url?url=${url}&text=${text}`, "_blank");
     } else if (platform === "instagram") {
-      // Instagram doesn't support direct sharing via URL, copy to clipboard instead
       navigator.clipboard?.writeText(`${post.content}\n\n🎮 GAMER.PRODUCTIONS`);
       alert("Post copied to clipboard! Paste it in Instagram.");
     } else if (platform === "copy") {
@@ -207,17 +210,25 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
               <span>Share</span>
             </button>
             {shareOpen && (
-              <div className="absolute bottom-7 left-0 bg-gray-900 border border-gray-700 rounded-xl shadow-xl p-2 z-10 flex gap-1.5 min-w-max">
+              <div className="absolute bottom-7 left-0 bg-gray-900 border border-gray-700 rounded-xl shadow-xl p-2 z-10 flex flex-wrap gap-1.5 min-w-max">
                 <button onClick={() => { handleShare("facebook"); setShareOpen(false); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-900/40 hover:bg-blue-900/70 text-blue-400 text-xs font-bold transition-all">
-                  <span>f</span> Facebook
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-900/40 hover:bg-blue-900/70 text-blue-400 text-xs font-bold transition-all">
+                  f Facebook
+                </button>
+                <button onClick={() => { handleShare("whatsapp"); setShareOpen(false); }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-900/40 hover:bg-green-900/70 text-green-400 text-xs font-bold transition-all">
+                  💬 WhatsApp
+                </button>
+                <button onClick={() => { handleShare("telegram"); setShareOpen(false); }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-900/40 hover:bg-sky-900/70 text-sky-400 text-xs font-bold transition-all">
+                  ✈ Telegram
                 </button>
                 <button onClick={() => { handleShare("instagram"); setShareOpen(false); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-900/40 hover:bg-pink-900/70 text-pink-400 text-xs font-bold transition-all">
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-pink-900/40 hover:bg-pink-900/70 text-pink-400 text-xs font-bold transition-all">
                   📷 Instagram
                 </button>
                 <button onClick={() => { handleShare("copy"); setShareOpen(false); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold transition-all">
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold transition-all">
                   📋 Copy
                 </button>
               </div>

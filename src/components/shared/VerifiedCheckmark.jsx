@@ -31,75 +31,71 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Always-on soft ambient glow — no dot, just subtle bloom */}
+      {/* Always-on subtle ambient glow */}
       <span
         style={{
           position: "absolute",
-          width: px * 1.8,
-          height: px * 1.8,
+          width: px * 1.6,
+          height: px * 1.6,
           borderRadius: "50%",
           top: "50%",
           left: px / 2,
           transform: "translate(-50%, -50%)",
-          background: "radial-gradient(circle, rgba(168,85,247,0.22) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 70%)",
           pointerEvents: "none",
           zIndex: 0,
-          filter: `blur(${px * 0.25}px)`,
-          transition: "opacity 0.3s ease",
-          opacity: hovered ? 0 : 1,
+          filter: `blur(${px * 0.2}px)`,
         }}
       />
 
-      {/* Hover: brighter glow + orbiting dot */}
-      {hovered && (
-        <>
-          {/* Brighter glow on hover */}
-          <span
-            style={{
-              position: "absolute",
-              width: px * 2,
-              height: px * 2,
-              borderRadius: "50%",
-              top: "50%",
-              left: px / 2,
-              transform: "translate(-50%, -50%)",
-              background: "radial-gradient(circle, rgba(168,85,247,0.45) 0%, transparent 70%)",
-              pointerEvents: "none",
-              zIndex: 0,
-              filter: `blur(${px * 0.28}px)`,
-            }}
-          />
+      {/* Always-on tight orbiting dot */}
+      <span
+        style={{
+          position: "absolute",
+          width: orbitR * 2 + dotSize,
+          height: orbitR * 2 + dotSize,
+          top: "50%",
+          left: px / 2,
+          transform: "translate(-50%, -50%)",
+          pointerEvents: "none",
+          zIndex: 2,
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            width: dotSize,
+            height: dotSize,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, #ffffff 0%, #c084fc 45%, #7c3aed 100%)",
+            boxShadow: `0 0 ${dotSize * 1.5}px ${dotSize * 0.8}px #a855f7aa`,
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            animation: "dot-orbit 2.5s linear infinite",
+            transformOrigin: `0 ${orbitR + dotSize / 2}px`,
+          }}
+        />
+      </span>
 
-          {/* Orbiting dot — tight to badge */}
-          <span
-            style={{
-              position: "absolute",
-              width: orbitR * 2 + dotSize,
-              height: orbitR * 2 + dotSize,
-              top: "50%",
-              left: px / 2,
-              transform: "translate(-50%, -50%)",
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          >
-            <span
-              style={{
-                position: "absolute",
-                width: dotSize,
-                height: dotSize,
-                borderRadius: "50%",
-                background: "radial-gradient(circle, #ffffff 0%, #c084fc 45%, #7c3aed 100%)",
-                boxShadow: `0 0 ${dotSize * 2}px ${dotSize}px #a855f7cc`,
-                top: 0,
-                left: "50%",
-                transform: "translateX(-50%)",
-                animation: "dot-orbit 2s linear infinite",
-                transformOrigin: `0 ${orbitR + dotSize / 2}px`,
-              }}
-            />
-          </span>
-        </>
+      {/* Hover: brighter glow burst */}
+      {hovered && (
+        <span
+          style={{
+            position: "absolute",
+            width: px * 2.4,
+            height: px * 2.4,
+            borderRadius: "50%",
+            top: "50%",
+            left: px / 2,
+            transform: "translate(-50%, -50%)",
+            background: "radial-gradient(circle, rgba(168,85,247,0.55) 0%, rgba(236,72,153,0.2) 50%, transparent 70%)",
+            pointerEvents: "none",
+            zIndex: 0,
+            filter: `blur(${px * 0.3}px)`,
+            animation: "glow-burst 0.4s ease-out",
+          }}
+        />
       )}
 
       <svg
@@ -156,6 +152,11 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
         @keyframes dot-orbit {
           0%   { transform: translateX(-50%) rotate(0deg)   translateY(-${orbitR}px); }
           100% { transform: translateX(-50%) rotate(360deg) translateY(-${orbitR}px); }
+        }
+        @keyframes glow-burst {
+          0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.6); }
+          60%  { opacity: 1; }
+          100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
         }
       `}</style>
     </span>

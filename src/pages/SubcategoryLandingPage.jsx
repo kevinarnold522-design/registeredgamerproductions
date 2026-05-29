@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
@@ -112,7 +112,7 @@ function LandingCard({ card, canAdmin, onEdit, onDelete, onClick }) {
 
       <div
         onClick={editing ? undefined : onClick}
-        className="relative h-44 rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-950 to-gray-900 p-4 flex flex-col justify-between overflow-hidden"
+        className="relative h-56 rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-950 to-gray-900 p-4 flex flex-col justify-between overflow-hidden"
         style={{ boxShadow: hovered ? "0 0 24px 4px rgba(139,92,246,0.4)" : "none", transition: "box-shadow 0.3s" }}
       >
         {card.cover && (
@@ -129,7 +129,22 @@ function LandingCard({ card, canAdmin, onEdit, onDelete, onClick }) {
             <p className="text-purple-300/60 text-[10px] mt-0.5">Click to explore</p>
           </div>
         </div>
-        <div className="relative text-purple-300/40 text-xs font-bold" style={{ opacity: hovered ? 1 : 0, transition: "opacity 0.2s" }}>Explore →</div>
+        <div className="relative flex items-center justify-between">
+          <span className="text-purple-300/40 text-xs font-bold" style={{ opacity: hovered ? 1 : 0, transition: "opacity 0.2s" }}>Explore →</span>
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              const url = encodeURIComponent(window.location.href);
+              const text = encodeURIComponent(`Check out ${card.name} on GAMER.PRODUCTIONS 🎮`);
+              window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
+            }}
+            style={{ opacity: hovered ? 1 : 0, transition: "opacity 0.2s" }}
+            className="w-6 h-6 rounded-lg bg-green-700/60 flex items-center justify-center"
+            title="Share on WhatsApp"
+          >
+            <Share2 className="w-3 h-3 text-white" />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -208,6 +223,7 @@ function AddCardModal({ onClose, onAdd }) {
 export default function SubcategoryLandingPage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
+  // user is needed for "Add Listing" button visibility
   const params = new URLSearchParams(window.location.search);
   const cat = params.get("cat") || "";
   const sub = params.get("sub") || "";
@@ -256,13 +272,22 @@ export default function SubcategoryLandingPage() {
             <h1 className="text-3xl font-black text-white">{decodeURIComponent(sub)}</h1>
             <p className="text-gray-500 text-sm mt-1">Explore cards in this subcategory{admin ? " · Hover cards to edit" : ""}</p>
           </div>
-          {admin && (
-            <button onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-              <Plus className="w-4 h-4" /> Add Category Card
-            </button>
-          )}
+          <div className="flex gap-2">
+            {user && (
+              <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}`}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
+                style={{ background: "linear-gradient(135deg, #059669, #0d9488)" }}>
+                <Plus className="w-4 h-4" /> Add Listing
+              </button>
+            )}
+            {admin && (
+              <button onClick={() => setShowAdd(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                <Plus className="w-4 h-4" /> Add Category Card
+              </button>
+            )}
+          </div>
         </div>
 
         {cards.length === 0 && !admin && (
@@ -285,7 +310,7 @@ export default function SubcategoryLandingPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {cards.map(card => (
             <LandingCard
               key={card.id}

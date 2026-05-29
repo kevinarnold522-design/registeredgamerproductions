@@ -1,13 +1,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
-import { Zap, Shield, Star, DollarSign } from "lucide-react";
+import { Zap, Shield, Star, DollarSign, Wand2, Video, Music, Layers } from "lucide-react";
 
 const perks = [
   { icon: Shield, label: "Trusted Member", desc: "Community-verified status" },
   { icon: DollarSign, label: "Earn & Sell", desc: "Unlock monetisation tools" },
   { icon: Star, label: "Post in Communities", desc: "Join & contribute to groups" },
   { icon: Zap, label: "Ad-Free Browsing", desc: "Clean, distraction-free experience" },
+  { icon: Wand2, label: "Exclusive AI Studio", desc: "Generate AI art, overlays & thumbnails", highlight: true },
+  { icon: Video, label: "Video Editor Pro", desc: "Full timeline editor + templates", highlight: true },
+  { icon: Music, label: "Music Library", desc: "Royalty-free tracks for your content", highlight: true },
+  { icon: Layers, label: "Social Media Studio", desc: "One-click branded posts & stories", highlight: true },
 ];
 
 export default function VerifiedBadgeBanner() {
@@ -57,8 +61,8 @@ export default function VerifiedBadgeBanner() {
         </motion.div>
 
         {/* Perks grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {perks.map((perk, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          {perks.slice(0, 4).map((perk, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -73,6 +77,32 @@ export default function VerifiedBadgeBanner() {
             </motion.div>
           ))}
         </div>
+
+        {/* Studio exclusive perks */}
+        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="mb-8">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-700/40 to-transparent" />
+            <span className="text-purple-400 text-xs font-black uppercase tracking-widest px-3">🎬 Exclusive Studio Access</span>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-700/40 to-transparent" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {perks.slice(4).map((perk, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.45 + i * 0.07 }}
+                className="p-4 rounded-2xl text-center"
+                style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(236,72,153,0.1))", border: "1px solid rgba(167,85,247,0.35)" }}
+              >
+                <perk.icon className="w-6 h-6 text-pink-400 mx-auto mb-2" />
+                <p className="text-white font-bold text-sm">{perk.label}</p>
+                <p className="text-purple-300/60 text-xs mt-0.5">{perk.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
         <motion.a
           href="/payment"

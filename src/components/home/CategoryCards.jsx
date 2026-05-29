@@ -113,7 +113,7 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
         />
       )}
 
-      <div className={`relative h-44 rounded-2xl border-2 ${cat.borderColor} bg-gradient-to-br ${cat.color} p-4 flex flex-col items-center justify-center gap-3 transition-all`}
+      <div className={`relative h-56 rounded-2xl border-2 ${cat.borderColor} bg-gradient-to-br ${cat.color} p-4 flex flex-col items-center justify-center gap-3 transition-all`}
         style={{ boxShadow: hovered ? `0 0 24px 4px ${cat.glowColor}` : "none" }}>
         {cat.live && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-600/80 text-white text-[8px] font-black">
@@ -128,8 +128,8 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
           transition={{ duration: 0.35 }}
         >
           {cat.customLogo
-            ? <img src={cat.customLogo} className="w-10 h-10 rounded-xl object-cover" alt="" />
-            : <CatIcon size={32} color={cat.iconColor} />
+            ? <img src={cat.customLogo} className="w-12 h-12 rounded-xl object-cover" alt="" />
+            : <CatIcon size={40} color={cat.iconColor} />
           }
         </motion.div>
         <div className="text-center">
@@ -151,7 +151,7 @@ function AddCategoryTile({ onClick }) {
       onClick={onClick}
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       whileHover={{ y: -4 }}
-      className="relative rounded-2xl cursor-pointer border-2 border-dashed border-purple-700/50 hover:border-purple-500 bg-purple-950/20 h-44 flex flex-col items-center justify-center gap-2 transition-all"
+      className="relative rounded-2xl cursor-pointer border-2 border-dashed border-purple-700/50 hover:border-purple-500 bg-purple-950/20 h-56 flex flex-col items-center justify-center gap-2 transition-all"
     >
       <Plus className="w-8 h-8 text-purple-500" />
       <p className="text-purple-400 text-xs font-bold">Add Category Card</p>

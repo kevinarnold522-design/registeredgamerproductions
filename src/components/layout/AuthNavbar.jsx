@@ -32,6 +32,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Heart, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
     { icon: ShoppingCart, label: "Cart", badge: cartCount, action: () => { setCartOpen(true); setFavOpen(false); } },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
+    { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
     { icon: ClipboardList, label: "Orders", href: "/dashboard?tab=orders" },
   ];
 
@@ -48,6 +49,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Store, label: "All Listings", href: "/dashboard?tab=listings" },
     { icon: User, label: "Users", href: "/dashboard?tab=users" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
+    { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
   ];
 
   const navLinks = admin ? adminLinks : (accountType === "digital_creator" || accountType === "business") ? sellerLinks : regularLinks;
