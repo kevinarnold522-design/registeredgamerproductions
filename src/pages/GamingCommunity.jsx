@@ -278,6 +278,21 @@ export default function GamingCommunity() {
     return moderatorIds.has(franchiseId) || (communities[franchiseId]?.moderator_emails || []).includes(user?.email);
   };
 
+  // Moderators can only manage up to 3 groups
+  const getModeratorGroupCount = () => {
+    if (!user?.email || admin) return 0;
+    return Array.from(moderatorIds).filter(id => 
+      (communities[id]?.moderator_emails || []).includes(user.email)
+    ).length;
+  };
+
+  const canAdminCard = (franchiseId) => {
+    if (admin) return true;
+    if (!isModerator(franchiseId)) return false;
+    // Mods can only manage their own groups (max 3)
+    return getModeratorGroupCount() <= 3;
+  };
+
   const handleCardClick = (franchise) => {
     window.location.href = `/community/${franchise.id}`;
   };
@@ -396,7 +411,7 @@ export default function GamingCommunity() {
               memberCount={memberCounts[franchise.id] || 0}
               isJoined={joinedIds.has(franchise.id)}
               isModerator={isModerator(franchise.id)}
-              canAdmin={admin || isModerator(franchise.id)}
+              canAdmin={canAdminCard(franchise.id)}
               community={communities[franchise.id] || null}
               onJoin={() => handleJoinCard(franchise)}
               onClick={() => handleCardClick(franchise)}

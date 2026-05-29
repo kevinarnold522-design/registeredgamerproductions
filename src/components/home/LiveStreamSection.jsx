@@ -55,17 +55,24 @@ export default function LiveStreamSection() {
             Stream your gameplay, tournaments, and content directly on GAMER Productions.
             Grow your audience, earn from views, and build your community — all in one place.
           </p>
-          <motion.button
-            onClick={() => setShowStudio(true)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-white text-base"
-            style={{ background: "linear-gradient(90deg, #dc2626, #be123c)", boxShadow: "0 0 25px rgba(220,38,38,0.5)" }}
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-            <Radio className="w-5 h-5" />
-            STREAM NOW — Go Live on GAMER
-          </motion.button>
+          <div className="flex flex-wrap justify-center gap-3">
+            <motion.button
+              onClick={() => setShowStudio(true)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.97 }}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-white text-base"
+              style={{ background: "linear-gradient(90deg, #dc2626, #be123c)", boxShadow: "0 0 25px rgba(220,38,38,0.5)" }}
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+              <Radio className="w-5 h-5" />
+              Go Live — PC / Browser
+            </motion.button>
+            <a href="https://streamlabs.com/mobile-app" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-black text-white text-base border border-purple-700/50"
+              style={{ background: "rgba(124,58,237,0.2)" }}>
+              📱 Android / iOS
+            </a>
+          </div>
         </motion.div>
 
         {/* Live Studio Modal */}

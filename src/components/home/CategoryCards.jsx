@@ -130,7 +130,10 @@ function SmallCard({ cat, index }) {
         {cat.badge && !cat.live && (
           <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/40 text-white/60 text-[8px] font-semibold">{cat.badge}</div>
         )}
-        <motion.div animate={hovered ? { scale: 1.2 } : { scale: 1 }} transition={{ duration: 0.2 }}>
+        <motion.div
+          animate={hovered ? { scale: 1.2, rotate: [0, -8, 8, 0] } : { scale: 1, rotate: 0 }}
+          transition={{ duration: 0.35 }}
+        >
           <CatIcon size={32} color={cat.iconColor} />
         </motion.div>
         <div className="text-center">

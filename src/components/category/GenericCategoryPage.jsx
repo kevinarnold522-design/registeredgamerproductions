@@ -146,9 +146,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder={`Search ${meta.title}...`}
               className="bg-transparent text-white text-sm placeholder-gray-600 outline-none flex-1" />
           </div>
-          {canPost && (
+          {canPost && cat !== "tournaments" && (
             <a href={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
               <Plus className="w-4 h-4" /> Add Listing
+            </a>
+          )}
+          {cat === "tournaments" && (
+            <a href="/tournaments" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600/20 border border-green-600/40 text-green-300 text-sm font-semibold hover:bg-green-600/30 whitespace-nowrap">
+              <Plus className="w-4 h-4" /> {canPost ? "Create Tournament" : "View Tournaments"}
             </a>
           )}
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart, Youtube, Facebook } from "lucide-react";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart, Youtube, Facebook, Trophy } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
@@ -31,8 +31,8 @@ export default function AuthNavbar({ user, profile }) {
   const regularLinks = [
     { icon: Heart, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
     { icon: ShoppingCart, label: "Cart", badge: cartCount, action: () => { setCartOpen(true); setFavOpen(false); } },
+    { icon: Trophy, label: "Tournaments", href: "/tournaments" },
     { icon: ClipboardList, label: "Orders", href: "/dashboard?tab=orders" },
-    { icon: CreditCard, label: "Payment", href: "/payment" },
   ];
 
   const sellerLinks = [
@@ -47,6 +47,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: BarChart2, label: "Analytics", href: "/analytics" },
     { icon: Store, label: "All Listings", href: "/dashboard?tab=listings" },
     { icon: User, label: "Users", href: "/dashboard?tab=users" },
+    { icon: Trophy, label: "Tournaments", href: "/tournaments" },
   ];
 
   const navLinks = admin ? adminLinks : (accountType === "digital_creator" || accountType === "business") ? sellerLinks : regularLinks;

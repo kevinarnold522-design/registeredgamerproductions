@@ -1,0 +1,109 @@
+{
+  "name": "Tournament",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "game": {
+      "type": "string"
+    },
+    "game_platform": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "venue": {
+      "type": "string"
+    },
+    "is_online": {
+      "type": "boolean",
+      "default": true
+    },
+    "stream_link": {
+      "type": "string"
+    },
+    "max_players": {
+      "type": "number",
+      "default": 16
+    },
+    "prize_pool": {
+      "type": "string"
+    },
+    "entry_fee": {
+      "type": "number",
+      "default": 0
+    },
+    "start_date": {
+      "type": "string"
+    },
+    "end_date": {
+      "type": "string"
+    },
+    "registration_deadline": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "default": "upcoming"
+    },
+    "organizer_email": {
+      "type": "string"
+    },
+    "organizer_username": {
+      "type": "string"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "rules": {
+      "type": "string"
+    },
+    "bracket_type": {
+      "type": "string",
+      "enum": [
+        "single_elimination",
+        "double_elimination",
+        "round_robin",
+        "swiss"
+      ],
+      "default": "single_elimination"
+    },
+    "franchise_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "social_facebook": {
+      "type": "string"
+    },
+    "social_discord": {
+      "type": "string"
+    },
+    "social_youtube": {
+      "type": "string"
+    },
+    "contact_info": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "game",
+    "organizer_email"
+  ]
+}

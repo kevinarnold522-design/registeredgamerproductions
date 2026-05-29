@@ -92,6 +92,9 @@ export default function Home() {
             <HeroSection />
             <MarqueeTicker />
 
+            {/* GET VERIFIED BADGE — prominent top banner */}
+            <VerifiedBadgeBanner />
+
             {/* Categories moved up — prominent position */}
             <CategoryCards />
 
@@ -110,7 +113,6 @@ export default function Home() {
             <ServicesSection />
             <ModdingSection />
             <MonetizationBadge />
-            <VerifiedBadgeBanner />
             <VideosSection />
             <FeaturedGames />
             <CommunitySection />

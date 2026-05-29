@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
-import { motion } from "framer-motion";
-import { Pencil, Check, Upload, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Pencil, Check, Upload, X, Plus, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 
@@ -83,6 +83,7 @@ const SUBCATEGORY_CONFIG = {
 
 // Admin edit overlay for a subcategory card
 function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
+  const [name, setName] = useState(item.title || "");
   const [logoUrl, setLogoUrl] = useState(item.customLogo || "");
   const [coverUrl, setCoverUrl] = useState(item.customCover || "");
   const [uploading, setUploading] = useState(null);
@@ -98,13 +99,11 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
     setUploading(null);
   };
 
-  const handleSave = async () => {
-    // Save to GamingCommunity-like entity using SiteSettings or a custom record
-    // We'll store in localStorage for subcategory customisation
+  const handleSave = () => {
     const key = `subcat_${cat}_${item.id}`;
-    const data = { logo: logoUrl, cover: coverUrl };
+    const data = { logo: logoUrl, cover: coverUrl, name };
     localStorage.setItem(key, JSON.stringify(data));
-    onSaved({ ...item, customLogo: logoUrl, customCover: coverUrl });
+    onSaved({ ...item, title: name, customLogo: logoUrl, customCover: coverUrl });
     onClose();
   };
 
@@ -115,10 +114,15 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
         <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-3.5 h-3.5" /></button>
       </div>
       <div>
-        <p className="text-gray-500 text-[10px] mb-1">Logo/Icon URL</p>
+        <p className="text-gray-500 text-[10px] mb-1">Name / Title</p>
+        <input value={name} onChange={e => setName(e.target.value)}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none focus:border-purple-500" />
+      </div>
+      <div>
+        <p className="text-gray-500 text-[10px] mb-1">Logo/Icon</p>
         <div className="flex gap-1">
           <input value={logoUrl} onChange={e => setLogoUrl(e.target.value)}
-            placeholder="paste image URL..."
+            placeholder="paste URL or upload..."
             className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none focus:border-purple-500" />
           <button onClick={() => logoRef.current?.click()} className="px-2 py-1 rounded-lg bg-purple-700 text-white text-[10px]">
             {uploading === "logo" ? "..." : <Upload className="w-3 h-3" />}
@@ -128,10 +132,10 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
         {logoUrl && <img src={logoUrl} className="mt-1 w-10 h-10 rounded-lg object-cover" alt="" />}
       </div>
       <div>
-        <p className="text-gray-500 text-[10px] mb-1">Cover/BG URL</p>
+        <p className="text-gray-500 text-[10px] mb-1">Cover/Background</p>
         <div className="flex gap-1">
           <input value={coverUrl} onChange={e => setCoverUrl(e.target.value)}
-            placeholder="paste cover URL..."
+            placeholder="paste URL or upload..."
             className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none focus:border-blue-500" />
           <button onClick={() => coverRef.current?.click()} className="px-2 py-1 rounded-lg bg-blue-700 text-white text-[10px]">
             {uploading === "cover" ? "..." : <Upload className="w-3 h-3" />}
@@ -147,13 +151,13 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
   );
 }
 
-function SubcardItem({ item, cat, index, canAdmin, onItemUpdate }) {
+function SubcardItem({ item, cat, index, canAdmin, onItemUpdate, onDelete }) {
   const [hovered, setHovered] = useState(false);
   const [editing, setEditing] = useState(false);
   // Load saved custom assets from localStorage
   const saved = (() => { try { return JSON.parse(localStorage.getItem(`subcat_${cat}_${item.id}`) || "{}"); } catch { return {}; } })();
   const displayItem = { ...item, customLogo: saved.logo || item.customLogo, customCover: saved.cover || item.customCover };
-  const href = `/category?cat=${cat}&sub=${encodeURIComponent(item.id)}`;
+  const href = cat === "tournaments" ? `/tournaments` : `/category?cat=${cat}&sub=${encodeURIComponent(item.id)}`;
 
   return (
     <motion.div
@@ -172,14 +176,22 @@ function SubcardItem({ item, cat, index, canAdmin, onItemUpdate }) {
         style={{ opacity: hovered ? 1 : 0, boxShadow: `0 0 32px 8px ${displayItem.glow}` }}
       />
 
-      {/* Admin pencil */}
+      {/* Admin pencil + delete */}
       {canAdmin && !editing && (
-        <button
-          onClick={e => { e.preventDefault(); setEditing(true); }}
-          className="absolute top-2 right-2 z-10 w-6 h-6 rounded-lg bg-black/60 hover:bg-purple-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-        >
-          <Pencil className="w-3 h-3 text-white" />
-        </button>
+        <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          <button
+            onClick={e => { e.preventDefault(); setEditing(true); }}
+            className="w-6 h-6 rounded-lg bg-black/60 hover:bg-purple-700 flex items-center justify-center"
+          >
+            <Pencil className="w-3 h-3 text-white" />
+          </button>
+          <button
+            onClick={e => { e.preventDefault(); e.stopPropagation(); onDelete?.(); }}
+            className="w-6 h-6 rounded-lg bg-black/60 hover:bg-red-700 flex items-center justify-center"
+          >
+            <Trash2 className="w-3 h-3 text-white" />
+          </button>
+        </div>
       )}
 
       {/* Edit overlay */}
@@ -237,45 +249,136 @@ function SubcardItem({ item, cat, index, canAdmin, onItemUpdate }) {
   );
 }
 
+// Add new subcategory modal for admin
+function AddSubcategoryModal({ cat, onClose, onAdded }) {
+  const [name, setName] = useState("");
+  const [emoji, setEmoji] = useState("🎮");
+  const [desc, setDesc] = useState("");
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    const id = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const colors = ["from-purple-950 to-purple-900", "from-blue-950 to-blue-900", "from-green-950 to-green-900", "from-red-950 to-red-900", "from-yellow-950 to-yellow-900"];
+    const glows = ["rgba(168,85,247,0.6)", "rgba(59,130,246,0.6)", "rgba(74,222,128,0.6)", "rgba(239,68,68,0.6)", "rgba(234,179,8,0.6)"];
+    const borders = ["border-purple-500/50", "border-blue-500/50", "border-green-500/50", "border-red-500/50", "border-yellow-500/50"];
+    const ri = Math.floor(Math.random() * colors.length);
+    const newItem = { id, title: name, emoji, desc, color: colors[ri], glow: glows[ri], border: borders[ri], badge: "New", customLogo: "", customCover: "" };
+    // Persist
+    const key = `extra_subcat_${cat}`;
+    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+    localStorage.setItem(key, JSON.stringify([...existing, newItem]));
+    onAdded(newItem);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.9)" }}>
+      <div className="bg-gray-950 border border-purple-700/40 rounded-2xl p-6 w-full max-w-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-black">Add Subcategory Card</h3>
+          <button onClick={onClose}><X className="w-4 h-4 text-gray-400" /></button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-gray-400 text-xs font-bold mb-1 block">Name</label>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. PS3 Mods"
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+          <div>
+            <label className="text-gray-400 text-xs font-bold mb-1 block">Emoji Icon</label>
+            <input value={emoji} onChange={e => setEmoji(e.target.value)} placeholder="🎮"
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+          <div>
+            <label className="text-gray-400 text-xs font-bold mb-1 block">Description</label>
+            <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Short description..."
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
+          </div>
+          <button onClick={handleAdd}
+            className="w-full py-2.5 rounded-xl font-black text-white text-sm"
+            style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+            <Plus className="w-4 h-4 inline mr-1" /> Add Card
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SubcategoryCards({ cat, categoryName, userEmail }) {
   const [items, setItems] = useState(() => {
     const base = SUBCATEGORY_CONFIG[cat] || [];
-    return base.map(item => {
+    const loaded = base.map(item => {
       try {
         const saved = JSON.parse(localStorage.getItem(`subcat_${cat}_${item.id}`) || "{}");
-        return { ...item, customLogo: saved.logo || "", customCover: saved.cover || "" };
+        return { ...item, title: saved.name || item.title, customLogo: saved.logo || "", customCover: saved.cover || "" };
       } catch { return item; }
     });
+    // Load admin-added extra subcategories
+    try {
+      const extra = JSON.parse(localStorage.getItem(`extra_subcat_${cat}`) || "[]");
+      return [...loaded, ...extra];
+    } catch { return loaded; }
   });
+  const [showAdd, setShowAdd] = useState(false);
 
   const canAdmin = isAdmin(userEmail);
-
-  if (!items.length) return null;
 
   const handleItemUpdate = (updated) => {
     setItems(prev => prev.map(it => it.id === updated.id ? updated : it));
   };
 
+  const handleDelete = (itemId) => {
+    // Remove from local storage extra list if it's a custom one
+    const key = `extra_subcat_${cat}`;
+    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+    localStorage.setItem(key, JSON.stringify(existing.filter(x => x.id !== itemId)));
+    // Also remove its saved data
+    localStorage.removeItem(`subcat_${cat}_${itemId}`);
+    setItems(prev => prev.filter(it => it.id !== itemId));
+  };
+
+  const handleAdded = (newItem) => {
+    setItems(prev => [...prev, newItem]);
+  };
+
+  if (!items.length && !canAdmin) return null;
+
   return (
     <div className="px-4 py-10 max-w-7xl mx-auto relative z-10">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mb-8"
-      >
-        <p className="text-purple-400 text-xs font-semibold uppercase tracking-widest mb-2">Browse by</p>
-        <h2 className="text-2xl md:text-3xl font-black text-white">
-          {categoryName} <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Subcategories</span>
-        </h2>
-        <p className="text-gray-500 text-sm mt-1">Click a card to explore listings{canAdmin ? " · Hover to edit" : ""}</p>
+      <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-8">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <p className="text-purple-400 text-xs font-semibold uppercase tracking-widest mb-2">Browse by</p>
+            <h2 className="text-2xl md:text-3xl font-black text-white">
+              {categoryName} <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Subcategories</span>
+            </h2>
+            <p className="text-gray-500 text-sm mt-1">Click a card to explore listings{canAdmin ? " · Hover to edit or delete" : ""}</p>
+          </div>
+          {canAdmin && (
+            <button onClick={() => setShowAdd(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-white"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+              <Plus className="w-4 h-4" /> Add Card
+            </button>
+          )}
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {items.map((item, i) => (
-          <SubcardItem key={item.id} item={item} cat={cat} index={i} canAdmin={canAdmin} onItemUpdate={handleItemUpdate} />
+          <SubcardItem
+            key={item.id} item={item} cat={cat} index={i}
+            canAdmin={canAdmin}
+            onItemUpdate={handleItemUpdate}
+            onDelete={() => handleDelete(item.id)}
+          />
         ))}
       </div>
+
+      <AnimatePresence>
+        {showAdd && <AddSubcategoryModal cat={cat} onClose={() => setShowAdd(false)} onAdded={handleAdded} />}
+      </AnimatePresence>
     </div>
   );
 }

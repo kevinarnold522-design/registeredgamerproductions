@@ -32,6 +32,7 @@ import TermsDMCA from "./pages/TermsDMCA";
 import CommunitySectionPage from "./pages/CommunitySectionPage";
 import CommunityLandingPage from "./pages/CommunityLandingPage";
 import SocialMediaManager from "./pages/SocialMediaManager";
+import TournamentsPage from "./pages/TournamentsPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -82,6 +83,7 @@ const AuthenticatedApp = () => {
       <Route path="/community-section" element={<CommunitySectionPage />} />
       <Route path="/community/:id" element={<CommunityLandingPage />} />
       <Route path="/social-manager" element={<SocialMediaManager />} />
+      <Route path="/tournaments" element={<TournamentsPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
