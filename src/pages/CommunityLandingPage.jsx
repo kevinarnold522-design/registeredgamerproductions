@@ -9,6 +9,7 @@ import Navbar from "@/components/home/Navbar";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { Link, useParams } from "react-router-dom";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
+import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 
 export default function CommunityLandingPage() {
   const { user } = useAuth();
@@ -27,6 +28,7 @@ export default function CommunityLandingPage() {
   const [sortOrder, setSortOrder] = useState("newest");
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editLogoUrl, setEditLogoUrl] = useState("");
+  const [editLogoUrls, setEditLogoUrls] = useState([]);
   const [editCoverUrl, setEditCoverUrl] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -43,7 +45,9 @@ export default function CommunityLandingPage() {
   };
 
   const admin = isAdmin(user?.email);
+  const isAccountMod = profile?.moderator_type === "account_moderator";
   const canManage = admin || isModerator;
+  const canDelete = admin || isAccountMod;
 
   useEffect(() => {
     if (user?.email) {
@@ -63,6 +67,7 @@ export default function CommunityLandingPage() {
     const comm = comms[0] || null;
     setCommunity(comm);
     setEditLogoUrl(comm?.logo_url || "");
+    setEditLogoUrls(comm?.logo_urls || []);
     setEditCoverUrl(comm?.cover_url || "");
     setEditDesc(comm?.description || "");
     setMembers(membersData);
@@ -134,7 +139,9 @@ export default function CommunityLandingPage() {
     const file = e.target.files[0]; if (!file) return;
     setUploadingLogo(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setEditLogoUrl(file_url); setUploadingLogo(false);
+    setEditLogoUrl(file_url);
+    setEditLogoUrls(prev => prev.includes(file_url) ? prev : [...prev, file_url]);
+    setUploadingLogo(false);
   };
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
@@ -145,7 +152,10 @@ export default function CommunityLandingPage() {
   const handleSaveProfile = async () => {
     const comm = await ensureCommunity();
     const updated = await base44.entities.GamingCommunity.update(comm.id, {
-      logo_url: editLogoUrl, cover_url: editCoverUrl, description: editDesc,
+      logo_url: editLogoUrl,
+      logo_urls: editLogoUrls.filter(Boolean),
+      cover_url: editCoverUrl,
+      description: editDesc,
     });
     setCommunity(updated); setShowEditProfile(false);
   };
@@ -187,11 +197,20 @@ export default function CommunityLandingPage() {
           </Link>
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
             <div className="relative">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 flex items-center justify-center text-5xl"
-                style={{ background: `${franchise.accent}22`, borderColor: `${franchise.accent}66` }}>
-                {community?.logo_url
-                  ? <img src={community.logo_url} className="w-full h-full object-cover" alt="" />
-                  : franchise.emoji}
+              <div className="w-24 h-24 rounded-2xl border-4"
+                style={{ borderColor: `${franchise.accent}66`, background: `${franchise.accent}22` }}>
+                {(community?.logo_urls?.length > 0 || community?.logo_url) ? (
+                  <MultiAvatarDisplay
+                    images={community?.logo_urls?.length > 0 ? community.logo_urls : [community.logo_url]}
+                    size={88}
+                    rounded="rounded-2xl"
+                    interval={3200}
+                    showDots={(community?.logo_urls?.length || 0) > 1}
+                    fallback={<span className="text-5xl">{franchise.emoji}</span>}
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-2xl flex items-center justify-center text-5xl">{franchise.emoji}</div>
+                )}
               </div>
               {canManage && (
                 <button onClick={() => setShowEditProfile(true)}
@@ -258,18 +277,25 @@ export default function CommunityLandingPage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Logo</label>
-                  <div className="flex gap-3 items-center">
-                    {editLogoUrl ? <img src={editLogoUrl} className="w-14 h-14 rounded-xl object-cover border border-gray-700" alt="" /> : <div className="w-14 h-14 rounded-xl bg-gray-800 flex items-center justify-center text-2xl">{franchise.emoji}</div>}
-                    <div className="flex-1 space-y-1.5">
+                  <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Logo Gallery <span className="text-gray-600">(up to 6 — auto-slide)</span></label>
+                  {/* Gallery thumbnails */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {editLogoUrls.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img src={url} className={`w-12 h-12 rounded-xl object-cover border-2 transition-all ${url === editLogoUrl ? "border-purple-500" : "border-gray-700"}`} alt="" />
+                        <button onClick={() => { setEditLogoUrls(prev => prev.filter((_, idx) => idx !== i)); if (editLogoUrl === url) setEditLogoUrl(editLogoUrls.find((u, idx) => idx !== i) || ""); }}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                        {url !== editLogoUrl && <button onClick={() => setEditLogoUrl(url)} className="absolute inset-0 rounded-xl bg-black/50 text-white text-[8px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">Primary</button>}
+                      </div>
+                    ))}
+                    {editLogoUrls.length < 6 && (
                       <button onClick={() => logoRef.current?.click()}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-purple-700/60 bg-purple-900/20 text-purple-300 text-xs font-bold hover:bg-purple-900/40 transition-all">
-                        <Upload className="w-3.5 h-3.5" /> {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                        className="w-12 h-12 rounded-xl border-2 border-dashed border-purple-700/60 bg-purple-900/20 text-purple-300 text-xs font-bold flex items-center justify-center hover:bg-purple-900/40 transition-all">
+                        {uploadingLogo ? "…" : <Upload className="w-4 h-4" />}
                       </button>
-                      <input value={editLogoUrl} onChange={e => setEditLogoUrl(e.target.value)} placeholder="or paste URL" className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500" />
-                    </div>
-                    <input ref={logoRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                    )}
                   </div>
+                  <input ref={logoRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                 </div>
                 <div>
                   <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Cover Photo</label>
@@ -365,6 +391,7 @@ export default function CommunityLandingPage() {
                     profile={profile}
                     isTier1={isTier1}
                     canManage={canManage}
+                    canDelete={canDelete}
                     accentColor={franchise.accent}
                     onFlag={async (p) => {
                       await base44.entities.CommunityPost.update(p.id, { status: "pending_review" });

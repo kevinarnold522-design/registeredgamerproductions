@@ -98,13 +98,23 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
       )}
 
       <div className="relative p-4 flex gap-3 items-start">
-        {/* Logo */}
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden"
-          style={{ background: `${franchise.accent}22`, border: `1px solid ${franchise.accent}55` }}>
-          {logoSrc
-            ? <img src={logoSrc} className="w-full h-full object-cover" alt="" />
-            : <span>{franchise.emoji}</span>
-          }
+        {/* Logo — multi-image slide */}
+        <div className="w-14 h-14 rounded-xl flex-shrink-0" style={{ border: `1px solid ${franchise.accent}55` }}>
+          {(community?.logo_urls?.length > 0 || logoSrc) ? (
+            <MultiAvatarDisplay
+              images={community?.logo_urls?.length > 0 ? community.logo_urls : [logoSrc]}
+              size={56}
+              rounded="rounded-xl"
+              interval={3500}
+              showDots={(community?.logo_urls?.length || 0) > 1}
+              fallback={<span className="text-3xl">{franchise.emoji}</span>}
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl"
+              style={{ background: `${franchise.accent}22` }}>
+              {franchise.emoji}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">

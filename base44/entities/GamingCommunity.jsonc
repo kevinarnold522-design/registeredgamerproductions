@@ -14,6 +14,14 @@
     "logo_url": {
       "type": "string"
     },
+    "logo_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple logos \u2014 auto-slide on card",
+      "default": []
+    },
     "cover_url": {
       "type": "string"
     },
