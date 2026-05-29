@@ -113,7 +113,7 @@ function CommentsSection({ post, user, isTier1 }) {
   );
 }
 
-export default function CommunityPostCard({ post, user, profile, isTier1, canManage, onFlag, onRemove, accentColor }) {
+export default function CommunityPostCard({ post, user, profile, isTier1, canManage, canDelete, onFlag, onRemove, accentColor }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
   const [userRating, setUserRating] = useState(0);
@@ -229,17 +229,19 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
             <StarRating postId={post.id} userEmail={user.email} initialRating={userRating} />
           )}
 
-          {/* Mod actions */}
-          {isMod && (
+          {/* Mod actions — flag for all mods; delete only for admin/account_mod */}
+          {canManage && (
             <div className="ml-auto flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => onFlag(post)} title="Flag for review"
                 className="w-6 h-6 rounded-lg bg-orange-900/40 hover:bg-orange-900/70 flex items-center justify-center">
                 <Flag className="w-3 h-3 text-orange-400" />
               </button>
-              <button onClick={() => onRemove(post)} title="Remove post"
-                className="w-6 h-6 rounded-lg bg-red-900/40 hover:bg-red-900/70 flex items-center justify-center">
-                <Trash2 className="w-3 h-3 text-red-400" />
-              </button>
+              {canDelete && (
+                <button onClick={() => onRemove(post)} title="Remove post"
+                  className="w-6 h-6 rounded-lg bg-red-900/40 hover:bg-red-900/70 flex items-center justify-center">
+                  <Trash2 className="w-3 h-3 text-red-400" />
+                </button>
+              )}
             </div>
           )}
         </div>

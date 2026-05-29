@@ -362,7 +362,7 @@ POST 3:
 
       {/* Card Designer Modal */}
       <AnimatePresence>
-        {cardPost && <SocialCardCanvas post={cardPost} onClose={() => setCardPost(null)} />}
+        {cardPost && <SocialCardCanvas post={cardPost} onClose={() => setCardPost(null)} userEmail={user?.email} />}
       </AnimatePresence>
     </div>
   );

@@ -5,8 +5,9 @@ import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { useAuth } from "@/lib/AuthContext";
-import { isAdmin } from "@/lib/constants";
+import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
 import { TOP_FRANCHISES } from "@/lib/franchises";
+import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 
 function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin, community, onJoin, onClick, onSaveProfile }) {
   const cardRef = useRef(null);
@@ -117,7 +118,12 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
             </div>
           </div>
 
-          {isModerator && (
+          {isModerator && community?.moderator_type === "account_moderator" && (
+            <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400 font-bold mt-1">
+              🛡️ Account Mod
+            </span>
+          )}
+          {isModerator && community?.moderator_type !== "account_moderator" && (
             <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 font-bold mt-1">
               🛡️ Captain
             </span>

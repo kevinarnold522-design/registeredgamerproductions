@@ -26,6 +26,13 @@
     "avatar_url": {
       "type": "string"
     },
+    "avatar_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple profile pictures \u2014 auto-transition on public profile"
+    },
     "banner_url": {
       "type": "string"
     },
@@ -51,6 +58,16 @@
       "items": {
         "type": "string"
       }
+    },
+    "moderator_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "account_moderator",
+        "group_moderator"
+      ],
+      "default": "none",
+      "description": "account_moderator = platform-wide no-ads near-admin. group_moderator = captain of their own gaming community group."
     },
     "followers_count": {
       "type": "number",
@@ -213,16 +230,18 @@
       "type": "object"
     },
     "kofi_url": {
-      "type": "string",
-      "description": "Ko-fi page URL e.g. https://ko-fi.com/username"
+      "type": "string"
     },
     "buymeacoffee_url": {
-      "type": "string",
-      "description": "Buy Me a Coffee URL e.g. https://buymeacoffee.com/username"
+      "type": "string"
     },
     "patreon_url": {
-      "type": "string",
-      "description": "Patreon page URL e.g. https://patreon.com/username"
+      "type": "string"
+    },
+    "pending_delete_request": {
+      "type": "boolean",
+      "default": false,
+      "description": "Account moderator requested deletion \u2014 awaiting admin final approval"
     }
   },
   "required": [

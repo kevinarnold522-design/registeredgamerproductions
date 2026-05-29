@@ -10,6 +10,7 @@ import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
 import HonorBadge from "@/components/shared/HonorBadge";
 import LiveStreamStudio from "@/components/streaming/LiveStreamStudio";
 import AvatarEditor from "@/components/profile/AvatarEditor";
+import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
 import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
 
@@ -104,9 +105,13 @@ export default function Profile() {
               {isOwnProfile && profile ? (
                 <AvatarEditor profile={profile} onUpdated={setProfile} />
               ) : (
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-4xl overflow-hidden">
-                  {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
-                </div>
+                <MultiAvatarDisplay
+                  images={profile?.avatar_urls?.length > 0 ? profile.avatar_urls : profile?.avatar_url ? [profile.avatar_url] : []}
+                  size={80}
+                  rounded="rounded-2xl"
+                  showDots={(profile?.avatar_urls?.length || 0) > 1}
+                  fallback={<span className="text-4xl">🎮</span>}
+                />
               )}
             </div>
             <div className="flex-1">

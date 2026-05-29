@@ -6,6 +6,32 @@ export const ADMIN_EMAILS = [
 
 export const isAdmin = (email) => ADMIN_EMAILS.includes(email?.toLowerCase());
 
+// Two moderator types:
+// "account_moderator" — platform-wide, no ads, near-admin power, CAN delete content but admin must approve
+// "group_moderator"   — captain of their own gaming community group only, Captain badge, NO delete power
+export const MODERATOR_TYPES = {
+  account_moderator: {
+    label: "Account Moderator",
+    badge: "🛡️ Account Mod",
+    color: "text-blue-400",
+    bg: "bg-blue-900/20 border-blue-700/40",
+    canDelete: true,        // can REQUEST deletion (admin approves)
+    noAds: true,
+    platformWide: true,
+    desc: "Platform-wide moderator. No ads. Can manage content, but deletions require admin final approval.",
+  },
+  group_moderator: {
+    label: "Group Moderator",
+    badge: "🛡️ Captain",
+    color: "text-yellow-400",
+    bg: "bg-yellow-900/20 border-yellow-700/40",
+    canDelete: false,       // NO delete power
+    noAds: false,
+    platformWide: false,
+    desc: "Captain of their own gaming community group only. Max 3 groups.",
+  },
+};
+
 export const CATEGORIES = [
   {
     id: "games",

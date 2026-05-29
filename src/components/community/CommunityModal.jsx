@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Users, Shield, Plus, Camera, Check, Lock, LayoutGrid, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { isAdmin } from "@/lib/constants";
+import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
+import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import CommunityPostCard from "./CommunityPostCard";
 import Tier1Modal from "./Tier1Modal";
 import ModeratorRequestModal from "./ModeratorRequestModal";
@@ -47,7 +48,13 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
   const [uploadingCover, setUploadingCover] = useState(false);
 
   const admin = isAdmin(user?.email);
-  const canManage = admin || isModerator;
+  // Account Moderator = platform-wide, near-admin, no ads — can manage but deletion needs admin approval
+  const isAccountMod = profile?.moderator_type === "account_moderator";
+  // Group Moderator = captain of their own group, Captain badge, NO delete
+  const isGroupMod = isModerator && !isAccountMod;
+  const canManage = admin || isAccountMod || isModerator;
+  // Only admin can directly delete; account_mod can request deletion
+  const canDelete = admin || isAccountMod;
 
   useEffect(() => { loadData(); }, [franchise.id]);
 
@@ -281,7 +288,10 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                 <p className="text-white/50 text-xs flex items-center gap-2 mt-1 flex-wrap">
                   <Users className="w-3 h-3" /> {memberCount.toLocaleString()} members
                   <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold" style={{ background: `${franchise.accent}22`, color: franchise.accent }}>{franchise.genre}</span>
-                  {isModerator && !admin && <CaptainBadge />}
+                  {isAccountMod && !admin && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-blue-500/20 border border-blue-500/50 text-blue-400">🛡️ Account Mod</span>
+                  )}
+                  {isGroupMod && !admin && <CaptainBadge />}
                   {admin && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-yellow-500/20 border border-yellow-500/50 text-yellow-400">👑 Admin</span>}
                   {isTier1 && !admin && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-purple-500/20 border border-purple-500/50 text-purple-300">✓ Verified Partner</span>}
                 </p>
@@ -430,6 +440,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                         profile={profile}
                         isTier1={isTier1}
                         canManage={canManage}
+                        canDelete={canDelete}
                         accentColor={franchise.accent}
                         onFlag={handleFlagPost}
                         onRemove={handleRemovePost}
@@ -535,7 +546,9 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
           {activeTab === "moderators" && canManage && (
             <div className="overflow-y-auto flex-1 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-bold text-sm">Group Moderators (Captains)</h3>
+                <h3 className="text-white font-bold text-sm">
+                {isAccountMod && !admin ? "Account Moderators" : "Group Moderators (Captains)"}
+              </h3>
                 {admin && (
                   <button onClick={() => setShowAddMod(!showAddMod)}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-green-300 bg-green-900/30 border border-green-700/40 hover:bg-green-900/50">
