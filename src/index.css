@@ -100,71 +100,21 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Global hover glow for all interactive elements */
+/* Subtle lift on interactive elements — no rainbow glow */
 .radiant-glow {
   position: relative;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
-.radiant-glow::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 140%;
-  height: 140%;
-  transform: translate(-50%, -50%);
-  background: conic-gradient(
-    from 0deg,
-    #ff00cc, #ff6600, #ffcc00, #00ff99,
-    #00ccff, #3333ff, #cc00ff, #ff00cc
-  );
-  border-radius: inherit;
-  filter: blur(18px);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  z-index: -1;
-  pointer-events: none;
-}
-.radiant-glow:hover::before {
-  opacity: 0.65;
-}
 .radiant-glow:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.2);
 }
 
-/* Auto-apply radiant glow to all buttons, links, cards, icons (excluding category cards) */
 button:not(.no-glow):not([class*="category-card"]),
 a:not(.no-glow),
 [role="button"]:not(.no-glow) {
   position: relative;
   transition: transform 0.2s ease, box-shadow 0.3s ease, color 0.2s ease;
-}
-button:not(.no-glow)::before,
-a:not(.no-glow)::before,
-[role="button"]:not(.no-glow)::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 130%;
-  height: 130%;
-  transform: translate(-50%, -50%);
-  background: conic-gradient(
-    from 0deg,
-    #ff00cc44, #3333ff44, #00ffcc44, #ffcc0044, #ff00cc44
-  );
-  border-radius: inherit;
-  filter: blur(14px);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
-  pointer-events: none;
-}
-button:not(.no-glow):hover::before,
-a:not(.no-glow):hover::before,
-[role="button"]:not(.no-glow):hover::before {
-  opacity: 0.5;
 }
 button:not(.no-glow):hover,
 [role="button"]:not(.no-glow):hover {
@@ -185,22 +135,10 @@ button:not(.no-glow):hover,
   transform: translateY(-2px) scale(1.02);
 }
 
-/* Verified badge rotating glow ring */
-@keyframes verified-ring-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.verified-glow-ring {
-  animation: verified-ring-spin 3s linear infinite;
-}
-
-/* Prevent glow on category section cards */
-.category-card::before,
-.no-glow::before {
-  display: none !important;
-}
+/* no-glow utility — opt out of lift effect */
 .no-glow:hover {
   transform: none !important;
+  box-shadow: none !important;
 }
 
 

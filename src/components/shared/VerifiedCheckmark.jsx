@@ -1,18 +1,17 @@
-import React, { useId, useMemo } from "react";
+import React, { useId, useMemo, useState } from "react";
 
 /**
- * Meta-style Rosette/Starburst Verified Badge
- * Features: multi-point starburst shape, rotating glow ring, purple gradient fill, bold white checkmark
- * size: "sm" | "md" | "lg"
+ * Verified Badge — purple starburst with a single radiant dot that slowly
+ * orbits the badge only while the user hovers over it.
  */
 export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true, label = "Verified Partner" }) {
   const dims = { sm: 20, md: 26, lg: 36 };
   const px = dims[size] || 20;
-  const glowSize = px * 3.2;
   const rawId = useId();
   const uid = useMemo(() => rawId.replace(/:/g, ""), [rawId]);
+  const [hovered, setHovered] = useState(false);
 
-  // Starburst polygon points (16-point rosette)
+  // 16-point starburst path
   const generateStarburst = (cx, cy, outerR, innerR, points) => {
     let path = "";
     for (let i = 0; i < points * 2; i++) {
@@ -24,29 +23,70 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
     }
     return path + "Z";
   };
-
   const starPath = generateStarburst(12, 12, 11.5, 8.5, 16);
 
+  // Dot orbit radius and size
+  const orbitR = px * 0.78;
+  const dotSize = Math.max(3, px * 0.22);
+
   return (
-    <span className="relative inline-flex items-center gap-1 group" style={{ verticalAlign: "middle" }}>
-      {/* Single radiant rotating glow — one sweeping arc of light around the badge */}
-      <span
-        style={{
-          position: "absolute",
-          width: glowSize,
-          height: glowSize,
-          borderRadius: "50%",
-          top: "50%",
-          left: px / 2,
-          transform: "translate(-50%, -50%)",
-          pointerEvents: "none",
-          zIndex: 0,
-          background: "conic-gradient(from 0deg, transparent 0deg, transparent 200deg, #a855f7ff 260deg, #ec4899ff 300deg, #00ccffcc 320deg, transparent 360deg)",
-          animation: "verified-ring-spin 2s linear infinite",
-          filter: `blur(${px * 0.28}px)`,
-          opacity: 1,
-        }}
-      />
+    <span
+      className="relative inline-flex items-center gap-1 group"
+      style={{ verticalAlign: "middle" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Orbiting dot — only visible on hover, CSS keyframe drives it */}
+      {hovered && (
+        <span
+          style={{
+            position: "absolute",
+            width: orbitR * 2 + dotSize,
+            height: orbitR * 2 + dotSize,
+            top: "50%",
+            left: px / 2,
+            transform: "translate(-50%, -50%)",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        >
+          {/* The dot itself, positioned at the top of its orbit container and animated by CSS */}
+          <span
+            style={{
+              position: "absolute",
+              width: dotSize,
+              height: dotSize,
+              borderRadius: "50%",
+              background: "radial-gradient(circle, #ffffff 0%, #c084fc 45%, #7c3aed 100%)",
+              boxShadow: `0 0 ${dotSize * 2}px ${dotSize}px #a855f7aa`,
+              top: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              animation: "dot-orbit 2.4s linear infinite",
+              transformOrigin: `0 ${orbitR + dotSize / 2}px`,
+            }}
+          />
+        </span>
+      )}
+
+      {/* Soft static glow behind badge on hover */}
+      {hovered && (
+        <span
+          style={{
+            position: "absolute",
+            width: px * 2.4,
+            height: px * 2.4,
+            borderRadius: "50%",
+            top: "50%",
+            left: px / 2,
+            transform: "translate(-50%, -50%)",
+            background: "radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)",
+            pointerEvents: "none",
+            zIndex: 0,
+            filter: `blur(${px * 0.3}px)`,
+          }}
+        />
+      )}
 
       <svg
         width={px}
@@ -67,17 +107,12 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
             <stop offset="100%" stopColor="rgba(255,255,255,0)" />
           </radialGradient>
         </defs>
-
-        {/* Starburst / Rosette shape */}
         <path
           d={starPath}
           fill={`url(#starGrad-${uid})`}
-          filter="drop-shadow(0 0 4px rgba(168,85,247,0.9)) drop-shadow(0 0 8px rgba(236,72,153,0.5))"
+          filter="drop-shadow(0 0 3px rgba(168,85,247,0.8)) drop-shadow(0 0 6px rgba(236,72,153,0.4))"
         />
-        {/* Shine overlay */}
         <path d={starPath} fill={`url(#shineGrad-${uid})`} />
-
-        {/* Bold white checkmark */}
         <path
           d="M7 12.5L10.5 16L17 8.5"
           stroke="white"
@@ -102,6 +137,14 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
           ✓ {label}
         </span>
       )}
+
+      {/* Keyframe injected inline for the orbiting dot */}
+      <style>{`
+        @keyframes dot-orbit {
+          0%   { transform: translateX(-50%) rotate(0deg)   translateY(-${orbitR}px); }
+          100% { transform: translateX(-50%) rotate(360deg) translateY(-${orbitR}px); }
+        }
+      `}</style>
     </span>
   );
 }

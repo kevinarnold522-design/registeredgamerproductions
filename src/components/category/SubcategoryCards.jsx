@@ -127,7 +127,7 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
           <button onClick={() => logoRef.current?.click()} className="px-2 py-1 rounded-lg bg-purple-700 text-white text-[10px]">
             {uploading === "logo" ? "..." : <Upload className="w-3 h-3" />}
           </button>
-          <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={e => handleUpload(e.target.files[0], "logo")} />
+          <input ref={logoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handleUpload(e.target.files[0], "logo")} />
         </div>
         {logoUrl && <img src={logoUrl} className="mt-1 w-10 h-10 rounded-lg object-cover" alt="" />}
       </div>
@@ -140,7 +140,7 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
           <button onClick={() => coverRef.current?.click()} className="px-2 py-1 rounded-lg bg-blue-700 text-white text-[10px]">
             {uploading === "cover" ? "..." : <Upload className="w-3 h-3" />}
           </button>
-          <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={e => handleUpload(e.target.files[0], "cover")} />
+          <input ref={coverRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handleUpload(e.target.files[0], "cover")} />
         </div>
         {coverUrl && <img src={coverUrl} className="mt-1 w-full h-12 rounded-lg object-cover opacity-70" alt="" />}
       </div>
@@ -157,7 +157,7 @@ function SubcardItem({ item, cat, index, canAdmin, onItemUpdate, onDelete }) {
   // Load saved custom assets from localStorage
   const saved = (() => { try { return JSON.parse(localStorage.getItem(`subcat_${cat}_${item.id}`) || "{}"); } catch { return {}; } })();
   const displayItem = { ...item, customLogo: saved.logo || item.customLogo, customCover: saved.cover || item.customCover };
-  const href = cat === "tournaments" ? `/tournaments` : `/category?cat=${cat}&sub=${encodeURIComponent(item.id)}`;
+  const href = cat === "tournaments" ? `/tournaments` : `/sub-landing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(item.id)}`;
 
   return (
     <motion.div

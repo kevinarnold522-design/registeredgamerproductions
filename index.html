@@ -20,6 +20,7 @@
     <meta name="twitter:description" content="The #1 Gaming Hub Community — Stream · Mods · Social · Marketplace" />
     <!-- Canonical -->
     <link rel="canonical" href="https://gamerproductions.vercel.app" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -56,6 +57,14 @@
 
         // Ad scripts — each is loaded ONE AT A TIME in rotation
         var AD_SCRIPTS = [
+          function() {
+            var s = document.createElement('script');
+            s.src = 'https://elementarywhole.com/bf3cVR0.PL3sp_vpbTm_VfJxZADZ0d3VMXDmg/1uNST/QR5YLVTvcEw_OrDxUt1/NxTsMA';
+            s.async = true;
+            s.referrerPolicy = 'no-referrer-when-downgrade';
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
           function() {
             var s = document.createElement('script');
             s.src = 'https://elementarywhole.com/bw3JVl0.Po3/pVvUb_m/VCJ/Z_D/0/3wMoDigb1RNzTCQP5VLPTYcqwzOLDKUl1lNLTQMG';
