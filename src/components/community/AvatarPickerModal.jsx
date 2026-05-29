@@ -34,14 +34,16 @@ export const FREE_AVATARS = [
 
 // Premium avatars — locked behind paywall / reward tiers
 export const PREMIUM_AVATARS = [
-  { id: "messi", emoji: "⚽", label: "Messi 3D", category: "Footballers", price: 2, desc: "Lionel Messi animated 3D head" },
-  { id: "ronaldo", emoji: "🦁", label: "Ronaldo 3D", category: "Footballers", price: 2, desc: "Cristiano Ronaldo animated 3D head" },
-  { id: "neymar", emoji: "✨", label: "Neymar 3D", category: "Footballers", price: 2, desc: "Neymar Jr animated 3D head" },
-  { id: "mbappe", emoji: "⚡", label: "Mbappé 3D", category: "Footballers", price: 2, desc: "Kylian Mbappé animated 3D head" },
-  { id: "lebron", emoji: "🏀", label: "LeBron 3D", category: "Athletes", price: 2, desc: "LeBron James animated 3D head" },
-  { id: "curry", emoji: "🎯", label: "Curry 3D", category: "Athletes", price: 2, desc: "Stephen Curry animated 3D head" },
-  { id: "mayweather", emoji: "🥊", label: "Mayweather 3D", category: "Athletes", price: 2, desc: "Floyd Mayweather animated 3D head" },
-  { id: "usain-bolt", emoji: "⚡", label: "Bolt 3D", category: "Athletes", price: 2, desc: "Usain Bolt animated 3D head" },
+  { id: "messi", emoji: "⚽", label: "Messi 3D", category: "Footballers", price: 2, desc: "Lionel Messi • CF/SS • Argentina 🇦🇷", role: "CF / SS", country: "🇦🇷" },
+  { id: "ronaldo", emoji: "🦁", label: "Ronaldo 3D", category: "Footballers", price: 2, desc: "Cristiano Ronaldo • ST • Portugal 🇵🇹", role: "ST", country: "🇵🇹" },
+  { id: "neymar", emoji: "✨", label: "Neymar 3D", category: "Footballers", price: 2, desc: "Neymar Jr • LW • Brazil 🇧🇷", role: "LW", country: "🇧🇷" },
+  { id: "mbappe", emoji: "⚡", label: "Mbappé 3D", category: "Footballers", price: 2, desc: "Kylian Mbappé • ST/LW • France 🇫🇷", role: "ST / LW", country: "🇫🇷" },
+  { id: "haaland", emoji: "🔥", label: "Haaland 3D", category: "Footballers", price: 2, desc: "Erling Haaland • ST • Norway 🇳🇴", role: "ST", country: "🇳🇴" },
+  { id: "vinicius", emoji: "🌟", label: "Vinicius 3D", category: "Footballers", price: 2, desc: "Vinicius Jr • LW • Brazil 🇧🇷", role: "LW", country: "🇧🇷" },
+  { id: "lebron", emoji: "🏀", label: "LeBron 3D", category: "Athletes", price: 2, desc: "LeBron James • SF • USA 🇺🇸", role: "Small Forward", country: "🇺🇸" },
+  { id: "curry", emoji: "🎯", label: "Curry 3D", category: "Athletes", price: 2, desc: "Stephen Curry • PG • USA 🇺🇸", role: "Point Guard", country: "🇺🇸" },
+  { id: "mayweather", emoji: "🥊", label: "Mayweather 3D", category: "Athletes", price: 2, desc: "Floyd Mayweather • Welterweight • USA 🇺🇸", role: "Boxing", country: "🇺🇸" },
+  { id: "usain-bolt", emoji: "⚡", label: "Bolt 3D", category: "Athletes", price: 2, desc: "Usain Bolt • 100m/200m • Jamaica 🇯🇲", role: "Sprinter", country: "🇯🇲" },
 ];
 
 const ANIM_CLASSES = {
@@ -66,11 +68,19 @@ export default function AvatarPickerModal({ user, profile, onClose, onSelect }) 
   const [saving, setSaving] = useState(false);
   const fileRef = React.useRef(null);
 
+  // Admin email check (inline to avoid import issues)
+  const isAdminUser = user?.role === "admin";
+
   // Check which premium avatars user has unlocked (stored on profile)
   useEffect(() => {
     const unlocked = profile?.gaming_accounts?.unlocked_avatars || [];
-    setUnlockedIds(new Set(unlocked));
-  }, [profile]);
+    // Admin gets all premium avatars free
+    if (isAdminUser) {
+      setUnlockedIds(new Set(PREMIUM_AVATARS.map(a => a.id)));
+    } else {
+      setUnlockedIds(new Set(unlocked));
+    }
+  }, [profile, isAdminUser]);
 
   const filteredFree = selectedCategory === "All"
     ? FREE_AVATARS
@@ -197,6 +207,12 @@ export default function AvatarPickerModal({ user, profile, onClose, onSelect }) 
               <p className="text-gray-600 text-xs mb-3">
                 Exclusive 3D animated footballer & athlete heads. Available via marketplace or premium reward tiers.
               </p>
+              {isAdminUser && (
+                <div className="mb-3 px-3 py-2 rounded-xl bg-yellow-900/20 border border-yellow-600/30 flex items-center gap-2">
+                  <span className="text-lg">⚡</span>
+                  <p className="text-yellow-300 text-[10px] font-bold">Admin Access — All Premium 3D avatars are FREE for you!</p>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 {(filteredPremium.length ? filteredPremium : PREMIUM_AVATARS).map(avatar => {
                   const isUnlocked = unlockedIds.has(avatar.id);
@@ -218,14 +234,19 @@ export default function AvatarPickerModal({ user, profile, onClose, onSelect }) 
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white text-xs font-bold">{avatar.label}</p>
-                        <p className="text-gray-500 text-[10px]">{avatar.desc}</p>
-                        {!isUnlocked && (
-                          <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-full bg-yellow-900/40 border border-yellow-600/40 text-yellow-400 text-[9px] font-black">
-                            💰 ${avatar.price} or Premium Tier
+                        <p className="text-gray-500 text-[10px] leading-tight">{avatar.desc}</p>
+                        {avatar.role && (
+                          <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-full bg-blue-900/40 border border-blue-600/30 text-blue-300 text-[8px] font-bold">
+                            {avatar.role}
+                          </span>
+                        )}
+                        {!isUnlocked && !isAdminUser && (
+                          <span className="inline-block mt-0.5 ml-1 px-1.5 py-0.5 rounded-full bg-yellow-900/40 border border-yellow-600/40 text-yellow-400 text-[9px] font-black">
+                            💰 ${avatar.price}
                           </span>
                         )}
                         {isUnlocked && (
-                          <span className="text-green-400 text-[9px] font-black">✓ Unlocked</span>
+                          <span className="text-green-400 text-[9px] font-black block mt-0.5">✓ {isAdminUser ? "Admin Free" : "Unlocked"}</span>
                         )}
                       </div>
                       {isSelected && isUnlocked && (

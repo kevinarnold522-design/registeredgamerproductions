@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckCircle, Unlink, Lock, Eye, EyeOff, Info, CreditCard } from "lucide-react";
+import { CheckCircle, Unlink, Lock, Eye, EyeOff, Info, CreditCard, Pencil } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const CURRENCIES = ["usd", "eur", "gbp", "php", "aud", "cad", "sgd", "myr", "inr"];
@@ -177,14 +177,14 @@ export default function StripeConnect({ profile, onProfileUpdate, forceEdit }) {
 
       {/* Action buttons */}
       {isEditing ? (
-        <div className="flex gap-2 pt-1">
+        <div className="flex gap-2 pt-1 flex-wrap">
           <button
             onClick={handleConnect}
             disabled={saving || !form.stripe_publishable_key.trim() || !form.stripe_secret_key.trim()}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 text-white text-sm font-bold hover:bg-purple-700 transition-colors disabled:opacity-40"
           >
             <CheckCircle className="w-4 h-4" />
-            {saving ? "Connecting..." : isConnected ? "Save Changes" : "Connect Stripe"}
+            {saving ? "Saving..." : isConnected ? "✓ Done" : "Connect Stripe"}
           </button>
           {isConnected && (
             <button onClick={() => { setForm({ stripe_account_id: profile?.stripe_account_id || "", stripe_publishable_key: profile?.stripe_publishable_key || "", stripe_secret_key: profile?.stripe_secret_key || "", stripe_webhook_secret: profile?.stripe_webhook_secret || "", stripe_business_name: profile?.stripe_business_name || "", stripe_country: profile?.stripe_country || "", stripe_currency: profile?.stripe_currency || "usd" }); setIsEditing(false); }}
@@ -194,10 +194,11 @@ export default function StripeConnect({ profile, onProfileUpdate, forceEdit }) {
           )}
         </div>
       ) : (
-        <div className="flex items-center gap-2 pt-1">
-          <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-400 text-xs font-bold">
-            <Lock className="w-3.5 h-3.5" /> Details locked
-          </div>
+        <div className="flex items-center gap-2 pt-1 flex-wrap">
+          <button onClick={() => setIsEditing(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-900/20 border border-purple-700/40 text-purple-300 text-sm font-bold hover:bg-purple-900/40 transition-colors">
+            <Lock className="w-4 h-4" /> Edit Stripe
+          </button>
           {!confirmUnlink ? (
             <button onClick={() => setConfirmUnlink(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-900/20 border border-red-700/40 text-red-400 text-sm font-bold hover:bg-red-900/30 transition-colors">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -9,7 +9,110 @@ import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 
-function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin, community, onJoin, onClick, onSaveProfile }) {
+// Newsfeed for a community franchise
+function CommunityNewsfeed({ franchise, community, user, profile }) {
+  const [posts, setPosts] = useState([]);
+  const [newPost, setNewPost] = useState("");
+  const [posting, setPosting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const all = await base44.entities.CommunityPost.filter({ franchise_id: franchise.id });
+        setPosts(all.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50));
+      } catch { setPosts([]); }
+      setLoading(false);
+    };
+    load();
+  }, [franchise.id]);
+
+  const handlePost = async () => {
+    if (!newPost.trim() || !user) return;
+    setPosting(true);
+    const post = await base44.entities.CommunityPost.create({
+      community_id: community?.id || franchise.id,
+      franchise_id: franchise.id,
+      author_email: user.email,
+      author_username: profile?.username || user.full_name || "Gamer",
+      author_avatar: profile?.avatar_url || "",
+      content: newPost,
+      likes: 0,
+      status: "active",
+    });
+    setPosts(prev => [post, ...prev]);
+    setNewPost("");
+    setPosting(false);
+  };
+
+  return (
+    <motion.div key={franchise.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+      className="h-[800px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex flex-col">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0 flex items-center justify-between"
+        style={{ background: `linear-gradient(135deg, ${franchise.color}cc, ${franchise.color}88)` }}>
+        <div>
+          <p className="text-white text-sm font-black">{franchise.name} Feed</p>
+          <p className="text-white/40 text-[10px]">Community posts & updates</p>
+        </div>
+        <a href={`/community/${franchise.id}`}
+          className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+          style={{ background: `${franchise.accent}30`, color: franchise.accent, border: `1px solid ${franchise.accent}44` }}>
+          Full Page →
+        </a>
+      </div>
+      {/* Post input */}
+      {user ? (
+        <div className="px-4 py-3 border-b border-gray-800 flex gap-2 flex-shrink-0">
+          <input value={newPost} onChange={e => setNewPost(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
+            placeholder={`Post in ${franchise.name}...`}
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+          <button onClick={handlePost} disabled={!newPost.trim() || posting}
+            className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+            style={{ background: franchise.accent }}>
+            <Send className="w-3.5 h-3.5 text-white" />
+          </button>
+        </div>
+      ) : (
+        <div className="px-4 py-2 border-b border-gray-800 flex-shrink-0 text-center">
+          <button onClick={() => base44.auth.redirectToLogin()} className="text-xs text-purple-400 font-bold hover:underline">
+            Sign in to post →
+          </button>
+        </div>
+      )}
+      {/* Posts */}
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="p-6 text-center text-gray-600 text-sm">Loading...</div>
+        ) : posts.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-3xl mb-2">{franchise.emoji}</p>
+            <p className="text-gray-600 text-sm">No posts yet. Be the first!</p>
+          </div>
+        ) : posts.map(post => (
+          <div key={post.id} className="px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
+                {post.author_avatar
+                  ? <img src={post.author_avatar} className="w-full h-full object-cover" alt="" />
+                  : <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{(post.author_username || "G")[0]}</div>}
+              </div>
+              <p className="text-gray-400 text-[10px] font-bold">{post.author_username}</p>
+              <p className="text-gray-700 text-[9px]">{new Date(post.created_date).toLocaleDateString()}</p>
+            </div>
+            <p className="text-gray-200 text-sm leading-relaxed">{post.content}</p>
+            {post.image_urls?.length > 0 && (
+              <img src={post.image_urls[0]} className="mt-2 rounded-xl max-h-40 object-cover w-full" alt="" />
+            )}
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin, community, onJoin, onClick, onSaveProfile, isActive, onSelect }) {
   const cardRef = useRef(null);
   const [editMode, setEditMode] = useState(false);
   const [editLogo, setEditLogo] = useState(community?.logo_url || "");
@@ -42,13 +145,13 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
   return (
     <motion.div
       ref={cardRef}
-      onClick={editMode ? undefined : onClick}
+      onClick={editMode ? undefined : () => onSelect ? onSelect(franchise) : onClick?.()}
       className="relative cursor-pointer rounded-2xl overflow-hidden group"
       style={{
         background: `linear-gradient(135deg, ${franchise.color}, ${franchise.color}dd)`,
-        border: `2px solid ${franchise.accent}44`,
-        boxShadow: `0 0 16px ${franchise.accent}18`,
-        minHeight: 160,
+        border: isActive ? `2px solid ${franchise.accent}` : `2px solid ${franchise.accent}44`,
+        boxShadow: isActive ? `0 0 24px ${franchise.accent}66` : `0 0 16px ${franchise.accent}18`,
+        minHeight: 120,
       }}
       whileHover={{ scale: 1.02, boxShadow: `0 0 32px ${franchise.accent}55` }}
       initial={{ opacity: 0, y: 20 }}
@@ -147,16 +250,21 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
         </div>
       </div>
 
-      <div className="relative px-4 pb-4">
+      <div className="relative px-3 pb-3 flex gap-1.5">
         <button
           onClick={e => { e.stopPropagation(); onJoin(); }}
-          className="w-full py-1.5 rounded-xl text-[10px] font-black transition-all"
+          className="flex-1 py-1.5 rounded-xl text-[10px] font-black transition-all"
           style={isJoined
             ? { background: `${franchise.accent}22`, color: franchise.accent, border: `1px solid ${franchise.accent}55` }
             : { background: franchise.accent, color: "#fff" }
           }>
           {isJoined ? "✓ Joined" : "+ Join"}
         </button>
+        <a href={`/community/${franchise.id}`} onClick={e => e.stopPropagation()}
+          className="px-2 py-1.5 rounded-xl text-[9px] font-bold text-white/50 hover:text-white/80 transition-colors border border-white/10 hover:border-white/30">
+          →
+        </a>
+        {isActive && <span className="absolute -top-1 -right-1 text-[8px] bg-purple-600 text-white font-black px-1.5 py-0.5 rounded-full">OPEN</span>}
       </div>
     </motion.div>
   );
@@ -176,6 +284,7 @@ export default function GamingCommunity() {
   const [newCatEmoji, setNewCatEmoji] = useState("🎮");
   const [newCatGenre, setNewCatGenre] = useState("Gaming");
   const [extraFranchises, setExtraFranchises] = useState([]);
+  const [activeFranchise, setActiveFranchise] = useState(null);
   const admin = isAdmin(user?.email);
 
   useEffect(() => {
@@ -419,30 +528,58 @@ export default function GamingCommunity() {
           )}
         </AnimatePresence>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filtered.map((franchise) => (
-            <CommunityCard
-              key={franchise.id}
-              franchise={franchise}
-              memberCount={memberCounts[franchise.id] || 0}
-              isJoined={joinedIds.has(franchise.id)}
-              isModerator={isModerator(franchise.id)}
-              canAdmin={canAdminCard(franchise.id)}
-              community={communities[franchise.id] || null}
-              onJoin={() => handleJoinCard(franchise)}
-              onClick={() => handleCardClick(franchise)}
-              onSaveProfile={handleSaveProfile}
-            />
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-4xl mb-3">🎮</p>
-            <p className="text-gray-400 font-semibold">No communities found</p>
-            <p className="text-gray-600 text-sm mt-1">Try a different search or genre filter</p>
+        {/* Split layout: left card list + right newsfeed */}
+        <div className="flex gap-6">
+          {/* LEFT: scrollable community cards */}
+          <div className="w-64 flex-shrink-0 flex flex-col gap-3 max-h-[800px] overflow-y-auto pr-1">
+            {filtered.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-4xl mb-3">🎮</p>
+                <p className="text-gray-400 font-semibold">No communities found</p>
+              </div>
+            )}
+            {filtered.map((franchise) => (
+              <CommunityCard
+                key={franchise.id}
+                franchise={franchise}
+                memberCount={memberCounts[franchise.id] || 0}
+                isJoined={joinedIds.has(franchise.id)}
+                isModerator={isModerator(franchise.id)}
+                canAdmin={canAdminCard(franchise.id)}
+                community={communities[franchise.id] || null}
+                onJoin={() => handleJoinCard(franchise)}
+                onClick={() => handleCardClick(franchise)}
+                onSaveProfile={handleSaveProfile}
+                isActive={activeFranchise?.id === franchise.id}
+                onSelect={(f) => setActiveFranchise(a => a?.id === f.id ? null : f)}
+              />
+            ))}
           </div>
-        )}
+
+          {/* RIGHT: newsfeed panel */}
+          <div className="flex-1 min-w-0">
+            {activeFranchise ? (
+              <CommunityNewsfeed
+                franchise={activeFranchise}
+                community={communities[activeFranchise.id]}
+                user={user}
+                profile={profile}
+              />
+            ) : (
+              <div className="h-[800px] bg-gray-900/40 rounded-2xl border border-gray-800/50 border-dashed flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-5xl mb-3">👈</p>
+                  <p className="text-gray-500 text-sm font-semibold">Select a community</p>
+                  <p className="text-gray-600 text-xs mt-1">to open its newsfeed</p>
+                  <button onClick={() => { if (filtered[0]) window.location.href = `/community/${filtered[0].id}`; }}
+                    className="mt-4 px-4 py-2 rounded-xl text-xs font-bold text-purple-300 border border-purple-700/40 hover:bg-purple-900/20 transition-all">
+                    Or browse full community →
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
 

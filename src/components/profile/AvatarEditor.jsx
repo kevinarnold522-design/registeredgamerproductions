@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Camera, Trash2, Upload, Smile, Plus, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Camera, Trash2, Upload, Smile, Plus, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { AnimatePresence, motion } from "framer-motion";
 import AvatarPickerModal from "@/components/community/AvatarPickerModal";
@@ -85,12 +85,14 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
           <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
           <div className="absolute left-0 top-full mt-2 z-50 bg-gray-900 border border-gray-700 rounded-xl shadow-xl overflow-hidden w-56">
             <button onClick={() => { setShowMenu(false); setShowAvatarPicker(true); }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-white text-sm hover:bg-gray-800 transition-colors">
-              <Smile className="w-4 h-4 text-purple-400" /> 🎭 Animated Avatars
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-white text-sm hover:bg-gray-800 transition-colors bg-purple-950/30">
+              <span className="text-xl animate-bounce">🎭</span>
+              <span className="font-bold text-purple-300">Animated Faces</span>
+              <Sparkles className="w-3.5 h-3.5 text-yellow-400 animate-pulse ml-auto" />
             </button>
             <button onClick={() => { setShowMenu(false); fileRef.current?.click(); }}
               className="w-full flex items-center gap-2 px-4 py-2.5 text-white text-sm hover:bg-gray-800 transition-colors">
-              <Upload className="w-4 h-4 text-blue-400" /> Upload Photo
+              <Upload className="w-4 h-4 text-blue-400 animate-bounce" /> Upload Photo
               <span className="ml-auto text-gray-600 text-xs">+add</span>
             </button>
             {allAvatars.length > 1 && (

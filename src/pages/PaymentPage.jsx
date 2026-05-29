@@ -169,16 +169,17 @@ export default function PaymentPage() {
               ))}
             </div>
 
-            <div className="flex gap-2">
-              <button onClick={handleEdit} disabled={!isEditing}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${isEditing ? "bg-blue-900/20 border border-blue-700/40 text-blue-400 hover:bg-blue-900/30" : "bg-gray-800 border border-gray-700 text-gray-400 cursor-not-allowed"}`}>
-                <Lock className="w-4 h-4" /> {isEditing ? "Editing..." : "Edit Details"}
-              </button>
-              {isEditing && (
+            <div className="flex gap-2 flex-wrap">
+              {!isEditing ? (
+                <button onClick={handleEdit}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors bg-blue-900/20 border border-blue-700/40 text-blue-300 hover:bg-blue-900/40">
+                  <Pencil className="w-4 h-4" /> Edit PayPal
+                </button>
+              ) : (
                 <>
                   <button onClick={handleConnect} disabled={saving}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors">
-                    <CheckCircle className="w-4 h-4" /> {saving ? "Saving..." : "Save Changes"}
+                    <CheckCircle className="w-4 h-4" /> {saving ? "Saving..." : "✓ Done"}
                   </button>
                   <button onClick={handleCancel}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-bold hover:bg-gray-700 transition-colors">
@@ -229,17 +230,15 @@ export default function PaymentPage() {
                 </div>
               </div>
 
-              {isSeller && (
-                <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-xl p-4 flex gap-2">
-                  <Info className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-yellow-300 font-bold text-xs mb-1">Sellers & Creators</p>
-                    <p className="text-gray-400 text-xs leading-relaxed">
-                      To receive automatic payouts, please provide your PayPal Merchant ID and API credentials from your <a href="https://developer.paypal.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">PayPal Developer Dashboard</a>. This enables the platform to route 90% of each payment directly to your PayPal account.
-                    </p>
-                  </div>
+              <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-xl p-4 flex gap-2">
+                <Info className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-yellow-300 font-bold text-xs mb-1">PayPal Setup</p>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    Connect your PayPal to make purchases and receive payouts. For automatic payouts, add your Merchant ID &amp; API credentials from your <a href="https://developer.paypal.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">PayPal Developer Dashboard</a>.
+                  </p>
                 </div>
-              )}
+              </div>
 
               {/* Always-required: PayPal email */}
               <div>
@@ -277,8 +276,8 @@ export default function PaymentPage() {
                 </div>
               </div>
 
-              {/* Seller-only: Merchant ID + Client ID + Secret */}
-              {isSeller && (
+              {/* API Credentials for all users */}
+              {true && (
                 <div className={`space-y-3 border-t border-gray-700 pt-4 ${!isEditing && "opacity-50"}`}>
                   <p className="text-purple-300 text-xs font-bold uppercase tracking-wider">API Credentials (for automatic payouts)</p>
 
@@ -331,19 +330,17 @@ export default function PaymentPage() {
               </button>
             </div>
 
-            {/* How to get credentials guide for sellers */}
-            {isSeller && (
-              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-                <p className="text-white font-bold text-sm mb-3">📖 How to Get Your PayPal API Credentials</p>
-                <ol className="space-y-2 text-xs text-gray-400 list-decimal list-inside">
-                  <li>Go to <a href="https://developer.paypal.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">developer.paypal.com</a> and log in</li>
-                  <li>Click <strong className="text-white">Apps & Credentials</strong> in the left menu</li>
-                  <li>Create a new App or use an existing one</li>
-                  <li>Copy your <strong className="text-white">Client ID</strong> and <strong className="text-white">Secret</strong></li>
-                  <li>For Merchant ID: go to <a href="https://www.paypal.com/myaccount/settings/" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">PayPal Account Settings</a> → Account Info</li>
-                </ol>
-              </div>
-            )}
+            {/* How to get credentials guide */}
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+              <p className="text-white font-bold text-sm mb-3">📖 How to Get Your PayPal API Credentials</p>
+              <ol className="space-y-2 text-xs text-gray-400 list-decimal list-inside">
+                <li>Go to <a href="https://developer.paypal.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">developer.paypal.com</a> and log in</li>
+                <li>Click <strong className="text-white">Apps & Credentials</strong> in the left menu</li>
+                <li>Create a new App or use an existing one</li>
+                <li>Copy your <strong className="text-white">Client ID</strong> and <strong className="text-white">Secret</strong></li>
+                <li>For Merchant ID: go to <a href="https://www.paypal.com/myaccount/settings/" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">PayPal Account Settings</a> → Account Info</li>
+              </ol>
+            </div>
           </div>
         )}
 

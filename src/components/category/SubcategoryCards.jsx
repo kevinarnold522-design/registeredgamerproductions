@@ -7,6 +7,20 @@ import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
+  gaming: [
+    { id: "NBA2K",        emoji: "🏀", title: "NBA 2K",        desc: "Rosters, cyberfaces & courts",    color: "from-orange-950 to-orange-900", border: "border-orange-500/50", glow: "rgba(249,115,22,0.6)",  badge: "🏀 Top" },
+    { id: "FIFA",         emoji: "⚽", title: "EA FC / FIFA",   desc: "Squad updates, kits & stadiums",  color: "from-blue-950 to-blue-900",    border: "border-blue-500/50",   glow: "rgba(59,130,246,0.6)", badge: "Soccer" },
+    { id: "WWE2K",        emoji: "🤼", title: "WWE 2K",         desc: "Rosters, arenas & attires",       color: "from-red-950 to-red-900",      border: "border-red-500/50",    glow: "rgba(239,68,68,0.6)",  badge: "Hot" },
+    { id: "COD",          emoji: "🎖️", title: "Call of Duty",   desc: "Warzone, MW & more",              color: "from-gray-900 to-gray-800",    border: "border-gray-500/50",   glow: "rgba(156,163,175,0.6)", badge: "FPS" },
+    { id: "Fortnite",     emoji: "🏗️", title: "Fortnite",       desc: "Skins, Battle Royale tips",       color: "from-cyan-950 to-cyan-900",    border: "border-cyan-500/50",   glow: "rgba(6,182,212,0.6)",  badge: "BR" },
+    { id: "GTA",          emoji: "🚗", title: "GTA",            desc: "GTA V, GTA SA & mods",            color: "from-yellow-950 to-yellow-900",border: "border-yellow-500/50", glow: "rgba(234,179,8,0.6)",  badge: "Open World" },
+    { id: "Minecraft",    emoji: "⛏️", title: "Minecraft",      desc: "Builds, seeds & servers",         color: "from-green-950 to-green-900",  border: "border-green-500/50",  glow: "rgba(74,222,128,0.6)", badge: "Sandbox" },
+    { id: "Valorant",     emoji: "🔫", title: "Valorant",       desc: "Agents, ranks & pro tips",        color: "from-red-950 to-red-900",      border: "border-red-500/50",    glow: "rgba(239,68,68,0.6)",  badge: "FPS" },
+    { id: "PES",          emoji: "🏟️", title: "PES / Football Life", desc: "Option files & patches",     color: "from-indigo-950 to-indigo-900",border: "border-indigo-500/50", glow: "rgba(99,102,241,0.6)", badge: "Soccer" },
+    { id: "Madden",       emoji: "🏈", title: "Madden NFL",     desc: "Franchises & Ultimate Team",      color: "from-teal-950 to-teal-900",    border: "border-teal-500/50",   glow: "rgba(20,184,166,0.6)", badge: "NFL" },
+    { id: "Tekken",       emoji: "🥋", title: "Tekken",         desc: "Characters, combos & tournaments",color: "from-blue-950 to-blue-900",    border: "border-blue-500/50",   glow: "rgba(59,130,246,0.6)", badge: "Fighting" },
+    { id: "Roblox",       emoji: "🧱", title: "Roblox",         desc: "Games, Robux & dev tools",        color: "from-pink-950 to-pink-900",    border: "border-pink-500/50",   glow: "rgba(236,72,153,0.6)", badge: "Sandbox" },
+  ],
   modding: [
     { id: "WWE2K",         emoji: "🤼", title: "WWE2K",         desc: "Mods, rosters, attires & arenas",   color: "from-red-950 to-red-900",     border: "border-red-500/50",     glow: "rgba(239,68,68,0.6)",    badge: "Hot" },
     { id: "Football Life", emoji: "⚽", title: "Football Life", desc: "Patches, kits & stadium mods",      color: "from-green-950 to-green-900", border: "border-green-500/50",   glow: "rgba(74,222,128,0.6)",   badge: "Popular" },
@@ -437,15 +451,13 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
             <h2 className="text-2xl md:text-3xl font-black text-white">
               {categoryName} <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Subcategories</span>
             </h2>
-            <p className="text-gray-500 text-xs mt-0.5">Click a card to open its newsfeed{canAdmin ? " · Hover to edit" : ""}</p>
+            <p className="text-gray-500 text-xs mt-0.5">Click a card to open its newsfeed · <span className="text-purple-400">+ Add Card</span> to contribute{canAdmin ? " · Hover to edit" : ""}</p>
           </div>
-          {canAdmin && (
-            <button onClick={() => setShowAdd(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-white"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-              <Plus className="w-4 h-4" /> Add Card
-            </button>
-          )}
+          <button onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-white"
+            style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+            <Plus className="w-4 h-4" /> Add Card
+          </button>
         </div>
       </motion.div>
 
