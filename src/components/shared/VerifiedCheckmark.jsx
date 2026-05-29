@@ -1,9 +1,5 @@
 import React, { useId, useMemo, useState } from "react";
 
-/**
- * Verified Badge — purple starburst with a single radiant dot that slowly
- * orbits the badge only while the user hovers over it.
- */
 export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true, label = "Verified Partner" }) {
   const dims = { sm: 20, md: 26, lg: 36 };
   const px = dims[size] || 20;
@@ -11,7 +7,6 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
   const uid = useMemo(() => rawId.replace(/:/g, ""), [rawId]);
   const [hovered, setHovered] = useState(false);
 
-  // 16-point starburst path
   const generateStarburst = (cx, cy, outerR, innerR, points) => {
     let path = "";
     for (let i = 0; i < points * 2; i++) {
@@ -25,9 +20,9 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
   };
   const starPath = generateStarburst(12, 12, 11.5, 8.5, 16);
 
-  // Dot orbit radius and size
-  const orbitR = px * 0.78;
-  const dotSize = Math.max(3, px * 0.22);
+  // Orbit very tight — just 1–2px outside the badge edge
+  const orbitR = px * 0.56;
+  const dotSize = Math.max(2.5, px * 0.18);
 
   return (
     <span
@@ -36,56 +31,75 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Orbiting dot — only visible on hover, CSS keyframe drives it */}
+      {/* Always-on soft ambient glow — no dot, just subtle bloom */}
+      <span
+        style={{
+          position: "absolute",
+          width: px * 1.8,
+          height: px * 1.8,
+          borderRadius: "50%",
+          top: "50%",
+          left: px / 2,
+          transform: "translate(-50%, -50%)",
+          background: "radial-gradient(circle, rgba(168,85,247,0.22) 0%, transparent 70%)",
+          pointerEvents: "none",
+          zIndex: 0,
+          filter: `blur(${px * 0.25}px)`,
+          transition: "opacity 0.3s ease",
+          opacity: hovered ? 0 : 1,
+        }}
+      />
+
+      {/* Hover: brighter glow + orbiting dot */}
       {hovered && (
-        <span
-          style={{
-            position: "absolute",
-            width: orbitR * 2 + dotSize,
-            height: orbitR * 2 + dotSize,
-            top: "50%",
-            left: px / 2,
-            transform: "translate(-50%, -50%)",
-            pointerEvents: "none",
-            zIndex: 2,
-          }}
-        >
-          {/* The dot itself, positioned at the top of its orbit container and animated by CSS */}
+        <>
+          {/* Brighter glow on hover */}
           <span
             style={{
               position: "absolute",
-              width: dotSize,
-              height: dotSize,
+              width: px * 2,
+              height: px * 2,
               borderRadius: "50%",
-              background: "radial-gradient(circle, #ffffff 0%, #c084fc 45%, #7c3aed 100%)",
-              boxShadow: `0 0 ${dotSize * 2}px ${dotSize}px #a855f7aa`,
-              top: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              animation: "dot-orbit 2.4s linear infinite",
-              transformOrigin: `0 ${orbitR + dotSize / 2}px`,
+              top: "50%",
+              left: px / 2,
+              transform: "translate(-50%, -50%)",
+              background: "radial-gradient(circle, rgba(168,85,247,0.45) 0%, transparent 70%)",
+              pointerEvents: "none",
+              zIndex: 0,
+              filter: `blur(${px * 0.28}px)`,
             }}
           />
-        </span>
-      )}
 
-      {/* Soft static glow behind badge on hover */}
-      {hovered && (
-        <span
-          style={{
-            position: "absolute",
-            width: px * 2.4,
-            height: px * 2.4,
-            borderRadius: "50%",
-            top: "50%",
-            left: px / 2,
-            transform: "translate(-50%, -50%)",
-            background: "radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)",
-            pointerEvents: "none",
-            zIndex: 0,
-            filter: `blur(${px * 0.3}px)`,
-          }}
-        />
+          {/* Orbiting dot — tight to badge */}
+          <span
+            style={{
+              position: "absolute",
+              width: orbitR * 2 + dotSize,
+              height: orbitR * 2 + dotSize,
+              top: "50%",
+              left: px / 2,
+              transform: "translate(-50%, -50%)",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                width: dotSize,
+                height: dotSize,
+                borderRadius: "50%",
+                background: "radial-gradient(circle, #ffffff 0%, #c084fc 45%, #7c3aed 100%)",
+                boxShadow: `0 0 ${dotSize * 2}px ${dotSize}px #a855f7cc`,
+                top: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+                animation: "dot-orbit 2s linear infinite",
+                transformOrigin: `0 ${orbitR + dotSize / 2}px`,
+              }}
+            />
+          </span>
+        </>
       )}
 
       <svg
@@ -138,7 +152,6 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
         </span>
       )}
 
-      {/* Keyframe injected inline for the orbiting dot */}
       <style>{`
         @keyframes dot-orbit {
           0%   { transform: translateX(-50%) rotate(0deg)   translateY(-${orbitR}px); }
