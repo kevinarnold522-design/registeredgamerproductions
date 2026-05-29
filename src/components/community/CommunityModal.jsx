@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import CommunityPostCard from "./CommunityPostCard";
-import Tier1Modal from "./Tier1Modal";
+import TieredMembershipModal from "./TieredMembershipModal";
 import ModeratorRequestModal from "./ModeratorRequestModal";
 
 function CaptainBadge() {
@@ -312,7 +312,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <button onClick={() => setShowTier1Modal(true)}
                     className="px-3 py-1.5 rounded-xl text-xs font-black text-white transition-all flex items-center gap-1"
                     style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                    <Shield className="w-3 h-3" /> Get Verified — $1/yr
+                    <Shield className="w-3 h-3" /> Get Verified — $0.99/mo
                   </button>
                 )}
               </div>
@@ -337,13 +337,11 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                         ? <img src={editLogoUrl} className="w-14 h-14 rounded-xl object-cover border border-gray-700" alt="logo" />
                         : <div className="w-14 h-14 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-2xl">{franchise.emoji}</div>
                       }
-                      <div className="flex-1 space-y-1.5">
+                      <div className="flex-1">
                         <button type="button" onClick={() => logoFileRef.current?.click()}
                           className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-purple-700/60 bg-purple-900/20 text-purple-300 text-xs font-bold hover:bg-purple-900/40 transition-all">
-                          <Upload className="w-3.5 h-3.5" /> {uploadingLogo ? "Uploading..." : "Upload from Device"}
+                          <Upload className="w-3.5 h-3.5" /> {uploadingLogo ? "Uploading..." : editLogoUrl ? "Replace Logo" : "Upload from Device"}
                         </button>
-                        <input value={editLogoUrl} onChange={e => setEditLogoUrl(e.target.value)}
-                          placeholder="or paste image URL..." className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
                       </div>
                     </div>
                     <input ref={logoFileRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
@@ -352,11 +350,9 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <div>
                     <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Cover Photo</label>
                     <button type="button" onClick={() => coverFileRef.current?.click()}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-all mb-1.5">
-                      <Upload className="w-3.5 h-3.5" /> {uploadingCover ? "Uploading..." : "Upload Cover from Device"}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-all">
+                      <Upload className="w-3.5 h-3.5" /> {uploadingCover ? "Uploading..." : editCoverUrl ? "Replace Cover" : "Upload Cover from Device"}
                     </button>
-                    <input value={editCoverUrl} onChange={e => setEditCoverUrl(e.target.value)}
-                      placeholder="or paste cover photo URL..." className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
                     {editCoverUrl && <img src={editCoverUrl} className="mt-2 w-full h-24 object-cover rounded-lg opacity-70" alt="cover preview" />}
                     <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
                   </div>
@@ -604,10 +600,10 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
         </motion.div>
       </motion.div>
 
-      {/* Tier 1 purchase modal */}
+      {/* Tiered Membership Modal */}
       <AnimatePresence>
         {showTier1Modal && (
-          <Tier1Modal
+          <TieredMembershipModal
             user={user}
             profile={profile}
             onClose={() => setShowTier1Modal(false)}

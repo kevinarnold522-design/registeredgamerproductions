@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Users, Share2, Search, SortAsc, Send, Shield, Plus, Camera, X, Check, Lock, Upload } from "lucide-react";
+import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload } from "lucide-react";
+import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
@@ -21,6 +22,7 @@ export default function CommunityLandingPage() {
   const [isJoined, setIsJoined] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
   const [isTier1, setIsTier1] = useState(false);
+  const [showMembershipModal, setShowMembershipModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
@@ -119,8 +121,8 @@ export default function CommunityLandingPage() {
 
   const handlePost = async () => {
     if (!newPost.trim() || !user) return;
-    const canPost = admin || isTier1 || isModerator;
-    if (!canPost) return;
+    // Free posting for all joined members
+    if (!isJoined && !admin && !isModerator) return;
     setPosting(true);
     const comm = await ensureCommunity();
     const post = await base44.entities.CommunityPost.create({
@@ -263,6 +265,17 @@ export default function CommunityLandingPage() {
         </div>
       </div>
 
+      {/* Tiered Membership Modal */}
+      <AnimatePresence>
+        {showMembershipModal && (
+          <TieredMembershipModal
+            user={user} profile={profile}
+            onClose={() => setShowMembershipModal(false)}
+            onSuccess={() => { setIsTier1(true); setShowMembershipModal(false); }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Edit Profile Modal */}
       <AnimatePresence>
         {showEditProfile && (
@@ -300,11 +313,10 @@ export default function CommunityLandingPage() {
                 <div>
                   <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Cover Photo</label>
                   <button onClick={() => coverRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-all mb-1.5">
-                    <Upload className="w-3.5 h-3.5" /> {uploadingCover ? "Uploading..." : "Upload Cover"}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-all">
+                    <Upload className="w-3.5 h-3.5" /> {uploadingCover ? "Uploading..." : editCoverUrl ? "Replace Cover" : "Upload Cover from Device"}
                   </button>
-                  <input value={editCoverUrl} onChange={e => setEditCoverUrl(e.target.value)} placeholder="or paste cover URL" className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500 mb-1" />
-                  {editCoverUrl && <img src={editCoverUrl} className="w-full h-20 object-cover rounded-lg opacity-70" alt="" />}
+                  {editCoverUrl && <img src={editCoverUrl} className="w-full h-20 object-cover rounded-lg opacity-70 mt-1.5" alt="" />}
                   <input ref={coverRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
                 </div>
                 <div>
@@ -329,8 +341,8 @@ export default function CommunityLandingPage() {
 
           {/* Feed */}
           <div className="lg:col-span-2">
-            {/* Post input */}
-            {user && (admin || isTier1 || isModerator) && (
+            {/* Post input — free for all joined members */}
+            {user && (admin || isModerator || isJoined) && (
               <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5">
                 <div className="flex gap-3 items-center">
                   <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-800">
@@ -346,13 +358,11 @@ export default function CommunityLandingPage() {
                     <Send className="w-4 h-4 text-white" />
                   </button>
                 </div>
-                {isTier1 && <p className="text-purple-400 text-[10px] mt-2 pl-12">✓ Verified Partner — posting enabled</p>}
               </div>
             )}
-            {user && !admin && !isTier1 && !isModerator && (
-              <div className="bg-gray-900 rounded-2xl border border-purple-900/30 p-4 mb-5 text-center">
-                <Lock className="w-5 h-5 text-purple-400 mx-auto mb-1" />
-                <p className="text-gray-400 text-sm">Get <span className="text-purple-300 font-bold">Tier 1 Verified Partner</span> ($1/yr) to post in communities</p>
+            {user && !admin && !isModerator && !isJoined && (
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5 text-center">
+                <p className="text-gray-500 text-sm">Join this community to post</p>
               </div>
             )}
 
@@ -427,6 +437,13 @@ export default function CommunityLandingPage() {
                 <button onClick={() => setShowEditProfile(true)}
                   className="mt-3 w-full py-2 rounded-xl text-xs font-bold text-purple-300 bg-purple-900/20 border border-purple-700/30 hover:bg-purple-900/40 transition-all flex items-center justify-center gap-2">
                   <Camera className="w-3.5 h-3.5" /> Edit Community Profile
+                </button>
+              )}
+              {!isTier1 && user && (
+                <button onClick={() => setShowMembershipModal(true)}
+                  className="mt-2 w-full py-2 rounded-xl text-xs font-black text-white flex items-center justify-center gap-1"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  <Shield className="w-3 h-3" /> Get Verified — from $0.99/mo
                 </button>
               )}
             </div>
