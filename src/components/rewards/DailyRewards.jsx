@@ -86,6 +86,16 @@ export default function DailyRewards({ user, profile }) {
     if (newStreak === 365) {
       setTimeout(() => setShowPaypalSetup(true), 3500);
     }
+    // Send daily reward email
+    try {
+      const nextRewardItem = DAILY_REWARDS.find(r => r.day === (newDays.length + 1)) || DAILY_REWARDS[DAILY_REWARDS.length - 1];
+      await base44.functions.invoke("sendDailyRewardEmail", {
+        userEmail: user.email,
+        username: profile?.username || user.full_name || "Gamer",
+        streak: newStreak,
+        nextReward: nextRewardItem?.item || "Daily Login Bonus",
+      });
+    } catch (_) {}
     setClaiming(false);
   };
 

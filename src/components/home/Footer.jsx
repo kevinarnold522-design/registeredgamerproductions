@@ -38,10 +38,11 @@ const links = {
 
 const socials = [
   { icon: Twitter, label: "Twitter / X", href: "https://twitter.com", external: true },
-  { icon: Youtube, label: "YouTube", href: "https://youtube.com", external: true },
+  { icon: Youtube, label: "YouTube", href: "https://youtube.com/@registeredgamerproductions?si=WfWn2yT15uvp5LnF", external: true },
   { icon: Twitch, label: "Twitch", href: "https://twitch.tv", external: true },
   { icon: MessageCircle, label: "Discord", href: "https://discord.com", external: true },
   { icon: Instagram, label: "Instagram", href: "https://instagram.com", external: true },
+  { label: "Facebook", href: "https://www.facebook.com/share/1D9ey9w8Rw/?mibextid=wwXIfr", external: true, isFb: true },
 ];
 
 export default function Footer() {
@@ -77,7 +78,10 @@ export default function Footer() {
                     className="w-9 h-9 rounded-lg bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-500 hover:text-purple-400 hover:border-purple-700/50 transition-colors"
                     aria-label={s.label}
                   >
-                    <s.icon className="w-4 h-4" />
+                    {s.isFb
+                      ? <span className="text-sm font-black">f</span>
+                      : <s.icon className="w-4 h-4" />
+                    }
                   </a>
                 ))}
               </div>

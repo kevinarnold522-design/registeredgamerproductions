@@ -6,7 +6,6 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
-import CommunityModal from "@/components/community/CommunityModal";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 
 function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin, community, onJoin, onClick, onSaveProfile }) {
@@ -152,7 +151,6 @@ export default function GamingCommunity() {
   const [profile, setProfile] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All");
-  const [selectedFranchise, setSelectedFranchise] = useState(null);
   const [memberCounts, setMemberCounts] = useState({});
   const [joinedIds, setJoinedIds] = useState(new Set());
   const [moderatorIds, setModeratorIds] = useState(new Set());
@@ -280,6 +278,10 @@ export default function GamingCommunity() {
     return moderatorIds.has(franchiseId) || (communities[franchiseId]?.moderator_emails || []).includes(user?.email);
   };
 
+  const handleCardClick = (franchise) => {
+    window.location.href = `/community/${franchise.id}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
@@ -397,7 +399,7 @@ export default function GamingCommunity() {
               canAdmin={admin || isModerator(franchise.id)}
               community={communities[franchise.id] || null}
               onJoin={() => handleJoinCard(franchise)}
-              onClick={() => setSelectedFranchise(franchise)}
+              onClick={() => handleCardClick(franchise)}
               onSaveProfile={handleSaveProfile}
             />
           ))}
@@ -412,16 +414,7 @@ export default function GamingCommunity() {
         )}
       </div>
 
-      <AnimatePresence>
-        {selectedFranchise && (
-          <CommunityModal
-            franchise={selectedFranchise}
-            user={user}
-            profile={profile}
-            onClose={() => setSelectedFranchise(null)}
-          />
-        )}
-      </AnimatePresence>
+
     </div>
   );
 }

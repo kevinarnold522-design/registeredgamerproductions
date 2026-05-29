@@ -255,6 +255,19 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                   )}
 
                   <div className="space-y-3">
+                    {/* Facebook Login */}
+                    <button
+                      onClick={() => loginWithProvider("facebook")}
+                      className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl font-bold text-sm text-white hover:opacity-90 transition-all"
+                      style={{ background: "#1877F2", boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                      Continue with Facebook
+                      <ArrowRight className="w-4 h-4 ml-auto text-white/60" />
+                    </button>
+
                     <button
                       onClick={() => loginWithProvider("google")}
                       className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-white text-gray-800 font-bold text-sm hover:bg-gray-100 transition-all"
@@ -266,7 +279,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
                         <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.5 35.3 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.1C9.5 36.7 16.3 44 24 44z"/>
                         <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.3 5.3C43.1 34.7 44 29.7 44 24c0-1.3-.1-2.6-.4-3.9z"/>
                       </svg>
-                      Continue with Google
+                      Sign in with Google — GAMER.Productions
                       <ArrowRight className="w-4 h-4 ml-auto text-gray-500" />
                     </button>
 

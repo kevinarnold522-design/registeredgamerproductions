@@ -30,6 +30,7 @@ import ContactPage from "./pages/ContactPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsDMCA from "./pages/TermsDMCA";
 import CommunitySectionPage from "./pages/CommunitySectionPage";
+import CommunityLandingPage from "./pages/CommunityLandingPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -78,6 +79,7 @@ const AuthenticatedApp = () => {
       <Route path="/terms" element={<TermsDMCA />} />
       <Route path="/gaming-community" element={<GamingCommunity />} />
       <Route path="/community-section" element={<CommunitySectionPage />} />
+      <Route path="/community/:id" element={<CommunityLandingPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

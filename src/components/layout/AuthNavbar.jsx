@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart } from "lucide-react";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart, Youtube, Facebook } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
