@@ -23,6 +23,7 @@ import AdminLinkScanner from "@/components/admin/AdminLinkScanner";
 import DailyRewards from "@/components/rewards/DailyRewards";
 import DailyRewardPopup from "@/components/rewards/DailyRewardPopup";
 import AdminApprovalPanel from "@/components/community/AdminApprovalPanel";
+import VerifiedBadgeBanner from "@/components/home/VerifiedBadgeBanner";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -109,6 +110,7 @@ export default function Home() {
             <ServicesSection />
             <ModdingSection />
             <MonetizationBadge />
+            <VerifiedBadgeBanner />
             <VideosSection />
             <FeaturedGames />
             <CommunitySection />

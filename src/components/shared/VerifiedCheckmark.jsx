@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId, useMemo } from "react";
 
 /**
  * Meta-style Rosette/Starburst Verified Badge
@@ -8,8 +8,9 @@ import React from "react";
 export default function VerifiedCheckmark({ size = "sm", showLabel = false, showTooltip = true, label = "Verified Partner" }) {
   const dims = { sm: 20, md: 26, lg: 36 };
   const px = dims[size] || 20;
-  const glowSize = px * 2.2;
-  const ringId = `ring-${size}-${Math.random().toString(36).slice(2, 7)}`;
+  const glowSize = px * 3.2;
+  const rawId = useId();
+  const uid = useMemo(() => rawId.replace(/:/g, ""), [rawId]);
 
   // Starburst polygon points (16-point rosette)
   const generateStarburst = (cx, cy, outerR, innerR, points) => {
@@ -28,21 +29,40 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
 
   return (
     <span className="relative inline-flex items-center gap-1 group" style={{ verticalAlign: "middle" }}>
-      {/* Outer ambient glow */}
+      {/* Radiant rotating ambient glow — single arc sweeping around badge */}
       <span
         style={{
           position: "absolute",
           width: glowSize,
           height: glowSize,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(167,85,247,0.55) 0%, rgba(236,72,153,0.25) 50%, transparent 70%)",
-          filter: "blur(8px)",
           top: "50%",
           left: px / 2,
           transform: "translate(-50%, -50%)",
           pointerEvents: "none",
           zIndex: 0,
-          animation: "verified-ring-spin 4s linear infinite",
+          background: "conic-gradient(from 0deg, #ff00cc99, #7c3aed99, #00ccff99, #ffcc0099, #ff00cc99)",
+          animation: "verified-ring-spin 2.4s linear infinite",
+          filter: `blur(${px * 0.35}px)`,
+          opacity: 0.85,
+        }}
+      />
+      {/* Inner tighter bright ring */}
+      <span
+        style={{
+          position: "absolute",
+          width: px * 1.8,
+          height: px * 1.8,
+          borderRadius: "50%",
+          top: "50%",
+          left: px / 2,
+          transform: "translate(-50%, -50%)",
+          pointerEvents: "none",
+          zIndex: 0,
+          background: "conic-gradient(from 180deg, #ec489900, #a855f7ff, #ec489900)",
+          animation: "verified-ring-spin 1.8s linear infinite reverse",
+          filter: `blur(${px * 0.18}px)`,
+          opacity: 0.9,
         }}
       />
 
@@ -55,39 +75,25 @@ export default function VerifiedCheckmark({ size = "sm", showLabel = false, show
         style={{ flexShrink: 0, position: "relative", zIndex: 1, overflow: "visible" }}
       >
         <defs>
-          {/* Purple-to-pink gradient fill */}
-          <linearGradient id={`starGrad-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={`starGrad-${uid}`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#a855f7" />
             <stop offset="50%" stopColor="#7c3aed" />
             <stop offset="100%" stopColor="#ec4899" />
           </linearGradient>
-          {/* Inner shine */}
-          <radialGradient id={`shineGrad-${size}`} cx="35%" cy="28%" r="55%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
+          <radialGradient id={`shineGrad-${uid}`} cx="35%" cy="28%" r="55%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
             <stop offset="100%" stopColor="rgba(255,255,255,0)" />
           </radialGradient>
-          {/* Rotating glow ring */}
-          <linearGradient id={`glowRing-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor="#ff00cc" stopOpacity="0.9" />
-            <stop offset="33%"  stopColor="#7c3aed" stopOpacity="0.9" />
-            <stop offset="66%"  stopColor="#00ccff" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#ff00cc" stopOpacity="0.9" />
-          </linearGradient>
         </defs>
-
-        {/* Rotating glow ring behind the badge */}
-        <g style={{ animation: "verified-ring-spin 3s linear infinite", transformOrigin: "12px 12px" }}>
-          <circle cx="12" cy="12" r="13.5" fill="none" stroke={`url(#glowRing-${size})`} strokeWidth="2" strokeDasharray="6 3" opacity="0.7" filter="url(#blur)" />
-        </g>
 
         {/* Starburst / Rosette shape */}
         <path
           d={starPath}
-          fill={`url(#starGrad-${size})`}
-          filter="drop-shadow(0 0 3px rgba(124,58,237,0.8))"
+          fill={`url(#starGrad-${uid})`}
+          filter="drop-shadow(0 0 4px rgba(168,85,247,0.9)) drop-shadow(0 0 8px rgba(236,72,153,0.5))"
         />
         {/* Shine overlay */}
-        <path d={starPath} fill={`url(#shineGrad-${size})`} />
+        <path d={starPath} fill={`url(#shineGrad-${uid})`} />
 
         {/* Bold white checkmark */}
         <path

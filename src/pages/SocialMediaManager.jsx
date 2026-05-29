@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Wand2, Share2, Facebook, RefreshCw, Check, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { Copy, Wand2, Share2, Facebook, RefreshCw, Check, ChevronDown, ChevronUp, Sparkles, ImageIcon } from "lucide-react";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import SocialCardCanvas from "@/components/social/SocialCardCanvas";
 
 // ─── 100+ Themed Social Media Posts ────────────────────────────────────────
 const ALL_POSTS = [
@@ -172,6 +173,7 @@ export default function SocialMediaManager() {
   const [aiResult, setAiResult] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
+  const [cardPost, setCardPost] = useState(null);
 
   const admin = user && (user.email === "kevinjersey2019@gmail.com" || user.email === "arnoldk137@gmail.com" || user.email === "kevinarnold522@gmail.com");
 
@@ -333,24 +335,35 @@ POST 3:
               )}
 
               {/* Actions */}
-              <div className="flex gap-2 mt-auto">
+              <div className="flex gap-1.5 mt-auto flex-wrap">
                 <button
                   onClick={() => handleCopy(post)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold transition-all"
+                  className="flex-1 min-w-[70px] flex items-center justify-center gap-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold transition-all"
                 >
                   {copied === post.id ? <><Check className="w-3 h-3 text-green-400" /> Copied!</> : <><Copy className="w-3 h-3" /> Copy</>}
                 </button>
                 <button
                   onClick={() => handleShareFB(post)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-700/30 hover:bg-blue-700/50 text-blue-300 text-xs font-bold border border-blue-700/40 transition-all"
+                  className="flex-1 min-w-[70px] flex items-center justify-center gap-1 py-2 rounded-xl bg-blue-700/30 hover:bg-blue-700/50 text-blue-300 text-xs font-bold border border-blue-700/40 transition-all"
                 >
-                  <Facebook className="w-3 h-3" /> Share to FB
+                  <Facebook className="w-3 h-3" /> Share
+                </button>
+                <button
+                  onClick={() => setCardPost(post)}
+                  className="flex-1 min-w-[70px] flex items-center justify-center gap-1 py-2 rounded-xl bg-purple-700/30 hover:bg-purple-700/50 text-purple-300 text-xs font-bold border border-purple-700/40 transition-all"
+                >
+                  <ImageIcon className="w-3 h-3" /> Design
                 </button>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
+
+      {/* Card Designer Modal */}
+      <AnimatePresence>
+        {cardPost && <SocialCardCanvas post={cardPost} onClose={() => setCardPost(null)} />}
+      </AnimatePresence>
     </div>
   );
 }

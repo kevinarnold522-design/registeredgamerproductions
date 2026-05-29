@@ -82,13 +82,13 @@ export default function AuthNavbar({ user, profile }) {
         </div>
 
         {/* Nav Links */}
-        <div className="hidden lg:flex items-center gap-1">
+        <div className="hidden lg:flex items-center gap-1.5">
           {navLinks.map((link, i) =>
             link.action ? (
               <button
                 key={i}
                 onClick={link.action}
-                className="relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-400 hover:text-purple-300 hover:bg-purple-900/20 text-sm font-medium transition-colors"
+                className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 hover:text-purple-200 text-sm font-semibold transition-all glass-3d-btn"
               >
                 <link.icon className="w-4 h-4" />
                 {link.label}
@@ -102,7 +102,7 @@ export default function AuthNavbar({ user, profile }) {
               <Link
                 key={i}
                 to={link.href}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-400 hover:text-purple-300 hover:bg-purple-900/20 text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 hover:text-purple-200 text-sm font-semibold transition-all glass-3d-btn"
               >
                 <link.icon className="w-4 h-4" />
                 {link.label}
@@ -114,14 +114,15 @@ export default function AuthNavbar({ user, profile }) {
         {/* Right: User */}
         <div className="flex items-center gap-2">
           {/* Analytics */}
-          <Link to="/analytics" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-900/60 border border-gray-800 text-gray-400 text-sm font-bold hover:text-purple-300 hover:border-purple-700/40 transition-all">
+          <Link to="/analytics" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 text-sm font-bold hover:text-purple-200 transition-all glass-3d-btn">
             <PieChart className="w-4 h-4" />
             <span className="hidden lg:block">Analytics</span>
           </Link>
           {/* AI Video Studio — for all logged-in users */}
           <Link
             to="/ai-video-studio"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/40 text-purple-300 text-sm font-bold hover:from-purple-600/40 hover:to-pink-600/40 transition-all"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-purple-300 text-sm font-bold transition-all glass-3d-btn"
+            style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.25), rgba(236,72,153,0.15))", border: "1px solid rgba(167,85,247,0.35)" }}
           >
             <Wand2 className="w-4 h-4" />
             <span className="hidden lg:block">Studio</span>
@@ -131,7 +132,8 @@ export default function AuthNavbar({ user, profile }) {
           {(admin || accountType === "digital_creator" || accountType === "business") && (
             <Link
               to="/create-listing"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-purple-300 text-sm font-semibold transition-all glass-3d-btn"
+              style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(124,58,237,0.1))", border: "1px solid rgba(124,58,237,0.35)" }}
             >
               <Upload className="w-4 h-4" />
               Add Listing
@@ -140,8 +142,8 @@ export default function AuthNavbar({ user, profile }) {
           {/* Language Selector */}
           <LanguageSelector />
           {/* Messages */}
-          <Link to="/messages" className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-700/50 transition-colors">
-            <MessageCircle className="w-4 h-4 text-gray-400" />
+          <Link to="/messages" className="relative flex items-center justify-center w-9 h-9 rounded-xl glass-3d-btn text-gray-400 hover:text-purple-300 transition-all">
+            <MessageCircle className="w-4 h-4" />
           </Link>
           {/* Notifications */}
           <NotificationBell userEmail={user?.email} />
