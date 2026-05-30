@@ -154,7 +154,9 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center px-4"
         style={{ background: "rgba(0,0,0,0.88)" }}
         onClick={handleClose}
@@ -179,7 +181,7 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
             </button>
           </div>
 
-          {/* OTP Step */}
+          {/* OTP Step vs Forms Step */}
           {step === "otp" ? (
             <>
               <div className="text-center mb-6">
@@ -195,8 +197,12 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
               <div className="flex gap-2 justify-center mb-4">
                 {otp.map((digit, idx) => (
                   <input
-                    key={idx} ref={el => otpRefs.current[idx] = el}
-                    type="text" inputMode="numeric" maxLength={1} value={digit}
+                    key={idx}
+                    ref={el => otpRefs.current[idx] = el}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
                     onChange={e => handleOtpChange(idx, e.target.value)}
                     onKeyDown={e => handleOtpKeyDown(idx, e)}
                     onPaste={idx === 0 ? handleOtpPaste : undefined}
