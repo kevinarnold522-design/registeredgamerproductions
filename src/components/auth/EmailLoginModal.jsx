@@ -62,3 +62,24 @@ export default function EmailLoginModal({ isOpen, onClose }) {
     </AnimatePresence>
   );
 }
+<div className="space-y-3">
+  <button onClick={() => loginWithProvider("google")} className="w-full flex items-center gap-3 py-3 px-4 bg-white text-black rounded-xl font-bold hover:bg-gray-100 transition-colors">
+    <img src="/logos/google.svg" alt="Google" className="w-5 h-5" />
+    Continue with Google
+  </button>
+  
+  <button onClick={() => loginWithProvider("facebook")} className="w-full flex items-center gap-3 py-3 px-4 bg-[#1877F2] text-white rounded-xl font-bold hover:opacity-90 transition-opacity">
+    <img src="/logos/facebook.svg" alt="Facebook" className="w-5 h-5" />
+    Continue with Facebook
+  </button>
+
+  <button onClick={() => loginWithProvider("azure")} className="w-full flex items-center gap-3 py-3 px-4 bg-[#0078d4] text-white rounded-xl font-bold hover:opacity-90 transition-opacity">
+    <img src="/logos/outlook.svg" alt="Outlook" className="w-5 h-5" />
+    Continue with Outlook
+  </button>
+
+  <button onClick={() => loginWithProvider("openidconnect")} className="w-full flex items-center gap-3 py-3 px-4 bg-[#6001d2] text-white rounded-xl font-bold hover:opacity-90 transition-opacity">
+    <img src="/logos/yahoo.svg" alt="Yahoo" className="w-5 h-5" />
+    Continue with Yahoo / AOL
+  </button>
+</div>
