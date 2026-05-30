@@ -1,70 +1,51 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, LogOut } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { motion } from "framer-motion";
+import { Youtube, Wand2, CheckCircle, Tag, Image as ImageIcon, Edit3 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { Link as RouterLink } from "react-router-dom";
+import Cropper from 'react-easy-crop';
 
-export default function EmailLoginModal({ isOpen, onClose }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+export default function CreatorVideoTools({ user, profile }) {
+  const [tab, setTab] = useState("share");
+  const [ytUrl, setYtUrl] = useState("");
+  const [ytTitle, setYtTitle] = useState("");
+  const [tags, setTags] = useState("");
+  const [checklist, setChecklist] = useState({ thumbnail: false, seo: false, pinned: false });
+  const [imageSrc, setImageSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
 
-  const loginWithProvider = async (provider) => {
-    setLoading(true);
-    const authOptions = { redirectTo: window.location.origin };
-    if (provider === 'google') authOptions.queryParams = { prompt: 'select_account' };
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: authOptions,
+  const generateTags = async () => {
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `Generate 10 trending gaming YouTube tags for: "${ytTitle}".`
     });
-    if (error) { setError(error.message); setLoading(false); }
+    setTags(res);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" 
-        onClick={onClose}
-      >
-        <motion.div 
-          initial={{ scale: 0.95 }} animate={{ scale: 1 }}
-          onClick={e => e.stopPropagation()} 
-          className="bg-gray-900/90 border border-white/10 p-8 rounded-3xl w-full max-w-sm shadow-2xl backdrop-blur-xl"
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-white font-black text-xl">Sign In</h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20} /></button>
-          </div>
-
-          {/* Shiny Social Buttons */}
-          <div className="space-y-3">
-            <SocialButton onClick={() => loginWithProvider("google")} bg="bg-white" text="text-black" icon="/logos/google.svg" label="Google" />
-            <SocialButton onClick={() => loginWithProvider("facebook")} bg="bg-[#1877F2]" text="text-white" icon="/logos/facebook.svg" label="Facebook" />
-            <SocialButton onClick={() => loginWithProvider("azure")} bg="bg-[#0078d4]" text="text-white" icon="/logos/outlook.svg" label="Outlook" />
-            <SocialButton onClick={() => loginWithProvider("openidconnect")} bg="bg-[#6001d2]" text="text-white" icon="/logos/yahoo.svg" label="Yahoo / AOL" />
-          </div>
-
-          <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())} 
-            className="mt-8 flex items-center gap-2 text-gray-500 hover:text-gray-300 text-xs mx-auto transition-colors">
-            <LogOut size={14} /> Sign Out
+    <div className="bg-gray-950/80 backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-2xl">
+      {/* Navigation */}
+      <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
+        {[ {id: "share", label: "📹 Post"}, {id: "ai", label: "🤖 AI"}, {id: "seo", label: "🏷️ Tags"}, {id: "editor", label: "🎨 Editor"}, {id: "checklist", label: "✅ Checklist"} ].map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-2 rounded-xl text-xs font-bold ${tab === t.id ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400"}`}>
+            {t.label}
           </button>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
+        ))}
+      </div>
 
-// Sub-component for consistent styling
-function SocialButton({ onClick, bg, text, icon, label }) {
-  return (
-    <button 
-      onClick={onClick} 
-      className={`w-full flex items-center gap-4 py-3.5 px-5 ${bg} ${text} rounded-2xl font-bold text-sm shadow-lg hover:brightness-110 active:scale-[0.98] transition-all`}
-    >
-      <img src={icon} alt={label} className="w-5 h-5 object-contain" />
-      Continue with {label}
-    </button>
+      {/* Editor Tab Logic */}
+      {tab === "editor" && (
+        <div className="space-y-4">
+          {!imageSrc ? (
+            <input type="file" onChange={(e) => setImageSrc(URL.createObjectURL(e.target.files[0]))} className="w-full p-4 border border-dashed border-gray-700 rounded-xl text-gray-400" />
+          ) : (
+            <div className="relative h-64 bg-gray-800 rounded-xl overflow-hidden">
+              <Cropper image={imageSrc} crop={crop} zoom={zoom} onCropChange={setCrop} onZoomChange={setZoom} />
+            </div>
+          )}
+        </div>
+      )}
+      {/* Add your existing Share/AI/Checklist components here */}
+    </div>
   );
 }
