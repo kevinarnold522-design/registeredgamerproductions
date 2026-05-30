@@ -44,3 +44,6 @@ export default function CreatorVideoTools({ user, profile }) {
     </div>
   );
 }
+git add src/components/dashboard/CreatorVideoTools.jsx
+git commit -m "Fixed duplicate import and export errors"
+git push
