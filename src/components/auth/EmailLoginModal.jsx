@@ -91,3 +91,16 @@ git commit -m "Updated login modal with social providers"
 
 # 3. Push to GitHub
 git push
+// 1. Add icons to imports (Check if these specific icons are available in your version)
+import { Mail, ArrowRight } from "lucide-react"; 
+
+// 2. Use a simple span or SVG if Lucide doesn't have the specific brand icon
+<button onClick={() => loginWithProvider("google")} className="...">
+  <span className="text-xl">G</span> {/* Placeholder for icon */}
+  Continue with Google
+</button>
+<button onClick={() => loginWithProvider("google")} className="...">
+  {/* The leading slash "/" is mandatory for the public folder */}
+  <img src="/logos/google.svg" alt="Google" className="w-5 h-5" />
+  Continue with Google
+</button>
