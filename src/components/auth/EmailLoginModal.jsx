@@ -83,3 +83,11 @@ export default function EmailLoginModal({ isOpen, onClose }) {
     Continue with Yahoo / AOL
   </button>
 </div>
+# 1. Stage the changes
+git add .
+
+# 2. Commit the changes with a message
+git commit -m "Updated login modal with social providers"
+
+# 3. Push to GitHub
+git push
