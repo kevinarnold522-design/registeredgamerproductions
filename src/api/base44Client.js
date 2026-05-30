@@ -1,4 +1,6 @@
-import { createClient } from '@base44/sdk';
+/* LEGACY BACKUP - DO NOT MODIFY. 
+   Used for reference during Supabase migration. 
+*/import { createClient } from '@base44/sdk';
 import { appParams } from '@/lib/app-params';
 
 const { appId, functionsVersion, appBaseUrl } = appParams;
