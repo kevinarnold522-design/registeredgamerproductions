@@ -10,14 +10,11 @@ export default function EmailLoginModal({ isOpen, onClose }) {
   const loginWithProvider = async (provider) => {
     setLoading(true);
     setError("");
-    const authOptions = { redirectTo: window.location.origin };
     
-    // Google needs this specific param for account selection
-    if (provider === 'google') authOptions.queryParams = { prompt: 'select_account' };
-
+    // Auth options for redirecting back to your site
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: authOptions,
+      options: { redirectTo: window.location.origin },
     });
 
     if (error) {
@@ -58,13 +55,6 @@ export default function EmailLoginModal({ isOpen, onClose }) {
             <SocialButton onClick={() => loginWithProvider("azure")} bg="bg-[#0078d4]" text="text-white" icon="/logos/outlook.svg" label="Outlook" />
             <SocialButton onClick={() => loginWithProvider("openidconnect")} bg="bg-[#6001d2]" text="text-white" icon="/logos/yahoo.svg" label="Yahoo / AOL" />
           </div>
-
-          <button 
-            onClick={() => supabase.auth.signOut().then(() => window.location.reload())}
-            className="mt-8 flex items-center gap-2 text-gray-500 hover:text-white text-xs mx-auto transition-colors"
-          >
-            <LogOut size={14} /> Sign Out
-          </button>
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -81,5 +71,4 @@ function SocialButton({ onClick, bg, text, icon, label }) {
       Continue with {label}
     </button>
   );
-}
 }
