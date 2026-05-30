@@ -5,45 +5,82 @@ import { base44 } from "@/api/base44Client";
 import { Link as RouterLink } from "react-router-dom";
 import Cropper from 'react-easy-crop';
 
-export default function CreatorVideoTools({ user, profile }) {
-  const [tab, setTab] = useState("share");
-  const [ytUrl, setYtUrl] = useState("");
-  const [ytTitle, setYtTitle] = useState("");
-  const [imageSrc, setImageSrc] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
+const CreatorVideoTools = ({ user, profile }) => {
+  const [activeTab, setActiveTab] = useState("share");
+  const [videoDetails, setVideoDetails] = useState({ url: "", title: "" });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [cropArea, setCropArea] = useState({ x: 0, y: 0 });
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  const navigationTabs = [
+    { id: "share", label: "📹 Post" },
+    { id: "editor", label: "🎨 Editor" },
+    { id: "seo", label: "🏷️ Tags" },
+  ];
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(URL.createObjectURL(file));
+    }
+  };
 
   return (
     <div className="bg-gray-950/80 backdrop-blur-xl rounded-3xl border border-white/10 p-6 shadow-2xl">
       <h2 className="text-white font-black text-xl mb-6">Creator Studio</h2>
-      
-      {/* Navigation */}
+
       <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
-        {[ {id: "share", label: "📹 Post"}, {id: "editor", label: "🎨 Editor"}, {id: "seo", label: "🏷️ Tags"} ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`px-4 py-2 rounded-xl text-xs font-bold ${tab === t.id ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400"}`}>
-            {t.label}
+        {navigationTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              activeTab === tab.id 
+                ? "bg-purple-600 text-white" 
+                : "bg-gray-800 text-gray-400 hover:text-white"
+            }`}
+          >
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
       <div className="min-h-[300px]">
-        {tab === "editor" && (
+        {activeTab === "editor" && (
           <div className="space-y-4">
-            {!imageSrc ? (
-              <input type="file" onChange={(e) => setImageSrc(URL.createObjectURL(e.target.files[0]))} className="w-full p-4 border border-dashed border-gray-700 rounded-xl text-gray-400" />
+            {!selectedImage ? (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="w-full p-4 border border-dashed border-gray-700 rounded-xl text-gray-400 cursor-pointer"
+              />
             ) : (
               <div className="relative h-64 bg-gray-800 rounded-xl overflow-hidden">
-                <Cropper image={imageSrc} crop={crop} zoom={zoom} onCropChange={setCrop} onZoomChange={setZoom} />
+                <Cropper
+                  image={selectedImage}
+                  crop={cropArea}
+                  zoom={zoomLevel}
+                  onCropChange={setCropArea}
+                  onZoomChange={setZoomLevel}
+                />
               </div>
             )}
           </div>
         )}
-        {tab === "share" && <div className="text-gray-400">Post your content here...</div>}
+        
+        {activeTab === "share" && (
+          <div className="text-gray-400">Ready to share your latest content?</div>
+        )}
       </div>
     </div>
   );
-}
-git add src/components/dashboard/CreatorVideoTools.jsx
-git commit -m "Fixed duplicate import and export errors"
-git push
+};
+
+export default CreatorVideoTools;
+
+/**
+ * git add src/components/dashboard/CreatorVideoTools.jsx
+ * git commit -m "Refactor CreatorVideoTools component and clean up imports"
+ * git push
+ */
