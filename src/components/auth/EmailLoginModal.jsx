@@ -5,7 +5,6 @@ import { supabase } from "@/lib/supabaseClient";
 
 const SAVED_EMAILS_KEY = "gamer_saved_emails";
 
-// Helper functions (kept as provided)
 function getSavedEmails() {
   try { return JSON.parse(localStorage.getItem(SAVED_EMAILS_KEY) || "[]"); } catch { return []; }
 }
@@ -48,19 +47,15 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
     setStep("input"); setEmail(""); setUsername(""); setOtp(["","","","","",""]); setError(""); setLoading(false); setResendCooldown(0);
   };
 
-  // FIXED: Integrated the provider logic here
   const loginWithProvider = async (provider) => {
     setLoading(true);
     setError("");
     
-    const authOptions = {
-      redirectTo: window.location.origin,
-    };
-
+    const authOptions = { redirectTo: window.location.origin };
+    
+    // Force Google account picker
     if (provider === 'google') {
-      authOptions.queryParams = {
-        prompt: 'select_account',
-      };
+      authOptions.queryParams = { prompt: 'select_account' };
     }
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -74,64 +69,51 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
     }
   };
 
-  const startCooldown = () => {
-    setResendCooldown(60);
-    clearInterval(cooldownRef.current);
-    cooldownRef.current = setInterval(() => {
-      setResendCooldown(prev => { if (prev <= 1) { clearInterval(cooldownRef.current); return 0; } return prev - 1; });
-    }, 1000);
-  };
-
   const sendOtp = async (targetEmail) => {
     const target = (targetEmail || email).trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) { setError("Please enter a valid email address."); return; }
     setLoading(true); setError("");
     
-    const { error } = await supabase.auth.signInWithOtp({
-      email: target,
-      options: { shouldCreateUser: true },
-    });
-
+    const { error } = await supabase.auth.signInWithOtp({ email: target, options: { shouldCreateUser: true } });
     if (error) {
-      setError(error.message || "Could not send code. Please try again.");
+      setError(error.message || "Could not send code.");
       setLoading(false);
     } else {
-      saveEmail(target); 
-      setSavedEmails(getSavedEmails());
-      setEmail(target); 
-      setStep("otp"); 
-      startCooldown();
-      setLoading(false);
-      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+      saveEmail(target); setSavedEmails(getSavedEmails()); setEmail(target); setStep("otp");
+      startCooldown(); setLoading(false); setTimeout(() => otpRefs.current[0]?.focus(), 100);
     }
   };
 
   const submitOtp = async (code) => {
     const finalCode = code || otp.join("");
-    if (finalCode.length !== 6) { setError("Enter the 6-digit code from your email."); return; }
-    setLoading(true); setError("");
-    
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: finalCode,
-      type: 'email'
-    });
-
+    const { error } = await supabase.auth.verifyOtp({ email, token: finalCode, type: 'email' });
     if (error) {
-      setError("Invalid code. Please try again.");
-      setOtp(["","","","","",""]); 
-      setLoading(false);
-      setTimeout(() => otpRefs.current[0]?.focus(), 50);
+      setError("Invalid code."); setOtp(["","","","","",""]); setLoading(false);
     } else {
       window.location.replace("/");
     }
   };
 
-  // ... (Keep the rest of your render code exactly as it was)
-  // The rest of your JSX remains the same.
   const handleClose = () => { resetAll(); onClose(); };
   if (!isOpen) return null;
+
   return (
-    // ... your existing JSX ...
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.88)" }} onClick={handleClose}>
+        <motion.div initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.93, y: 24 }} onClick={e => e.stopPropagation()} className="bg-gray-950 border border-purple-700/40 rounded-3xl p-7 w-full max-w-md shadow-2xl">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2"><Gamepad2 className="w-5 h-5 text-white" /><span className="text-white font-black text-sm">Sign In</span></div>
+            <button onClick={handleClose}><X className="w-5 h-5 text-white" /></button>
+          </div>
+          
+          {/* Social Login Button */}
+          <button onClick={() => loginWithProvider("google")} className="w-full bg-white text-gray-800 p-3 rounded-2xl font-bold mb-4">
+            Continue with Google
+          </button>
+          
+          {/* Add your existing Tab logic and inputs here as they were before */}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
