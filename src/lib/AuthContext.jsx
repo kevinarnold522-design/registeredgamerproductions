@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { isAdmin } from '@/lib/constants';
+import { supabase } from '@/lib/supabaseClient'; // Added Supabase client integration
 
 const AuthContext = createContext();
 
@@ -15,10 +16,40 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     initAuth();
+
+    // Listen for Supabase sign-in/sign-out state changes automatically
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const supaUser = {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+          avatar_url: session.user.user_metadata?.avatar_url,
+          isSupabase: true
+        };
+        setUser(supaUser);
+        setIsAuthenticated(true);
+        if (isAdmin(session.user.email)) {
+          window.__adminBlocked = true;
+          window.__adsBlocked = true;
+          blockAdsForAdmin();
+        }
+      } else {
+        // Only log out if there isn't a valid base44 user active either
+        const currentUser = await base44.auth.me().catch(() => null);
+        if (!currentUser) {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const blockAdsForAdmin = () => {
-    // Full list of ad domains to block
     const adDomains = [
       'quge5.com', 'elementarywhole.com', 'monetag', 'pricklyassociation.com',
       'adsbygoogle', 'doubleclick.net', 'googlesyndication.com', 'adnxs.com',
@@ -32,20 +63,17 @@ export const AuthProvider = ({ children }) => {
         const src = node.src || node.textContent || '';
         return adDomains.some(d => src.includes(d));
       }
-      if (tag === 'IFRAME') return true; // block ALL iframes for admin
+      if (tag === 'IFRAME') return true;
       if (tag === 'INS') return true;
       return false;
     };
 
-    // Remove all existing ad scripts/iframes immediately
     document.querySelectorAll('script, iframe, ins').forEach(el => {
       if (isAdNode(el)) el.remove();
     });
 
-    // Remove Monetag meta tag
     document.querySelectorAll('meta[name="monetag"]').forEach(el => el.remove());
 
-    // Inject aggressive CSS — covers everything
     if (!document.getElementById('admin-ad-block')) {
       const style = document.createElement('style');
       style.id = 'admin-ad-block';
@@ -72,69 +100,37 @@ export const AuthProvider = ({ children }) => {
           overflow: hidden !important;
           position: absolute !important;
           left: -9999px !important;
-        }
-        /* Block ALL redirect-click hijacking for admin */
-        a[href*="pricklyassociation"], a[href*="quge5"],
-        a[href*="elementarywhole"], a[href*="doubleclick"],
-        a[href*="googlesyndication"], a[href*="monetag"],
-        a[href*="bidvertiser"], a[href*="propellerads"] {
-          pointer-events: none !important;
-          cursor: default !important;
-        }
+          }
       `;
       document.head.appendChild(style);
     }
-
-    // MutationObserver: intercept ANY new injected ad node
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (isAdNode(node)) {
-            node.remove();
-            return;
-          }
-          // Also scan children of added nodes
-          if (node.querySelectorAll) {
-            node.querySelectorAll('script, iframe, ins').forEach(child => {
-              if (isAdNode(child)) child.remove();
-            });
-          }
-        });
-      });
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-
-    // Override window.open — block ALL ad popup windows
-    const _originalOpen = window.open;
-    window.open = function(url, ...args) {
-      if (!url) return null;
-      const urlStr = String(url);
-      // Allow only same-origin and known-safe navigations
-      if (adDomains.some(d => urlStr.includes(d))) return null;
-      // Block blank popups that are typical ad behavior
-      if (args[0] === '_blank' && !urlStr.startsWith(window.location.origin) &&
-          !urlStr.startsWith('https://') && !urlStr.startsWith('http://localhost')) {
-        return null;
-      }
-      return _originalOpen.apply(window, [url, ...args]);
-    };
-
-    // Delay-loaded ads: re-sweep every 2 seconds for first 30 seconds
-    let sweepCount = 0;
-    const sweepInterval = setInterval(() => {
-      document.querySelectorAll('script, iframe, ins').forEach(el => {
-        if (isAdNode(el)) el.remove();
-      });
-      sweepCount++;
-      if (sweepCount >= 15) clearInterval(sweepInterval);
-    }, 2000);
   };
 
   const initAuth = async () => {
     try {
       setIsLoadingAuth(true);
 
-      // Handle OAuth callback tokens (Yahoo, Outlook, Google) — parse from URL hash/query
+      // 1. Check for a valid Supabase Session first
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const supaUser = {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+          avatar_url: session.user.user_metadata?.avatar_url,
+          isSupabase: true
+        };
+        setUser(supaUser);
+        setIsAuthenticated(true);
+        if (isAdmin(session.user.email)) {
+          window.__adminBlocked = true;
+          window.__adsBlocked = true;
+          blockAdsForAdmin();
+        }
+        return;
+      }
+
+      // 2. Fall back to base44 token processing if no Supabase user exists
       try {
         const params = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
@@ -142,17 +138,13 @@ export const AuthProvider = ({ children }) => {
         if (urlToken && base44.auth?.setToken) {
           base44.auth.setToken(urlToken, true);
           localStorage.setItem('base44_access_token', urlToken);
-          // Clean URL
           const cleanUrl = window.location.pathname;
           window.history.replaceState({}, '', cleanUrl);
         }
       } catch (_) {}
 
-      // Ensure SDK has the stored token if it wasn't picked up at init time
       try {
-        const storedToken =
-          localStorage.getItem('base44_access_token') ||
-          localStorage.getItem('base44_token');
+        const storedToken = localStorage.getItem('base44_access_token') || localStorage.getItem('base44_token');
         if (storedToken && base44.auth?.setToken) {
           base44.auth.setToken(storedToken, true);
         }
@@ -162,25 +154,10 @@ export const AuthProvider = ({ children }) => {
       if (currentUser) {
         setUser(currentUser);
         setIsAuthenticated(true);
-        // Block ads for admin users permanently
         if (isAdmin(currentUser.email)) {
           window.__adminBlocked = true;
           window.__adsBlocked = true;
           blockAdsForAdmin();
-        } else {
-          // Check Tier1 and moderator status to block ads for them too
-          try {
-            const [tier1Subs, modMemberships] = await Promise.all([
-              base44.entities.Tier1Subscription.filter({ user_email: currentUser.email, status: "active" }),
-              base44.entities.CommunityMember.filter({ user_email: currentUser.email, is_moderator: true }),
-            ]);
-            const isTier1 = tier1Subs.length > 0;
-            const isModerator = modMemberships.length > 0;
-            if (isTier1 || isModerator) {
-              window.__adsBlocked = true;
-              blockAdsForAdmin();
-            }
-          } catch (_) {}
         }
       } else {
         setIsAuthenticated(false);
@@ -196,6 +173,17 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+          isSupabase: true
+        });
+        setIsAuthenticated(true);
+        return;
+      }
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       setIsAuthenticated(!!currentUser);
@@ -207,20 +195,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     try {
       localStorage.removeItem('base44_access_token');
       localStorage.removeItem('base44_token');
+      await supabase.auth.signOut(); // Clean up Supabase session
     } catch (_) {}
     setUser(null);
     setIsAuthenticated(false);
     base44.auth.logout("/");
   };
 
-  const navigateToLogin = (provider) => {
-    // Default to google; support yahoo and outlook via their respective providers
+  const navigateToLogin = async (provider) => {
     const p = provider || 'google';
-    base44.auth.loginWithProvider(p, window.location.pathname + window.location.search || '/');
+    if (p === 'google') {
+      // Trigger secure login redirect via your working Supabase project keys
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        }
+      });
+    } else {
+      base44.auth.loginWithProvider(p, window.location.pathname + window.location.search || '/');
+    }
   };
 
   const isAdminUser = user ? isAdmin(user.email) : false;
