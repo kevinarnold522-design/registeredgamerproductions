@@ -1,106 +1,70 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, ArrowRight, Gamepad2, Shield, RefreshCw, CheckCircle, User, LogOut } from "lucide-react";
+import { X, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-
-// --- Helper Functions ---
-const SAVED_EMAILS_KEY = "gamer_saved_emails";
-function getSavedEmails() { try { return JSON.parse(localStorage.getItem(SAVED_EMAILS_KEY) || "[]"); } catch { return []; } }
-function saveEmail(email) { if (!email) return; const all = getSavedEmails().filter(e => e !== email); all.unshift(email); localStorage.setItem(SAVED_EMAILS_KEY, JSON.stringify(all.slice(0, 5))); }
 
 export default function EmailLoginModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // --- Auth Functions ---
   const loginWithProvider = async (provider) => {
     setLoading(true);
-    setError("");
-    
-    // Auth Options
     const authOptions = { redirectTo: window.location.origin };
     if (provider === 'google') authOptions.queryParams = { prompt: 'select_account' };
 
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: provider, // 'google', 'facebook', 'azure', 'openidconnect' (for Yahoo/AOL)
+      provider,
       options: authOptions,
     });
-
     if (error) { setError(error.message); setLoading(false); }
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    window.location.reload();
   };
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={onClose}>
-        <motion.div onClick={e => e.stopPropagation()} className="bg-gray-950 p-7 rounded-3xl w-full max-w-md border border-purple-700/40">
-          <div className="flex justify-between mb-5">
-            <h2 className="text-white font-black">Sign In</h2>
-            <button onClick={onClose}><X className="text-white" /></button>
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4" 
+        onClick={onClose}
+      >
+        <motion.div 
+          initial={{ scale: 0.95 }} animate={{ scale: 1 }}
+          onClick={e => e.stopPropagation()} 
+          className="bg-gray-900/90 border border-white/10 p-8 rounded-3xl w-full max-w-sm shadow-2xl backdrop-blur-xl"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-white font-black text-xl">Sign In</h2>
+            <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={20} /></button>
           </div>
 
-          {/* Social Providers */}
+          {/* Shiny Social Buttons */}
           <div className="space-y-3">
-            <button onClick={() => loginWithProvider("google")} className="w-full py-3 bg-white text-black rounded-xl font-bold">Google</button>
-            <button onClick={() => loginWithProvider("facebook")} className="w-full py-3 bg-[#1877F2] text-white rounded-xl font-bold">Facebook</button>
-            <button onClick={() => loginWithProvider("azure")} className="w-full py-3 bg-[#0078d4] text-white rounded-xl font-bold">Outlook / Microsoft</button>
-            <button onClick={() => loginWithProvider("openidconnect")} className="w-full py-3 bg-purple-700 text-white rounded-xl font-bold">Yahoo / AOL</button>
+            <SocialButton onClick={() => loginWithProvider("google")} bg="bg-white" text="text-black" icon="/logos/google.svg" label="Google" />
+            <SocialButton onClick={() => loginWithProvider("facebook")} bg="bg-[#1877F2]" text="text-white" icon="/logos/facebook.svg" label="Facebook" />
+            <SocialButton onClick={() => loginWithProvider("azure")} bg="bg-[#0078d4]" text="text-white" icon="/logos/outlook.svg" label="Outlook" />
+            <SocialButton onClick={() => loginWithProvider("openidconnect")} bg="bg-[#6001d2]" text="text-white" icon="/logos/yahoo.svg" label="Yahoo / AOL" />
           </div>
 
-          {/* Sign Out Button (Example placement) */}
-          <button onClick={signOut} className="mt-6 flex items-center gap-2 text-gray-500 hover:text-white text-sm">
-            <LogOut className="w-4 h-4" /> Sign Out
+          <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())} 
+            className="mt-8 flex items-center gap-2 text-gray-500 hover:text-gray-300 text-xs mx-auto transition-colors">
+            <LogOut size={14} /> Sign Out
           </button>
         </motion.div>
       </motion.div>
     </AnimatePresence>
   );
 }
-<div className="space-y-3">
-  <button onClick={() => loginWithProvider("google")} className="w-full flex items-center gap-3 py-3 px-4 bg-white text-black rounded-xl font-bold hover:bg-gray-100 transition-colors">
-    <img src="/logos/google.svg" alt="Google" className="w-5 h-5" />
-    Continue with Google
-  </button>
-  
-  <button onClick={() => loginWithProvider("facebook")} className="w-full flex items-center gap-3 py-3 px-4 bg-[#1877F2] text-white rounded-xl font-bold hover:opacity-90 transition-opacity">
-    <img src="/logos/facebook.svg" alt="Facebook" className="w-5 h-5" />
-    Continue with Facebook
-  </button>
 
-  <button onClick={() => loginWithProvider("azure")} className="w-full flex items-center gap-3 py-3 px-4 bg-[#0078d4] text-white rounded-xl font-bold hover:opacity-90 transition-opacity">
-    <img src="/logos/outlook.svg" alt="Outlook" className="w-5 h-5" />
-    Continue with Outlook
-  </button>
-
-  <button onClick={() => loginWithProvider("openidconnect")} className="w-full flex items-center gap-3 py-3 px-4 bg-[#6001d2] text-white rounded-xl font-bold hover:opacity-90 transition-opacity">
-    <img src="/logos/yahoo.svg" alt="Yahoo" className="w-5 h-5" />
-    Continue with Yahoo / AOL
-  </button>
-</div>
-# 1. Stage the changes
-git add .
-
-# 2. Commit the changes with a message
-git commit -m "Updated login modal with social providers"
-
-# 3. Push to GitHub
-git push
-// 1. Add icons to imports (Check if these specific icons are available in your version)
-import { Mail, ArrowRight } from "lucide-react"; 
-
-// 2. Use a simple span or SVG if Lucide doesn't have the specific brand icon
-<button onClick={() => loginWithProvider("google")} className="...">
-  <span className="text-xl">G</span> {/* Placeholder for icon */}
-  Continue with Google
-</button>
-<button onClick={() => loginWithProvider("google")} className="...">
-  {/* The leading slash "/" is mandatory for the public folder */}
-  <img src="/logos/google.svg" alt="Google" className="w-5 h-5" />
-  Continue with Google
-</button>
+// Sub-component for consistent styling
+function SocialButton({ onClick, bg, text, icon, label }) {
+  return (
+    <button 
+      onClick={onClick} 
+      className={`w-full flex items-center gap-4 py-3.5 px-5 ${bg} ${text} rounded-2xl font-bold text-sm shadow-lg hover:brightness-110 active:scale-[0.98] transition-all`}
+    >
+      <img src={icon} alt={label} className="w-5 h-5 object-contain" />
+      Continue with {label}
+    </button>
+  );
+}
