@@ -47,9 +47,8 @@ export default function ListingPage() {
     if (!id) { setLoading(false); return; }
     const load = async () => {
       try {
-        const listings = await base44.entities.Listing.filter({ id });
-        if (listings[0]) {
-          const l = listings[0];
+        const l = await base44.entities.Listing.get(id);
+        if (l) {
           setListing(l);
           setLikeCount(l.likes || 0);
           base44.entities.Listing.update(l.id, { views: (l.views || 0) + 1 }).catch(() => {});
@@ -59,11 +58,9 @@ export default function ListingPage() {
           if (user) {
             base44.entities.Favorite.filter({ user_email: user.email, listing_id: l.id }).then(favs => setLiked(favs.length > 0));
           }
-          // Load comments
           base44.entities.PostComment.filter({ post_id: l.id }).then(c => {
             setComments(c.filter(x => x.status !== "removed").sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
           });
-          // Load ratings
           base44.entities.PostRating.filter({ post_id: l.id }).then(ratings => {
             if (ratings.length > 0) {
               const avg = ratings.reduce((s, r) => s + r.rating, 0) / ratings.length;

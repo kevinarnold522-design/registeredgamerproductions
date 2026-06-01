@@ -43,7 +43,12 @@ export default function ModdingSection() {
     load();
   }, []);
 
-  const filtered = activeFilter === "All" ? mods : mods.filter(m => m.subcategory === activeFilter);
+  const filtered = activeFilter === "All" ? mods : mods.filter(m =>
+    m.digital_subcategory === activeFilter ||
+    m.game_name === activeFilter ||
+    m.game_platform === activeFilter ||
+    (m.tags || []).includes(activeFilter)
+  );
 
   return (
     <section id="modding" className="py-20 px-4 bg-gray-950">
@@ -107,7 +112,7 @@ export default function ModdingSection() {
                   )}
                 </div>
                 <div className="p-3">
-                  <p className="text-orange-400 text-xs font-semibold mb-0.5">{mod.subcategory}</p>
+                  <p className="text-orange-400 text-xs font-semibold mb-0.5">{mod.digital_subcategory || mod.game_name || mod.game_platform || "Mod"}</p>
                   <h3 className="text-white font-bold text-sm truncate">{mod.title}</h3>
                   <div className="flex items-center justify-between mt-2">
                     <span className={`font-black text-sm ${mod.price === 0 || mod.is_free ? "text-green-400" : "text-yellow-400"}`}>
