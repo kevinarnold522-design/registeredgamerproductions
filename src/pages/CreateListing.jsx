@@ -156,6 +156,53 @@ export default function CreateListing() {
   const removeImage = (idx) => setImages(images.filter((_, i) => i !== idx));
 
   const [moderationResult, setModerationResult] = useState(null);
+  const [savedFilters, setSavedFilters] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("listing_saved_filters") || "[]"); } catch { return []; }
+  });
+  const [filterName, setFilterName] = useState("");
+  const [showSaveFilter, setShowSaveFilter] = useState(false);
+  const [showLoadFilter, setShowLoadFilter] = useState(false);
+
+  const handleSaveFilter = () => {
+    if (!filterName.trim()) return;
+    const filterData = {
+      name: filterName,
+      data: {
+        product_type: form.product_type,
+        category: form.category,
+        subcategories: form.subcategories,
+        digital_subcategory: form.digital_subcategory,
+        physical_subcategory: form.physical_subcategory,
+        condition: form.condition,
+        is_premium: form.is_premium,
+        platform: form.platform,
+        game_platform: form.game_platform,
+        tags: form.tags,
+        card_animation: form.card_animation,
+        community_franchise_id: form.community_franchise_id,
+        modding_subcategory: form.modding_subcategory,
+        kofi_url: form.kofi_url,
+        buymeacoffee_url: form.buymeacoffee_url,
+        patreon_url: form.patreon_url,
+      }
+    };
+    const updated = [...savedFilters.filter(f => f.name !== filterName), filterData];
+    setSavedFilters(updated);
+    localStorage.setItem("listing_saved_filters", JSON.stringify(updated));
+    setFilterName("");
+    setShowSaveFilter(false);
+  };
+
+  const handleLoadFilter = (filter) => {
+    setForm(f => ({ ...f, ...filter.data, title: f.title, external_link: f.external_link }));
+    setShowLoadFilter(false);
+  };
+
+  const handleDeleteFilter = (name) => {
+    const updated = savedFilters.filter(f => f.name !== name);
+    setSavedFilters(updated);
+    localStorage.setItem("listing_saved_filters", JSON.stringify(updated));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -256,7 +303,55 @@ export default function CreateListing() {
             <ArrowLeft className="w-5 h-5" />
           </a>
           <h1 className="text-2xl font-black text-white">{editId ? "Edit Listing" : "Create New Listing"}</h1>
+          <div className="ml-auto flex gap-2">
+            {savedFilters.length > 0 && (
+              <button type="button" onClick={() => setShowLoadFilter(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-xs font-bold hover:bg-cyan-900/50 transition-colors">
+                📂 Load Filter ({savedFilters.length})
+              </button>
+            )}
+            <button type="button" onClick={() => setShowSaveFilter(v => !v)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs font-bold hover:bg-purple-900/50 transition-colors">
+              💾 Save Filter
+            </button>
+          </div>
         </div>
+
+        {/* Save Filter Modal */}
+        {showSaveFilter && (
+          <div className="mb-6 p-4 bg-gray-900 rounded-2xl border border-purple-700/50">
+            <p className="text-white font-bold text-sm mb-3">💾 Save Current Settings as Filter</p>
+            <p className="text-gray-500 text-xs mb-3">Saves everything except listing title and external link. Load it anytime for new listings.</p>
+            <div className="flex gap-2">
+              <input value={filterName} onChange={e => setFilterName(e.target.value)} placeholder="Filter name (e.g. GTA Mods Setup)"
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+              <button type="button" onClick={handleSaveFilter} disabled={!filterName.trim()}
+                className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-bold disabled:opacity-50 hover:bg-purple-700 transition-colors">Save</button>
+              <button type="button" onClick={() => setShowSaveFilter(false)}
+                className="px-4 py-2 rounded-xl bg-gray-800 text-gray-400 text-sm hover:bg-gray-700 transition-colors">Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {/* Load Filter Panel */}
+        {showLoadFilter && (
+          <div className="mb-6 p-4 bg-gray-900 rounded-2xl border border-cyan-700/40">
+            <p className="text-white font-bold text-sm mb-3">📂 Load Saved Filter</p>
+            <div className="space-y-2">
+              {savedFilters.map(f => (
+                <div key={f.name} className="flex items-center justify-between p-3 bg-gray-800 rounded-xl">
+                  <span className="text-white text-sm font-semibold">{f.name}</span>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => handleLoadFilter(f)}
+                      className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold hover:bg-cyan-700 transition-colors">Load</button>
+                    <button type="button" onClick={() => handleDeleteFilter(f.name)}
+                      className="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 text-xs font-bold hover:bg-red-900/60 transition-colors">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Images */}

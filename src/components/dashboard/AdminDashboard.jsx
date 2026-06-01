@@ -108,30 +108,33 @@ export default function AdminDashboard({ user, profile }) {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 bg-gray-950 min-h-screen">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
-          <Shield className="w-5 h-5 text-yellow-400" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
-            <GamerCheckmark accountType="admin" isVerified={true} userEmail={user?.email} size="lg" />
+    <div className="bg-gray-950 min-h-screen flex">
+      {/* LEFT: Vertical Sidebar */}
+      <div className="w-56 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex flex-col pt-4 pb-8 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+        <div className="px-4 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-white font-black text-xs leading-tight">Admin Panel</p>
+              <p className="text-yellow-400 text-[10px]">👑 CEO & President</p>
+            </div>
           </div>
-          <p className="text-yellow-400 text-sm font-semibold">👑 CEO & President · GAMER.PRODUCTIONS</p>
+          <GamerCheckmark accountType="admin" isVerified={true} userEmail={user?.email} size="sm" />
         </div>
+        <nav className="flex flex-col gap-0.5 px-2">
+          {tabs.map((t) => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-left transition-colors w-full ${tab === t.id ? "bg-yellow-500/20 border border-yellow-500/40 text-yellow-300" : "text-gray-400 hover:text-white hover:bg-gray-800"}`}>
+              <t.icon className="w-3.5 h-3.5 flex-shrink-0" /><span className="truncate">{t.label}</span>
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-8 bg-gray-950 sticky top-16 z-30 py-2">
-        {tabs.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${tab === t.id ? "bg-yellow-500/20 border border-yellow-500/50 text-yellow-300" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
-            <t.icon className="w-4 h-4" />{t.label}
-          </button>
-        ))}
-      </div>
+      {/* RIGHT: Content */}
+      <div className="flex-1 min-w-0 px-6 py-8 overflow-y-auto">
 
       {/* Overview */}
       {tab === "overview" && (
@@ -444,8 +447,6 @@ export default function AdminDashboard({ user, profile }) {
         <AdminTransactionsDashboard user={user} />
       )}
 
-
-
       {/* Orders full tab */}
       {tab === "orders" && (
         <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
@@ -526,6 +527,7 @@ export default function AdminDashboard({ user, profile }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

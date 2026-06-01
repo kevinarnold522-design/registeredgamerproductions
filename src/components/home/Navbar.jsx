@@ -48,9 +48,20 @@ export default function Navbar() {
   const [controllerCycling, setControllerCycling] = useState(false);
   const navigate = useNavigate();
 
+  const colorCycles = [
+    "from-purple-600 to-pink-600",   // default
+    "from-blue-500 to-cyan-500",
+    "from-green-500 to-emerald-500",
+    "from-yellow-500 to-orange-500",
+    "from-red-500 to-pink-500",
+    "from-indigo-500 to-violet-500",
+  ];
+  const [colorIdx, setColorIdx] = useState(0);
+
   const handleControllerClick = () => {
     setControllerCycling(true);
-    setTimeout(() => setControllerCycling(false), 3000);
+    setColorIdx(i => (i + 1) % colorCycles.length);
+    setTimeout(() => setControllerCycling(false), 600);
   };
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -83,7 +94,7 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-2 group">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center cursor-pointer ${controllerCycling ? "controller-color-cycle" : ""}`}
+                className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colorCycles[colorIdx]} flex items-center justify-center cursor-pointer transition-all duration-300`}
                 animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
               >
