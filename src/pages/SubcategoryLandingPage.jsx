@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2 } from "lucide-react";
+import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
@@ -228,6 +228,9 @@ export default function SubcategoryLandingPage() {
   const sub = params.get("sub") || "";
   const [cards, setCards] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [showRecommend, setShowRecommend] = useState(false);
+  const [recommendText, setRecommendText] = useState("");
+  const [recommendSent, setRecommendSent] = useState(false);
   const admin = isAdmin(user?.email);
 
   useEffect(() => {
@@ -255,6 +258,20 @@ export default function SubcategoryLandingPage() {
     window.location.href = `/sub-landing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}&deep=${encodeURIComponent(card.id)}`;
   };
 
+  const handleRecommend = async () => {
+    if (!recommendText.trim()) return;
+    await base44.entities.SubcategoryRequest.create({
+      seller_email: user?.email || "anonymous",
+      seller_username: profile?.username || "User",
+      parent_category: `${cat}/${sub}`,
+      subcategory_name: recommendText,
+      description: `Recommended from ${sub} landing page`,
+      status: "pending",
+    });
+    setRecommendSent(true);
+    setTimeout(() => { setShowRecommend(false); setRecommendSent(false); setRecommendText(""); }, 2000);
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
@@ -271,7 +288,11 @@ export default function SubcategoryLandingPage() {
             <h1 className="text-3xl font-black text-white">{decodeURIComponent(sub)}</h1>
             <p className="text-gray-500 text-sm mt-1">Explore cards in this subcategory{admin ? " · Hover cards to edit" : ""}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => setShowRecommend(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-cyan-300 border border-cyan-700/40 bg-cyan-900/20 hover:bg-cyan-900/40 transition-all">
+              💡 Recommend Subcategory
+            </button>
             {user && (
               <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}`}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
@@ -325,6 +346,38 @@ export default function SubcategoryLandingPage() {
 
       <AnimatePresence>
         {showAdd && <AddCardModal onClose={() => setShowAdd(false)} onAdd={handleAdd} />}
+        {showRecommend && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowRecommend(false)}>
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-gray-950 border border-cyan-700/40 rounded-2xl p-6 w-full max-w-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-black">💡 Recommend Subcategory</h3>
+                <button onClick={() => setShowRecommend(false)}><X className="w-4 h-4 text-gray-400" /></button>
+              </div>
+              {recommendSent ? (
+                <div className="text-center py-6">
+                  <p className="text-green-400 font-black text-lg">✅ Sent!</p>
+                  <p className="text-gray-400 text-sm mt-1">Admin will review your suggestion.</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-gray-400 text-sm mb-4">Suggest a new subcategory to add under <span className="text-white font-bold">{sub}</span>.</p>
+                  <input value={recommendText} onChange={e => setRecommendText(e.target.value)}
+                    placeholder="e.g. PS3 ISOs, FIFA 24 Kits..."
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-cyan-500 mb-4" />
+                  <button onClick={handleRecommend} disabled={!recommendText.trim()}
+                    className="w-full py-2.5 rounded-xl font-black text-white text-sm disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg, #0891b2, #7c3aed)" }}>
+                    Submit Recommendation
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

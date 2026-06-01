@@ -35,7 +35,7 @@ import SocialMediaManager from "./pages/SocialMediaManager";
 import TournamentsPage from "./pages/TournamentsPage";
 import SubcategoryLandingPage from "./pages/SubcategoryLandingPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
-import ListingPage from "./pages/ListingPage";
+import ListingPage from "./pages/ListingPage.jsx";
 import RoutingDashboard from "./pages/RoutingDashboard";
 
 const AuthenticatedApp = () => {

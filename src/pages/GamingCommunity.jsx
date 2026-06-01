@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -353,6 +353,10 @@ export default function GamingCommunity() {
   const [extraFranchises, setExtraFranchises] = useState([]);
   const [activeFranchise, setActiveFranchise] = useState(null);
   const [showRecommend, setShowRecommend] = useState(false);
+  const [hiddenIds, setHiddenIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("gc_hidden_ids") || "[]")); } catch { return new Set(); }
+  });
+  const [showHiddenPanel, setShowHiddenPanel] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(272);
   const dragging = useRef(false);
   const startX = useRef(0);
@@ -522,17 +526,32 @@ export default function GamingCommunity() {
     window.location.href = `/community/${franchise.id}`;
   };
 
-  // When a card is clicked (not join/arrow), route directly to community landing page
   const handleSelectFranchise = (franchise) => {
     window.location.href = `/community/${franchise.id}`;
+  };
+
+  const toggleHide = (id) => {
+    setHiddenIds(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      localStorage.setItem("gc_hidden_ids", JSON.stringify([...n]));
+      return n;
+    });
   };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
+      {/* Back button */}
+      <div className="pt-20 px-4 max-w-7xl mx-auto">
+        <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-2">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+      </div>
+
       {/* Hero */}
-      <div className="relative pt-16 overflow-hidden"
+      <div className="relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, #0a0a1a 0%, #1a0a2a 50%, #0a1a2a 100%)" }}>
         <div className="absolute inset-0 opacity-5" style={{
           backgroundImage: "linear-gradient(rgba(139,92,246,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.8) 1px, transparent 1px)",
@@ -586,6 +605,12 @@ export default function GamingCommunity() {
             {search && <span className="ml-1 text-purple-400">matching "{search}"</span>}
           </p>
           <div className="flex gap-2 flex-wrap">
+            {hiddenIds.size > 0 && (
+              <button onClick={() => setShowHiddenPanel(v => !v)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-gray-700 text-gray-400 hover:text-white transition-all">
+                <Eye className="w-3.5 h-3.5" /> Show Hidden ({hiddenIds.size})
+              </button>
+            )}
             {/* Recommend Game — bar style with glow */}
             <button onClick={() => setShowRecommend(true)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black text-white transition-all"
@@ -655,21 +680,45 @@ export default function GamingCommunity() {
                 <p className="text-gray-400 font-semibold">No communities found</p>
               </div>
             )}
-            {filtered.map((franchise) => (
-              <CommunityCard
-                key={franchise.id}
-                franchise={franchise}
-                memberCount={memberCounts[franchise.id] || 0}
-                isJoined={joinedIds.has(franchise.id)}
-                isModerator={isModerator(franchise.id)}
-                canAdmin={canAdminCard(franchise.id)}
-                community={communities[franchise.id] || null}
-                onJoin={() => handleJoinCard(franchise)}
-                onClick={() => handleCardClick(franchise)}
-                onSaveProfile={handleSaveProfile}
-                isActive={activeFranchise?.id === franchise.id}
-                onSelect={handleSelectFranchise}
-              />
+            {/* Hidden panel */}
+            {showHiddenPanel && hiddenIds.size > 0 && (
+              <div className="mb-2 p-2 bg-gray-800 rounded-xl border border-gray-700">
+                <p className="text-gray-400 text-[10px] font-bold mb-1.5">Hidden Communities — click to unhide:</p>
+                <div className="flex flex-wrap gap-1">
+                  {[...hiddenIds].map(id => {
+                    const f = allFranchises.find(x => x.id === id);
+                    return f ? (
+                      <button key={id} onClick={() => toggleHide(id)}
+                        className="px-2 py-1 rounded-lg bg-gray-700 text-white text-[10px] font-semibold hover:bg-purple-700 transition-colors">
+                        {f.name} 👁
+                      </button>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
+            {filtered.filter(f => !hiddenIds.has(f.id)).map((franchise) => (
+              <div key={franchise.id} className="relative group/hide">
+                <button
+                  onClick={e => { e.stopPropagation(); toggleHide(franchise.id); }}
+                  className="absolute top-1 left-1 z-20 w-5 h-5 rounded bg-black/60 text-gray-500 hover:text-red-400 hover:bg-black/80 transition-all opacity-0 group-hover/hide:opacity-100 flex items-center justify-center"
+                  title="Hide this community">
+                  <EyeOff className="w-3 h-3" />
+                </button>
+                <CommunityCard
+                  franchise={franchise}
+                  memberCount={memberCounts[franchise.id] || 0}
+                  isJoined={joinedIds.has(franchise.id)}
+                  isModerator={isModerator(franchise.id)}
+                  canAdmin={canAdminCard(franchise.id)}
+                  community={communities[franchise.id] || null}
+                  onJoin={() => handleJoinCard(franchise)}
+                  onClick={() => handleCardClick(franchise)}
+                  onSaveProfile={handleSaveProfile}
+                  isActive={activeFranchise?.id === franchise.id}
+                  onSelect={handleSelectFranchise}
+                />
+              </div>
             ))}
           </div>
 

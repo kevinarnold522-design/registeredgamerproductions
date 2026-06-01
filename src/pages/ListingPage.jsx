@@ -1,9 +1,63 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, ExternalLink, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, Send, MessageCircle, Bookmark } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, Send, MessageCircle, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
+import { isAdmin } from "@/lib/constants";
+
+function GlowDownloadButton({ isFree, price, onClick }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className="w-full py-4 rounded-xl font-black text-white text-base flex items-center justify-center gap-2 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}
+    >
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 60%, transparent 100%)",
+          backgroundSize: "200% 100%",
+        }}
+        animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+      />
+      <Download className="w-5 h-5 relative z-10" />
+      <span className="relative z-10">
+        {isFree ? "Download" : `Buy for ₱${price?.toLocaleString()}`}
+      </span>
+    </motion.button>
+  );
+}
+
+function AdOverlay({ onDone }) {
+  const [countdown, setCountdown] = useState(5);
+  useEffect(() => {
+    if (countdown <= 0) { onDone(); return; }
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.92)" }}>
+      <div className="bg-gray-900 border border-purple-700/50 rounded-2xl p-8 max-w-sm w-full text-center mx-4">
+        <p className="text-white font-black text-xl mb-2">⚡ Almost there!</p>
+        <p className="text-gray-400 text-sm mb-6">Please wait while we prepare your download...</p>
+        <div className="w-full bg-gray-800 rounded-full h-2 mb-4">
+          <motion.div className="h-2 rounded-full" style={{ background: "linear-gradient(90deg,#7c3aed,#ec4899)" }}
+            animate={{ width: `${((5 - countdown) / 5) * 100}%` }} transition={{ duration: 1 }} />
+        </div>
+        <p className="text-purple-300 font-black text-2xl">{countdown}s</p>
+        {countdown === 0 && (
+          <button onClick={onDone} className="mt-4 px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-sm">
+            Continue to Download →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function ListingPage() {
   const params = new URLSearchParams(window.location.search);
@@ -26,7 +80,12 @@ export default function ListingPage() {
   const [userRating, setUserRating] = useState(0);
   const [avgRating, setAvgRating] = useState(0);
   const [ratingCount, setRatingCount] = useState(0);
-  const commentsRef = useRef(null);
+  const [showAdOverlay, setShowAdOverlay] = useState(false);
+  const [pendingDownloadUrl, setPendingDownloadUrl] = useState(null);
+  const [siteSettings, setSiteSettings] = useState(null);
+  const [showRecommendModal, setShowRecommendModal] = useState(false);
+  const [recommendText, setRecommendText] = useState("");
+  const [recommendSent, setRecommendSent] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -40,6 +99,7 @@ export default function ListingPage() {
       } catch {}
       setAuthLoaded(true);
     };
+    base44.entities.SiteSettings.list().then(s => { if (s[0]) setSiteSettings(s[0]); }).catch(() => {});
     init();
   }, []);
 
@@ -81,60 +141,56 @@ export default function ListingPage() {
 
   const handleLike = async () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
-    if (!liked) {
-      setHeartAnim(true);
-      setTimeout(() => setHeartAnim(false), 900);
-    }
+    if (!liked) { setHeartAnim(true); setTimeout(() => setHeartAnim(false), 900); }
     if (liked) {
       const favs = await base44.entities.Favorite.filter({ user_email: user.email, listing_id: listing.id });
       if (favs[0]) await base44.entities.Favorite.delete(favs[0].id);
-      setLiked(false);
-      setLikeCount(c => c - 1);
+      setLiked(false); setLikeCount(c => c - 1);
       await base44.entities.Listing.update(listing.id, { likes: likeCount - 1 });
     } else {
       await base44.entities.Favorite.create({ user_email: user.email, listing_id: listing.id, listing_title: listing.title });
-      setLiked(true);
-      setLikeCount(c => c + 1);
+      setLiked(true); setLikeCount(c => c + 1);
       await base44.entities.Listing.update(listing.id, { likes: likeCount + 1 });
     }
   };
 
   const handleDownload = () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
-    const url = listing.external_link || listing.download_url;
-    if (url) {
-      // Increment download count
-      base44.entities.Listing.update(listing.id, { views: (listing.views || 0) + 1 }).catch(() => {});
+    const url = listing.download_url || listing.external_link;
+    if (!url) return;
+    base44.entities.Listing.update(listing.id, { views: (listing.views || 0) + 1 }).catch(() => {});
+    if (isAdmin(user.email)) {
       window.open(url, "_blank");
+    } else {
+      setPendingDownloadUrl(url);
+      setShowAdOverlay(true);
     }
+  };
+
+  const handleAdDone = () => {
+    setShowAdOverlay(false);
+    if (pendingDownloadUrl) { window.open(pendingDownloadUrl, "_blank"); setPendingDownloadUrl(null); }
   };
 
   const handleShare = async () => {
     const url = window.location.href;
-    try {
-      if (navigator.share) { await navigator.share({ title: listing.title, url }); return; }
-    } catch {}
+    try { if (navigator.share) { await navigator.share({ title: listing.title, url }); return; } } catch {}
     try { await navigator.clipboard.writeText(url); } catch {
       const el = document.createElement("textarea"); el.value = url;
       document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el);
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
   const handleRate = async (rating) => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
     const existing = await base44.entities.PostRating.filter({ post_id: listing.id, user_email: user.email });
-    if (existing[0]) {
-      await base44.entities.PostRating.update(existing[0].id, { rating });
-    } else {
-      await base44.entities.PostRating.create({ post_id: listing.id, user_email: user.email, rating });
-    }
+    if (existing[0]) { await base44.entities.PostRating.update(existing[0].id, { rating }); }
+    else { await base44.entities.PostRating.create({ post_id: listing.id, user_email: user.email, rating }); }
     setUserRating(rating);
     const allRatings = await base44.entities.PostRating.filter({ post_id: listing.id });
     const avg = allRatings.reduce((s, r) => s + r.rating, 0) / allRatings.length;
-    setAvgRating(Math.round(avg * 10) / 10);
-    setRatingCount(allRatings.length);
+    setAvgRating(Math.round(avg * 10) / 10); setRatingCount(allRatings.length);
   };
 
   const handleComment = async () => {
@@ -142,18 +198,30 @@ export default function ListingPage() {
     if (!newComment.trim()) return;
     setSubmittingComment(true);
     const c = await base44.entities.PostComment.create({
-      post_id: listing.id,
-      author_email: user.email,
+      post_id: listing.id, author_email: user.email,
       author_username: profile?.username || user.full_name || "Gamer",
-      content: newComment,
-      status: "active",
+      content: newComment, status: "active",
     });
-    setComments(prev => [...prev, c]);
-    setNewComment("");
-    setSubmittingComment(false);
+    setComments(prev => [...prev, c]); setNewComment(""); setSubmittingComment(false);
   };
 
+  const handleRecommend = async () => {
+    if (!recommendText.trim()) return;
+    await base44.entities.SubcategoryRequest.create({
+      seller_email: user?.email || "anonymous",
+      seller_username: profile?.username || "User",
+      parent_category: listing?.community_franchise_id || listing?.category || "general",
+      subcategory_name: recommendText,
+      description: `Recommended from listing: ${listing?.title}`,
+      status: "pending",
+    });
+    setRecommendSent(true);
+    setTimeout(() => { setShowRecommendModal(false); setRecommendSent(false); setRecommendText(""); }, 2000);
+  };
+
+  const adminUser = user && isAdmin(user.email);
   const isOwner = user && listing && user.email === listing.seller_email;
+  const canEdit = adminUser || isOwner;
 
   if (loading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -170,67 +238,78 @@ export default function ListingPage() {
 
   const ytId = listing.youtube_video_id || (listing.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
   const isFree = !listing.price || listing.price === 0 || listing.is_free;
-  const hasDownload = listing.external_link || listing.download_url;
+  const hasDownload = listing.download_url || listing.external_link;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
+      {showAdOverlay && <AdOverlay onDone={handleAdDone} />}
+
       <div className="pt-20 max-w-5xl mx-auto px-4 pb-16">
         {/* Back + Edit */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          {isOwner && (
-            <a href={`/create-listing?edit=${listing.id}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-500/50 text-purple-300 text-sm font-bold hover:bg-purple-900/60 transition-all">
-              <Pencil className="w-4 h-4" /> Edit Listing
-            </a>
-          )}
+          <div className="flex items-center gap-2">
+            {canEdit && (
+              <a href={`/create-listing?edit=${listing.id}`}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-500/50 text-purple-300 text-sm font-bold hover:bg-purple-900/60 transition-all">
+                <Pencil className="w-4 h-4" /> Edit Listing
+              </a>
+            )}
+            <button onClick={() => setShowRecommendModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all">
+              💡 Recommend Subcategory
+            </button>
+          </div>
         </div>
+
+        {/* SELLER — top */}
+        {seller && (
+          <a href={`/channel?user=${listing.seller_email}`}
+            className="flex items-center gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-500/40 transition-colors mb-5">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
+              {seller.avatar_url
+                ? <img src={seller.avatar_url} className="w-full h-full object-cover" alt="" />
+                : <div className="w-full h-full flex items-center justify-center text-white font-bold">{(seller.username || "S")[0]}</div>}
+            </div>
+            <div className="flex-1">
+              <p className="text-white font-bold text-sm">{seller.display_name || seller.username}</p>
+              <p className="text-gray-500 text-xs">@{seller.username} · View Channel</p>
+            </div>
+            <span className="text-purple-400 text-xs font-bold">View Channel →</span>
+          </a>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT: Media */}
           <div>
-            {/* Main image / video */}
             <div className="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center mb-3">
               {ytId ? (
-                <iframe
-                  src={`https://www.youtube.com/embed/${ytId}`}
-                  title={listing.title}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                <iframe src={`https://www.youtube.com/embed/${ytId}`} title={listing.title} className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
               ) : listing.video_url ? (
                 <video src={listing.video_url} controls className="w-full h-full object-contain" />
               ) : listing.images?.[imgIdx] ? (
                 <img src={listing.images[imgIdx]} alt={listing.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-3 text-gray-600">
-                  <Play className="w-16 h-16" />
-                  <p className="text-sm">No media</p>
+                  <Play className="w-16 h-16" /><p className="text-sm">No media</p>
                 </div>
               )}
-
-              {/* Heart burst animation overlay */}
               <AnimatePresence>
                 {heartAnim && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 1 }}
-                    animate={{ scale: 2.5, opacity: 0 }}
-                    exit={{ opacity: 0 }}
+                  <motion.div initial={{ scale: 0, opacity: 1 }} animate={{ scale: 2.5, opacity: 0 }} exit={{ opacity: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                  >
+                    className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <Heart className="w-24 h-24 text-purple-400 fill-purple-400" style={{ filter: "drop-shadow(0 0 20px rgba(168,85,247,0.9))" }} />
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Image thumbnails */}
             {listing.images?.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {listing.images.map((img, i) => (
@@ -240,7 +319,6 @@ export default function ListingPage() {
               </div>
             )}
 
-            {/* Social actions */}
             <div className="flex items-center gap-3 mt-4">
               <button onClick={handleLike}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all font-semibold text-sm ${liked ? "bg-purple-900/40 border-purple-500 text-purple-300" : "bg-gray-900 border-gray-700 text-gray-400 hover:border-purple-500/50"}`}>
@@ -252,38 +330,30 @@ export default function ListingPage() {
                 <Share2 className="w-4 h-4" /> {copied ? "Copied!" : "Share"}
               </button>
               <div className="flex items-center gap-1.5 text-gray-600 text-sm ml-auto">
-                <Eye className="w-4 h-4" /> {(listing.views || 0).toLocaleString()} views
-              </div>
-              <div className="flex items-center gap-1.5 text-yellow-500/70 text-sm">
-                <Star className="w-4 h-4 fill-yellow-500/50" /> {(listing.likes || 0).toLocaleString()} favourites
+                <Eye className="w-4 h-4" /> {(listing.views || 0).toLocaleString()}
               </div>
             </div>
 
-            {/* Rating */}
             <div className="mt-4 p-4 bg-gray-900 rounded-2xl border border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-white font-bold text-sm">Rate this listing</p>
-                {avgRating > 0 ? (
-                  <span className="text-yellow-400 text-sm font-black">⭐ {avgRating} <span className="text-gray-500 font-normal">({ratingCount})</span></span>
-                ) : (
-                  <span className="text-gray-500 text-xs italic">⭐ Be the first to rate this!</span>
-                )}
+                {avgRating > 0
+                  ? <span className="text-yellow-400 text-sm font-black">⭐ {avgRating} <span className="text-gray-500 font-normal">({ratingCount})</span></span>
+                  : <span className="text-gray-500 text-xs italic">⭐ Be the first!</span>}
               </div>
               <div className="flex gap-1">
                 {[1,2,3,4,5].map(s => (
-                  <button key={s} onClick={() => handleRate(s)}
-                    className="w-8 h-8 transition-transform hover:scale-125">
+                  <button key={s} onClick={() => handleRate(s)} className="w-8 h-8 transition-transform hover:scale-125">
                     <Star className={`w-6 h-6 ${s <= userRating ? "fill-yellow-400 text-yellow-400" : "text-gray-600 hover:text-yellow-400"}`} />
                   </button>
                 ))}
               </div>
-              {userRating > 0 && <p className="text-green-400 text-xs mt-1">You rated this {userRating}/5 ⭐</p>}
+              {userRating > 0 && <p className="text-green-400 text-xs mt-1">You rated {userRating}/5 ⭐</p>}
             </div>
           </div>
 
           {/* RIGHT: Details */}
           <div className="flex flex-col gap-4">
-            {/* Category badges */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-1 rounded-full bg-purple-900/40 border border-purple-700/40 text-purple-300 text-xs font-bold capitalize">{listing.category}</span>
               {listing.digital_subcategory && <span className="px-2.5 py-1 rounded-full bg-orange-900/30 border border-orange-700/30 text-orange-300 text-xs font-bold capitalize">{listing.digital_subcategory}</span>}
@@ -294,35 +364,26 @@ export default function ListingPage() {
 
             <h1 className="text-2xl font-black text-white leading-tight">{listing.title}</h1>
 
-            {/* Price + Download count */}
             <div className="flex items-center gap-4">
-              {isFree ? (
-                <span className="text-3xl font-black text-green-400">FREE</span>
-              ) : (
-                <span className="text-3xl font-black text-purple-300">₱{listing.price?.toLocaleString()}</span>
-              )}
+              {!isFree && <span className="text-3xl font-black text-purple-300">₱{listing.price?.toLocaleString()}</span>}
               <span className="text-gray-500 text-sm flex items-center gap-1">
                 <Download className="w-3.5 h-3.5" /> {(listing.views || 0).toLocaleString()} downloads
               </span>
             </div>
 
-            {/* Game info */}
-            {(listing.game_name || listing.game_platform || listing.platforms?.length > 0) && (
+            {(listing.game_name || listing.platforms?.length > 0) && (
               <div className="flex gap-2 flex-wrap">
                 {listing.game_name && <span className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold">🎮 {listing.game_name}</span>}
                 {(listing.platforms || []).map(p => (
                   <span key={p} className="px-2.5 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">{p}</span>
                 ))}
-                {!listing.platforms?.length && listing.game_platform && <span className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold">📱 {listing.game_platform}</span>}
               </div>
             )}
 
-            {/* Description */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
               <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{listing.description || "No description provided."}</p>
             </div>
 
-            {/* Tags */}
             {listing.tags?.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {listing.tags.map(tag => (
@@ -331,13 +392,10 @@ export default function ListingPage() {
               </div>
             )}
 
-            {/* Appears in communities */}
             <div className="bg-gray-900/50 rounded-xl border border-gray-800 p-3">
               <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Also appears in:</p>
               <div className="flex flex-wrap gap-2">
-                <a href={`/category?cat=${listing.category}`} className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs hover:bg-purple-900/50 transition-colors capitalize">
-                  {listing.category}
-                </a>
+                <a href={`/category?cat=${listing.category}`} className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs hover:bg-purple-900/50 transition-colors capitalize">{listing.category}</a>
                 {listing.community_franchise_id && (
                   <a href={`/community/${listing.community_franchise_id}`} className="px-2 py-1 rounded-lg bg-cyan-900/30 border border-cyan-700/30 text-cyan-300 text-xs hover:bg-cyan-900/50 transition-colors">
                     🎮 {listing.community_franchise_id} Community
@@ -351,30 +409,8 @@ export default function ListingPage() {
               </div>
             </div>
 
-            {/* Seller */}
-            {seller && (
-              <a href={`/channel?user=${listing.seller_email}`}
-                className="flex items-center gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-500/40 transition-colors">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
-                  {seller.avatar_url
-                    ? <img src={seller.avatar_url} className="w-full h-full object-cover" alt="" />
-                    : <div className="w-full h-full flex items-center justify-center text-white font-bold">{(seller.username || "S")[0]}</div>}
-                </div>
-                <div>
-                  <p className="text-white font-bold text-sm">{seller.display_name || seller.username}</p>
-                  <p className="text-gray-500 text-xs">@{seller.username} · View Channel</p>
-                </div>
-              </a>
-            )}
-
-            {/* Download host badge */}
             {listing.download_host && (() => {
-              const hosts = {
-                mediafire: { label: "Mediafire", color: "#1E90FF" },
-                modsfire: { label: "Modsfire", color: "#FF4500" },
-                mega: { label: "Mega", color: "#D9272D" },
-                sharemods: { label: "Sharemods", color: "#22C55E" },
-              };
+              const hosts = { mediafire: { label: "Mediafire", color: "#1E90FF" }, modsfire: { label: "Modsfire", color: "#FF4500" }, mega: { label: "Mega", color: "#D9272D" }, sharemods: { label: "Sharemods", color: "#22C55E" } };
               const h = hosts[listing.download_host];
               if (!h) return null;
               return (
@@ -385,59 +421,48 @@ export default function ListingPage() {
               );
             })()}
 
-            {/* Download / Buy CTA */}
             <div className="flex flex-col gap-3">
-              {hasDownload && (
-                <motion.button
-                  onClick={handleDownload}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 rounded-xl font-black text-white text-base flex items-center justify-center gap-2"
-                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                  <Download className="w-5 h-5" />
-                  {isFree ? "Download Free" : `Buy for ₱${listing.price?.toLocaleString()}`}
-                </motion.button>
-              )}
-              {listing.external_link && (
-                <a href={listing.external_link} target="_blank" rel="noopener noreferrer"
-                  className="w-full py-3 rounded-xl font-bold text-gray-300 text-sm flex items-center justify-center gap-2 border border-gray-700 hover:border-gray-500 transition-colors">
-                  <ExternalLink className="w-4 h-4" /> Open External Link
-                </a>
-              )}
-              {/* Support links */}
+              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} onClick={handleDownload} />}
               <div className="flex gap-2 flex-wrap">
                 {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80">☕ Ko-fi</a>}
                 {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80">☕ BuyMeACoffee</a>}
                 {listing.patreon_url && <a href={listing.patreon_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-red-900/30 border border-red-700/40 text-red-300 text-xs font-bold hover:opacity-80">🎖️ Patreon</a>}
               </div>
             </div>
+
+            {siteSettings && (
+              <div className="bg-gray-900/60 rounded-xl border border-gray-800 p-4">
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3">🎮 GAMER.PRODUCTIONS</p>
+                <div className="flex flex-wrap gap-2">
+                  {siteSettings.youtube_url && <a href={siteSettings.youtube_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-red-900/30 border border-red-700/30 text-red-300 text-xs font-bold hover:opacity-80">▶ YouTube</a>}
+                  {siteSettings.facebook_url && <a href={siteSettings.facebook_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-bold hover:opacity-80">f Facebook</a>}
+                  {siteSettings.tiktok_url && <a href={siteSettings.tiktok_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-xs font-bold hover:opacity-80">♪ TikTok</a>}
+                  {siteSettings.discord_url && <a href={siteSettings.discord_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-indigo-900/30 border border-indigo-700/30 text-indigo-300 text-xs font-bold hover:opacity-80">⚡ Discord</a>}
+                  {siteSettings.instagram_url && <a href={siteSettings.instagram_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-bold hover:opacity-80">📸 Instagram</a>}
+                  {siteSettings.twitter_url && <a href={siteSettings.twitter_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-sky-900/30 border border-sky-700/30 text-sky-300 text-xs font-bold hover:opacity-80">🐦 Twitter/X</a>}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Comments Section */}
-        <div ref={commentsRef} className="mt-12">
+        {/* Comments */}
+        <div className="mt-12">
           <div className="flex items-center gap-2 mb-6">
             <MessageCircle className="w-5 h-5 text-purple-400" />
             <h2 className="text-xl font-black text-white">Comments</h2>
             <span className="px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-300 text-xs font-bold">{comments.length}</span>
           </div>
-
-          {/* Comment input */}
           {user ? (
             <div className="flex gap-3 mb-6">
               <div className="w-9 h-9 rounded-full bg-gray-700 flex-shrink-0 overflow-hidden">
-                {profile?.avatar_url
-                  ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">{(profile?.username || "G")[0]}</div>}
+                {profile?.avatar_url ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">{(profile?.username || "G")[0]}</div>}
               </div>
               <div className="flex-1 flex gap-2">
-                <input
-                  value={newComment}
-                  onChange={e => setNewComment(e.target.value)}
+                <input value={newComment} onChange={e => setNewComment(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && !e.shiftKey && handleComment()}
                   placeholder="Write a comment..."
-                  className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500"
-                />
+                  className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
                 <button onClick={handleComment} disabled={!newComment.trim() || submittingComment}
                   className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 transition-colors flex-shrink-0">
                   <Send className="w-4 h-4 text-white" />
@@ -447,25 +472,15 @@ export default function ListingPage() {
           ) : (
             <div className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 text-center">
               <p className="text-gray-400 text-sm mb-2">Sign in to leave a comment</p>
-              <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-bold hover:bg-purple-700 transition-colors">
-                Sign In
-              </button>
+              <button onClick={() => base44.auth.redirectToLogin(window.location.href)} className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-bold hover:bg-purple-700 transition-colors">Sign In</button>
             </div>
           )}
-
-          {/* Comments list */}
           <div className="space-y-4">
             {comments.length === 0 ? (
-              <div className="text-center py-8 text-gray-600">
-                <MessageCircle className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No comments yet. Be the first!</p>
-              </div>
+              <div className="text-center py-8 text-gray-600"><MessageCircle className="w-10 h-10 mx-auto mb-2 opacity-30" /><p className="text-sm">No comments yet. Be the first!</p></div>
             ) : comments.map(c => (
               <div key={c.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-xs text-white font-bold">
-                  {(c.author_username || "G")[0]}
-                </div>
+                <div className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-xs text-white font-bold">{(c.author_username || "G")[0]}</div>
                 <div className="flex-1 bg-gray-900 rounded-xl border border-gray-800 px-4 py-3">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-white font-bold text-xs">{c.author_username}</span>
@@ -478,6 +493,39 @@ export default function ListingPage() {
           </div>
         </div>
       </div>
+
+      {/* Recommend Modal */}
+      <AnimatePresence>
+        {showRecommendModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.85)" }}
+            onClick={() => setShowRecommendModal(false)}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-gray-950 border border-cyan-700/40 rounded-2xl p-6 w-full max-w-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-white font-black">💡 Recommend Subcategory</h3>
+                <button onClick={() => setShowRecommendModal(false)}><X className="w-4 h-4 text-gray-400" /></button>
+              </div>
+              {recommendSent ? (
+                <div className="text-center py-6"><p className="text-green-400 font-black text-lg">✅ Sent!</p><p className="text-gray-400 text-sm mt-1">Admin will review your recommendation.</p></div>
+              ) : (
+                <>
+                  <p className="text-gray-400 text-sm mb-4">Suggest a new subcategory for Gaming or Modding community related to this listing.</p>
+                  <input value={recommendText} onChange={e => setRecommendText(e.target.value)}
+                    placeholder="e.g. NBA 2K Mobile Mods"
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-cyan-500 mb-4" />
+                  <button onClick={handleRecommend} disabled={!recommendText.trim()}
+                    className="w-full py-2.5 rounded-xl font-black text-white text-sm disabled:opacity-50"
+                    style={{ background: "linear-gradient(135deg, #0891b2, #7c3aed)" }}>
+                    Submit Recommendation
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
