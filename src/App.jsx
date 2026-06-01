@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ShootingStars from '@/components/home/ShootingStars';
+import SidebarLayout from '@/components/layout/SidebarLayout';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import LanguagePrompt from '@/components/layout/LanguagePrompt';
@@ -108,7 +109,9 @@ function App() {
           <Router>
             <ShootingStars />
             <div style={{ position: "relative", zIndex: 10 }}>
-              <AuthenticatedApp />
+              <SidebarLayout>
+                <AuthenticatedApp />
+              </SidebarLayout>
             </div>
             <LanguagePrompt />
           </Router>

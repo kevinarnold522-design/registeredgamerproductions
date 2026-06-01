@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, X, Tag, Gamepad2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-export default function GlobalSearchBar() {
+export default function GlobalSearchBar({ compact = false }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -74,7 +74,7 @@ export default function GlobalSearchBar() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           onFocus={() => query && setOpen(true)}
-          placeholder="Search listings, mods, games..."
+          placeholder={compact ? "Search..." : "Search listings, mods, games..."}
           className="flex-1 bg-transparent text-white text-sm placeholder-gray-500 focus:outline-none min-w-0"
         />
         {query && (

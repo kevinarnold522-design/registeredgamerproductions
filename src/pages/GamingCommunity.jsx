@@ -22,12 +22,16 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const [allPosts, allListings] = await Promise.all([
-          base44.entities.CommunityPost.filter({ franchise_id: franchise.id }),
-          base44.entities.Listing.filter({ community_franchise_id: franchise.id }),
-        ]);
+        // Load posts for this franchise
+        const allPosts = await base44.entities.CommunityPost.filter({ franchise_id: franchise.id });
+        // Load listings: first try franchise-linked, then fallback to recent active listings
+        let allListings = await base44.entities.Listing.filter({ community_franchise_id: franchise.id }, "-created_date", 20);
+        if (allListings.length === 0) {
+          // Fallback: show recent listings matching franchise name or any active listings
+          allListings = await base44.entities.Listing.list("-created_date", 20);
+        }
         setPosts(allPosts.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50));
-        setListings(allListings.filter(l => l.status === "active").slice(0, 12));
+        setListings(allListings.filter(l => l.status === "active").slice(0, 20));
       } catch { setPosts([]); setListings([]); }
       setLoading(false);
     };
@@ -544,7 +548,7 @@ export default function GamingCommunity() {
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       {/* Back button */}
-      <div className="pt-20 px-4 max-w-7xl mx-auto">
+      <div className="pt-6 px-4 max-w-7xl mx-auto">
         <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-2">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
