@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, PieChart, Youtube, Facebook, Trophy } from "lucide-react";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
@@ -142,6 +142,16 @@ export default function AuthNavbar({ user, profile }) {
               Add Listing
             </Link>
           )}
+          {/* Go Live */}
+          <Link
+            to="/studio"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-red-300 text-sm font-bold transition-all glass-3d-btn"
+            style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08))", border: "1px solid rgba(239,68,68,0.35)" }}
+          >
+            <Radio className="w-4 h-4" />
+            <span className="hidden lg:block">Go Live</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          </Link>
           {/* Language Selector */}
           <LanguageSelector />
           {/* Messages */}

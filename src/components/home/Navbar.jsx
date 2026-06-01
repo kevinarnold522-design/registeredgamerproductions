@@ -7,7 +7,7 @@ import EmailLoginModal from "@/components/auth/EmailLoginModal.jsx";
 
 const navLinks = [
   { label: "Categories", href: "#categories" },
-  { label: "Live", href: "/category?cat=livestream", live: true },
+  { label: "Go Live", href: "/studio", live: true },
   { label: "Mods", href: "/category?cat=modding" },
   { label: "Tournaments", href: "/category?cat=tournaments" },
   { label: "Marketplace", href: "/category?cat=buy_sell" },
@@ -45,7 +45,13 @@ export default function Navbar() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [controllerCycling, setControllerCycling] = useState(false);
   const navigate = useNavigate();
+
+  const handleControllerClick = () => {
+    setControllerCycling(true);
+    setTimeout(() => setControllerCycling(false), 3000);
+  };
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
@@ -76,7 +82,8 @@ export default function Navbar() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 group">
               <motion.div
-                className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center"
+                onClick={handleControllerClick}
+                className={`w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center cursor-pointer ${controllerCycling ? "controller-color-cycle" : ""}`}
                 animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
               >
@@ -125,11 +132,17 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowSignUpModal(true)}
-                className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-black hover:opacity-90 transition-opacity shadow-lg shadow-purple-900/40 radiant-glow"
+                className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-sm font-black transition-all shadow-lg radiant-glow"
+                style={{
+                  background: "linear-gradient(135deg, #ff6a00, #ee0979, #ff6a00)",
+                  backgroundSize: "200% 200%",
+                  animation: "fire-shift 2s ease infinite",
+                  boxShadow: "0 0 20px rgba(238,9,121,0.5), 0 0 40px rgba(255,106,0,0.3)",
+                }}
               >
-                <Zap className="w-4 h-4" />
-                Sign Up Free
+                🔥 Get Started
               </button>
+              <style>{`@keyframes fire-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }`}</style>
               <button
                 onClick={() => setShowLoginModal(true)}
                 className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 text-white text-sm font-black hover:from-gray-700 hover:to-gray-600 transition-all shadow-lg radiant-glow"
@@ -168,9 +181,10 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => { setMenuOpen(false); setShowSignUpModal(true); }}
-              className="text-center px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold"
+              className="text-center px-4 py-2 rounded-lg text-white font-semibold"
+              style={{ background: "linear-gradient(135deg, #ff6a00, #ee0979)" }}
             >
-              Join Now
+              🔥 Get Started
             </button>
           </div>
         )}

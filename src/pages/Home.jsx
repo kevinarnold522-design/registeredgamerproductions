@@ -24,13 +24,16 @@ import DailyRewards from "@/components/rewards/DailyRewards";
 import DailyRewardPopup from "@/components/rewards/DailyRewardPopup";
 import AdminApprovalPanel from "@/components/community/AdminApprovalPanel";
 import VerifiedBadgeBanner from "@/components/home/VerifiedBadgeBanner";
+import First10KBanner from "@/components/home/First10KBanner";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import useScrollReveal from "@/hooks/useScrollReveal";
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [profile, setProfile] = useState(null);
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
+  useScrollReveal();
 
   // Flood ads for non-signed-in users after 1 minute
   useEffect(() => {
@@ -47,7 +50,7 @@ export default function Home() {
       adDiv.setAttribute('data-zone', '243750');
       adDiv.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;';
       document.body.appendChild(adDiv);
-    }, 60000); // 1 minute
+    }, 240000); // 4 minute grace period
     return () => clearTimeout(timer);
   }, [isAuthenticated]);
 
@@ -94,6 +97,9 @@ export default function Home() {
 
             {/* GET VERIFIED BADGE — prominent top banner */}
             <VerifiedBadgeBanner />
+
+            {/* First 10K Free Verified Badge promotion */}
+            <First10KBanner user={user} profile={profile} />
 
             {/* Categories moved up — prominent position */}
             <CategoryCards />
