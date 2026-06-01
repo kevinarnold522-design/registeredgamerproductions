@@ -149,26 +149,46 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
           ))}
         </div>
       </div>
-      {/* Logo upload — device only */}
+      {/* Logo upload — device + URL */}
       <div>
         <p className="text-gray-500 text-[10px] mb-1">Profile Picture / Logo</p>
-        <button onClick={() => logoRef.current?.click()}
-          className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/50 text-purple-300 text-[10px] font-bold hover:bg-purple-900/70 transition-all">
-          <Upload className="w-3 h-3" />
-          {uploading === "logo" ? "Uploading..." : logoUrl ? "Replace Photo" : "Upload from Device"}
-        </button>
-        <input ref={logoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handleUpload(e.target.files[0], "logo")} />
+        <div className="flex gap-1 mb-1">
+          <button onClick={() => logoRef.current?.click()}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/50 text-purple-300 text-[10px] font-bold hover:bg-purple-900/70 transition-all">
+            <Upload className="w-3 h-3" />{uploading === "logo" ? "…" : "Device"}
+          </button>
+          <input ref={logoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handleUpload(e.target.files[0], "logo")} />
+        </div>
+        <div className="flex gap-1">
+          <input
+            placeholder="Or paste image URL"
+            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white text-[9px] placeholder-gray-600 focus:outline-none"
+            onBlur={e => { if (e.target.value.trim()) { setLogoUrl(e.target.value.trim()); e.target.value = ""; } }}
+            onKeyDown={e => { if (e.key === "Enter" && e.target.value.trim()) { setLogoUrl(e.target.value.trim()); e.target.value = ""; } }}
+          />
+          <span className="text-[8px] text-blue-400 flex items-center px-1">URL</span>
+        </div>
         {logoUrl && <img src={logoUrl} className="mt-1 w-10 h-10 rounded-lg object-cover border border-gray-700" alt="" />}
       </div>
-      {/* Cover upload — device only */}
+      {/* Cover upload — device + URL */}
       <div>
         <p className="text-gray-500 text-[10px] mb-1">Cover / Background</p>
-        <button onClick={() => coverRef.current?.click()}
-          className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-blue-900/40 border border-blue-700/50 text-blue-300 text-[10px] font-bold hover:bg-blue-900/70 transition-all">
-          <Upload className="w-3 h-3" />
-          {uploading === "cover" ? "Uploading..." : coverUrl ? "Replace Cover" : "Upload Cover from Device"}
-        </button>
-        <input ref={coverRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handleUpload(e.target.files[0], "cover")} />
+        <div className="flex gap-1 mb-1">
+          <button onClick={() => coverRef.current?.click()}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-blue-900/40 border border-blue-700/50 text-blue-300 text-[10px] font-bold hover:bg-blue-900/70 transition-all">
+            <Upload className="w-3 h-3" />{uploading === "cover" ? "…" : "Device"}
+          </button>
+          <input ref={coverRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => handleUpload(e.target.files[0], "cover")} />
+        </div>
+        <div className="flex gap-1">
+          <input
+            placeholder="Or paste cover URL"
+            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-white text-[9px] placeholder-gray-600 focus:outline-none"
+            onBlur={e => { if (e.target.value.trim()) { setCoverUrl(e.target.value.trim()); e.target.value = ""; } }}
+            onKeyDown={e => { if (e.key === "Enter" && e.target.value.trim()) { setCoverUrl(e.target.value.trim()); e.target.value = ""; } }}
+          />
+          <span className="text-[8px] text-blue-400 flex items-center px-1">URL</span>
+        </div>
         {coverUrl && <img src={coverUrl} className="mt-1 w-full h-10 rounded-lg object-cover opacity-70 border border-gray-700" alt="" />}
       </div>
       <button onClick={handleSave} className="w-full py-1.5 rounded-lg bg-green-700 text-white text-[10px] font-black flex items-center justify-center gap-1">

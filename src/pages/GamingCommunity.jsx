@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -13,16 +13,22 @@ import RecommendModal from "@/components/shared/RecommendModal";
 // Newsfeed for a community franchise
 function CommunityNewsfeed({ franchise, community, user, profile }) {
   const [posts, setPosts] = useState([]);
+  const [listings, setListings] = useState([]);
   const [newPost, setNewPost] = useState("");
+  const [crossPostModding, setCrossPostModding] = useState(false);
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const all = await base44.entities.CommunityPost.filter({ franchise_id: franchise.id });
-        setPosts(all.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50));
-      } catch { setPosts([]); }
+        const [allPosts, allListings] = await Promise.all([
+          base44.entities.CommunityPost.filter({ franchise_id: franchise.id }),
+          base44.entities.Listing.filter({ community_franchise_id: franchise.id }),
+        ]);
+        setPosts(allPosts.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50));
+        setListings(allListings.filter(l => l.status === "active").slice(0, 12));
+      } catch { setPosts([]); setListings([]); }
       setLoading(false);
     };
     load();
@@ -42,17 +48,22 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
       status: "active",
     });
     setPosts(prev => [post, ...prev]);
+    // Cross-post to modding community if selected
+    if (crossPostModding) {
+      base44.entities.CommunityPost.create({
+        community_id: "modding",
+        franchise_id: "modding",
+        author_email: user.email,
+        author_username: profile?.username || user.full_name || "Gamer",
+        author_avatar: profile?.avatar_url || "",
+        content: `[From ${franchise.name}] ${newPost}`,
+        likes: 0,
+        status: "active",
+      }).catch(() => {});
+    }
     setNewPost("");
     setPosting(false);
   };
-
-  const [listings, setListings] = useState([]);
-
-  useEffect(() => {
-    base44.entities.Listing.filter({ community_franchise_id: franchise.id, status: "active" }, "-created_date", 8)
-      .then(l => setListings(l))
-      .catch(() => {});
-  }, [franchise.id]);
 
   // Merge posts + listings by date inside the feed
   const merged = [
@@ -78,16 +89,23 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
       </div>
       {/* Post input */}
       {user ? (
-        <div className="px-4 py-3 border-b border-gray-800 flex gap-2 flex-shrink-0">
-          <input value={newPost} onChange={e => setNewPost(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
-            placeholder={`Post in ${franchise.name}...`}
-            className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-          <button onClick={handlePost} disabled={!newPost.trim() || posting}
-            className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-50 flex-shrink-0"
-            style={{ background: franchise.accent }}>
-            <Send className="w-3.5 h-3.5 text-white" />
-          </button>
+        <div className="px-4 py-2 border-b border-gray-800 flex-shrink-0">
+          <div className="flex gap-2 mb-1.5">
+            <input value={newPost} onChange={e => setNewPost(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
+              placeholder={`Post in ${franchise.name}...`}
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+            <button onClick={handlePost} disabled={!newPost.trim() || posting}
+              className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+              style={{ background: franchise.accent }}>
+              <Send className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked={crossPostModding} onChange={e => setCrossPostModding(e.target.checked)}
+              className="w-3 h-3 rounded accent-orange-500" />
+            <span className="text-[9px] text-orange-400 font-semibold">Also post in Modding Community 🔧</span>
+          </label>
         </div>
       ) : (
         <div className="px-4 py-2 border-b border-gray-800 flex-shrink-0 text-center">
@@ -155,6 +173,8 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
     setEditMode(true);
   };
 
+  const [urlInput, setUrlInput] = useState("");
+
   const handleFileUpload = async (e) => {
     e.stopPropagation();
     const file = e.target.files[0];
@@ -163,6 +183,11 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setEditLogo(file_url);
     setUploading(false);
+  };
+
+  const handleUrlPaste = (e) => {
+    e.stopPropagation();
+    if (urlInput.trim()) { setEditLogo(urlInput.trim()); setUrlInput(""); }
   };
 
   const handleSave = async (e) => {
@@ -213,11 +238,22 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
         <div className="absolute inset-0 z-20 bg-black/90 rounded-2xl flex flex-col items-center justify-center gap-2 p-3" onClick={e => e.stopPropagation()}>
           <p className="text-white text-xs font-bold">Edit Profile Picture</p>
           {editLogo && <img src={editLogo} className="w-14 h-14 rounded-xl object-cover" alt="" />}
-          <button onClick={() => fileRef.current?.click()}
-            className="px-3 py-1.5 rounded-lg bg-purple-700 text-white text-[10px] font-bold">
-            {uploading ? "Uploading..." : "📸 Upload"}
-          </button>
-          <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+          <div className="flex gap-1.5 w-full px-1">
+            <button onClick={() => fileRef.current?.click()}
+              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-purple-700 text-white text-[10px] font-bold">
+              <Upload className="w-3 h-3" />{uploading ? "…" : "Device"}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+          </div>
+          <div className="flex gap-1.5 w-full px-1">
+            <input value={urlInput} onChange={e => setUrlInput(e.target.value)} onClick={e => e.stopPropagation()}
+              placeholder="Paste image URL"
+              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-2 py-1 text-white text-[9px] placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+            <button onClick={handleUrlPaste}
+              className="px-2 py-1 rounded-lg bg-blue-700 text-white text-[10px] font-bold flex items-center gap-0.5">
+              <Link2 className="w-2.5 h-2.5" />
+            </button>
+          </div>
           <div className="flex gap-2">
             <button onClick={handleSave}
               className="px-3 py-1 rounded-lg bg-green-700 text-white text-[10px] font-bold flex items-center gap-1">
@@ -486,6 +522,11 @@ export default function GamingCommunity() {
     window.location.href = `/community/${franchise.id}`;
   };
 
+  // When a card is clicked (not join/arrow), route directly to community landing page
+  const handleSelectFranchise = (franchise) => {
+    window.location.href = `/community/${franchise.id}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
@@ -545,10 +586,17 @@ export default function GamingCommunity() {
             {search && <span className="ml-1 text-purple-400">matching "{search}"</span>}
           </p>
           <div className="flex gap-2 flex-wrap">
-            {/* Recommend Game — all users */}
+            {/* Recommend Game — bar style with glow */}
             <button onClick={() => setShowRecommend(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border border-purple-700/50 text-purple-300 hover:bg-purple-900/20 transition-colors">
-              🎮 Recommend Game
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black text-white transition-all"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed, #ec4899, #7c3aed)",
+                backgroundSize: "200% 200%",
+                boxShadow: "0 0 18px rgba(124,58,237,0.6), 0 0 36px rgba(236,72,153,0.3)",
+                border: "1px solid rgba(167,85,247,0.5)",
+                animation: "fire-shift 2.5s ease infinite",
+              }}>
+              <span className="text-base">🎮</span> Recommend a Game
             </button>
             {admin && (
               <button onClick={() => setShowAddCategory(true)}
@@ -620,7 +668,7 @@ export default function GamingCommunity() {
                 onClick={() => handleCardClick(franchise)}
                 onSaveProfile={handleSaveProfile}
                 isActive={activeFranchise?.id === franchise.id}
-                onSelect={(f) => setActiveFranchise(a => a?.id === f.id ? null : f)}
+                onSelect={handleSelectFranchise}
               />
             ))}
           </div>

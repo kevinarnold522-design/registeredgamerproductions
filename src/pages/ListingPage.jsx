@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, ExternalLink, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, Send, MessageCircle } from "lucide-react";
+import { Download, ExternalLink, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, Send, MessageCircle, Bookmark } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -253,6 +253,9 @@ export default function ListingPage() {
               </button>
               <div className="flex items-center gap-1.5 text-gray-600 text-sm ml-auto">
                 <Eye className="w-4 h-4" /> {(listing.views || 0).toLocaleString()} views
+              </div>
+              <div className="flex items-center gap-1.5 text-yellow-500/70 text-sm">
+                <Star className="w-4 h-4 fill-yellow-500/50" /> {(listing.likes || 0).toLocaleString()} favourites
               </div>
             </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload } from "lucide-react";
+import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2 } from "lucide-react";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -33,6 +33,8 @@ export default function CommunityLandingPage() {
   const [editLogoUrls, setEditLogoUrls] = useState([]);
   const [editCoverUrl, setEditCoverUrl] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [logoUrlInput, setLogoUrlInput] = useState("");
+  const [coverUrlInput, setCoverUrlInput] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const logoRef = React.useRef(null);
@@ -309,6 +311,16 @@ export default function CommunityLandingPage() {
                     )}
                   </div>
                   <input ref={logoRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                  {/* URL paste for logo */}
+                  <div className="flex gap-2 mt-1">
+                    <input value={logoUrlInput} onChange={e => setLogoUrlInput(e.target.value)}
+                      placeholder="Or paste image URL"
+                      className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-1.5 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                    <button onClick={() => { if (logoUrlInput.trim()) { setEditLogoUrl(logoUrlInput.trim()); setEditLogoUrls(prev => [...prev, logoUrlInput.trim()]); setLogoUrlInput(""); } }}
+                      className="px-3 py-1.5 rounded-xl bg-blue-700/60 border border-blue-600/50 text-blue-300 text-xs font-bold flex items-center gap-1">
+                      <Link2 className="w-3 h-3" /> Add URL
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Cover Photo</label>
@@ -318,6 +330,16 @@ export default function CommunityLandingPage() {
                   </button>
                   {editCoverUrl && <img src={editCoverUrl} className="w-full h-20 object-cover rounded-lg opacity-70 mt-1.5" alt="" />}
                   <input ref={coverRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
+                  {/* URL paste for cover */}
+                  <div className="flex gap-2 mt-1.5">
+                    <input value={coverUrlInput} onChange={e => setCoverUrlInput(e.target.value)}
+                      placeholder="Or paste cover image URL"
+                      className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-1.5 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-blue-500" />
+                    <button onClick={() => { if (coverUrlInput.trim()) { setEditCoverUrl(coverUrlInput.trim()); setCoverUrlInput(""); } }}
+                      className="px-3 py-1.5 rounded-xl bg-blue-700/60 border border-blue-600/50 text-blue-300 text-xs font-bold flex items-center gap-1">
+                      <Link2 className="w-3 h-3" /> Add URL
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="text-gray-400 text-xs mb-1 block font-semibold">Description</label>

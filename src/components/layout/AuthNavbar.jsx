@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy } from "lucide-react";
+import { Gamepad2, Heart, ShoppingCart, ClipboardList, Store, BarChart2, Shield, Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy, Star, GitBranch } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, ACCOUNT_TYPES } from "@/lib/constants";
@@ -30,7 +30,7 @@ export default function AuthNavbar({ user, profile }) {
   }, [user]);
 
   const regularLinks = [
-    { icon: Heart, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
+    { icon: Star, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
     { icon: ShoppingCart, label: "Cart", badge: cartCount, action: () => { setCartOpen(true); setFavOpen(false); } },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
     { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
@@ -49,8 +49,8 @@ export default function AuthNavbar({ user, profile }) {
     { icon: BarChart2, label: "Analytics", href: "/analytics" },
     { icon: Store, label: "All Listings", href: "/dashboard?tab=listings" },
     { icon: User, label: "Users", href: "/dashboard?tab=users" },
+    { icon: GitBranch, label: "Routing", href: "/routing-dashboard" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
-    { icon: Trophy, label: "Leaderboard", href: "/leaderboard" },
   ];
 
   const navLinks = admin ? adminLinks : (accountType === "digital_creator" || accountType === "business") ? sellerLinks : regularLinks;
@@ -85,34 +85,38 @@ export default function AuthNavbar({ user, profile }) {
           <GlobalSearchBar />
         </div>
 
-        {/* Nav Links */}
-        <div className="hidden lg:flex items-center gap-1.5">
-          {navLinks.map((link, i) =>
-            link.action ? (
-              <button
-                key={i}
-                onClick={link.action}
-                className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 hover:text-purple-200 text-sm font-semibold transition-all glass-3d-btn"
-              >
-                <link.icon className="w-4 h-4" />
-                {link.label}
-                {link.badge > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-bold">
-                    {link.badge}
-                  </span>
-                )}
-              </button>
-            ) : (
-              <Link
-                key={i}
-                to={link.href}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 hover:text-purple-200 text-sm font-semibold transition-all glass-3d-btn"
-              >
-                <link.icon className="w-4 h-4" />
-                {link.label}
-              </Link>
-            )
-          )}
+        {/* Nav Links with 3D dividers */}
+        <div className="hidden lg:flex items-center">
+          {navLinks.map((link, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && (
+                <div className="w-px h-6 mx-0.5 flex-shrink-0"
+                  style={{ background: "linear-gradient(180deg, transparent, rgba(124,58,237,0.5), rgba(236,72,153,0.3), transparent)", boxShadow: "0 0 4px rgba(124,58,237,0.3)" }} />
+              )}
+              {link.action ? (
+                <button
+                  onClick={link.action}
+                  className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 hover:text-purple-200 text-sm font-semibold transition-all glass-3d-btn hover:shadow-[0_0_12px_rgba(124,58,237,0.5)]"
+                >
+                  <link.icon className="w-4 h-4" />
+                  {link.label}
+                  {link.badge > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-bold">
+                      {link.badge}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <Link
+                  to={link.href}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-gray-300 hover:text-purple-200 text-sm font-semibold transition-all glass-3d-btn hover:shadow-[0_0_12px_rgba(124,58,237,0.5)]"
+                >
+                  <link.icon className="w-4 h-4" />
+                  {link.label}
+                </Link>
+              )}
+            </React.Fragment>
+          ))}
         </div>
 
         {/* Right: User */}

@@ -168,6 +168,23 @@ a[href]:not(.no-glow):hover,
   filter: drop-shadow(0 0 8px rgba(168,85,247,0.35));
 }
 
+/* ── Roll-in transition for non-card elements ── */
+@keyframes roll-in-up {
+  0% { opacity: 0; transform: translateY(28px) rotateX(-12deg); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0deg); }
+}
+.roll-in {
+  animation: roll-in-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── 3D Excel-line divider for navbar ── */
+.nav-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124,58,237,0.4), rgba(236,72,153,0.3), transparent);
+  box-shadow: 0 1px 4px rgba(124,58,237,0.2);
+  margin: 2px 0;
+}
+
 /* ── Animated gradient font ── */
 body {
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;

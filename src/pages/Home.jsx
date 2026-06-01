@@ -40,6 +40,16 @@ export default function Home() {
   // 4 min: ads start
   // 10 min: 3 ads simultaneously
   // 20 min: all ads flood
+  // Block ads for authenticated users and admin
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Remove any injected ads immediately
+      document.querySelectorAll("[data-zone]").forEach(el => el.remove());
+      document.querySelectorAll("[data-ad-slot]").forEach(el => { el.style.display = "none"; });
+      return;
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (isAuthenticated || window.__adminBlocked) return;
 
