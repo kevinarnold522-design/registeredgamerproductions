@@ -82,14 +82,30 @@ export default function ListingPage() {
     if (url) window.open(url, "_blank");
   };
 
+  const [copied, setCopied] = useState(false);
+
   const handleShare = async () => {
     const url = window.location.href;
-    if (navigator.share) {
-      navigator.share({ title: listing.title, url });
-    } else {
-      navigator.clipboard.writeText(url);
-      alert("Link copied!");
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: listing.title, url });
+        return;
+      }
+    } catch {}
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // last resort
+      const el = document.createElement("textarea");
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) return (
@@ -162,8 +178,8 @@ export default function ListingPage() {
                 {likeCount}
               </button>
               <button onClick={handleShare}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-900 text-gray-400 hover:border-blue-500/50 hover:text-blue-300 transition-all text-sm font-semibold">
-                <Share2 className="w-4 h-4" /> Share
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all text-sm font-semibold ${copied ? "border-green-500 bg-green-900/30 text-green-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:border-blue-500/50 hover:text-blue-300"}`}>
+                <Share2 className="w-4 h-4" /> {copied ? "Copied!" : "Share"}
               </button>
               <div className="flex items-center gap-1.5 text-gray-600 text-sm ml-auto">
                 <Eye className="w-4 h-4" /> {(listing.views || 0).toLocaleString()} views
