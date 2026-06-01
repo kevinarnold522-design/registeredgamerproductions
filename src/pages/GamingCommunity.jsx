@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -45,6 +45,20 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
     setPosting(false);
   };
 
+  const [listings, setListings] = useState([]);
+
+  useEffect(() => {
+    base44.entities.Listing.filter({ community_franchise_id: franchise.id, status: "active" }, "-created_date", 8)
+      .then(l => setListings(l))
+      .catch(() => {});
+  }, [franchise.id]);
+
+  // Merge posts + listings by date inside the feed
+  const merged = [
+    ...posts.map(p => ({ type: "post", item: p, date: p.created_date })),
+    ...listings.map(l => ({ type: "listing", item: l, date: l.created_date })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
   return (
     <motion.div key={franchise.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
       className="h-[800px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex flex-col">
@@ -53,7 +67,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         style={{ background: `linear-gradient(135deg, ${franchise.color}cc, ${franchise.color}88)` }}>
         <div>
           <p className="text-white text-sm font-black">{franchise.name} Feed</p>
-          <p className="text-white/40 text-[10px]">Community posts & updates</p>
+          <p className="text-white/40 text-[10px]">Posts & listings · {merged.length} items</p>
         </div>
         <a href={`/community/${franchise.id}`}
           className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
@@ -81,31 +95,47 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
           </button>
         </div>
       )}
-      {/* Posts */}
+      {/* Feed: posts + listings mixed */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="p-6 text-center text-gray-600 text-sm">Loading...</div>
-        ) : posts.length === 0 ? (
+        ) : merged.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-3xl mb-2">{franchise.emoji}</p>
             <p className="text-gray-600 text-sm">No posts yet. Be the first!</p>
           </div>
-        ) : posts.map(post => (
-          <div key={post.id} className="px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors">
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
-                {post.author_avatar
-                  ? <img src={post.author_avatar} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{(post.author_username || "G")[0]}</div>}
+        ) : merged.map(({ type, item }) => (
+          type === "listing" ? (
+            <a key={item.id} href={`/listing?id=${item.id}`}
+              className="flex gap-3 px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+                {item.images?.[0]
+                  ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
+                  : <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>}
               </div>
-              <p className="text-gray-400 text-[10px] font-bold">{post.author_username}</p>
-              <p className="text-gray-700 text-[9px]">{new Date(post.created_date).toLocaleDateString()}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
+                <p className="text-gray-500 text-[9px]">📦 Listing by @{item.seller_username}</p>
+                <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+              </div>
+            </a>
+          ) : (
+            <div key={item.id} className="px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors">
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
+                  {item.author_avatar
+                    ? <img src={item.author_avatar} className="w-full h-full object-cover" alt="" />
+                    : <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{(item.author_username || "G")[0]}</div>}
+                </div>
+                <p className="text-gray-400 text-[10px] font-bold">{item.author_username}</p>
+                <p className="text-gray-700 text-[9px]">{new Date(item.created_date).toLocaleDateString()}</p>
+              </div>
+              <p className="text-gray-200 text-sm leading-relaxed">{item.content}</p>
+              {item.image_urls?.length > 0 && (
+                <img src={item.image_urls[0]} className="mt-2 rounded-xl max-h-40 object-cover w-full" alt="" />
+              )}
             </div>
-            <p className="text-gray-200 text-sm leading-relaxed">{post.content}</p>
-            {post.image_urls?.length > 0 && (
-              <img src={post.image_urls[0]} className="mt-2 rounded-xl max-h-40 object-cover w-full" alt="" />
-            )}
-          </div>
+          )
         ))}
       </div>
     </motion.div>
@@ -285,7 +315,30 @@ export default function GamingCommunity() {
   const [newCatGenre, setNewCatGenre] = useState("Gaming");
   const [extraFranchises, setExtraFranchises] = useState([]);
   const [activeFranchise, setActiveFranchise] = useState(null);
+  const [sidebarWidth, setSidebarWidth] = useState(272);
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const startW = useRef(0);
   const admin = isAdmin(user?.email);
+
+  const onDragStart = useCallback((e) => {
+    dragging.current = true;
+    startX.current = e.clientX;
+    startW.current = sidebarWidth;
+    document.body.style.userSelect = "none";
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragging.current) return;
+      const delta = e.clientX - startX.current;
+      setSidebarWidth(Math.max(180, Math.min(400, startW.current + delta)));
+    };
+    const onUp = () => { dragging.current = false; document.body.style.userSelect = ""; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+  }, []);
 
   useEffect(() => {
     if (user?.email) {
@@ -528,10 +581,10 @@ export default function GamingCommunity() {
           )}
         </AnimatePresence>
 
-        {/* Split layout: left card list + right newsfeed */}
-        <div className="flex gap-6">
+        {/* Split layout: left card list + right newsfeed with drag-resize */}
+        <div className="flex gap-0">
           {/* LEFT: scrollable community cards */}
-          <div className="w-64 flex-shrink-0 flex flex-col gap-3 max-h-[800px] overflow-y-auto pr-1">
+          <div className="flex-shrink-0 flex flex-col gap-3 overflow-y-auto pr-1" style={{ width: sidebarWidth, maxHeight: 800 }}>
             {filtered.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-4xl mb-3">🎮</p>
@@ -556,6 +609,14 @@ export default function GamingCommunity() {
             ))}
           </div>
 
+          {/* Drag handle */}
+          <div onMouseDown={onDragStart}
+            className="flex-shrink-0 w-3 flex items-center justify-center cursor-col-resize group mx-1"
+            title="Drag to resize">
+            <div className="w-1 h-16 rounded-full bg-gray-700 group-hover:bg-purple-500 transition-colors">
+              <GripVertical className="w-3 h-3 text-gray-500 group-hover:text-purple-300 -ml-1" />
+            </div>
+          </div>
           {/* RIGHT: newsfeed panel */}
           <div className="flex-1 min-w-0">
             {activeFranchise ? (

@@ -191,7 +191,7 @@ export default function CommunitySectionPage() {
                 {listings.map(listing => (
                   <Link
                     key={listing.id}
-                    to={`/category?id=${listing.id}`}
+                    to={`/listing?id=${listing.id}`}
                     className="flex gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 transition-all group"
                   >
                     <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-800">

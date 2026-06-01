@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Check, Upload, X, Plus, Trash2, Send, ChevronDown } from "lucide-react";
+import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
@@ -265,6 +265,7 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
   const saved = (() => { try { return JSON.parse(localStorage.getItem(`subcat_${cat}_${item.id}`) || "{}"); } catch { return {}; } })();
   const displayItem = { ...item, customLogo: saved.logo || item.customLogo, customCover: saved.cover || item.customCover, cardSize: saved.cardSize || item.cardSize || "md" };
   const isActive = activeSubcat === item.id;
+  // Route directly to landing page on card click
   const href = cat === "tournaments" ? `/tournaments` : `/sub-landing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(item.id)}`;
   const cardH = CARD_HEIGHT[displayItem.cardSize] || CARD_HEIGHT.md;
 
@@ -316,14 +317,13 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
         )}
       </AnimatePresence>
 
-      <div onClick={editing ? undefined : () => onSetActiveSubcat(isActive ? null : item.id)}
-        className={`relative ${cardH} rounded-2xl border-2 ${displayItem.border} ${isActive ? "ring-2 ring-purple-500/60" : ""} bg-gradient-to-br ${displayItem.color} p-3 flex flex-col justify-between transition-all duration-300 overflow-hidden`}>
+      <a href={href} onClick={editing ? e => e.preventDefault() : undefined}
+        className={`block relative ${cardH} rounded-2xl border-2 ${displayItem.border} ${isActive ? "ring-2 ring-purple-500/60" : ""} bg-gradient-to-br ${displayItem.color} p-3 flex flex-col justify-between transition-all duration-300 overflow-hidden`}>
         {displayItem.customCover && (
           <div className="absolute inset-0 opacity-25 rounded-2xl" style={{ backgroundImage: `url(${displayItem.customCover})`, backgroundSize: "cover", backgroundPosition: "center" }} />
         )}
         <div className="relative flex items-start justify-between">
           <span className="px-1.5 py-0.5 rounded-full bg-black/40 text-white/70 text-[8px] font-bold uppercase tracking-wide">{displayItem.badge}</span>
-          {isActive && <span className="text-purple-400 text-[8px] font-black">● OPEN</span>}
         </div>
         <motion.div className="relative text-3xl"
           animate={hovered ? { scale: 1.15, rotate: [0, -6, 6, 0] } : { scale: 1, rotate: 0 }}
@@ -337,19 +337,14 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
           <p className="text-white/40 text-[9px] mt-0.5 leading-tight line-clamp-1">{displayItem.desc}</p>
         </div>
         <div className="relative flex items-center justify-between mt-1">
-          <a href={href} onClick={e => e.stopPropagation()}
-            className="text-white/30 hover:text-white/80 text-[9px] font-bold transition-colors">→ Browse</a>
-          <div className="flex gap-1">
-            <button onClick={e => { e.stopPropagation(); const url = encodeURIComponent(window.location.href); window.open(`https://wa.me/?text=${encodeURIComponent(`${displayItem.title} on GAMER.PRODUCTIONS 🎮`)}%20${url}`, "_blank"); }}
-              className="w-4 h-4 rounded bg-green-700/70 flex items-center justify-center text-[8px] text-white" title="Share">💬</button>
-            <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(displayItem.id)}`} onClick={e => e.stopPropagation()}
-              className="w-4 h-4 rounded bg-purple-700/70 flex items-center justify-center text-[8px] text-white" title="Add Listing">+</a>
-          </div>
+          <span className="text-white/30 text-[9px] font-bold">→ Browse</span>
+          <button onClick={e => { e.preventDefault(); e.stopPropagation(); const url = encodeURIComponent(href); window.open(`https://wa.me/?text=${encodeURIComponent(`${displayItem.title} on GAMER.PRODUCTIONS 🎮`)}%20${url}`, "_blank"); }}
+            className="w-4 h-4 rounded bg-green-700/70 flex items-center justify-center text-[8px] text-white" title="Share">💬</button>
         </div>
         <motion.div className="absolute inset-x-0 bottom-0 h-px"
           style={{ background: `linear-gradient(90deg, transparent, ${displayItem.glow}, transparent)` }}
-          animate={{ opacity: hovered || isActive ? 1 : 0 }} />
-      </div>
+          animate={{ opacity: hovered ? 1 : 0 }} />
+      </a>
     </motion.div>
   );
 }
@@ -406,6 +401,115 @@ function AddSubcategoryModal({ cat, onClose, onAdded }) {
   );
 }
 
+// Feed of listings + community posts for the entire category
+function CategoryFeed({ cat, user, userProfile }) {
+  const [listings, setListings] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newPost, setNewPost] = useState("");
+  const [posting, setPosting] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [l, p] = await Promise.all([
+          base44.entities.Listing.filter({ category: cat, status: "active" }, "-created_date", 20),
+          base44.entities.CommunityPost.filter({ community_id: cat }, "-created_date", 20),
+        ]);
+        setListings(l);
+        setPosts(p.filter(x => x.status === "active"));
+      } catch {}
+      setLoading(false);
+    };
+    load();
+  }, [cat]);
+
+  const handlePost = async () => {
+    if (!newPost.trim() || !user) return;
+    setPosting(true);
+    const p = await base44.entities.CommunityPost.create({
+      community_id: cat,
+      franchise_id: cat,
+      author_email: user.email,
+      author_username: userProfile?.username || user.full_name || "Gamer",
+      author_avatar: userProfile?.avatar_url || "",
+      content: newPost,
+      likes: 0,
+      status: "active",
+    });
+    setPosts(prev => [p, ...prev]);
+    setNewPost("");
+    setPosting(false);
+  };
+
+  if (loading) return <div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+
+  // Merge & sort listings + posts by date
+  const merged = [
+    ...listings.map(l => ({ type: "listing", item: l, date: l.created_date })),
+    ...posts.map(p => ({ type: "post", item: p, date: p.created_date })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return (
+    <>
+      {/* Post input */}
+      {user ? (
+        <div className="px-3 py-2.5 border-b border-gray-800 flex gap-2 flex-shrink-0">
+          <input value={newPost} onChange={e => setNewPost(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
+            placeholder={`Post in ${cat}...`}
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+          <button onClick={handlePost} disabled={!newPost.trim() || posting}
+            className="w-8 h-8 rounded-xl bg-purple-700 flex items-center justify-center disabled:opacity-50">
+            <Send className="w-3.5 h-3.5 text-white" />
+          </button>
+        </div>
+      ) : (
+        <div className="px-3 py-2 border-b border-gray-800 flex-shrink-0 text-center">
+          <button onClick={() => base44.auth.redirectToLogin()} className="text-xs text-purple-400 font-bold hover:underline">Sign in to post →</button>
+        </div>
+      )}
+      <div className="flex-1 overflow-y-auto">
+        {merged.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-3xl mb-2">🎮</p>
+            <p className="text-gray-600 text-sm">No listings or posts yet</p>
+          </div>
+        ) : merged.map(({ type, item }) => (
+          type === "listing" ? (
+            <a key={item.id} href={`/listing?id=${item.id}`}
+              className="flex gap-3 px-3 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+                {item.images?.[0]
+                  ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
+                  : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
+                <p className="text-gray-500 text-[10px]">by @{item.seller_username} · 📦 Listing</p>
+                <p className="font-black text-xs mt-0.5 text-purple-300">{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+              </div>
+            </a>
+          ) : (
+            <div key={item.id} className="px-3 py-3 border-b border-gray-800/60">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-5 h-5 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
+                  {item.author_avatar
+                    ? <img src={item.author_avatar} className="w-full h-full object-cover" alt="" />
+                    : <div className="w-full h-full flex items-center justify-center text-[8px] text-gray-400">{(item.author_username || "G")[0]}</div>}
+                </div>
+                <p className="text-gray-400 text-[10px] font-bold">{item.author_username}</p>
+                <p className="text-gray-700 text-[9px]">{new Date(item.created_date).toLocaleDateString()}</p>
+              </div>
+              <p className="text-gray-300 text-xs leading-relaxed">{item.content}</p>
+            </div>
+          )
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function SubcategoryCards({ cat, categoryName, userEmail, userProfile, user, franchiseId }) {
   const [items, setItems] = useState(() => {
     const base = SUBCATEGORY_CONFIG[cat] || [];
@@ -421,12 +525,40 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
     } catch { return loaded; }
   });
   const [showAdd, setShowAdd] = useState(false);
-  const [activeSubcat, setActiveSubcat] = useState(null);
+  const [search, setSearch] = useState("");
+  // Resizable sidebar width (px)
+  const [sidebarWidth, setSidebarWidth] = useState(200);
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const startW = useRef(0);
+  const containerRef = useRef(null);
+
+  const onDragStart = useCallback((e) => {
+    dragging.current = true;
+    startX.current = e.clientX;
+    startW.current = sidebarWidth;
+    document.body.style.userSelect = "none";
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragging.current) return;
+      const delta = e.clientX - startX.current;
+      const newW = Math.max(140, Math.min(340, startW.current + delta));
+      setSidebarWidth(newW);
+    };
+    const onUp = () => {
+      dragging.current = false;
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+  }, []);
 
   const canAdmin = isAdmin(userEmail);
   const isAccountMod = userProfile?.moderator_type === "account_moderator";
   const canDelete = canAdmin || isAccountMod;
-  const activeItem = items.find(i => i.id === activeSubcat);
 
   const handleItemUpdate = (updated) => setItems(prev => prev.map(it => it.id === updated.id ? updated : it));
   const handleDelete = (itemId) => {
@@ -435,10 +567,13 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
     localStorage.setItem(key, JSON.stringify(existing.filter(x => x.id !== itemId)));
     localStorage.removeItem(`subcat_${cat}_${itemId}`);
     setItems(prev => prev.filter(it => it.id !== itemId));
-    if (activeSubcat === itemId) setActiveSubcat(null);
   };
   const handleRequestDelete = () => alert("✅ Deletion request sent to admin for review.");
   const handleAdded = (newItem) => setItems(prev => [...prev, newItem]);
+
+  const filteredItems = items.filter(item =>
+    !search || item.title.toLowerCase().includes(search.toLowerCase()) || item.desc?.toLowerCase().includes(search.toLowerCase())
+  );
 
   if (!items.length && !canAdmin) return null;
 
@@ -451,21 +586,41 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
             <h2 className="text-2xl md:text-3xl font-black text-white">
               {categoryName} <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Subcategories</span>
             </h2>
-            <p className="text-gray-500 text-xs mt-0.5">Click a card to open its newsfeed · <span className="text-purple-400">+ Add Card</span> to contribute{canAdmin ? " · Hover to edit" : ""}</p>
+            <p className="text-gray-500 text-xs mt-0.5">Click a card to go to its landing page{canAdmin ? " · Hover to edit" : ""}</p>
           </div>
-          <button onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-white"
-            style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-            <Plus className="w-4 h-4" /> Add Card
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search subcategories..."
+                className="bg-gray-900 border border-gray-700 rounded-xl pl-9 pr-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500 w-44"
+              />
+            </div>
+            {(canAdmin || isAccountMod) && (
+              <button onClick={() => setShowAdd(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-white"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                <Plus className="w-4 h-4" /> Add Card
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
 
-      {/* Two-column layout: subcards left, newsfeed right */}
-      <div className="flex gap-4">
+      {/* Two-column layout with draggable divider */}
+      <div ref={containerRef} className="flex gap-0 min-h-[700px]">
         {/* LEFT: scrollable subcards column */}
-        <div className="w-48 flex-shrink-0 flex flex-col gap-2 max-h-[700px] overflow-y-auto pr-1 scrollbar-thin">
-          {items.map((item, i) => (
+        <div
+          className="flex-shrink-0 flex flex-col gap-2 overflow-y-auto pr-2"
+          style={{ width: sidebarWidth, maxHeight: 700 }}
+        >
+          {filteredItems.length === 0 && (
+            <div className="text-center py-8 text-gray-600 text-xs">No matches</div>
+          )}
+          {filteredItems.map((item, i) => (
             <SubcardItem
               key={item.id}
               item={{ ...item, _userEmail: userEmail }}
@@ -478,39 +633,36 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
               onRequestDelete={() => handleRequestDelete()}
               user={user}
               userProfile={userProfile}
-              activeSubcat={activeSubcat}
-              onSetActiveSubcat={setActiveSubcat}
+              activeSubcat={null}
+              onSetActiveSubcat={() => {}}
             />
           ))}
         </div>
 
-        {/* RIGHT: newsfeed panel — shows when a subcard is selected */}
-        <div className="flex-1 min-w-0">
-          {activeItem ? (
-            <motion.div
-              key={activeSubcat}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="h-[700px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex flex-col"
-            >
-              <SubcardNewsfeed
-                cat={cat}
-                subcatId={activeItem.id}
-                subcatTitle={activeItem.title}
-                user={user}
-                userProfile={userProfile}
-                franchiseId={franchiseId}
-              />
-            </motion.div>
-          ) : (
-            <div className="h-[700px] bg-gray-900/40 rounded-2xl border border-gray-800/50 border-dashed flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-4xl mb-3">👈</p>
-                <p className="text-gray-500 text-sm font-semibold">Select a subcategory</p>
-                <p className="text-gray-600 text-xs mt-1">to open its newsfeed</p>
-              </div>
+        {/* Drag handle */}
+        <div
+          onMouseDown={onDragStart}
+          className="flex-shrink-0 w-3 flex items-center justify-center cursor-col-resize group mx-1"
+          title="Drag to resize"
+        >
+          <div className="w-1 h-16 rounded-full bg-gray-700 group-hover:bg-purple-500 transition-colors flex items-center justify-center">
+            <GripVertical className="w-3 h-3 text-gray-500 group-hover:text-purple-300" />
+          </div>
+        </div>
+
+        {/* RIGHT: listings/posts feed for this category */}
+        <div className="flex-1 min-w-0 h-[700px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex flex-col">
+          <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0 flex items-center justify-between">
+            <div>
+              <p className="text-white text-sm font-black">{categoryName} Feed</p>
+              <p className="text-gray-600 text-[10px]">Latest listings & posts · Click a card on the left to browse its landing page</p>
             </div>
-          )}
+            <a href={`/create-listing?cat=${encodeURIComponent(cat)}`}
+              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
+              + Add Listing
+            </a>
+          </div>
+          <CategoryFeed cat={cat} user={user} userProfile={userProfile} />
         </div>
       </div>
 

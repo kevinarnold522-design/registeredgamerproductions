@@ -60,9 +60,9 @@ export default function FeaturedGames() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {listings.map((listing, i) => (
-            <motion.div key={listing.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            <motion.a key={listing.id} href={`/listing?id=${listing.id}`} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-purple-700/50 transition-colors">
+              className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-purple-700/50 transition-colors block">
               <div className="relative h-44">
                 {listing.images?.[0] ? (
                   <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
@@ -83,7 +83,7 @@ export default function FeaturedGames() {
                   <span className="text-gray-600 text-xs">by @{listing.seller_username}</span>
                 </div>
               </div>
-            </motion.div>
+            </motion.a>
           ))}
         </div>
       </div>

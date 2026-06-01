@@ -90,9 +90,9 @@ export default function ModdingSection() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtered.map((mod, i) => (
-              <motion.div key={mod.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+              <motion.a key={mod.id} href={`/listing?id=${mod.id}`} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-                className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-orange-700/50 transition-colors group">
+                className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-orange-700/50 transition-colors group block">
                 <div className="relative h-36">
                   {mod.images?.[0] ? (
                     <img src={mod.images[0]} alt={mod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -119,13 +119,13 @@ export default function ModdingSection() {
                   </div>
                   <p className="text-gray-600 text-xs mt-1">by @{mod.seller_username}</p>
                   <button
-                    onClick={(e) => { e.stopPropagation(); setReviewMod(mod); }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setReviewMod(mod); }}
                     className="mt-2 flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-semibold transition-colors"
                   >
                     <Star className="w-3 h-3" /> Reviews
                   </button>
                 </div>
-              </motion.div>
+              </motion.a>
             ))}
           </div>
         )}

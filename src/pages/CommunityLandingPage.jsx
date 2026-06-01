@@ -473,7 +473,7 @@ export default function CommunityLandingPage() {
                 <h3 className="text-white font-black text-sm mb-3">📦 Community Listings</h3>
                 <div className="space-y-2">
                   {listings.map(l => (
-                    <Link key={l.id} to={`/category?id=${l.id}`}
+                    <Link key={l.id} to={`/listing?id=${l.id}`}
                       className="flex gap-3 p-2 rounded-xl hover:bg-gray-800 transition-colors group">
                       <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
                         {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center">🎮</div>}
