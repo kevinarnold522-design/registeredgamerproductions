@@ -190,7 +190,13 @@ export default function Channel() {
                   </span>
                 )}
               </div>
-              <p className="text-gray-400 text-sm mt-0.5">@{profile?.username}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-gray-400 text-sm">@{profile?.username}</p>
+                <span className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${profile?.is_active !== false ? "bg-green-900/40 border border-green-700/40 text-green-400" : "bg-red-900/40 border border-red-700/40 text-red-400"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${profile?.is_active !== false ? "bg-green-400 animate-pulse" : "bg-red-400"}`} />
+                  {profile?.is_active !== false ? "Active" : "Offline"}
+                </span>
+              </div>
               {profile?.bio && <p className="text-gray-400 text-sm mt-1 max-w-xl">{profile.bio}</p>}
               {/* YouTube Channel Info */}
               {profile?.youtube_url && (

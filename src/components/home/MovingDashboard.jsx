@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Play, Package, Star, Eye, TrendingUp, Zap, Radio, Download, Monitor, Smartphone, ExternalLink } from "lucide-react";
+import { Play, Package, Star, Eye, TrendingUp, Zap, Radio, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
@@ -101,6 +101,17 @@ function VideoCard({ video }) {
 }
 
 function ModCard({ mod }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(mod.likes || 0);
+
+  const handleLike = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLiked(l => !l);
+    setLikeCount(c => liked ? c - 1 : c + 1);
+    base44.entities.Listing.update(mod.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
+  };
+
   return (
     <motion.a
       href={`/listing?id=${mod.id}`}
@@ -133,8 +144,18 @@ function ModCard({ mod }) {
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{mod.title}</p>
         <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? `₱${mod.price?.toLocaleString()}` : "FREE"}</p>
-        <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
-          <Download className="w-2.5 h-2.5" /><span className="text-[9px]">{(mod.views || 0).toLocaleString()}</span>
+        <div className="flex items-center justify-between mt-1.5">
+          <div className="flex items-center gap-1" style={{ color: `${CP.cyan}80` }}>
+            <Download className="w-2.5 h-2.5" /><span className="text-[9px]">{(mod.views || 0).toLocaleString()}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={handleLike} className="flex items-center gap-0.5 text-[9px] transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
+              <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
+            </button>
+            <a href={`/listing?id=${mod.id}#comments`} onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.cyan}60` }}>
+              <MessageCircle className="w-3 h-3" />
+            </a>
+          </div>
         </div>
       </div>
     </motion.a>
@@ -142,6 +163,17 @@ function ModCard({ mod }) {
 }
 
 function ProductCard({ product }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(product.likes || 0);
+
+  const handleLike = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLiked(l => !l);
+    setLikeCount(c => liked ? c - 1 : c + 1);
+    base44.entities.Listing.update(product.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
+  };
+
   return (
     <motion.a
       href={`/listing?id=${product.id}`}
@@ -168,8 +200,18 @@ function ProductCard({ product }) {
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{product.title}</p>
         <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>₱{(product.price || 0).toLocaleString()}</p>
-        <div className="flex items-center gap-0.5 mt-1">
-          {[1,2,3,4,5].map(s => <Star key={s} className="w-2 h-2" style={{ color: CP.yellow, fill: CP.yellow }} />)}
+        <div className="flex items-center justify-between mt-1.5">
+          <div className="flex items-center gap-0.5">
+            {[1,2,3,4,5].map(s => <Star key={s} className="w-2 h-2" style={{ color: CP.yellow, fill: CP.yellow }} />)}
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={handleLike} className="flex items-center gap-0.5 text-[9px] transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
+              <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
+            </button>
+            <a href={`/listing?id=${product.id}#comments`} onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.cyan}60` }}>
+              <MessageCircle className="w-3 h-3" />
+            </a>
+          </div>
         </div>
       </div>
     </motion.a>

@@ -207,7 +207,7 @@ export default function CreateListing() {
         physical_subcategory: form.physical_subcategory,
         condition: form.condition,
         is_premium: form.is_premium,
-        platform: form.platform,
+        platforms: form.platforms,
         game_platform: form.game_platform,
         tags: form.tags,
         card_animation: form.card_animation,
@@ -216,6 +216,7 @@ export default function CreateListing() {
         kofi_url: form.kofi_url,
         buymeacoffee_url: form.buymeacoffee_url,
         patreon_url: form.patreon_url,
+        download_host: form.download_host,
       }
     };
     const updated = [...savedFilters.filter(f => f.name !== filterName), filterData];

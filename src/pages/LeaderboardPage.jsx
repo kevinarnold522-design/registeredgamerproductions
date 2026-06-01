@@ -56,7 +56,10 @@ function LeaderRow({ entry, rank, tab }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
+          {rank === 0 && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-900/50 border border-yellow-500/40 text-yellow-300 font-black">⭐ Top Contributor</span>}
+        </div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span className="text-gray-500 text-[10px] flex items-center gap-1">
             <MessageCircle className="w-2.5 h-2.5" /> {entry.posts} posts
@@ -117,21 +120,24 @@ export default function LeaderboardPage() {
           scoreMap[p.email].score = scoreMap[p.email].wins * 100 + scoreMap[p.email].participated * 10;
         });
       });
-      const sorted = Object.values(scoreMap).sort((a, b) => b.score - a.score).slice(0, 50).map(e => ({
+      const limit = user ? 100 : 10;
+      const sorted = Object.values(scoreMap).sort((a, b) => b.score - a.score).slice(0, limit).map(e => ({
         ...e,
         posts: e.participated,
         likes: e.wins,
+        score: e.wins * 1000 + e.participated * 10,
       }));
       setLeaderboard(sorted);
       setLoading(false);
       return;
     }
 
-    // For community & modding — aggregate from posts and ratings
-    const [posts, ratings, profiles] = await Promise.all([
+    // For community & modding — aggregate from posts, ratings, and orders (physical sales)
+    const [posts, ratings, profiles, orders] = await Promise.all([
       base44.entities.CommunityPost.list("-created_date", 500),
       base44.entities.PostRating.list("-created_date", 1000),
       base44.entities.UserProfile.list("-created_date", 200),
+      base44.entities.Order.filter({ status: "completed" }, "-created_date", 500).catch(() => []),
     ]);
 
     // Filter posts by category for modding
@@ -153,6 +159,14 @@ export default function LeaderboardPage() {
       scoreMap[key].score += 10 + (post.likes || 0) * 5;
     });
 
+    // Add 1000pts per completed physical product sale
+    orders.forEach(order => {
+      const key = order.seller_email;
+      if (!key) return;
+      if (!scoreMap[key]) scoreMap[key] = { email: key, username: order.seller_username || key, posts: 0, likes: 0, score: 0, avatar_url: "" };
+      scoreMap[key].score += 1000;
+    });
+
     // Also add rating scores
     ratings.forEach(r => {
       // find the post author from posts
@@ -166,6 +180,7 @@ export default function LeaderboardPage() {
     const profileMap = {};
     profiles.forEach(p => { profileMap[p.user_email] = p; });
 
+    const limit = user ? 100 : 10;
     const sorted = Object.values(scoreMap)
       .map(entry => {
         const prof = profileMap[entry.email];
@@ -177,7 +192,7 @@ export default function LeaderboardPage() {
         };
       })
       .sort((a, b) => b.score - a.score)
-      .slice(0, 50);
+      .slice(0, limit);
 
     setLeaderboard(sorted);
     setLoading(false);
@@ -216,6 +231,11 @@ export default function LeaderboardPage() {
             <p className="text-gray-400 text-base max-w-xl mx-auto">
               Top contributors across Gaming Community, Modding & Tournaments
             </p>
+            {!user ? (
+              <p className="text-yellow-400/70 text-xs mt-2">Sign in to unlock Top 100 rankings</p>
+            ) : (
+              <p className="text-green-400/70 text-xs mt-2">Showing Top 100 · Physical sales & tournament wins = 1000pts each</p>
+            )}
           </motion.div>
         </div>
       </div>
