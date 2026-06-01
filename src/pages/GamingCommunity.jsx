@@ -658,7 +658,6 @@ export default function GamingCommunity() {
           </div>
         </div>
       </div>
-      </div>
 
       {/* Recommend Modal */}
       {showRecommend && (
