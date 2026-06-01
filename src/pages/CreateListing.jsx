@@ -47,10 +47,23 @@ export default function CreateListing() {
   const editId = params.get("edit");
   const defaultCat = params.get("cat") || "games";
 
+  const [gamingCommunities, setGamingCommunities] = useState([]);
+  const [gameSearch, setGameSearch] = useState("");
+  const [showGameDropdown, setShowGameDropdown] = useState(false);
+  const gameDropdownRef = useRef(null);
+
+  const PLATFORMS = ["PC", "Nintendo Switch", "PlayStation 5", "PlayStation 4", "PlayStation 3", "PlayStation 2", "PSP", "Android", "PPSSPP", "Xbox", "Steam"];
+  const DOWNLOAD_HOSTS = [
+    { id: "mediafire", label: "Mediafire", color: "#1E90FF" },
+    { id: "modsfire", label: "Modsfire", color: "#FF4500" },
+    { id: "mega", label: "Mega", color: "#D9272D" },
+    { id: "sharemods", label: "Sharemods", color: "#22C55E" },
+  ];
+
   const [form, setForm] = useState({
     title: "",
     description: "",
-    price: "",
+    price: "0",
     product_type: "",
     category: defaultCat,
     subcategories: [],
@@ -58,8 +71,8 @@ export default function CreateListing() {
     physical_subcategory: "",
     condition: "",
     is_premium: false,
-    platform: "",
-    stock: 1,
+    platforms: [],
+    quantity: 1,
     location: "",
     tags: "",
     keywords: "",
@@ -70,6 +83,7 @@ export default function CreateListing() {
     paypal_email: "",
     external_link: "",
     download_url: "",
+    download_host: "",
     card_animation: "fade",
     kofi_url: "",
     buymeacoffee_url: "",
@@ -79,20 +93,36 @@ export default function CreateListing() {
   });
 
   useEffect(() => {
+    // Close game dropdown on outside click
+    const handler = (e) => {
+      if (gameDropdownRef.current && !gameDropdownRef.current.contains(e.target)) setShowGameDropdown(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useEffect(() => {
     const init = async () => {
       const me = await base44.auth.me();
       if (!me) { base44.auth.redirectToLogin("/create-listing"); return; }
       setUser(me);
-      const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
+      const [profiles, communities] = await Promise.all([
+        base44.entities.UserProfile.filter({ user_email: me.email }),
+        base44.entities.GamingCommunity.list(),
+      ]);
       if (profiles.length > 0) setProfile(profiles[0]);
+      // Merge TOP_FRANCHISES names with DB communities
+      const communityNames = communities.map(c => ({ id: c.franchise_id, name: c.name }));
+      const merged = [...TOP_FRANCHISES.map(f => ({ id: f.id, name: f.name }))];
+      communityNames.forEach(c => { if (!merged.find(m => m.id === c.id)) merged.push(c); });
+      setGamingCommunities(merged);
       if (editId) {
-        const listings = await base44.entities.Listing.filter({ id: editId });
-        if (listings.length > 0) {
-          const l = listings[0];
+        const l = await base44.entities.Listing.get(editId);
+        if (l) {
           setForm({
             title: l.title || "",
             description: l.description || "",
-            price: l.price || "",
+            price: l.price !== undefined ? String(l.price) : "0",
             product_type: l.product_type || "",
             category: l.category || defaultCat,
             subcategories: l.subcategories || [],
@@ -100,8 +130,8 @@ export default function CreateListing() {
             physical_subcategory: l.physical_subcategory || "",
             condition: l.condition || "digital",
             is_premium: l.is_premium || false,
-            platform: l.platform || "",
-            stock: l.stock || 1,
+            platforms: l.platforms || [],
+            quantity: l.quantity || 1,
             location: l.location || "",
             tags: (l.tags || []).join(", "),
             keywords: (l.keywords || []).join(", "),
@@ -111,6 +141,7 @@ export default function CreateListing() {
             game_platform: l.game_platform || "",
             external_link: l.external_link || "",
             download_url: l.download_url || "",
+            download_host: l.download_host || "",
             kofi_url: l.kofi_url || "",
             buymeacoffee_url: l.buymeacoffee_url || "",
             patreon_url: l.patreon_url || "",
@@ -118,6 +149,7 @@ export default function CreateListing() {
             modding_subcategory: l.modding_subcategory || "",
           });
           setImages(l.images || []);
+          if (l.game_name) setGameSearch(l.game_name);
         }
       }
       setLoading(false);
@@ -223,7 +255,8 @@ export default function CreateListing() {
       ...form,
       price: priceVal,
       is_free: priceVal === 0,
-      stock: parseInt(form.stock) || 1,
+      stock: parseInt(form.quantity) || 1,
+      quantity: parseInt(form.quantity) || 1,
       tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
       keywords: form.keywords.split(",").map(t => t.trim()).filter(Boolean),
       images,
@@ -235,7 +268,8 @@ export default function CreateListing() {
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
       modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
-      is_approved: mod?.is_approved !== false, // false only if clearly flagged
+      platform: undefined,
+      is_approved: mod?.is_approved !== false,
       status: mod?.requiresReview ? "pending" : "active",
     };
     let savedListing;
@@ -278,6 +312,8 @@ export default function CreateListing() {
     setSaving(false);
     if (mod?.requiresReview) {
       setModerationResult(mod);
+    } else if (savedListing?.id) {
+      window.location.href = `/listing?id=${savedListing.id}`;
     } else {
       window.location.href = "/dashboard?tab=listings";
     }
@@ -303,7 +339,9 @@ export default function CreateListing() {
             <ArrowLeft className="w-5 h-5" />
           </a>
           <h1 className="text-2xl font-black text-white">{editId ? "Edit Listing" : "Create New Listing"}</h1>
-          <div className="ml-auto flex gap-2">
+          <div className="ml-auto flex flex-col items-end gap-2">
+            <p className="text-cyan-400/70 text-[10px] text-right max-w-xs leading-tight italic">Autopopulates the same taggings, SEO taggings, Gaming Community &amp; Modding Community as well as Gaming Platform if your posting similar contents</p>
+            <div className="flex gap-2">
             {savedFilters.length > 0 && (
               <button type="button" onClick={() => setShowLoadFilter(v => !v)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-xs font-bold hover:bg-cyan-900/50 transition-colors">
@@ -314,6 +352,7 @@ export default function CreateListing() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs font-bold hover:bg-purple-900/50 transition-colors">
               💾 Save Filter
             </button>
+            </div>
           </div>
         </div>
 
@@ -461,6 +500,24 @@ export default function CreateListing() {
                 </a>
               )}
             </div>
+
+            {/* Download Host Selector */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Download Host (shown as logo on listing)</label>
+              <div className="flex flex-wrap gap-3">
+                {DOWNLOAD_HOSTS.map(h => (
+                  <button key={h.id} type="button"
+                    onClick={() => setForm(f => ({ ...f, download_host: f.download_host === h.id ? "" : h.id }))}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${form.download_host === h.id ? "border-opacity-100 text-white" : "border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-500"}`}
+                    style={form.download_host === h.id ? { borderColor: h.color, background: `${h.color}22`, color: h.color } : {}}>
+                    <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: h.color }} />
+                    {h.label}
+                    {form.download_host === h.id && " ✓"}
+                  </button>
+                ))}
+              </div>
+              {form.download_host && <p className="text-green-400 text-xs mt-2">✓ {DOWNLOAD_HOSTS.find(h => h.id === form.download_host)?.label} logo will display on your listing</p>}
+            </div>
           </div>
 
           {/* Product Type Selection */}
@@ -499,17 +556,46 @@ export default function CreateListing() {
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
             </div>
 
-            {/* Game info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Name</label>
-                <input value={form.game_name} onChange={e => setForm({ ...form, game_name: e.target.value })} placeholder="e.g. GTA 5, FIFA 25..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-              </div>
-              <div>
-                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Platform</label>
-                <input value={form.game_platform} onChange={e => setForm({ ...form, game_platform: e.target.value })} placeholder="PC, Android, PS5..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+            {/* Game Title — searchable dropdown from GamingCommunities */}
+            <div ref={gameDropdownRef} className="relative">
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Title</label>
+              <input
+                value={gameSearch}
+                onChange={e => { setGameSearch(e.target.value); setForm(f => ({ ...f, game_name: e.target.value })); setShowGameDropdown(true); }}
+                onFocus={() => setShowGameDropdown(true)}
+                placeholder="Search gaming communities..."
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm"
+              />
+              {showGameDropdown && (
+                <div className="absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                  {gamingCommunities.filter(c => c.name.toLowerCase().includes(gameSearch.toLowerCase())).slice(0, 20).map(c => (
+                    <button key={c.id} type="button"
+                      onClick={() => { setGameSearch(c.name); setForm(f => ({ ...f, game_name: c.name, community_franchise_id: c.id })); setShowGameDropdown(false); }}
+                      className="w-full text-left px-4 py-2.5 text-white text-sm hover:bg-purple-900/40 transition-colors border-b border-gray-800/50 last:border-0">
+                      {c.name}
+                    </button>
+                  ))}
+                  {gamingCommunities.filter(c => c.name.toLowerCase().includes(gameSearch.toLowerCase())).length === 0 && (
+                    <p className="px-4 py-3 text-gray-500 text-sm">No matching games found</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Platform Multi-Select */}
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Platforms</label>
+              <div className="flex flex-wrap gap-2">
+                {PLATFORMS.map(p => {
+                  const selected = (form.platforms || []).includes(p);
+                  return (
+                    <button key={p} type="button"
+                      onClick={() => setForm(f => ({ ...f, platforms: selected ? f.platforms.filter(x => x !== p) : [...(f.platforms || []), p] }))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selected ? "bg-purple-600 text-white border border-purple-500" : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-purple-500/50"}`}>
+                      {p} {selected && "✓"}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -542,8 +628,8 @@ export default function CreateListing() {
               )}
             </div>
             <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Stock</label>
-              <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} min={1}
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Quantity</label>
+              <input type="number" value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} min={1}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
             </div>
           </div>
@@ -672,28 +758,21 @@ export default function CreateListing() {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Condition</label>
-                <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                  {form.product_type === "physical" ? (
-                    <>
-                      <option value="new">New</option>
-                      <option value="like_new">Like New</option>
-                      <option value="good">Good</option>
-                      <option value="fair">Fair</option>
-                    </>
-                  ) : (
-                    <option value="digital">Digital Download</option>
-                  )}
-                </select>
-              </div>
-              <div>
-                <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Platform</label>
-                <input value={form.platform} onChange={e => setForm({ ...form, platform: e.target.value })} placeholder="PC, PS5, Android..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-              </div>
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Condition</label>
+              <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
+                {form.product_type === "physical" ? (
+                  <>
+                    <option value="new">New</option>
+                    <option value="like_new">Like New</option>
+                    <option value="good">Good</option>
+                    <option value="fair">Fair</option>
+                  </>
+                ) : (
+                  <option value="digital">Digital Download</option>
+                )}
+              </select>
             </div>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Tags (comma separated)</label>

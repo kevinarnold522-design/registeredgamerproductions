@@ -83,8 +83,13 @@
         "type": "string"
       }
     },
-    "platform": {
-      "type": "string"
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Selected platforms: PC, PS5, Android, etc.",
+      "default": []
     },
     "game_name": {
       "type": "string"
@@ -136,8 +141,23 @@
       "type": "number",
       "default": 1
     },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
     "download_url": {
       "type": "string"
+    },
+    "download_host": {
+      "type": "string",
+      "enum": [
+        "mediafire",
+        "modsfire",
+        "mega",
+        "sharemods",
+        ""
+      ],
+      "description": "Selected download host provider"
     },
     "external_link": {
       "type": "string"
@@ -185,6 +205,9 @@
     "community_franchise_id": {
       "type": "string",
       "description": "If set, this listing is auto-shared to the selected gaming community group"
+    },
+    "modding_subcategory": {
+      "type": "string"
     }
   },
   "required": [
