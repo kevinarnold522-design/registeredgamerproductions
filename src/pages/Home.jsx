@@ -35,23 +35,44 @@ export default function Home() {
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
   useScrollReveal();
 
-  // Flood ads for non-signed-in users after 1 minute
+  // Ad injection schedule for non-signed-in users:
+  // 0-4 min: no ads (grace period)
+  // 4 min: ads start
+  // 10 min: 3 ads simultaneously
+  // 20 min: all ads flood
   useEffect(() => {
-    if (isAuthenticated) return; // signed-in users: no flood
-    const timer = setTimeout(() => {
+    if (isAuthenticated || window.__adminBlocked) return;
+
+    const injectBanner = (slot, style) => {
       if (window.__adminBlocked) return;
-      // Inject ad zone placeholders into visible ad slots
-      const adZones = document.querySelectorAll('[data-ad-slot]');
-      adZones.forEach(el => { el.style.display = 'block'; });
-      // Trigger any held ad scripts
+      const el = document.createElement("div");
+      el.setAttribute("data-zone", slot);
+      el.style.cssText = style;
+      document.body.appendChild(el);
+    };
+
+    // 4 min: first ad appears
+    const t1 = setTimeout(() => {
+      injectBanner("243750", "position:fixed;bottom:0;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;");
+      document.querySelectorAll("[data-ad-slot]").forEach(el => { el.style.display = "block"; });
+    }, 240000);
+
+    // 10 min: 3 ads at once
+    const t2 = setTimeout(() => {
+      injectBanner("243751", "position:fixed;bottom:80px;left:0;right:0;z-index:38;text-align:center;pointer-events:auto;");
+      injectBanner("243752", "position:fixed;top:64px;right:8px;z-index:38;width:160px;text-align:center;pointer-events:auto;");
+      injectBanner("243753", "position:fixed;top:64px;left:8px;z-index:38;width:160px;text-align:center;pointer-events:auto;");
+    }, 600000);
+
+    // 20 min: full ad flood
+    const t3 = setTimeout(() => {
       window.__adsHeld = false;
-      // Load an extra banner ad unit
-      const adDiv = document.createElement('div');
-      adDiv.setAttribute('data-zone', '243750');
-      adDiv.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;';
-      document.body.appendChild(adDiv);
-    }, 240000); // 4 minute grace period
-    return () => clearTimeout(timer);
+      ["243754","243755","243756"].forEach((slot, i) => {
+        injectBanner(slot, `position:fixed;top:${150 + i * 80}px;right:8px;z-index:37;width:200px;pointer-events:auto;`);
+      });
+    }, 1200000);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [isAuthenticated]);
 
   // Load or auto-create user profile once auth is confirmed

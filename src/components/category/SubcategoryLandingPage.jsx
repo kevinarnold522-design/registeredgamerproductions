@@ -109,13 +109,14 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
             };
             const glowStyle = anim === "glow" ? { boxShadow: "0 0 24px 4px rgba(139,92,246,0.5)" } : {};
             return (
-            <motion.div
+            <motion.a
+              href={`/listing?id=${listing.id}`}
               key={listing.id}
               initial={initMap[anim] || { opacity: 0, y: 20 }}
               animate={animMap[anim] || { opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, type: anim === "bounce" ? "spring" : "tween", stiffness: 200, bounce: 0.5 }}
               style={glowStyle}
-              className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors"
+              className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors block cursor-pointer"
             >
               {listing.images?.[0] ? (
                 <img src={listing.images[0]} alt={listing.title} className="w-full h-40 object-cover" />
@@ -136,7 +137,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
                   </span>
                 </div>
               </div>
-            </motion.div>
+            </motion.a>
             );
           })}
         </div>

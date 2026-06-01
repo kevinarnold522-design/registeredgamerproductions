@@ -41,10 +41,11 @@ const SUBCATEGORY_GROUPS = [
 
 function ListingCard({ listing, index }) {
   return (
-    <motion.div
+    <motion.a
+      href={`/listing?id=${listing.id}`}
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.04 }}
       whileHover={{ y: -3, boxShadow: "0 0 25px rgba(234,179,8,0.2)" }}
-      className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden group cursor-pointer hover:border-yellow-500/30 transition-colors"
+      className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden group cursor-pointer hover:border-yellow-500/30 transition-colors block"
     >
       <ListingImageSlider images={listing.images || []} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} />
       <div className="p-4">
@@ -58,7 +59,7 @@ function ListingCard({ listing, index }) {
         </div>
         <p className="text-gray-600 text-[10px] mt-1">by {listing.seller_username || "Seller"}</p>
       </div>
-    </motion.div>
+    </motion.a>
   );
 }
 

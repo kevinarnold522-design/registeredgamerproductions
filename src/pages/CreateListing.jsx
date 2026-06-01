@@ -191,11 +191,43 @@ export default function CreateListing() {
       is_approved: mod?.is_approved !== false, // false only if clearly flagged
       status: mod?.requiresReview ? "pending" : "active",
     };
+    let savedListing;
     if (editId) {
-      await base44.entities.Listing.update(editId, data);
+      savedListing = await base44.entities.Listing.update(editId, data);
     } else {
-      await base44.entities.Listing.create(data);
+      savedListing = await base44.entities.Listing.create(data);
     }
+
+    // Cross-post to Gaming Community newsfeed
+    if (data.community_franchise_id && savedListing) {
+      const comms = await base44.entities.GamingCommunity.filter({ franchise_id: data.community_franchise_id });
+      const communityId = comms[0]?.id || data.community_franchise_id;
+      base44.entities.CommunityPost.create({
+        community_id: communityId,
+        franchise_id: data.community_franchise_id,
+        author_email: user.email,
+        author_username: profile?.username || user.full_name || "Gamer",
+        author_avatar: profile?.avatar_url || "",
+        content: `📦 New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n👉 /listing?id=${savedListing.id}`,
+        status: "active",
+        section_id: "listings",
+      }).catch(() => {});
+    }
+
+    // Cross-post to Modding Community newsfeed if modding subcategory selected
+    if (data.modding_subcategory && savedListing) {
+      base44.entities.CommunityPost.create({
+        community_id: "modding",
+        franchise_id: "modding_" + data.modding_subcategory.toLowerCase().replace(/\s+/g, "_"),
+        author_email: user.email,
+        author_username: profile?.username || user.full_name || "Gamer",
+        author_avatar: profile?.avatar_url || "",
+        content: `🔧 New mod: **${data.title}** [${data.modding_subcategory}] — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n👉 /listing?id=${savedListing.id}`,
+        status: "active",
+        section_id: data.modding_subcategory,
+      }).catch(() => {});
+    }
+
     setSaving(false);
     if (mod?.requiresReview) {
       setModerationResult(mod);

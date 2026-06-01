@@ -35,6 +35,7 @@ import SocialMediaManager from "./pages/SocialMediaManager";
 import TournamentsPage from "./pages/TournamentsPage";
 import SubcategoryLandingPage from "./pages/SubcategoryLandingPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
+import ListingPage from "./pages/ListingPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -88,6 +89,7 @@ const AuthenticatedApp = () => {
       <Route path="/tournaments" element={<TournamentsPage />} />
       <Route path="/sub-landing" element={<SubcategoryLandingPage />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />
+      <Route path="/listing" element={<ListingPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

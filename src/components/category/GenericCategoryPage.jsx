@@ -173,9 +173,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               const animMap = { fade: { opacity: 1 }, slide_up: { opacity: 1, y: 0 }, slide_left: { opacity: 1, x: 0 }, zoom: { opacity: 1, scale: 1 }, flip: { opacity: 1, rotateY: 0 }, bounce: { opacity: 1, y: 0 }, glow: { opacity: 1 }, rotate: { opacity: 1, rotate: 0 }, none: {} };
               const glowStyle = anim === "glow" ? { boxShadow: "0 0 20px 3px rgba(139,92,246,0.4)" } : {};
               return (
-              <motion.div key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
+              <motion.a href={`/listing?id=${l.id}`} key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
                 style={glowStyle}
-                className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors">
+                className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer">
                 {l.images?.[0] && (
                   <div className="h-36 overflow-hidden">
                     <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover" />
@@ -185,13 +185,13 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  <p className="text-white font-bold text-sm truncate">{l.title}</p>
                  <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
                  <div className="flex items-center justify-between mt-2">
-                   <p className="text-purple-400 font-black">₱{l.price?.toLocaleString()}</p>
+                   <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
                    <ShareButton type="listing" id={l.id} title={l.title} compact />
                  </div>
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
                  <ListingSellerBadge sellerEmail={l.seller_email} sellerUsername={l.seller_username} />
                  </div>
-                 </motion.div>
+                 </motion.a>
                  );
                  })}
                  </div>

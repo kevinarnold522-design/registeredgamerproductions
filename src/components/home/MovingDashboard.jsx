@@ -102,10 +102,11 @@ function VideoCard({ video }) {
 
 function ModCard({ mod }) {
   return (
-    <motion.div
+    <motion.a
+      href={`/listing?id=${mod.id}`}
       whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(245,197,24,0.4), 0 0 80px rgba(245,197,24,0.1)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative w-52 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer"
+      className="relative w-52 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block"
       style={{
         background: "rgba(18,8,0,0.55)",
         border: "1px solid rgba(245,197,24,0.35)",
@@ -136,16 +137,17 @@ function ModCard({ mod }) {
           <Download className="w-2.5 h-2.5" /><span className="text-[9px]">{(mod.views || 0).toLocaleString()}</span>
         </div>
       </div>
-    </motion.div>
+    </motion.a>
   );
 }
 
 function ProductCard({ product }) {
   return (
-    <motion.div
+    <motion.a
+      href={`/listing?id=${product.id}`}
       whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(0,212,255,0.35), 0 0 80px rgba(0,212,255,0.08)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative w-48 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer"
+      className="relative w-48 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block"
       style={{
         background: "rgba(0,18,8,0.55)",
         border: "1px solid rgba(0,212,255,0.3)",
@@ -170,7 +172,7 @@ function ProductCard({ product }) {
           {[1,2,3,4,5].map(s => <Star key={s} className="w-2 h-2" style={{ color: CP.yellow, fill: CP.yellow }} />)}
         </div>
       </div>
-    </motion.div>
+    </motion.a>
   );
 }
 
@@ -275,11 +277,14 @@ export default function MovingDashboard() {
         base44.entities.Listing.filter({ status: "active" }, "-created_date", 80),
       ]);
       setVideos(vids);
-      const allMods = listings.filter(l => l.category === "modding");
+      // Deduplicate by id
+      const seen = new Set();
+      const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
+      const allMods = unique.filter(l => l.category === "modding");
       setFreeMods(allMods.filter(m => !m.price || m.price === 0 || m.is_free).slice(0, 16));
       setPaidMods(allMods.filter(m => m.price > 0 && !m.is_free).slice(0, 16));
       setMods(allMods.slice(0, 16));
-      setProducts(listings.filter(l => l.category !== "modding" && l.category !== "content").slice(0, 16));
+      setProducts(unique.filter(l => l.category !== "modding" && l.category !== "content").slice(0, 16));
       setLoading(false);
     };
     load();
