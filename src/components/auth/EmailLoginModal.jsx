@@ -1,18 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { base44 } from "@/api/base44Client";
 
 export default function EmailLoginModal({ isOpen, onClose }) {
-  const [error, setError] = useState("");
-
-  const loginWithProvider = async (provider) => {
-    setError("");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin },
-    });
-    if (error) setError(error.message);
+  const loginWithProvider = () => {
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   if (!isOpen) return null;
@@ -35,10 +28,10 @@ export default function EmailLoginModal({ isOpen, onClose }) {
           </div>
 
           <div className="space-y-3">
-            <SocialButton onClick={() => loginWithProvider("google")} bg="bg-white" text="text-black" icon="/logos/google.svg" label="Google" />
-            <SocialButton onClick={() => loginWithProvider("discord")} bg="bg-[#5865F2]" text="text-white" icon="/logos/discord.svg" label="Discord" />
-            <SocialButton onClick={() => loginWithProvider("github")} bg="bg-[#24292e]" text="text-white" icon="/logos/github.svg" label="GitHub" />
-            <SocialButton onClick={() => loginWithProvider("azure")} bg="bg-[#0078d4]" text="text-white" icon="/logos/outlook.svg" label="Outlook" />
+            <SocialButton onClick={loginWithProvider} bg="bg-white" text="text-black" icon="/logos/google.svg" label="Google" />
+            <SocialButton onClick={loginWithProvider} bg="bg-[#5865F2]" text="text-white" icon="/logos/discord.svg" label="Discord" />
+            <SocialButton onClick={loginWithProvider} bg="bg-[#24292e]" text="text-white" icon="/logos/github.svg" label="GitHub" />
+            <SocialButton onClick={loginWithProvider} bg="bg-[#0078d4]" text="text-white" icon="/logos/outlook.svg" label="Outlook" />
           </div>
         </motion.div>
       </motion.div>
