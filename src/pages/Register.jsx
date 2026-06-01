@@ -1,14 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { ACCOUNT_TYPES, TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 
 export default function Register() {
+  const navigate = useNavigate();
   // Read ?type= param from URL to pre-select account type
   const urlParams = new URLSearchParams(window.location.search);
   const preselectedType = urlParams.get("type");
+
+  // If already signed in, redirect to home
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(auth => {
+      if (auth) navigate("/");
+    });
+  }, []);
 
   const [step, setStep] = useState(preselectedType ? 2 : 1);
   const [accountType, setAccountType] = useState(preselectedType || null);

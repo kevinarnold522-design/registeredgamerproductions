@@ -84,11 +84,14 @@ export default function Home() {
         if (profiles.length > 0) {
           setProfile(profiles[0]);
         } else {
+          // Check if there's a pending profile from manual sign-up
           let pendingProfile = {};
           try { pendingProfile = JSON.parse(localStorage.getItem("pending_profile") || "{}"); localStorage.removeItem("pending_profile"); } catch {}
+          // If signed in via Google with no pending profile, show setup prompt
+          const needsSetup = !pendingProfile.username;
           const newProfile = await base44.entities.UserProfile.create({
             user_email: user.email,
-            username: pendingProfile.username || user.full_name || user.email.split('@')[0],
+            username: pendingProfile.username || user.full_name?.toLowerCase().replace(/\s+/g, "") || user.email.split('@')[0],
             display_name: pendingProfile.display_name || user.full_name || user.email.split('@')[0],
             account_type: pendingProfile.account_type || "regular",
             phone_number: pendingProfile.phone_number || "",
@@ -96,8 +99,13 @@ export default function Home() {
             honor_badge: pendingProfile.honor_badge || "founding_member",
             honor_badge_label: pendingProfile.honor_badge_label || "Founding Member",
             joined_date: new Date().toISOString(),
+            needs_setup: needsSetup,
           });
           setProfile(newProfile);
+          // Redirect new Google users to complete their profile
+          if (needsSetup) {
+            window.location.href = "/channel?setup=1";
+          }
         }
       } catch {}
     };

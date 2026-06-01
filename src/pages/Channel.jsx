@@ -11,6 +11,8 @@ import PostCard from "@/components/channel/PostCard";
 import ChannelThemePicker, { THEMES } from "@/components/channel/ChannelThemePicker";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { isAdmin } from "@/lib/constants";
+import EditProfileModal from "@/components/profile/EditProfileModal";
+import UserPointsBadge from "@/components/profile/UserPointsBadge";
 
 const CONTENT_SUBCATEGORIES = [
   "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream", "other"
@@ -57,6 +59,8 @@ export default function Channel() {
   const [showComments, setShowComments] = useState({});
   const [newComment, setNewComment] = useState({});
   const [channelTheme, setChannelTheme] = useState(() => localStorage.getItem("channel_theme") || "default");
+  const setupMode = new URLSearchParams(window.location.search).get("setup") === "1";
+  const [showEditProfile, setShowEditProfile] = useState(setupMode);
 
   // Check if viewing someone else's channel via ?email=
   const urlParams = new URLSearchParams(window.location.search);
@@ -198,6 +202,8 @@ export default function Channel() {
                 </span>
               </div>
               {profile?.bio && <p className="text-gray-400 text-sm mt-1 max-w-xl">{profile.bio}</p>}
+              {/* Points & Leaderboard rank */}
+              <UserPointsBadge userEmail={profile?.user_email || user?.email} />
               {/* YouTube Channel Info */}
               {profile?.youtube_url && (
                 <div className="flex items-center gap-3 mt-2">
@@ -236,9 +242,9 @@ export default function Channel() {
             {isOwner && (
               <div className="flex items-center gap-2">
                 <ChannelThemePicker currentTheme={channelTheme} onSelect={handleThemeChange} />
-                <a href="/dashboard" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
+                <button onClick={() => setShowEditProfile(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
                   <Edit2 className="w-4 h-4" /> Edit Profile
-                </a>
+                </button>
               </div>
             )}
           </div>
@@ -438,6 +444,31 @@ export default function Channel() {
           </div>
         </div>
       </div>
+
+      {/* Setup banner for new Google sign-ins */}
+      {setupMode && !showEditProfile && profile && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3"
+          style={{ background: "linear-gradient(135deg,#7c3aed,#ec4899)", maxWidth: "90vw" }}>
+          <span className="text-xl">👋</span>
+          <div>
+            <p className="text-white font-black text-sm">Welcome! No profile found — let's set yours up</p>
+            <p className="text-white/70 text-xs">You signed in with Google. Complete your profile to get started.</p>
+          </div>
+          <button onClick={() => setShowEditProfile(true)} className="px-3 py-1.5 rounded-xl bg-white/20 text-white text-xs font-bold hover:bg-white/30 transition-colors">
+            Set Up Now →
+          </button>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditProfile && profile && (
+        <EditProfileModal
+          profile={profile}
+          user={user}
+          onClose={() => setShowEditProfile(false)}
+          onSaved={(updated) => setProfile(updated)}
+        />
+      )}
 
       {/* Upload Video Modal */}
       {showUploadModal && (

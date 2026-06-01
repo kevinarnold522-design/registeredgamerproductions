@@ -162,6 +162,17 @@ button:not(.no-glow):hover,
   box-shadow: 0 0 24px rgba(124, 58, 237, 0.45), 0 8px 32px rgba(0,0,0,0.4);
 }
 
+/* ── Global radiant purple glow on hover for all cards/links ── */
+a[href]:not(.no-glow):hover,
+[data-card]:hover {
+  filter: drop-shadow(0 0 8px rgba(168,85,247,0.35));
+}
+
+/* ── Animated gradient font ── */
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
 /* ── Fire button animation ── */
 @keyframes fire-shift {
   0%, 100% { background-position: 0% 50%; }

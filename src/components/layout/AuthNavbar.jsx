@@ -11,6 +11,7 @@ import UserMegaMenu from "@/components/layout/UserMegaMenu";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import LanguageSelector from "@/components/layout/LanguageSelector";
+import EarnNowButton from "@/components/shared/EarnNowButton";
 
 export default function AuthNavbar({ user, profile }) {
   const [cartOpen, setCartOpen] = useState(false);
@@ -152,6 +153,8 @@ export default function AuthNavbar({ user, profile }) {
             <span className="hidden lg:block">Go Live</span>
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
           </Link>
+          {/* Earn Now */}
+          {!admin && <EarnNowButton />}
           {/* Language Selector */}
           <LanguageSelector />
           {/* Messages */}

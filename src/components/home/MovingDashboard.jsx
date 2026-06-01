@@ -54,7 +54,18 @@ function FireBurst() {
 }
 
 function VideoCard({ video }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(video.likes || 0);
   const ytId = video.youtube_video_id || (video.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+
+  const handleLike = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLiked(l => !l);
+    setLikeCount(c => liked ? c - 1 : c + 1);
+    base44.entities.VideoPost.update(video.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(168,85,247,0.5), 0 0 80px rgba(168,85,247,0.15)" }}
@@ -94,7 +105,12 @@ function VideoCard({ video }) {
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{video.title}</p>
         <p className="text-xs mt-0.5 truncate" style={{ color: CP.purple }}>{video.creator_username || "Creator"}</p>
-        {video.game_tag && <p className="text-[9px] mt-0.5" style={{ color: `${CP.cyan}99` }}>{video.game_tag}</p>}
+        <div className="flex items-center justify-between mt-1.5">
+          {video.game_tag && <p className="text-[9px]" style={{ color: `${CP.cyan}99` }}>{video.game_tag}</p>}
+          <button onClick={handleLike} className="flex items-center gap-0.5 text-[9px] ml-auto transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
+            <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
+          </button>
+        </div>
       </div>
     </motion.div>
   );

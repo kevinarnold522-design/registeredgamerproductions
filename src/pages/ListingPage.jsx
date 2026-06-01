@@ -260,8 +260,10 @@ export default function ListingPage() {
             <div className="mt-4 p-4 bg-gray-900 rounded-2xl border border-gray-800">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-white font-bold text-sm">Rate this listing</p>
-                {avgRating > 0 && (
+                {avgRating > 0 ? (
                   <span className="text-yellow-400 text-sm font-black">⭐ {avgRating} <span className="text-gray-500 font-normal">({ratingCount})</span></span>
+                ) : (
+                  <span className="text-gray-500 text-xs italic">⭐ Be the first to rate this!</span>
                 )}
               </div>
               <div className="flex gap-1">

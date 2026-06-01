@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
+import RecommendModal from "@/components/shared/RecommendModal";
 
 // Newsfeed for a community franchise
 function CommunityNewsfeed({ franchise, community, user, profile }) {
@@ -315,6 +316,7 @@ export default function GamingCommunity() {
   const [newCatGenre, setNewCatGenre] = useState("Gaming");
   const [extraFranchises, setExtraFranchises] = useState([]);
   const [activeFranchise, setActiveFranchise] = useState(null);
+  const [showRecommend, setShowRecommend] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(272);
   const dragging = useRef(false);
   const startX = useRef(0);
@@ -421,6 +423,15 @@ export default function GamingCommunity() {
     const matchGenre = selectedGenre === "All" || f.genre === selectedGenre;
     return matchSearch && matchGenre;
   });
+
+  // Auto-open first franchise on load
+  const [autoOpened, setAutoOpened] = React.useState(false);
+  React.useEffect(() => {
+    if (!autoOpened && filtered.length > 0) {
+      setActiveFranchise(filtered[0]);
+      setAutoOpened(true);
+    }
+  }, [filtered.length]);
 
   const handleJoinCard = async (franchise) => {
     if (!user) { base44.auth.redirectToLogin(); return; }
@@ -533,7 +544,12 @@ export default function GamingCommunity() {
             {selectedGenre !== "All" && <span className="ml-1 text-purple-400">in {selectedGenre}</span>}
             {search && <span className="ml-1 text-purple-400">matching "{search}"</span>}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {/* Recommend Game — all users */}
+            <button onClick={() => setShowRecommend(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border border-purple-700/50 text-purple-300 hover:bg-purple-900/20 transition-colors">
+              🎮 Recommend Game
+            </button>
             {admin && (
               <button onClick={() => setShowAddCategory(true)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-black text-white"
@@ -642,8 +658,18 @@ export default function GamingCommunity() {
           </div>
         </div>
       </div>
+      </div>
 
-
+      {/* Recommend Modal */}
+      {showRecommend && (
+        <RecommendModal
+          type="game"
+          parentCategory="gaming"
+          user={user}
+          profile={profile}
+          onClose={() => setShowRecommend(false)}
+        />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Gamepad2, Search, Menu, X, Zap, ArrowRight, User, Store, Radio, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import EmailLoginModal from "@/components/auth/EmailLoginModal.jsx";
+import EarnNowButton from "@/components/shared/EarnNowButton";
 
 const navLinks = [
   { label: "Categories", href: "#categories" },
@@ -94,11 +95,23 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-2 group">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colorCycles[colorIdx]} flex items-center justify-center cursor-pointer transition-all duration-300`}
+                className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colorCycles[colorIdx]} flex items-center justify-center cursor-pointer transition-all duration-300 relative`}
                 animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+                style={{
+                  boxShadow: controllerCycling
+                    ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6), 0 0 80px rgba(236,72,153,0.4)"
+                    : "0 0 10px rgba(168,85,247,0.4)",
+                  transition: "box-shadow 0.4s ease",
+                }}
               >
                 <Gamepad2 className="w-5 h-5 text-white" />
+                {controllerCycling && (
+                  <span className="absolute inset-0 rounded-lg pointer-events-none" style={{
+                    background: "radial-gradient(circle, rgba(168,85,247,0.4) 0%, transparent 70%)",
+                    animation: "none",
+                  }} />
+                )}
               </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-sm">GAMER</span>
@@ -141,6 +154,7 @@ export default function Navbar() {
 
             {/* Right */}
             <div className="flex items-center gap-2">
+              <EarnNowButton />
               <button
                 onClick={() => setShowSignUpModal(true)}
                 className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-sm font-black transition-all shadow-lg radiant-glow"
