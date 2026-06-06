@@ -33,18 +33,25 @@ import useScrollReveal from "@/hooks/useScrollReveal";
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [profile, setProfile] = useState(null);
+  const [showAdSign, setShowAdSign] = useState(false);
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
   useScrollReveal();
 
-  // Ad injection schedule for non-signed-in users:
-  // 0-4 min: no ads (grace period)
-  // 4 min: ads start
-  // 10 min: 3 ads simultaneously
-  // 20 min: all ads flood
-  // Block ads for authenticated users and admin
+  // Show "Sign in to block ads" sign for guests after 3 min (only after splash dismissed)
   useEffect(() => {
+    if (showSplash || isAuthenticated) return;
+    const t = setTimeout(() => setShowAdSign(true), 180000);
+    return () => clearTimeout(t);
+  }, [showSplash, isAuthenticated]);
+
+  // Ad logic:
+  // - During splash (showSplash=true): NEVER show ads
+  // - 0-3 min after splash dismissed: no ads for anyone
+  // - After 3 min: ads start for non-signed-in users only
+  // - Signed-in users: ads permanently disabled
+  useEffect(() => {
+    // Always clean up ads for authenticated users
     if (isAuthenticated) {
-      // Remove any injected ads immediately
       document.querySelectorAll("[data-zone]").forEach(el => el.remove());
       document.querySelectorAll("[data-ad-slot]").forEach(el => { el.style.display = "none"; });
       return;
@@ -52,39 +59,42 @@ export default function Home() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated || window.__adminBlocked) return;
+    // Don't start ad timers during splash screen
+    if (showSplash) return;
+    // Signed-in users never see ads
+    if (isAuthenticated) return;
 
     const injectBanner = (slot, style) => {
-      if (window.__adminBlocked) return;
+      const existing = document.querySelector(`[data-zone="${slot}"]`);
+      if (existing) return;
       const el = document.createElement("div");
       el.setAttribute("data-zone", slot);
       el.style.cssText = style;
       document.body.appendChild(el);
     };
 
-    // 4 min: first ad appears
+    // 3 min grace period, then ads start
     const t1 = setTimeout(() => {
       injectBanner("243750", "position:fixed;bottom:0;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;");
       document.querySelectorAll("[data-ad-slot]").forEach(el => { el.style.display = "block"; });
-    }, 240000);
+    }, 180000);
 
-    // 10 min: 3 ads at once
+    // 10 min: more ads
     const t2 = setTimeout(() => {
       injectBanner("243751", "position:fixed;bottom:80px;left:0;right:0;z-index:38;text-align:center;pointer-events:auto;");
       injectBanner("243752", "position:fixed;top:64px;right:8px;z-index:38;width:160px;text-align:center;pointer-events:auto;");
       injectBanner("243753", "position:fixed;top:64px;left:8px;z-index:38;width:160px;text-align:center;pointer-events:auto;");
     }, 600000);
 
-    // 20 min: full ad flood
+    // 20 min: flood
     const t3 = setTimeout(() => {
-      window.__adsHeld = false;
       ["243754","243755","243756"].forEach((slot, i) => {
         injectBanner(slot, `position:fixed;top:${150 + i * 80}px;right:8px;z-index:37;width:200px;pointer-events:auto;`);
       });
     }, 1200000);
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, showSplash]);
 
   // Load or auto-create user profile once auth is confirmed
   useEffect(() => {
@@ -141,9 +151,6 @@ export default function Home() {
             {/* First 10K Free Verified Badge promotion */}
             <First10KBanner user={user} profile={profile} />
 
-            {/* Listing of the Week — celebrated top listing */}
-            <ListingOfWeek />
-
             {/* Categories moved up — prominent position */}
             <CategoryCards />
 
@@ -165,6 +172,10 @@ export default function Home() {
             <VideosSection />
             <FeaturedGames />
             <CommunitySection />
+
+            {/* Listing of the Week — bottom of page with radiant glow */}
+            <ListingOfWeek />
+
             <Footer />
             <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
             <AdminLinkScanner userEmail={user?.email} />
@@ -173,6 +184,16 @@ export default function Home() {
             <AdminApprovalPanel userEmail={user?.email} />
           </div>
         </>
+      )}
+
+      {/* "Sign in to block ads" floating sign — guests only, after 3 min, no close button */}
+      {showAdSign && !isAuthenticated && (
+        <div
+          className="fixed bottom-20 right-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-xl border border-purple-700/60 text-xs font-bold text-purple-200 pointer-events-auto"
+          style={{ background: "rgba(20,10,40,0.92)", backdropFilter: "blur(8px)", boxShadow: "0 0 18px rgba(124,58,237,0.4)" }}
+        >
+          🔒 <a href="/register" className="text-purple-300 hover:text-white underline transition-colors">Sign in to block ads</a>
+        </div>
       )}
     </div>
   );
