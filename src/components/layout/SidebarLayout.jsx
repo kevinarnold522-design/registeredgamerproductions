@@ -16,7 +16,7 @@ export default function SidebarLayout({ children }) {
     return () => clearInterval(interval);
   }, []);
 
-  const sidebarW = collapsed ? 56 : 220;
+  const sidebarW = collapsed ? 56 : 240;
 
   return (
     <>

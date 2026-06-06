@@ -6,6 +6,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
 import CommentThread from "@/components/shared/CommentThread";
+import DownloadAdGate from "@/components/ads/DownloadAdGate";
 
 function GlowDownloadButton({ isFree, price, onClick }) {
   return (
@@ -33,32 +34,7 @@ function GlowDownloadButton({ isFree, price, onClick }) {
   );
 }
 
-function AdOverlay({ onDone }) {
-  const [countdown, setCountdown] = useState(5);
-  useEffect(() => {
-    if (countdown <= 0) { onDone(); return; }
-    const t = setTimeout(() => setCountdown(c => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [countdown]);
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.92)" }}>
-      <div className="bg-gray-900 border border-purple-700/50 rounded-2xl p-8 max-w-sm w-full text-center mx-4">
-        <p className="text-white font-black text-xl mb-2">⚡ Almost there!</p>
-        <p className="text-gray-400 text-sm mb-6">Please wait while we prepare your download...</p>
-        <div className="w-full bg-gray-800 rounded-full h-2 mb-4">
-          <motion.div className="h-2 rounded-full" style={{ background: "linear-gradient(90deg,#7c3aed,#ec4899)" }}
-            animate={{ width: `${((5 - countdown) / 5) * 100}%` }} transition={{ duration: 1 }} />
-        </div>
-        <p className="text-purple-300 font-black text-2xl">{countdown}s</p>
-        {countdown === 0 && (
-          <button onClick={onDone} className="mt-4 px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-sm">
-            Continue to Download →
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
+// AdOverlay replaced by DownloadAdGate component
 
 export default function ListingPage() {
   const params = new URLSearchParams(window.location.search);
@@ -178,23 +154,29 @@ export default function ListingPage() {
   };
 
   const handleDownload = () => {
-    if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
     const url = listing.download_url || listing.external_link;
     if (!url) return;
-    base44.entities.Listing.update(listing.id, { views: (listing.views || 0) + 1 }).catch(() => {});
-    // Auto-join gaming and modding communities on download
-    if (listing.community_franchise_id) autoJoinCommunity(listing.community_franchise_id);
-    autoJoinCommunity("modding");
-    if (isAdmin(user.email)) {
+    if (user) base44.entities.Listing.update(listing.id, { views: (listing.views || 0) + 1 }).catch(() => {});
+    const isExempt = user && (isAdmin(user.email) || profile?.moderator_type === "account_moderator");
+    if (isExempt) {
       window.open(url, "_blank");
-    } else {
-      setPendingDownloadUrl(url);
-      setShowAdOverlay(true);
+      return;
     }
+    // Auto-join on download for signed-in users
+    if (user) {
+      if (listing.community_franchise_id) autoJoinCommunity(listing.community_franchise_id);
+      autoJoinCommunity("modding");
+    }
+    setPendingDownloadUrl(url);
+    setShowAdOverlay(true);
   };
 
   const handleAdDone = () => {
     setShowAdOverlay(false);
+    if (!user) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
     if (pendingDownloadUrl) { window.open(pendingDownloadUrl, "_blank"); setPendingDownloadUrl(null); }
   };
 
@@ -265,7 +247,12 @@ export default function ListingPage() {
     <div className="min-h-screen bg-gray-950 text-white">
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
-      {showAdOverlay && <AdOverlay onDone={handleAdDone} />}
+      {showAdOverlay && (
+        <DownloadAdGate
+          isGuest={!user}
+          onComplete={handleAdDone}
+        />
+      )}
 
       <div className="pt-20 max-w-5xl mx-auto px-4 pb-16">
         {/* Back + Edit */}
@@ -443,17 +430,7 @@ export default function ListingPage() {
             })()}
 
             <div className="flex flex-col gap-3">
-              {hasDownload && !user && (
-                <div className="w-full py-4 rounded-xl border-2 border-dashed border-purple-700/50 bg-purple-900/10 text-center">
-                  <p className="text-purple-300 font-bold text-sm mb-2">🔒 Sign up to download</p>
-                  <p className="text-gray-500 text-xs mb-3">Create a free account to access downloads</p>
-                  <a href="/register" className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-white font-black text-sm"
-                    style={{ background: "linear-gradient(135deg,#7c3aed,#ec4899)" }}>
-                    Sign Up Free →
-                  </a>
-                </div>
-              )}
-              {hasDownload && user && <GlowDownloadButton isFree={isFree} price={listing.price} onClick={handleDownload} />}
+              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} onClick={handleDownload} />}
               <div className="flex gap-2 flex-wrap">
                 {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80">☕ Ko-fi</a>}
                 {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80">☕ BuyMeACoffee</a>}

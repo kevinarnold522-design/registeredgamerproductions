@@ -38,6 +38,7 @@ import SubcategoryLandingPage from "./pages/SubcategoryLandingPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import ListingPage from "./pages/ListingPage.jsx";
 import RoutingDashboard from "./pages/RoutingDashboard";
+import EarningsDashboard from "./pages/EarningsDashboard";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -93,6 +94,7 @@ const AuthenticatedApp = () => {
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/listing" element={<ListingPage />} />
       <Route path="/routing-dashboard" element={<RoutingDashboard />} />
+      <Route path="/earnings" element={<EarningsDashboard />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
