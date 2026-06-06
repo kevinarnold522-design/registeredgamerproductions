@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Play, Package, Star, Eye, TrendingUp, Zap, Radio, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle } from "lucide-react";
+import { Play, Package, Star, Eye, TrendingUp, Zap, Radio, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
@@ -116,6 +116,46 @@ function VideoCard({ video }) {
   );
 }
 
+function CardActions({ item, liked, likeCount, onLike }) {
+  const handleShare = async (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const url = `${window.location.origin}/listing?id=${item.id}`;
+    try { if (navigator.share) { await navigator.share({ title: item.title, url }); return; } } catch {}
+    try { await navigator.clipboard.writeText(url); } catch {}
+  };
+  const handleFav = async (e) => {
+    e.preventDefault(); e.stopPropagation();
+    try {
+      const me = await base44.auth.me();
+      if (!me) { base44.auth.redirectToLogin(window.location.href); return; }
+      await base44.entities.Favorite.create({ user_email: me.email, listing_id: item.id, listing_title: item.title });
+    } catch {}
+  };
+  const handleReport = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    window.open(`/contact?report=${item.id}`, "_blank");
+  };
+  return (
+    <div className="flex items-center gap-2 flex-wrap mt-1.5">
+      <button onClick={onLike} className="flex items-center gap-0.5 text-[9px] transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
+        <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
+      </button>
+      <a href={`/listing?id=${item.id}#comments`} onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.cyan}60` }}>
+        <MessageCircle className="w-3 h-3" />
+      </a>
+      <button onClick={handleShare} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.purple}80` }} title="Share">
+        <Share2 className="w-3 h-3" />
+      </button>
+      <button onClick={handleFav} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.yellow}80` }} title="Save to Favourites">
+        <Bookmark className="w-3 h-3" />
+      </button>
+      <button onClick={handleReport} className="flex items-center gap-0.5 text-[9px]" style={{ color: "rgba(239,68,68,0.5)" }} title="Report">
+        <Flag className="w-3 h-3" />
+      </button>
+    </div>
+  );
+}
+
 function ModCard({ mod }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(mod.likes || 0);
@@ -160,19 +200,10 @@ function ModCard({ mod }) {
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{mod.title}</p>
         <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? `₱${mod.price?.toLocaleString()}` : "FREE"}</p>
-        <div className="flex items-center justify-between mt-1.5">
-          <div className="flex items-center gap-1" style={{ color: `${CP.cyan}80` }}>
-            <Download className="w-2.5 h-2.5" /><span className="text-[9px]">{(mod.views || 0).toLocaleString()}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={handleLike} className="flex items-center gap-0.5 text-[9px] transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
-              <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
-            </button>
-            <a href={`/listing?id=${mod.id}#comments`} onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.cyan}60` }}>
-              <MessageCircle className="w-3 h-3" />
-            </a>
-          </div>
+        <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
+          <Download className="w-2.5 h-2.5" /><span className="text-[9px]">{(mod.views || 0).toLocaleString()}</span>
         </div>
+        <CardActions item={mod} liked={liked} likeCount={likeCount} onLike={handleLike} />
       </div>
     </motion.a>
   );
@@ -216,19 +247,10 @@ function ProductCard({ product }) {
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{product.title}</p>
         <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>₱{(product.price || 0).toLocaleString()}</p>
-        <div className="flex items-center justify-between mt-1.5">
-          <div className="flex items-center gap-0.5">
-            {[1,2,3,4,5].map(s => <Star key={s} className="w-2 h-2" style={{ color: CP.yellow, fill: CP.yellow }} />)}
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={handleLike} className="flex items-center gap-0.5 text-[9px] transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
-              <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
-            </button>
-            <a href={`/listing?id=${product.id}#comments`} onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.cyan}60` }}>
-              <MessageCircle className="w-3 h-3" />
-            </a>
-          </div>
+        <div className="flex items-center gap-0.5 mt-1">
+          {[1,2,3,4,5].map(s => <Star key={s} className="w-2 h-2" style={{ color: CP.yellow, fill: CP.yellow }} />)}
         </div>
+        <CardActions item={product} liked={liked} likeCount={likeCount} onLike={handleLike} />
       </div>
     </motion.a>
   );

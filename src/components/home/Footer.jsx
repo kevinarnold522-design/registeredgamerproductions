@@ -125,10 +125,19 @@ export default function Footer() {
             ))}
           </div>
 
+          {/* Founded by — prominent statement */}
+          <div className="mt-8 mb-6 text-center">
+            <p className="text-gray-400 text-sm font-semibold">
+              Founded in <span className="text-purple-400 font-black">2026</span> by{" "}
+              <span className="text-white font-black">Kevin Roberto</span>
+              <span className="text-gray-500"> · Built for Gamers, by a Gamer</span>
+            </p>
+          </div>
+
           {/* Divider + Bottom bar */}
           <div className="border-t border-gray-900 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-gray-600 text-sm">
-              &copy; 2026 GAMER Productions &middot; Founded by Kevin Roberto &middot; Built for Gamers
+              &copy; 2026 GAMER Productions &middot; All rights reserved
             </p>
             <div className="flex items-center gap-2 flex-wrap justify-center">
               <span className="text-gray-700 text-xs">1 Community &middot; 1 Mindset &middot; 1 Goal</span>

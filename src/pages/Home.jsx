@@ -154,11 +154,11 @@ export default function Home() {
             {/* Categories moved up — prominent position */}
             <CategoryCards />
 
-            {/* What GAMER Productions is */}
-            <BusinessModelSection />
-
-            {/* Live Moving Dashboard */}
+            {/* Live Moving Dashboard (marketplace listings) */}
             <MovingDashboard />
+
+            {/* Listing of the Week — right after marketplace listings */}
+            <ListingOfWeek />
 
             {/* Live Streaming Tools */}
             <LiveStreamSection />
@@ -173,8 +173,8 @@ export default function Home() {
             <FeaturedGames />
             <CommunitySection />
 
-            {/* Listing of the Week — bottom of page with radiant glow */}
-            <ListingOfWeek />
+            {/* What GAMER Productions is — moved to bottom above footer */}
+            <BusinessModelSection />
 
             <Footer />
             <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
