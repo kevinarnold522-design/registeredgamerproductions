@@ -11,6 +11,7 @@ import { TOP_FRANCHISES } from "@/lib/franchises";
 import { Link, useParams } from "react-router-dom";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
+import GroupChat from "@/components/community/GroupChat";
 
 export default function CommunityLandingPage() {
   const { user } = useAuth();
@@ -529,6 +530,14 @@ export default function CommunityLandingPage() {
           </div>
         </div>
       </div>
+      {/* Group Chat — floating for every community */}
+      <GroupChat
+        franchiseId={franchise.id}
+        communityId={community?.id}
+        user={user}
+        profile={profile}
+        accentColor={franchise.accent}
+      />
     </div>
   );
 }
