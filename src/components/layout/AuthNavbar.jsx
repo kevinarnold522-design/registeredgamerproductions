@@ -198,7 +198,7 @@ export default function AuthNavbar({ user, profile }) {
         <SidebarContent />
       </motion.aside>
 
-      {/* Mobile top bar */}
+      {/* Mobile top bar — logo + hamburger only */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-14 flex items-center px-4 gap-3">
         <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />
@@ -209,10 +209,6 @@ export default function AuthNavbar({ user, profile }) {
           </div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
-        <div className="flex-1" />
-        <NotificationBell userEmail={user?.email} />
-        <UserMegaMenu user={user} profile={profile} favCount={favCount} cartCount={cartCount}
-          onFavOpen={() => setFavOpen(true)} onCartOpen={() => setCartOpen(true)} />
       </nav>
 
       {/* Mobile drawer */}
