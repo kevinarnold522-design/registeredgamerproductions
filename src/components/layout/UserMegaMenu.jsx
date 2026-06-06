@@ -63,7 +63,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
               <div className="bg-blue-900/40 border border-blue-700/50 rounded-2xl p-4 text-center">
                 <p className="text-4xl mb-2">📘</p>
                 <p className="text-white font-bold text-sm">Follow our Facebook</p>
-                <a href="https://www.facebook.com/share/1D9ey9w8Rw/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-blue-300 text-xs mt-1 block hover:text-blue-200">GAMER.Productions →</a>
+                <a href="https://www.facebook.com/share/1D9ey9w8Rw/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-blue-300 text-xs mt-1 block hover:text-blue-200">Gamer.Productions →</a>
               </div>
               <div className="bg-red-900/40 border border-red-700/50 rounded-2xl p-4 text-center">
                 <p className="text-4xl mb-2">▶️</p>

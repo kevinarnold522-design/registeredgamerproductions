@@ -76,7 +76,7 @@ export default function FollowButton({ currentUserEmail, targetEmail, targetUser
       ) : (
         <UserPlus className={size === "sm" ? "w-3 h-3" : "w-4 h-4"} />
       )}
-      {following ? "Following" : "Follow"}
+      {following ? "Registered ✓" : "Register"}
     </button>
   );
 }

@@ -23,6 +23,7 @@ import AdminLinkScanner from "@/components/admin/AdminLinkScanner";
 import DailyRewards from "@/components/rewards/DailyRewards";
 import DailyRewardPopup from "@/components/rewards/DailyRewardPopup";
 import AdminApprovalPanel from "@/components/community/AdminApprovalPanel";
+import ListingOfWeek from "@/components/home/ListingOfWeek";
 import VerifiedBadgeBanner from "@/components/home/VerifiedBadgeBanner";
 import First10KBanner from "@/components/home/First10KBanner";
 import { base44 } from "@/api/base44Client";
@@ -139,6 +140,9 @@ export default function Home() {
 
             {/* First 10K Free Verified Badge promotion */}
             <First10KBanner user={user} profile={profile} />
+
+            {/* Listing of the Week — celebrated top listing */}
+            <ListingOfWeek />
 
             {/* Categories moved up — prominent position */}
             <CategoryCards />

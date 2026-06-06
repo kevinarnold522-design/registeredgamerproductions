@@ -27,6 +27,24 @@
         "removed"
       ],
       "default": "active"
+    },
+    "hearts": {
+      "type": "number",
+      "default": 0
+    },
+    "hearted_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "parent_id": {
+      "type": "string",
+      "description": "ID of parent comment for replies"
+    },
+    "reply_to_username": {
+      "type": "string"
     }
   },
   "required": [

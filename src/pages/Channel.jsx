@@ -254,7 +254,7 @@ export default function Channel() {
             {[
               { label: "Videos", value: videos.length },
               { label: "Total Views", value: totalViews.toLocaleString() },
-              { label: "Followers", value: profile?.followers_count || 0 },
+              { label: "Registered", value: profile?.followers_count || 0 },
             ].map((s, i) => (
               <div key={i} className="text-center">
                 <p className="text-white font-black text-xl">{s.value}</p>

@@ -43,7 +43,7 @@ export default function CommunitySection() {
               </span>
             </h2>
             <p className="text-gray-400 max-w-xl mx-auto text-base">
-              GAMER Productions — Est. 2026
+              Gamer.Productions — Est. 2026
             </p>
           </motion.div>
         </div>
@@ -83,7 +83,7 @@ export default function CommunitySection() {
           <h3 className="text-2xl md:text-3xl font-black text-white mb-2">
               Join{" "}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                GAMER Productions
+                Gamer.Productions
               </span>
             </h3>
             <p className="text-gray-400 mb-6 text-sm">

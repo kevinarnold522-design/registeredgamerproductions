@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, Send, MessageCircle, X } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
+import CommentThread from "@/components/shared/CommentThread";
 
 function GlowDownloadButton({ isFree, price, onClick }) {
   return (
@@ -75,8 +76,7 @@ export default function ListingPage() {
   const [copied, setCopied] = useState(false);
   const [heartAnim, setHeartAnim] = useState(false);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentKey, setCommentKey] = useState(0);
   const [userRating, setUserRating] = useState(0);
   const [avgRating, setAvgRating] = useState(0);
   const [ratingCount, setRatingCount] = useState(0);
@@ -154,11 +154,37 @@ export default function ListingPage() {
     }
   };
 
+  const autoJoinCommunity = async (franchiseId) => {
+    if (!user || !franchiseId) return;
+    try {
+      const existing = await base44.entities.CommunityMember.filter({ franchise_id: franchiseId, user_email: user.email });
+      if (existing.length > 0) return;
+      let comms = await base44.entities.GamingCommunity.filter({ franchise_id: franchiseId });
+      let communityId = comms[0]?.id;
+      if (!communityId) {
+        const nc = await base44.entities.GamingCommunity.create({
+          franchise_id: franchiseId, name: franchiseId,
+          color_primary: "#1a1a2e", color_secondary: "#7c3aed",
+          moderator_emails: [], sections: [],
+        });
+        communityId = nc.id;
+      }
+      await base44.entities.CommunityMember.create({
+        community_id: communityId, franchise_id: franchiseId,
+        user_email: user.email, username: profile?.username || user.full_name || "Gamer",
+        avatar_url: profile?.avatar_url || "", is_moderator: false,
+      });
+    } catch {}
+  };
+
   const handleDownload = () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
     const url = listing.download_url || listing.external_link;
     if (!url) return;
     base44.entities.Listing.update(listing.id, { views: (listing.views || 0) + 1 }).catch(() => {});
+    // Auto-join gaming and modding communities on download
+    if (listing.community_franchise_id) autoJoinCommunity(listing.community_franchise_id);
+    autoJoinCommunity("modding");
     if (isAdmin(user.email)) {
       window.open(url, "_blank");
     } else {
@@ -193,16 +219,11 @@ export default function ListingPage() {
     setAvgRating(Math.round(avg * 10) / 10); setRatingCount(allRatings.length);
   };
 
-  const handleComment = async () => {
-    if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
-    if (!newComment.trim()) return;
-    setSubmittingComment(true);
-    const c = await base44.entities.PostComment.create({
-      post_id: listing.id, author_email: user.email,
-      author_username: profile?.username || user.full_name || "Gamer",
-      content: newComment, status: "active",
-    });
-    setComments(prev => [...prev, c]); setNewComment(""); setSubmittingComment(false);
+  const refreshComments = async () => {
+    if (!listing) return;
+    const c = await base44.entities.PostComment.filter({ post_id: listing.id });
+    setComments(c.filter(x => x.status !== "removed").sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
+    setCommentKey(k => k + 1);
   };
 
   const handleRecommend = async () => {
@@ -422,7 +443,17 @@ export default function ListingPage() {
             })()}
 
             <div className="flex flex-col gap-3">
-              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} onClick={handleDownload} />}
+              {hasDownload && !user && (
+                <div className="w-full py-4 rounded-xl border-2 border-dashed border-purple-700/50 bg-purple-900/10 text-center">
+                  <p className="text-purple-300 font-bold text-sm mb-2">🔒 Sign up to download</p>
+                  <p className="text-gray-500 text-xs mb-3">Create a free account to access downloads</p>
+                  <a href="/register" className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-white font-black text-sm"
+                    style={{ background: "linear-gradient(135deg,#7c3aed,#ec4899)" }}>
+                    Sign Up Free →
+                  </a>
+                </div>
+              )}
+              {hasDownload && user && <GlowDownloadButton isFree={isFree} price={listing.price} onClick={handleDownload} />}
               <div className="flex gap-2 flex-wrap">
                 {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80">☕ Ko-fi</a>}
                 {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80">☕ BuyMeACoffee</a>}
@@ -432,7 +463,7 @@ export default function ListingPage() {
 
             {siteSettings && (
               <div className="bg-gray-900/60 rounded-xl border border-gray-800 p-4">
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3">🎮 GAMER.PRODUCTIONS</p>
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3">🎮 Gamer.Productions</p>
                 <div className="flex flex-wrap gap-2">
                   {siteSettings.youtube_url && <a href={siteSettings.youtube_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-red-900/30 border border-red-700/30 text-red-300 text-xs font-bold hover:opacity-80">▶ YouTube</a>}
                   {siteSettings.facebook_url && <a href={siteSettings.facebook_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-bold hover:opacity-80">f Facebook</a>}
@@ -453,44 +484,14 @@ export default function ListingPage() {
             <h2 className="text-xl font-black text-white">Comments</h2>
             <span className="px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-300 text-xs font-bold">{comments.length}</span>
           </div>
-          {user ? (
-            <div className="flex gap-3 mb-6">
-              <div className="w-9 h-9 rounded-full bg-gray-700 flex-shrink-0 overflow-hidden">
-                {profile?.avatar_url ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">{(profile?.username || "G")[0]}</div>}
-              </div>
-              <div className="flex-1 flex gap-2">
-                <input value={newComment} onChange={e => setNewComment(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && !e.shiftKey && handleComment()}
-                  placeholder="Write a comment..."
-                  className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-                <button onClick={handleComment} disabled={!newComment.trim() || submittingComment}
-                  className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 transition-colors flex-shrink-0">
-                  <Send className="w-4 h-4 text-white" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 text-center">
-              <p className="text-gray-400 text-sm mb-2">Sign in to leave a comment</p>
-              <button onClick={() => base44.auth.redirectToLogin(window.location.href)} className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-bold hover:bg-purple-700 transition-colors">Sign In</button>
-            </div>
-          )}
-          <div className="space-y-4">
-            {comments.length === 0 ? (
-              <div className="text-center py-8 text-gray-600"><MessageCircle className="w-10 h-10 mx-auto mb-2 opacity-30" /><p className="text-sm">No comments yet. Be the first!</p></div>
-            ) : comments.map(c => (
-              <div key={c.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-xs text-white font-bold">{(c.author_username || "G")[0]}</div>
-                <div className="flex-1 bg-gray-900 rounded-xl border border-gray-800 px-4 py-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-white font-bold text-xs">{c.author_username}</span>
-                    <span className="text-gray-600 text-[10px]">{new Date(c.created_date).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-gray-300 text-sm leading-relaxed">{c.content}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CommentThread
+            key={commentKey}
+            comments={comments}
+            user={user}
+            profile={profile}
+            postId={listing.id}
+            onRefresh={refreshComments}
+          />
         </div>
       </div>
 

@@ -95,7 +95,7 @@ export default function AuthNavbar({ user, profile }) {
           {(!collapsed || isMobile) && (
             <div className="flex flex-col leading-tight min-w-0">
               <span className="font-black text-white text-xs whitespace-nowrap">
-                GAMER<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.PROD</span>
+                Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span>
               </span>
               {(profile?.is_verified || isAdmin(user?.email)) && (
                 <span className="flex items-center gap-1">
@@ -207,7 +207,7 @@ export default function AuthNavbar({ user, profile }) {
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
             <Gamepad2 className="w-4 h-4 text-white" />
           </div>
-          <span className="font-black text-white text-xs">GAMER<span className="text-purple-400">.PROD</span></span>
+          <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
         <div className="flex-1" />
         <NotificationBell userEmail={user?.email} />

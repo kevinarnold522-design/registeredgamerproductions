@@ -114,8 +114,8 @@ export default function Navbar() {
                 )}
               </motion.div>
               <div className="hidden sm:block">
-                <span className="font-black text-white text-sm">GAMER</span>
-                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.PRODUCTIONS</span>
+                <span className="font-black text-white text-sm">Gamer</span>
+                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.Productions</span>
               </div>
             </Link>
 
@@ -239,8 +239,8 @@ export default function Navbar() {
                     <Gamepad2 className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <span className="font-black text-white text-sm">GAMER</span>
-                    <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.PRODUCTIONS</span>
+                    <span className="font-black text-white text-sm">Gamer</span>
+                    <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.Productions</span>
                   </div>
                 </div>
                 <button onClick={() => setShowSignUpModal(false)} className="text-gray-600 hover:text-white transition-colors">

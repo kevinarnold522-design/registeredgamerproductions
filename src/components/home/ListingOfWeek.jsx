@@ -1,0 +1,153 @@
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Trophy, Download, Eye, Heart, Star, Crown, Sparkles } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+
+export default function ListingOfWeek() {
+  const [listing, setListing] = useState(null);
+  const [seller, setSeller] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        // Get listings from past 7 days, score by downloads + views + likes
+        const all = await base44.entities.Listing.filter({ status: "active" }, "-views", 50);
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const recent = all.filter(l => new Date(l.created_date).getTime() > oneWeekAgo);
+        const pool = recent.length >= 3 ? recent : all;
+        
+        // Score: views * 1 + likes * 3 + (has_download ? 10 : 0)
+        const scored = pool.map(l => ({
+          ...l,
+          score: (l.views || 0) + (l.likes || 0) * 3 + ((l.download_url || l.external_link) ? 10 : 0),
+        })).sort((a, b) => b.score - a.score);
+
+        if (scored[0]) {
+          setListing(scored[0]);
+          if (scored[0].seller_email) {
+            const profiles = await base44.entities.UserProfile.filter({ user_email: scored[0].seller_email });
+            if (profiles[0]) setSeller(profiles[0]);
+          }
+        }
+      } catch {}
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  if (loading || !listing) return null;
+
+  const isFree = !listing.price || listing.price === 0 || listing.is_free;
+  const thumbImg = listing.images?.[0];
+
+  return (
+    <section className="py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="flex items-center justify-center gap-3 mb-6">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-yellow-500/40" />
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-yellow-500/40 bg-yellow-900/20">
+            <Crown className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+            <span className="text-yellow-300 text-sm font-black uppercase tracking-wider">Listing of the Week</span>
+            <Trophy className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+          </div>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-yellow-500/40" />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden border-2 border-yellow-500/50"
+          style={{
+            background: "linear-gradient(135deg, #0d0d1a 0%, #1a1200 50%, #0d0d1a 100%)",
+            boxShadow: "0 0 60px rgba(234,179,8,0.25), 0 0 120px rgba(234,179,8,0.1)",
+          }}
+        >
+          {/* Celebration sparkles */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {[...Array(6)].map((_, i) => (
+              <motion.div key={i}
+                animate={{ y: [-10, 10, -10], opacity: [0.3, 0.8, 0.3], scale: [0.8, 1.2, 0.8] }}
+                transition={{ duration: 2 + i * 0.4, repeat: Infinity, delay: i * 0.3 }}
+                className="absolute text-yellow-400"
+                style={{ left: `${10 + i * 15}%`, top: `${5 + (i % 3) * 10}%` }}>
+                <Sparkles className="w-4 h-4" />
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="relative flex flex-col md:flex-row gap-6 p-6 md:p-8">
+            {/* Image */}
+            <div className="md:w-64 flex-shrink-0">
+              <div className="relative rounded-2xl overflow-hidden aspect-video md:aspect-square bg-gray-800 border border-yellow-500/30">
+                {thumbImg ? (
+                  <img src={thumbImg} alt={listing.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-5xl">🏆</div>
+                )}
+                {/* Gold ribbon */}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500 text-black text-[10px] font-black shadow-lg">
+                  <Crown className="w-3 h-3 fill-black" /> #1 THIS WEEK
+                </div>
+              </div>
+            </div>
+
+            {/* Details */}
+            <div className="flex-1 flex flex-col justify-between">
+              <div>
+                {/* Seller */}
+                {seller && (
+                  <a href={`/channel?user=${listing.seller_email}`} className="flex items-center gap-2 mb-3 group">
+                    <div className="w-7 h-7 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
+                      {seller.avatar_url
+                        ? <img src={seller.avatar_url} className="w-full h-full object-cover" alt="" />
+                        : <div className="w-full h-full flex items-center justify-center text-xs text-white font-bold">{(seller.username || "S")[0]}</div>}
+                    </div>
+                    <span className="text-gray-400 text-xs group-hover:text-yellow-300 transition-colors">by <span className="font-bold text-gray-300">@{seller.username}</span></span>
+                  </a>
+                )}
+
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="px-2 py-0.5 rounded-full bg-yellow-900/40 border border-yellow-600/40 text-yellow-300 text-[10px] font-bold capitalize">{listing.category}</span>
+                  {listing.is_premium && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 text-[10px] font-black">⭐ PREMIUM</span>}
+                  {isFree && <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-700/40 text-green-300 text-[10px] font-black">FREE</span>}
+                </div>
+
+                <h2 className="text-xl md:text-2xl font-black text-white leading-tight mb-2">{listing.title}</h2>
+                <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed mb-4">{listing.description}</p>
+
+                {/* Stats */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-yellow-300 text-sm font-bold">
+                    <Eye className="w-4 h-4" /> {(listing.views || 0).toLocaleString()} views
+                  </div>
+                  <div className="flex items-center gap-1.5 text-pink-300 text-sm font-bold">
+                    <Heart className="w-4 h-4 fill-pink-400" /> {(listing.likes || 0).toLocaleString()} likes
+                  </div>
+                  <div className="flex items-center gap-1.5 text-blue-300 text-sm font-bold">
+                    <Download className="w-4 h-4" /> Top Downloads
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-5 flex items-center gap-3 flex-wrap">
+                <a href={`/listing?id=${listing.id}`}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-black text-sm transition-all hover:scale-105"
+                  style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)", boxShadow: "0 4px 20px rgba(234,179,8,0.4)" }}>
+                  <Trophy className="w-4 h-4" /> View Listing
+                </a>
+                {!isFree && (
+                  <span className="text-2xl font-black text-yellow-300">₱{listing.price?.toLocaleString()}</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
