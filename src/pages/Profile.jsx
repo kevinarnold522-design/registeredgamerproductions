@@ -147,6 +147,25 @@ export default function Profile() {
               </div>
               {profile?.bio && <p className="text-gray-400 text-sm mt-1">{profile.bio}</p>}
               {profile?.location && <p className="text-gray-600 text-xs mt-1">📍 {profile.location}</p>}
+              {(profile?.favorite_sports_team || profile?.favorite_game || profile?.favorite_hobby) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {profile?.favorite_sports_team && (
+                    <span className="px-2 py-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">
+                      ⚽ {profile.favorite_sports_team}
+                    </span>
+                  )}
+                  {profile?.favorite_game && (
+                    <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">
+                      🎮 {profile.favorite_game}
+                    </span>
+                  )}
+                  {profile?.favorite_hobby && (
+                    <span className="px-2 py-1 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-semibold">
+                      🎨 {profile.favorite_hobby}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-2">
               {isOwnProfile && (

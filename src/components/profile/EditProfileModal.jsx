@@ -15,6 +15,9 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
     display_name: profile?.display_name || "",
     bio: profile?.bio || "",
     location: profile?.location || "",
+    favorite_sports_team: profile?.favorite_sports_team || "",
+    favorite_game: profile?.favorite_game || "",
+    favorite_hobby: profile?.favorite_hobby || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -28,6 +31,9 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
         display_name: form.display_name.trim() || form.username.trim(),
         bio: form.bio.trim(),
         location: form.location,
+        favorite_sports_team: form.favorite_sports_team.trim(),
+        favorite_game: form.favorite_game.trim(),
+        favorite_hobby: form.favorite_hobby.trim(),
       });
       onSaved?.({ ...profile, ...form });
       onClose();
@@ -131,6 +137,44 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
                 <option value="">Select your nation...</option>
                 {NATIONS.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
+            </div>
+
+            {/* Favorites Section */}
+            <div className="pt-3 border-t border-gray-800">
+              <p className="text-purple-400 text-xs font-bold mb-3 uppercase tracking-wide">🎯 Favorites (Optional)</p>
+              
+              {/* Favorite Sports Team */}
+              <div className="mb-3">
+                <label className="text-gray-400 text-xs font-bold mb-1 block">Favorite Sports Team</label>
+                <input
+                  value={form.favorite_sports_team}
+                  onChange={e => setForm(f => ({ ...f, favorite_sports_team: e.target.value }))}
+                  placeholder="e.g. Manchester United, Lakers, All Blacks"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              {/* Favorite Game */}
+              <div className="mb-3">
+                <label className="text-gray-400 text-xs font-bold mb-1 block">Favorite Game</label>
+                <input
+                  value={form.favorite_game}
+                  onChange={e => setForm(f => ({ ...f, favorite_game: e.target.value }))}
+                  placeholder="e.g. FIFA 25, Elden Ring, Valorant"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              {/* Favorite Hobby */}
+              <div>
+                <label className="text-gray-400 text-xs font-bold mb-1 block">Favorite Hobby</label>
+                <input
+                  value={form.favorite_hobby}
+                  onChange={e => setForm(f => ({ ...f, favorite_hobby: e.target.value }))}
+                  placeholder="e.g. Photography, Cooking, Hiking"
+                  className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500"
+                />
+              </div>
             </div>
 
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}

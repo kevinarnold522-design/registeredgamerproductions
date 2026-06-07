@@ -242,6 +242,18 @@
       "type": "boolean",
       "default": false,
       "description": "Account moderator requested deletion \u2014 awaiting admin final approval"
+    },
+    "favorite_sports_team": {
+      "type": "string",
+      "description": "User's favorite sports team (any sport)"
+    },
+    "favorite_game": {
+      "type": "string",
+      "description": "User's favorite game"
+    },
+    "favorite_hobby": {
+      "type": "string",
+      "description": "User's favorite hobby"
     }
   },
   "required": [
