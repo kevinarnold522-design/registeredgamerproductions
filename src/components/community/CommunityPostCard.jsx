@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video } from "lucide-react";
+import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video, Image } from "lucide-react";
+import ImageGalleryModal from "@/components/community/ImageGalleryModal";
+import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import UserAvatar from "@/components/shared/UserAvatar";
@@ -119,8 +121,12 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
   const [likeCount, setLikeCount] = useState(post.likes || 0);
   const [userRating, setUserRating] = useState(0);
   const [showComments, setShowComments] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const [showEffectSelector, setShowEffectSelector] = useState(false);
   const admin = isAdmin(user?.email);
   const isMod = canManage;
+  const postEffect = post.special_effect || "none";
 
   useEffect(() => {
     if (!user?.email) return;
@@ -163,11 +169,12 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
   const [shareOpen, setShareOpen] = useState(false);
 
   return (
-    <div className="px-5 py-4 flex gap-3 group relative">
-      {/* Avatar */}
-      <UserAvatar avatarUrl={post.author_avatar} username={post.author_username} size={36} />
+    <SpecialEffectsRenderer effect={postEffect}>
+      <div className="px-5 py-4 flex gap-3 group relative">
+        {/* Avatar */}
+        <UserAvatar avatarUrl={post.author_avatar} username={post.author_username} size={36} />
 
-      <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
         {/* Author row */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <p className="text-purple-300 text-xs font-bold">{post.author_username}</p>
@@ -187,11 +194,25 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
           </p>
         )}
 
-        {/* Images */}
+        {/* Images Gallery */}
         {post.image_urls?.length > 0 && (
           <div className="flex gap-2 mt-2 flex-wrap">
             {post.image_urls.map((url, i) => (
-              <img key={i} src={url} className="w-32 h-24 object-cover rounded-xl border border-gray-700" alt="" />
+              <button
+                key={i}
+                onClick={() => { setGalleryIndex(i); setShowGallery(true); }}
+                className="relative group overflow-hidden rounded-xl border border-gray-700 hover:border-purple-500 transition-all"
+              >
+                <img src={url} className="w-32 h-24 object-cover" alt="" />
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Image className="w-6 h-6 text-white" />
+                </div>
+                {i === 0 && post.image_urls.length > 1 && (
+                  <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-white text-[9px] font-black">
+                    +{post.image_urls.length - 1}
+                  </span>
+                )}
+              </button>
             ))}
           </div>
         )}
@@ -295,6 +316,15 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
           <CommentsSection post={post} user={user} isTier1={isTier1} />
         )}
       </div>
-    </div>
+      </div>
+
+      {/* Image Gallery Modal */}
+      <ImageGalleryModal 
+        images={post.image_urls || []} 
+        isOpen={showGallery} 
+        onClose={() => setShowGallery(false)}
+        initialIndex={galleryIndex}
+      />
+    </SpecialEffectsRenderer>
   );
 }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download, Gamepad2, Image, Video, Trash2 } from "lucide-react";
+import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download, Gamepad2, Image, Video, Trash2, Sparkles } from "lucide-react";
+import { EffectSelector } from "@/components/community/PostSpecialEffects";
+import MemberLeaderboard from "@/components/community/MemberLeaderboard";
+import PostNotifications from "@/components/community/PostNotifications";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
@@ -31,6 +34,7 @@ export default function CommunityLandingPage() {
   const [postImages, setPostImages] = useState([]);
   const [postVideos, setPostVideos] = useState([]);
   const [postDescription, setPostDescription] = useState("");
+  const [selectedEffect, setSelectedEffect] = useState("none");
   const [posting, setPosting] = useState(false);
   const [bulkPosts, setBulkPosts] = useState([{ content: "", description: "", images: [], videos: [] }]);
   const [search, setSearch] = useState("");
@@ -38,6 +42,7 @@ export default function CommunityLandingPage() {
   const [showAdvFilter, setShowAdvFilter] = useState(false);
   const [listingFilter, setListingFilter] = useState({ priceMin: "", priceMax: "", isFree: false, isPremium: false });
   const [showBulkPost, setShowBulkPost] = useState(false);
+  const [showEffectSelector, setShowEffectSelector] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editLogoUrl, setEditLogoUrl] = useState("");
   const [editLogoUrls, setEditLogoUrls] = useState([]);
@@ -166,6 +171,7 @@ export default function CommunityLandingPage() {
     setPostDescription("");
     setPostImages([]);
     setPostVideos([]);
+    setSelectedEffect("none");
     setPosting(false);
   };
 
@@ -516,8 +522,17 @@ export default function CommunityLandingPage() {
                         <Video className="w-4 h-4" /> Videos
                         <input type="file" accept="video/*" onChange={handlePostVideoUpload} className="hidden" multiple />
                       </label>
+                      <div className="relative ml-auto">
+                        <button onClick={() => setShowEffectSelector(v => !v)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-xs font-semibold transition-colors">
+                          <Sparkles className="w-4 h-4" /> Effects
+                        </button>
+                        {showEffectSelector && (
+                          <EffectSelector selectedEffect={selectedEffect} onSelect={setSelectedEffect} onClose={() => setShowEffectSelector(false)} />
+                        )}
+                      </div>
                       <button onClick={handlePost} disabled={(!newPost.trim() && !postDescription.trim()) || posting}
-                        className="ml-auto px-4 py-1.5 rounded-xl font-bold text-sm text-white flex items-center gap-2 disabled:opacity-50"
+                        className="px-4 py-1.5 rounded-xl font-bold text-sm text-white flex items-center gap-2 disabled:opacity-50"
                         style={{ background: franchise.accent }}>
                         <Send className="w-4 h-4" /> Post
                       </button>
@@ -686,6 +701,11 @@ export default function CommunityLandingPage() {
 
           {/* Sidebar */}
           <div className="space-y-4">
+            {/* Leaderboard */}
+            <MemberLeaderboard franchiseId={franchiseId} accentColor={franchise.accent} />
+
+            {/* Post Notifications */}
+            {user && <PostNotifications user={user} franchiseId={franchiseId} />}
             {/* Community Info */}
             <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
               <h3 className="text-white font-black text-sm mb-3">About Community</h3>

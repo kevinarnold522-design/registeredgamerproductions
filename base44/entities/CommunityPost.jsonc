@@ -59,6 +59,18 @@
     },
     "section_id": {
       "type": "string"
+    },
+    "special_effect": {
+      "type": "string",
+      "enum": [
+        "none",
+        "gambling_cards",
+        "fire",
+        "water",
+        "fireworks",
+        "glass"
+      ],
+      "default": "none"
     }
   },
   "required": [
