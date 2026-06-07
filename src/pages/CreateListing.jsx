@@ -313,6 +313,39 @@ export default function CreateListing() {
       }).catch(() => {});
     }
 
+    // AUTO cross-post to Store newsfeed for paid/premium listings
+    if ((data.price > 0 || data.is_premium) && savedListing && data.category === "buy_sell") {
+      base44.entities.CommunityPost.create({
+        community_id: "buy_sell",
+        franchise_id: "store",
+        author_email: user.email,
+        author_username: profile?.username || user.full_name || "Gamer",
+        author_avatar: profile?.avatar_url || "",
+        content: `🏪 New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n👉 /listing?id=${savedListing.id}`,
+        status: "active",
+        section_id: data.subcategories?.[0] || "general",
+      }).catch(() => {});
+    }
+
+    // Bulk cross-post to selected gaming communities
+    if (form.bulk_cross_post_ids && form.bulk_cross_post_ids.length > 0 && savedListing) {
+      form.bulk_cross_post_ids.forEach(franchiseId => {
+        base44.entities.GamingCommunity.filter({ franchise_id: franchiseId }).then(comms => {
+          const communityId = comms[0]?.id || franchiseId;
+          base44.entities.CommunityPost.create({
+            community_id: communityId,
+            franchise_id: franchiseId,
+            author_email: user.email,
+            author_username: profile?.username || user.full_name || "Gamer",
+            author_avatar: profile?.avatar_url || "",
+            content: `📦 New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n👉 /listing?id=${savedListing.id}`,
+            status: "active",
+            section_id: "listings",
+          }).catch(() => {});
+        });
+      });
+    }
+
     setSaving(false);
     if (mod?.requiresReview) {
       setModerationResult(mod);
@@ -752,6 +785,35 @@ export default function CreateListing() {
                 <p className="text-orange-400 text-xs mt-2">✓ Also listed in Modding → {form.modding_subcategory}</p>
               )}
             </div>
+
+            {/* Store Subcategory — for paid/premium listings in buy_sell category */}
+            {(form.price > 0 || form.is_premium) && form.category === "buy_sell" && (
+              <div className="bg-green-900/20 border border-green-700/40 rounded-xl p-4">
+                <label className="text-green-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                  🏪 Store Subcategory (Required for paid listings)
+                </label>
+                <select
+                  required
+                  value={form.subcategories?.[0] || ""}
+                  onChange={e => setForm({ ...form, subcategories: [e.target.value] })}
+                  className="w-full bg-gray-800 border border-green-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 text-sm">
+                  <option value="">— Select Store Subcategory —</option>
+                  <option value="consoles">🎮 Gaming Consoles</option>
+                  <option value="controllers">🎯 Controllers</option>
+                  <option value="accessories">🔌 Accessories</option>
+                  <option value="merchandise">👕 Merchandise</option>
+                  <option value="collectibles">🏆 Collectibles</option>
+                  <option value="digital">💿 Digital Products</option>
+                  <option value="mods">🔧 Mods &amp; Tools</option>
+                  <option value="games">📀 Games</option>
+                  <option value="cables">🔋 Cables / Adapters</option>
+                  <option value="other">📦 Other</option>
+                </select>
+                {form.subcategories?.[0] && (
+                  <p className="text-green-400 text-xs mt-2">✓ Will be posted to Store → {form.subcategories[0]}</p>
+                )}
+              </div>
+            )}
 
             {/* Additional subcategories (multi-select) */}
             <div>

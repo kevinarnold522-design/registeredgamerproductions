@@ -396,8 +396,8 @@ export default function CommunityLandingPage() {
 
           {/* Feed */}
           <div className="lg:col-span-2">
-            {/* Post input — free for all joined members */}
-            {user && (admin || isModerator || isJoined) && (
+            {/* Post input — free for all authenticated users (no join requirement) */}
+            {user && (
               <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5">
                 <div className="flex gap-3 items-center">
                   <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-800">
