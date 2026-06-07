@@ -191,18 +191,17 @@ export default function AuthNavbar({ user, profile }) {
               <motion.div
                 className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorCycles[controllerColorIdx]} cursor-pointer`}
                 animate={{
-                  rotate: [0, -8, 8, -6, 6, 0],
-                  scale: controllerAnimating ? [1, 1.15, 1] : [1, 1.05, 1],
+                  scale: controllerAnimating ? [1, 1.15, 1] : 1,
                 }}
-                transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+                transition={{ duration: 0.6 }}
                 style={{
                   boxShadow: controllerAnimating
                     ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6)"
                     : "0 0 10px rgba(168,85,247,0.4)",
-                  transition: "box-shadow 0.4s ease",
+                  transition: "box-shadow 0.4s ease, background 0.3s ease",
                 }}
               >
-                <Gamepad2 className={`w-4 h-4 text-white ${controllerAnimating ? "controller-color-cycle" : ""}`} />
+                <Gamepad2 className="w-4 h-4 text-white" />
               </motion.div>
               {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
             </Link>
@@ -299,8 +298,9 @@ export default function AuthNavbar({ user, profile }) {
         <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1) % 6); window.location.href = "/"; }}>
           <motion.div
             className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]}`}
-            animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
-            transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3 }}
+            style={{ transition: "background 0.3s ease" }}
           >
             <Gamepad2 className="w-4 h-4 text-white" />
           </motion.div>

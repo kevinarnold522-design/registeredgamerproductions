@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Download, Star, SlidersHorizontal, X, Filter, CheckSquare, Square } from "lucide-react";
+import { Download, Star, SlidersHorizontal, X, Filter, CheckSquare, Square, EyeOff, Eye, GripVertical } from "lucide-react";
 import ModReviewModal from "@/components/shared/ModReviewModal";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
@@ -32,20 +32,37 @@ export default function ModdingSection() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [showGroupFilter, setShowGroupFilter] = useState(false);
   const [visibleGroups, setVisibleGroups] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem("modding_visible_groups") || "null") || MODDING_SUBCATEGORIES); }
-    catch { return new Set(MODDING_SUBCATEGORIES); }
+    try {
+      const saved = JSON.parse(localStorage.getItem("modding_visible_groups") || "null");
+      return saved ? new Set(saved) : null;
+    } catch { return null; }
   });
+  const [hiddenIds, setHiddenIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("modding_hidden_ids") || "[]")); } catch { return new Set(); }
+  });
+  const [showHiddenPanel, setShowHiddenPanel] = useState(false);
 
   const toggleGroup = (g) => {
     setVisibleGroups(prev => {
-      const n = new Set(prev);
+      const allIds = new Set(MODDING_SUBCATEGORIES);
+      const base = prev || allIds;
+      const n = new Set(base);
       if (n.has(g)) n.delete(g); else n.add(g);
       localStorage.setItem("modding_visible_groups", JSON.stringify([...n]));
       return n;
     });
   };
-  const selectAll = () => { const s = new Set(MODDING_SUBCATEGORIES); setVisibleGroups(s); localStorage.setItem("modding_visible_groups", JSON.stringify([...s])); };
+  const selectAll = () => { setVisibleGroups(null); localStorage.removeItem("modding_visible_groups"); };
   const clearAll = () => { setVisibleGroups(new Set()); localStorage.setItem("modding_visible_groups", JSON.stringify([])); };
+  const toggleHide = (id) => {
+    setHiddenIds(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      localStorage.setItem("modding_hidden_ids", JSON.stringify([...n]));
+      return n;
+    });
+  };
+  const isVisible = (id) => !visibleGroups || visibleGroups.has(id);
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(auth => {
@@ -135,8 +152,14 @@ export default function ModdingSection() {
             <button onClick={() => setShowGroupFilter(v => !v)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${showGroupFilter ? "border-cyan-500/60 bg-cyan-900/20 text-cyan-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
               <Filter className="w-4 h-4" />
-              Communities {visibleGroups.size < MODDING_SUBCATEGORIES.length && <span className="w-2 h-2 rounded-full bg-cyan-400 ml-1" />}
+              Filter Groups {visibleGroups && <span className="w-2 h-2 rounded-full bg-cyan-400 ml-1" />}
             </button>
+            {hiddenIds.size > 0 && (
+              <button onClick={() => setShowHiddenPanel(v => !v)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border border-gray-700 text-gray-400 hover:text-white transition-all">
+                <Eye className="w-4 h-4" /> Show Hidden ({hiddenIds.size})
+              </button>
+            )}
             <button onClick={() => setShowAdvanced(v => !v)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${showAdvanced || hasActiveFilters ? "border-orange-500/60 bg-orange-900/20 text-orange-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
               <SlidersHorizontal className="w-4 h-4" />
@@ -159,22 +182,20 @@ export default function ModdingSection() {
               className="overflow-hidden mb-4">
               <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-white font-bold text-sm">📂 Filter Communities</p>
+                  <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
                   <div className="flex gap-2">
-                    <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Select All</button>
-                    <span className="text-gray-700">·</span>
-                    <button onClick={clearAll} className="text-xs text-gray-500 hover:text-white transition-colors">Clear All</button>
+                    <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-60 overflow-y-auto">
                   {MODDING_SUBCATEGORIES.map(g => (
                     <label key={g} className="flex items-center gap-2 cursor-pointer group/lbl">
                       <button type="button" onClick={() => toggleGroup(g)} className="flex-shrink-0">
-                        {visibleGroups.has(g)
+                        {isVisible(g)
                           ? <CheckSquare className="w-4 h-4 text-cyan-400" />
                           : <Square className="w-4 h-4 text-gray-600 group-hover/lbl:text-gray-400" />}
                       </button>
-                      <span className={`text-xs font-semibold transition-colors ${visibleGroups.has(g) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{g}</span>
+                      <span className={`text-xs font-semibold transition-colors truncate ${isVisible(g) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{g}</span>
                     </label>
                   ))}
                 </div>
@@ -183,14 +204,40 @@ export default function ModdingSection() {
           )}
         </AnimatePresence>
 
-        {/* Subcategory Filter — when active, hides non-matching */}
+        {/* Hidden Panel */}
+        <AnimatePresence>
+          {showHiddenPanel && hiddenIds.size > 0 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-4">
+              <div className="bg-gray-800 rounded-xl border border-gray-700 p-3">
+                <p className="text-gray-400 text-[10px] font-bold mb-2">Hidden Communities — click to unhide:</p>
+                <div className="flex flex-wrap gap-1">
+                  {[...hiddenIds].map(id => (
+                    <button key={id} onClick={() => toggleHide(id)}
+                      className="px-2 py-1 rounded-lg bg-gray-700 text-white text-[10px] font-semibold hover:bg-purple-700 transition-colors">
+                      {id} 👁
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Subcategory Filter — filtered by visible groups */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide">
-          {["All", ...MODDING_SUBCATEGORIES.filter(g => visibleGroups.has(g))].map((cat) => (
+          {["All", ...MODDING_SUBCATEGORIES.filter(g => isVisible(g) && !hiddenIds.has(g))].map((cat) => (
             <button key={cat} onClick={() => setActiveFilter(cat)}
-              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeFilter === cat
+              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all relative group ${activeFilter === cat
                 ? "bg-orange-500/20 border border-orange-500/50 text-orange-300 shadow-[0_0_12px_rgba(249,115,22,0.3)]"
                 : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white hover:border-gray-600"}`}>
               {cat}
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleHide(cat); }}
+                className="absolute top-1 right-1 w-4 h-4 rounded bg-black/60 text-gray-500 hover:text-red-400 hover:bg-black/80 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
+                title="Hide this community">
+                <EyeOff className="w-2.5 h-2.5" />
+              </button>
             </button>
           ))}
         </div>
