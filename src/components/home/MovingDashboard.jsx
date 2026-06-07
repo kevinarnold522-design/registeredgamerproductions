@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Play, Package, Star, Eye, TrendingUp, Zap, Radio, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark } from "lucide-react";
+import { Play, Package, Star, Eye, TrendingUp, Zap, Radio, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import RepostButton from "@/components/shared/RepostButton";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
 const CP = {
@@ -116,7 +117,7 @@ function VideoCard({ video }) {
   );
 }
 
-function CardActions({ item, liked, likeCount, onLike }) {
+function CardActions({ item, liked, likeCount, onLike, user, profile }) {
   const handleShare = async (e) => {
     e.preventDefault(); e.stopPropagation();
     const url = `${window.location.origin}/listing?id=${item.id}`;
@@ -136,27 +137,28 @@ function CardActions({ item, liked, likeCount, onLike }) {
     window.open(`/contact?report=${item.id}`, "_blank");
   };
   return (
-    <div className="flex items-center gap-2 flex-wrap mt-1.5">
-      <button onClick={onLike} className="flex items-center gap-0.5 text-[9px] transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
-        <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
+    <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+      <button onClick={onLike} className="flex items-center gap-0.5 text-[8px] transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
+        <Heart className="w-2.5 h-2.5" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
       </button>
-      <a href={`/listing?id=${item.id}#comments`} onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.cyan}60` }}>
-        <MessageCircle className="w-3 h-3" />
+      <a href={`/listing?id=${item.id}#comments`} onClick={e => e.stopPropagation()} className="flex items-center gap-0.5 text-[8px]" style={{ color: `${CP.cyan}60` }}>
+        <MessageCircle className="w-2.5 h-2.5" />
       </a>
-      <button onClick={handleShare} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.purple}80` }} title="Share">
-        <Share2 className="w-3 h-3" />
+      <button onClick={handleShare} className="flex items-center gap-0.5 text-[8px]" style={{ color: `${CP.purple}80` }} title="Share">
+        <Share2 className="w-2.5 h-2.5" />
       </button>
-      <button onClick={handleFav} className="flex items-center gap-0.5 text-[9px]" style={{ color: `${CP.yellow}80` }} title="Save to Favourites">
-        <Bookmark className="w-3 h-3" />
+      <button onClick={handleFav} className="flex items-center gap-0.5 text-[8px]" style={{ color: `${CP.yellow}80` }} title="Save to Favourites">
+        <Bookmark className="w-2.5 h-2.5" />
       </button>
-      <button onClick={handleReport} className="flex items-center gap-0.5 text-[9px]" style={{ color: "rgba(239,68,68,0.5)" }} title="Report">
-        <Flag className="w-3 h-3" />
+      <RepostButton item={item} type="listing" user={user} profile={profile} compact />
+      <button onClick={handleReport} className="flex items-center gap-0.5 text-[8px]" style={{ color: "rgba(239,68,68,0.5)" }} title="Report">
+        <Flag className="w-2.5 h-2.5" />
       </button>
     </div>
   );
 }
 
-function ModCard({ mod }) {
+function ModCard({ mod, user, profile }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(mod.likes || 0);
 
@@ -196,20 +198,23 @@ function ModCard({ mod }) {
         {mod.is_premium && (
           <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: `${CP.yellow}30`, border: `1px solid ${CP.yellow}60`, color: CP.yellow }}>PREMIUM</div>
         )}
+        <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1 py-0.5 rounded text-[8px]" style={{ background: "rgba(0,0,0,0.7)", color: CP.cyan }}>
+          <Eye className="w-2 h-2" /> {(mod.views || 0).toLocaleString()}
+        </div>
       </div>
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{mod.title}</p>
         <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? `₱${mod.price?.toLocaleString()}` : "FREE"}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
-          <Download className="w-2.5 h-2.5" /><span className="text-[9px]">{(mod.views || 0).toLocaleString()}</span>
+          <Download className="w-2.5 h-2.5" /><span className="text-[8px]">{(mod.downloads || 0).toLocaleString()} downloads</span>
         </div>
-        <CardActions item={mod} liked={liked} likeCount={likeCount} onLike={handleLike} />
+        <CardActions item={mod} liked={liked} likeCount={likeCount} onLike={handleLike} user={user} profile={profile} />
       </div>
     </motion.a>
   );
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, user, profile }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(product.likes || 0);
 
@@ -243,14 +248,17 @@ function ProductCard({ product }) {
         )}
         <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: CP.cyan }} />
         <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: CP.pink }} />
+        <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1 py-0.5 rounded text-[8px]" style={{ background: "rgba(0,0,0,0.7)", color: CP.cyan }}>
+          <Eye className="w-2 h-2" /> {(product.views || 0).toLocaleString()}
+        </div>
       </div>
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{product.title}</p>
         <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>₱{(product.price || 0).toLocaleString()}</p>
-        <div className="flex items-center gap-0.5 mt-1">
-          {[1,2,3,4,5].map(s => <Star key={s} className="w-2 h-2" style={{ color: CP.yellow, fill: CP.yellow }} />)}
+        <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
+          <Download className="w-2 h-2" /><span className="text-[8px]">{(product.downloads || 0).toLocaleString()}</span>
         </div>
-        <CardActions item={product} liked={liked} likeCount={likeCount} onLike={handleLike} />
+        <CardActions item={product} liked={liked} likeCount={likeCount} onLike={handleLike} user={user} profile={profile} />
       </div>
     </motion.a>
   );
@@ -346,11 +354,21 @@ export default function MovingDashboard() {
   const [mods, setMods] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   const [freeMods, setFreeMods] = useState([]);
   const [paidMods, setPaidMods] = useState([]);
 
   useEffect(() => {
+    base44.auth.isAuthenticated().then(auth => {
+      if (auth) {
+        base44.auth.me().then(me => {
+          setUser(me);
+          if (me) base44.entities.UserProfile.filter({ user_email: me.email }).then(p => p.length > 0 && setProfile(p[0]));
+        });
+      }
+    });
     const load = async () => {
       const [vids, listings] = await Promise.all([
         base44.entities.VideoPost.filter({ status: "active", is_approved: true }, "-views", 20),
@@ -449,7 +467,7 @@ export default function MovingDashboard() {
         <div className="mb-8">
           <SectionLabel icon={Package} label="💎 PREMIUM MODS — Paid" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {paidMods.map((m, i) => <ModCard key={i} mod={m} />)}
+            {paidMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
@@ -459,7 +477,7 @@ export default function MovingDashboard() {
         <div className="mb-8">
           <SectionLabel icon={Package} label="🆓 FREE MODS — Community" color="#4ade80" />
           <ScrollRow speed={38}>
-            {freeMods.map((m, i) => <ModCard key={i} mod={m} />)}
+            {freeMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
@@ -469,7 +487,7 @@ export default function MovingDashboard() {
         <div className="mb-8">
           <SectionLabel icon={Package} label="TOP MODS" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {mods.map((m, i) => <ModCard key={i} mod={m} />)}
+            {mods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
@@ -479,7 +497,7 @@ export default function MovingDashboard() {
         <div>
           <SectionLabel icon={TrendingUp} label="MARKETPLACE LISTINGS" color="#4ade80" />
           <ScrollRow speed={45}>
-            {products.map((p, i) => <ProductCard key={i} product={p} />)}
+            {products.map((p, i) => <ProductCard key={i} product={p} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}

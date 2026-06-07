@@ -17,6 +17,7 @@ function GlowDownloadButton({ isFree, price, onClick }) {
       className="w-full py-4 rounded-xl font-black text-white text-base flex items-center justify-center gap-2 relative overflow-hidden"
       style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}
     >
+      {/* Rocket glow animation */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -25,6 +26,25 @@ function GlowDownloadButton({ isFree, price, onClick }) {
         }}
         animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+      />
+      {/* Rocket trail glow */}
+      <motion.div
+        className="absolute -left-8 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(168,85,247,0.8) 0%, transparent 70%)",
+          filter: "blur(8px)",
+        }}
+        animate={{ x: ["-100%", "400%"], opacity: [0, 1, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.5 }}
+      />
+      <motion.div
+        className="absolute -left-6 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(236,72,153,0.9) 0%, transparent 70%)",
+          filter: "blur(6px)",
+        }}
+        animate={{ x: ["-100%", "400%"], opacity: [0, 1, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.5, delay: 0.2 }}
       />
       <Download className="w-5 h-5 relative z-10" />
       <span className="relative z-10">
