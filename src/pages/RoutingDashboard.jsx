@@ -146,7 +146,7 @@ export default function RoutingDashboard() {
       author_email: post.author_email,
       author_username: post.author_username,
       author_avatar: post.author_avatar || "",
-      content: `[Routed from ${post.franchise_id}] ${post.content}`,
+      content: post.content,
       likes: 0,
       status: "active",
       section_id: moddingSub,

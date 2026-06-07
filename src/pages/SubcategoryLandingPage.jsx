@@ -226,7 +226,11 @@ export default function SubcategoryLandingPage() {
   const params = new URLSearchParams(window.location.search);
   const cat = params.get("cat") || "";
   const sub = params.get("sub") || "";
+  const deep = params.get("deep") || "";
   const [cards, setCards] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showRecommend, setShowRecommend] = useState(false);
   const [recommendText, setRecommendText] = useState("");
@@ -242,6 +246,27 @@ export default function SubcategoryLandingPage() {
       const saved = JSON.parse(localStorage.getItem(key) || "[]");
       setCards(saved);
     } catch { setCards([]); }
+    
+    // Load posts and listings for this subcategory
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // Load posts for this subcategory (section_id matches sub)
+        const postsData = await base44.entities.CommunityPost.filter({ 
+          franchise_id: cat === "modding" ? `modding_${sub.toLowerCase().replace(/\s+/g, "_")}` : sub,
+          section_id: sub 
+        });
+        setPosts(postsData.filter(p => p.status === "active").slice(0, 20));
+        
+        // Load listings for this subcategory
+        const listingsData = cat === "modding" 
+          ? await base44.entities.Listing.filter({ modding_subcategory: sub, status: "active" })
+          : await base44.entities.Listing.filter({ community_franchise_id: sub, status: "active" });
+        setListings(listingsData.slice(0, 12));
+      } catch {}
+      setLoading(false);
+    };
+    loadData();
   }, [user, cat, sub]);
 
   const saveCards = (updated) => {
@@ -329,6 +354,89 @@ export default function SubcategoryLandingPage() {
             </button>
           </div>
         )}
+
+        {/* Newsfeed Section - shows posts and listings for this subcategory */}
+        <div className="mb-12">
+          <h2 className="text-xl font-black text-white mb-4 flex items-center gap-2">
+            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">📰 {decodeURIComponent(sub)} Feed</span>
+          </h2>
+          
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : posts.length === 0 && listings.length === 0 ? (
+            <div className="text-center py-16 rounded-2xl bg-gray-900 border border-gray-800">
+              <p className="text-4xl mb-3">🎮</p>
+              <p className="text-gray-400 font-semibold">No posts or listings yet</p>
+              <p className="text-gray-600 text-sm mt-1">Be the first to contribute!</p>
+              {user && (
+                <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}`}
+                  className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
+                  <Plus className="w-4 h-4" /> Add Listing
+                </a>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Posts Feed */}
+              <div className="lg:col-span-2 space-y-4">
+                <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-3">Posts</h3>
+                {posts.length === 0 ? (
+                  <div className="text-center py-8 rounded-xl bg-gray-900 border border-gray-800">
+                    <p className="text-gray-500 text-sm">No posts yet</p>
+                  </div>
+                ) : (
+                  posts.map(post => (
+                    <motion.div key={post.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-8 h-8 rounded-full overflow-hidden" style={{ background: "rgba(139,92,246,0.2)" }}>
+                          {post.author_avatar ? <img src={post.author_avatar} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-sm">🎮</div>}
+                        </div>
+                        <div>
+                          <p className="text-white font-bold text-sm">{post.author_username || "Gamer"}</p>
+                          <p className="text-gray-600 text-[10px]">{new Date(post.created_date).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
+                      {post.image_urls?.length > 0 && (
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                          {post.image_urls.slice(0, 4).map((img, i) => <img key={i} src={img} className="rounded-xl w-full h-28 object-cover" alt="" />)}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))
+                )}
+              </div>
+              
+              {/* Listings Sidebar */}
+              <div>
+                <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-3">Listings</h3>
+                {listings.length === 0 ? (
+                  <div className="text-center py-8 rounded-xl bg-gray-900 border border-gray-800">
+                    <p className="text-gray-500 text-sm">No listings yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {listings.map(listing => (
+                      <a key={listing.id} href={`/listing?id=${listing.id}`}
+                        className="flex gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 transition-all group">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-800">
+                          {listing.images?.[0] ? <img src={listing.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-bold text-xs line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</p>
+                          <p className="font-black text-xs mt-1" style={{ color: "#a855f7" }}>{listing.is_free || !listing.price ? "FREE" : `₱${listing.price}`}</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {cards.map(card => (

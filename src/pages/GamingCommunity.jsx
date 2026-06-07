@@ -69,6 +69,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         content: newPost,
         likes: 0,
         status: "active",
+        section_id: franchise.id,
       }).catch(() => {});
     }
     setNewPost("");
