@@ -252,18 +252,22 @@ export default function SubcategoryLandingPage() {
       setLoading(true);
       try {
         // Load posts for this subcategory (section_id matches sub)
+        const franchiseId = cat === "modding" ? `modding_${sub.toLowerCase().replace(/\s+/g, "_")}` : sub;
         const postsData = await base44.entities.CommunityPost.filter({ 
-          franchise_id: cat === "modding" ? `modding_${sub.toLowerCase().replace(/\s+/g, "_")}` : sub,
+          franchise_id: franchiseId,
           section_id: sub 
         });
         setPosts(postsData.filter(p => p.status === "active").slice(0, 20));
         
-        // Load listings for this subcategory
-        const listingsData = cat === "modding" 
-          ? await base44.entities.Listing.filter({ modding_subcategory: sub, status: "active" })
-          : await base44.entities.Listing.filter({ community_franchise_id: sub, status: "active" });
+        // Load ALL active listings first, then filter client-side for modding
+        const allListings = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200);
+        const listingsData = cat === "modding"
+          ? allListings.filter(l => l.modding_subcategory === sub || l.digital_subcategory === sub || l.game_name === sub || (l.tags || []).includes(sub))
+          : allListings.filter(l => l.community_franchise_id === sub);
         setListings(listingsData.slice(0, 12));
-      } catch {}
+      } catch (err) {
+        console.error("Error loading subcategory data:", err);
+      }
       setLoading(false);
     };
     loadData();
