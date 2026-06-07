@@ -95,7 +95,7 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-2 group">
               <motion.div
                 onClick={handleControllerClick}
-                className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-300 relative flex-shrink-0"
+                className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
                 animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
                 style={{
@@ -105,7 +105,7 @@ export default function Navbar() {
                   transition: "box-shadow 0.4s ease",
                 }}
               >
-                <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
+                <Gamepad2 className={`w-5 h-5 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
               </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-sm">Gamer</span>
@@ -229,9 +229,7 @@ export default function Navbar() {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
-                    <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
-                  </div>
+                  <Gamepad2 className="w-5 h-5 text-purple-400" />
                   <div>
                     <span className="font-black text-white text-sm">Gamer</span>
                     <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.Productions</span>
@@ -242,8 +240,22 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <h2 className="text-xl font-black text-white mt-4 mb-1">Who are you joining as?</h2>
-              <p className="text-gray-500 text-sm mb-6">Choose your account type to get started:</p>
+              {/* GP Logo welcome signage */}
+              <div className="flex flex-col items-center my-4">
+                <motion.img
+                  src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
+                  alt="Gamer Productions"
+                  className="w-20 h-20 object-contain mb-2"
+                  animate={{ scale: [1, 1.06, 1], rotate: [0, -4, 4, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ filter: "drop-shadow(0 0 18px rgba(168,85,247,0.7))" }}
+                />
+                <span className="text-2xl font-black text-white tracking-tight">Welcome to <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Gamer.Productions</span></span>
+                <span className="text-gray-500 text-xs mt-1">The #1 Gaming Hub Community</span>
+              </div>
+
+              <h2 className="text-base font-black text-white mb-1">Who are you joining as?</h2>
+              <p className="text-gray-500 text-sm mb-4">Choose your account type to get started:</p>
 
               <div className="space-y-3 mb-5">
                 {accountTypes.map((type) => (
