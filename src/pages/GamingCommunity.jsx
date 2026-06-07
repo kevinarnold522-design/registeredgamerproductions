@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -250,8 +251,8 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
           </>
         ) : (
           merged.map(({ type, item }) => (
-          type === "listing" ? (
-            <a key={item.id} href={`/listing?id=${item.id}`}
+            type === "listing" ? (
+              <a key={item.id} href={`/listing?id=${item.id}`}
               onClick={async (e) => {
                 // Increment view count on click
                 try {
@@ -291,8 +292,8 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                 <img src={item.image_urls[0]} className="mt-2 rounded-xl max-h-40 object-cover w-full" alt="" />
               )}
             </div>
-          )
-        ))}
+          )))
+        )}
       </div>
     </motion.div>
   );
