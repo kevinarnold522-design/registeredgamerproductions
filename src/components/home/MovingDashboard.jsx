@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Play, Package, Star, Eye, TrendingUp, Zap, Radio, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat } from "lucide-react";
+import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import RepostButton from "@/components/shared/RepostButton";
 
@@ -50,69 +50,6 @@ function FireBurst() {
           style={{ marginLeft: i === 1 ? 0 : i === 0 ? -6 : 6 }}
         >{f}</motion.span>
       ))}
-    </motion.div>
-  );
-}
-
-function VideoCard({ video }) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(video.likes || 0);
-  const ytId = video.youtube_video_id || (video.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
-
-  const handleLike = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setLiked(l => !l);
-    setLikeCount(c => liked ? c - 1 : c + 1);
-    base44.entities.VideoPost.update(video.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
-  };
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(168,85,247,0.5), 0 0 80px rgba(168,85,247,0.15)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative w-60 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer"
-      style={{
-        background: "rgba(13,0,32,0.55)",
-        border: "1px solid rgba(168,85,247,0.45)",
-        backdropFilter: "blur(18px)",
-        boxShadow: "0 4px 24px rgba(168,85,247,0.12), inset 0 0 20px rgba(168,85,247,0.04)",
-      }}
-    >
-      <FireBurst />
-      <div className="relative h-34 overflow-hidden" style={{ height: "136px" }}>
-        {ytId ? (
-          <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-        ) : video.thumbnail_url ? (
-          <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="flex items-center justify-center h-full" style={{ background: "linear-gradient(135deg, #1a0035, #0d0020)" }}>
-            <Play className="w-10 h-10 opacity-30" style={{ color: CP.purple }} />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `${CP.purple}cc` }}>
-            <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-          </div>
-        </div>
-        {/* Cyberpunk corner accent */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: CP.cyan }} />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: CP.pink }} />
-        <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px]" style={{ background: "rgba(0,0,0,0.7)", color: CP.cyan }}>
-          <Eye className="w-2.5 h-2.5" /> {(video.views || 0).toLocaleString()}
-        </div>
-      </div>
-      <div className="p-3">
-        <p className="text-white font-bold text-xs truncate">{video.title}</p>
-        <p className="text-xs mt-0.5 truncate" style={{ color: CP.purple }}>{video.creator_username || "Creator"}</p>
-        <div className="flex items-center justify-between mt-1.5">
-          {video.game_tag && <p className="text-[9px]" style={{ color: `${CP.cyan}99` }}>{video.game_tag}</p>}
-          <button onClick={handleLike} className="flex items-center gap-0.5 text-[9px] ml-auto transition-colors" style={{ color: liked ? "#ec4899" : `${CP.pink}60` }}>
-            <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} /> {likeCount}
-          </button>
-        </div>
-      </div>
     </motion.div>
   );
 }
@@ -350,7 +287,6 @@ function SectionLabel({ icon: Icon, label, color, pulse }) {
 }
 
 export default function MovingDashboard() {
-  const [videos, setVideos] = useState([]);
   const [mods, setMods] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -370,11 +306,7 @@ export default function MovingDashboard() {
       }
     });
     const load = async () => {
-      const [vids, listings] = await Promise.all([
-        base44.entities.VideoPost.filter({ status: "active", is_approved: true }, "-views", 20),
-        base44.entities.Listing.filter({ status: "active" }, "-created_date", 80),
-      ]);
-      setVideos(vids);
+      const listings = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 80);
       // Deduplicate by id
       const seen = new Set();
       const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
@@ -451,16 +383,6 @@ export default function MovingDashboard() {
           {MOBILE_DEALS.map((g, i) => <MobileDealCard key={i} game={g} />)}
         </ScrollRow>
       </div>
-
-      {/* Community Videos */}
-      {videos.length > 0 && (
-        <div className="mb-8">
-          <SectionLabel icon={Play} label="COMMUNITY VIDEOS" color={CP.purple} pulse />
-          <ScrollRow speed={40}>
-            {videos.map((v, i) => <VideoCard key={i} video={v} />)}
-          </ScrollRow>
-        </div>
-      )}
 
       {/* Paid/Premium Mods */}
       {paidMods.length > 0 && (

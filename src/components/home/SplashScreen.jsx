@@ -44,7 +44,16 @@ export default function SplashScreen({ onDismiss }) {
         transition={{ duration: 0.8 }}
         className="text-center z-10"
       >
-        <div className="text-xs tracking-[0.4em] text-purple-400 uppercase mb-4">Welcome to</div>
+        {/* New GP Logo */}
+        <motion.img
+          src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
+          alt="Gamer Productions"
+          className="w-32 h-32 md:w-40 md:h-40 object-contain mb-4 mx-auto"
+          animate={{ scale: [1, 1.06, 1], rotate: [0, -4, 4, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          style={{ filter: "drop-shadow(0 0 24px rgba(168,85,247,0.8))" }}
+        />
+        <div className="text-xs tracking-[0.4em] text-purple-400 uppercase mb-3">Welcome to</div>
         <div className="flex items-baseline justify-center gap-1 mb-2">
           <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight">
             GAMER
