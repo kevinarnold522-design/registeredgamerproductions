@@ -161,6 +161,17 @@ export default function Footer() {
               </span>
             ))}
           </div>
+
+          {/* GP Logo — very bottom */}
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <img
+              src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
+              alt="Gamer Productions"
+              className="w-14 h-14 object-contain opacity-60 hover:opacity-100 transition-opacity"
+              style={{ filter: "drop-shadow(0 0 12px rgba(124,58,237,0.5))" }}
+            />
+            <span className="text-gray-700 text-[10px] font-bold tracking-widest uppercase">Gamer.Productions © 2026</span>
+          </div>
         </div>
       </div>
     </footer>

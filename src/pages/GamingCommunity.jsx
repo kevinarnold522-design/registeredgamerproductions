@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -499,6 +499,7 @@ export default function GamingCommunity() {
     try { return new Set(JSON.parse(localStorage.getItem("gc_hidden_ids") || "[]")); } catch { return new Set(); }
   });
   const [showHiddenPanel, setShowHiddenPanel] = useState(false);
+  const [showGroupFilter, setShowGroupFilter] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(272);
   const dragging = useRef(false);
   const startX = useRef(0);
@@ -600,10 +601,32 @@ export default function GamingCommunity() {
 
   const allFranchises = [...TOP_FRANCHISES, ...extraFranchises];
   const allGenres = ["All", ...Array.from(new Set(allFranchises.map(f => f.genre)))];
+
+  // Per-community visibility (checkmark filter)
+  const [visibleCommunities, setVisibleCommunities] = React.useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("gc_visible_ids") || "null");
+      return saved ? new Set(saved) : null; // null = all visible (default)
+    } catch { return null; }
+  });
+  const toggleCommunityVisible = (id) => {
+    setVisibleCommunities(prev => {
+      const allIds = new Set(allFranchises.map(f => f.id));
+      const base = prev || allIds;
+      const n = new Set(base);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      localStorage.setItem("gc_visible_ids", JSON.stringify([...n]));
+      return n;
+    });
+  };
+  const selectAllCommunities = () => { setVisibleCommunities(null); localStorage.removeItem("gc_visible_ids"); };
+  const isVisible = (id) => !visibleCommunities || visibleCommunities.has(id);
+
   const filtered = allFranchises.filter(f => {
     const matchSearch = f.name.toLowerCase().includes(search.toLowerCase());
     const matchGenre = selectedGenre === "All" || f.genre === selectedGenre;
-    return matchSearch && matchGenre;
+    const matchVisible = isVisible(f.id);
+    return matchSearch && matchGenre && matchVisible;
   });
 
   // Auto-open first franchise on load
@@ -747,6 +770,10 @@ export default function GamingCommunity() {
             {search && <span className="ml-1 text-purple-400">matching "{search}"</span>}
           </p>
           <div className="flex gap-2 flex-wrap">
+            <button onClick={() => setShowGroupFilter(v => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${showGroupFilter ? "border-cyan-500/60 bg-cyan-900/20 text-cyan-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
+              <Filter className="w-3.5 h-3.5" /> Filter Groups {visibleCommunities && <span className="w-2 h-2 rounded-full bg-cyan-400 ml-1" />}
+            </button>
             {hiddenIds.size > 0 && (
               <button onClick={() => setShowHiddenPanel(v => !v)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-gray-700 text-gray-400 hover:text-white transition-all">
@@ -808,6 +835,37 @@ export default function GamingCommunity() {
                 style={{ background: "#7c3aed" }}>
                 <Plus className="w-4 h-4 inline mr-1" /> Create Category
               </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Community Group Filter Panel */}
+        <AnimatePresence>
+          {showGroupFilter && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-5">
+              <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
+                  <div className="flex gap-2">
+                    <button onClick={selectAllCommunities} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-60 overflow-y-auto">
+                  {allFranchises.map(f => (
+                    <label key={f.id} className="flex items-center gap-2 cursor-pointer group/lbl">
+                      <button type="button" onClick={() => toggleCommunityVisible(f.id)} className="flex-shrink-0">
+                        {isVisible(f.id)
+                          ? <CheckSquare className="w-4 h-4 text-cyan-400" />
+                          : <Square className="w-4 h-4 text-gray-600 group-hover/lbl:text-gray-400" />}
+                      </button>
+                      <span className={`text-xs font-semibold transition-colors truncate ${isVisible(f.id) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>
+                        {f.emoji} {f.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

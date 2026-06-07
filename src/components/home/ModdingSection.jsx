@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Download, Star, SlidersHorizontal, X } from "lucide-react";
+import { Download, Star, SlidersHorizontal, X, Filter, CheckSquare, Square } from "lucide-react";
 import ModReviewModal from "@/components/shared/ModReviewModal";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
@@ -30,6 +30,22 @@ export default function ModdingSection() {
   const [profile, setProfile] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [showGroupFilter, setShowGroupFilter] = useState(false);
+  const [visibleGroups, setVisibleGroups] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("modding_visible_groups") || "null") || MODDING_SUBCATEGORIES); }
+    catch { return new Set(MODDING_SUBCATEGORIES); }
+  });
+
+  const toggleGroup = (g) => {
+    setVisibleGroups(prev => {
+      const n = new Set(prev);
+      if (n.has(g)) n.delete(g); else n.add(g);
+      localStorage.setItem("modding_visible_groups", JSON.stringify([...n]));
+      return n;
+    });
+  };
+  const selectAll = () => { const s = new Set(MODDING_SUBCATEGORIES); setVisibleGroups(s); localStorage.setItem("modding_visible_groups", JSON.stringify([...s])); };
+  const clearAll = () => { setVisibleGroups(new Set()); localStorage.setItem("modding_visible_groups", JSON.stringify([])); };
 
   useEffect(() => {
     base44.auth.isAuthenticated().then(auth => {
@@ -116,6 +132,11 @@ export default function ModdingSection() {
             <p className="text-gray-500 text-sm mt-1">Premium and free mods by our community</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
+            <button onClick={() => setShowGroupFilter(v => !v)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${showGroupFilter ? "border-cyan-500/60 bg-cyan-900/20 text-cyan-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
+              <Filter className="w-4 h-4" />
+              Communities {visibleGroups.size < MODDING_SUBCATEGORIES.length && <span className="w-2 h-2 rounded-full bg-cyan-400 ml-1" />}
+            </button>
             <button onClick={() => setShowAdvanced(v => !v)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${showAdvanced || hasActiveFilters ? "border-orange-500/60 bg-orange-900/20 text-orange-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
               <SlidersHorizontal className="w-4 h-4" />
@@ -131,9 +152,40 @@ export default function ModdingSection() {
           </div>
         </div>
 
+        {/* Community Group Filter Panel */}
+        <AnimatePresence>
+          {showGroupFilter && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-4">
+              <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-white font-bold text-sm">📂 Filter Communities</p>
+                  <div className="flex gap-2">
+                    <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Select All</button>
+                    <span className="text-gray-700">·</span>
+                    <button onClick={clearAll} className="text-xs text-gray-500 hover:text-white transition-colors">Clear All</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {MODDING_SUBCATEGORIES.map(g => (
+                    <label key={g} className="flex items-center gap-2 cursor-pointer group/lbl">
+                      <button type="button" onClick={() => toggleGroup(g)} className="flex-shrink-0">
+                        {visibleGroups.has(g)
+                          ? <CheckSquare className="w-4 h-4 text-cyan-400" />
+                          : <Square className="w-4 h-4 text-gray-600 group-hover/lbl:text-gray-400" />}
+                      </button>
+                      <span className={`text-xs font-semibold transition-colors ${visibleGroups.has(g) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{g}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Subcategory Filter — when active, hides non-matching */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide">
-          {["All", ...MODDING_SUBCATEGORIES].map((cat) => (
+          {["All", ...MODDING_SUBCATEGORIES.filter(g => visibleGroups.has(g))].map((cat) => (
             <button key={cat} onClick={() => setActiveFilter(cat)}
               className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${activeFilter === cat
                 ? "bg-orange-500/20 border border-orange-500/50 text-orange-300 shadow-[0_0_12px_rgba(249,115,22,0.3)]"
