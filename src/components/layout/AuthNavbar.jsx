@@ -146,6 +146,7 @@ export default function AuthNavbar({ user, profile }) {
     ...(admin || isSeller ? [{ icon: Upload, label: "Add Listing", href: "/create-listing", color: "text-green-400" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
     { icon: MessageCircle, label: "Messages", href: "/messages" },
+    { icon: Store, label: "Store", href: "/category?cat=buy_sell", color: "text-green-400" },
   ];
 
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;

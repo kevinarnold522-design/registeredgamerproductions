@@ -55,9 +55,9 @@ export const CATEGORIES = [
     ],
   },
   {
-    id: "buy_sell",
-    label: "🛒 Buy & Sell",
-    icon: "🛒",
+    id: "store",
+    label: "🏪 Store",
+    icon: "🏪",
     subcategories: [
       "Game Accounts", "In-Game Items", "Skins", "Gift Cards",
       "Premium Mods - WWE2K", "Premium Mods - GTA 5", "Premium Mods - GTA SA",
@@ -73,22 +73,16 @@ export const CATEGORIES = [
     subcategories: ["FPS", "Battle Royale", "MOBA", "Sports", "Fighting", "Mobile Gaming"],
   },
   {
-    id: "content",
-    label: "🎬 Content",
+    id: "content_streaming",
+    label: "🎬 Content/Streaming",
     icon: "🎬",
-    subcategories: ["Gaming Videos", "Streaming", "Tutorials", "Reviews", "Highlights", "Clips"],
+    subcategories: ["Gaming Videos", "Live Streams", "Tutorials", "Reviews", "Highlights", "Clips", "Gameplay Streams", "Esports Events"],
   },
   {
     id: "jobs",
     label: "💼 Gaming Jobs",
     icon: "💼",
     subcategories: ["QA Testing", "Game Dev", "Community Manager", "Esports Coach", "Content Creator"],
-  },
-  {
-    id: "livestream",
-    label: "📡 Live Streams",
-    icon: "📡",
-    subcategories: ["Gameplay Streams", "Tournaments", "Esports Events", "Mod Reviews", "Q&A Sessions", "Unboxing"],
   },
   {
     id: "services",

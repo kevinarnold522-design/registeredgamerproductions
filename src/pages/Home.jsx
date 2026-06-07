@@ -160,8 +160,9 @@ export default function Home() {
             {/* Listing of the Week — right after marketplace listings */}
             <ListingOfWeek />
 
-            {/* Live Streaming Tools */}
+            {/* Content/Streaming - Merged */}
             <LiveStreamSection />
+            <VideosSection />
 
             {/* How We Help */}
             <HowWeHelpSection />
@@ -169,7 +170,6 @@ export default function Home() {
             <ServicesSection />
             <ModdingSection />
             <MonetizationBadge />
-            <VideosSection />
             <FeaturedGames />
             <CommunitySection />
 
