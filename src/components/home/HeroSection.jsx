@@ -155,8 +155,16 @@ export default function HeroSection() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
-        {/* Earn Now — top CTA for guests */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="flex justify-center mb-4">
+        {/* GP Logo + Earn Now — merged top CTA */}
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="flex flex-col items-center mb-4">
+          <motion.img
+            src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
+            alt="GP"
+            className="w-10 h-10 object-contain mb-2"
+            animate={{ scale: [1, 1.08, 1], rotate: [0, -4, 4, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            style={{ filter: "drop-shadow(0 0 14px rgba(168,85,247,0.8))" }}
+          />
           <a
             href="/register"
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-black text-sm text-white transition-all"
@@ -167,7 +175,7 @@ export default function HeroSection() {
               boxShadow: "0 0 24px rgba(245,158,11,0.5), 0 0 48px rgba(239,68,68,0.25)",
             }}
           >
-            💰 Start Earning Now — Join Free
+            💰 Earn Now — Join Free
           </a>
         </motion.div>
 

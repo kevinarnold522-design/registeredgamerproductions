@@ -201,6 +201,14 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         ) : merged.map(({ type, item }) => (
           type === "listing" ? (
             <a key={item.id} href={`/listing?id=${item.id}`}
+              onClick={async (e) => {
+                // Increment view count on click
+                try {
+                  const fresh = await base44.entities.Listing.get(item.id);
+                  const newViews = (fresh.views || 0) + 1;
+                  await base44.entities.Listing.update(item.id, { views: newViews });
+                } catch {}
+              }}
               className="flex gap-3 px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
               <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
                 {item.images?.[0]
