@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -10,6 +10,7 @@ import { TOP_FRANCHISES } from "@/lib/franchises";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import RecommendModal from "@/components/shared/RecommendModal";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import AnimatedController from "@/components/shared/AnimatedController";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all" };
 
@@ -714,6 +715,7 @@ export default function GamingCommunity() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <AnimatedController />
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       {/* Back button */}
@@ -722,6 +724,21 @@ export default function GamingCommunity() {
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
       </div>
+
+      {/* Animated Controller Icon - Top Left (permanent) */}
+      <motion.div
+        className="fixed top-20 left-4 z-40"
+        animate={{
+          scale: [1, 1.08, 1],
+          rotate: [0, -4, 4, 0],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        style={{ filter: "drop-shadow(0 0 14px rgba(168,85,247,0.8))" }}
+      >
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+          <Gamepad2 className="w-6 h-6 text-white" />
+        </div>
+      </motion.div>
 
       {/* Hero */}
       <div className="relative overflow-hidden"

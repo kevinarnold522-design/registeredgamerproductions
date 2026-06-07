@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download } from "lucide-react";
+import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download, Gamepad2 } from "lucide-react";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
@@ -13,6 +13,7 @@ import { Link, useParams } from "react-router-dom";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GroupChat from "@/components/community/GroupChat";
+import AnimatedController from "@/components/shared/AnimatedController";
 
 export default function CommunityLandingPage() {
   const { user } = useAuth();
@@ -211,7 +212,23 @@ export default function CommunityLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <AnimatedController />
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
+
+      {/* Animated Controller Icon - Top Left */}
+      <motion.div
+        className="fixed top-20 left-4 z-40"
+        animate={{
+          scale: [1, 1.08, 1],
+          rotate: [0, -4, 4, 0],
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        style={{ filter: "drop-shadow(0 0 14px rgba(168,85,247,0.8))" }}
+      >
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+          <Gamepad2 className="w-6 h-6 text-white" />
+        </div>
+      </motion.div>
 
       {/* Hero Cover */}
       <div className="pt-16 relative overflow-hidden" style={{ ...coverStyle, minHeight: 260 }}>
@@ -555,6 +572,14 @@ export default function CommunityLandingPage() {
                   {listings.map(l => (
                     <div key={l.id}>
                       <Link to={`/listing?id=${l.id}`}
+                        onClick={async (e) => {
+                          // Increment view count on click
+                          try {
+                            const fresh = await base44.entities.Listing.get(l.id);
+                            const newViews = (fresh.views || 0) + 1;
+                            await base44.entities.Listing.update(l.id, { views: newViews });
+                          } catch {}
+                        }}
                         className="flex gap-3 p-2 rounded-xl hover:bg-gray-800 transition-colors group">
                         <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
                           {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center">🎮</div>}
