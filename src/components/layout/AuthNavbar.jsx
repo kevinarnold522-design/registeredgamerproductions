@@ -4,7 +4,7 @@ import {
   Gamepad2, ShoppingCart, ClipboardList, Store, BarChart2, Shield,
   Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy,
   Star, GitBranch, ChevronLeft, ChevronRight, Menu, X, DollarSign,
-  Settings, Share2, LogOut, Globe, Crown, Users, TrendingUp
+  Settings, Share2, LogOut, Globe, Crown, Users, TrendingUp, Sparkles
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
@@ -16,6 +16,7 @@ import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import EarnNowButton from "@/components/shared/EarnNowButton";
+import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 
 export const SIDEBAR_WIDTH = 240;
 export const SIDEBAR_COLLAPSED_WIDTH = 56;
@@ -68,6 +69,7 @@ export default function AuthNavbar({ user, profile }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [controllerColorIdx, setControllerColorIdx] = useState(0);
   const [controllerAnimating, setControllerAnimating] = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
   const location = useLocation();
 
   const colorCycles = [
@@ -173,13 +175,13 @@ export default function AuthNavbar({ user, profile }) {
                   <GamerCheckmark isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showTooltip={false} />
                 </div>
                 <p className={`text-[10px] font-semibold truncate ${admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400"}`}>
-                  {admin ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer"}
+                  {admin && user?.email === "kevinarnold522@gmail.com" ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer"}
                 </p>
               </div>
             )}
           </Link>
 
-          {admin && s && (
+          {admin && user?.email === "kevinarnold522@gmail.com" && s && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-900/30 border border-yellow-700/30 mt-1">
               <Crown className="w-3 h-3 text-yellow-400" />
               <span className="text-yellow-400 text-[10px] font-black">CEO & President · GAMER Productions</span>
@@ -241,6 +243,17 @@ export default function AuthNavbar({ user, profile }) {
             <>
               <div className="mb-2" />
               <EarnNowButton />
+              {/* Transition Options */}
+              {accountType === "regular" && (
+                <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold transition-all hover:opacity-90">
+                  <Sparkles className="w-3.5 h-3.5" /> Become Digital Creator
+                </button>
+              )}
+              {accountType === "digital_creator" && (
+                <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold transition-all hover:opacity-90">
+                  <Store className="w-3.5 h-3.5" /> Become Business Owner
+                </button>
+              )}
             </>
           )}
           <div className={`flex items-center gap-1 flex-wrap ${collapsed && !isMobile ? "flex-col" : ""}`}>
@@ -344,6 +357,19 @@ export default function AuthNavbar({ user, profile }) {
       {/* Cart & Favorites dropdowns */}
       <CartDropdown isOpen={cartOpen} onClose={() => setCartOpen(false)} userEmail={user?.email} />
       <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={user?.email} />
+
+      {/* Transition Modal */}
+      {showTransition && (
+        <AccountTypeTransitionModal
+          currentType={accountType}
+          user={user}
+          onClose={() => setShowTransition(false)}
+          onSuccess={(newType) => {
+            setShowTransition(false);
+            window.location.reload();
+          }}
+        />
+      )}
     </>
   );
 }

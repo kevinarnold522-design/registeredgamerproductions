@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, ClipboardList, User, Link2, Youtube, LogOut, Settings, Flame, DollarSign } from "lucide-react";
+import { Heart, ClipboardList, User, Link2, Youtube, LogOut, Settings, Flame, DollarSign, Sparkles, Store } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import CreatorVideoTools from "./CreatorVideoTools";
 import LinkShortenerDashboard from "./LinkShortenerDashboard";
 import StreakTracker from "@/components/rewards/StreakTracker";
 import YoutubeConnectHighlight from "@/components/social/YoutubeConnectHighlight";
 import MonetizationHighlights from "@/components/monetization/MonetizationHighlights";
+import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 
 
 export default function BuyerDashboard({ user, profile }) {
@@ -14,6 +15,7 @@ export default function BuyerDashboard({ user, profile }) {
   const [orders, setOrders] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showTransition, setShowTransition] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -54,6 +56,9 @@ export default function BuyerDashboard({ user, profile }) {
             <p className="text-white font-black text-sm leading-tight">{profile?.username || user?.full_name}</p>
             <p className="text-blue-400 text-[10px] font-semibold mt-0.5">👤 Regular Account</p>
             <p className="text-gray-500 text-[9px] truncate max-w-[130px]">{user?.email}</p>
+            <button onClick={() => setShowTransition(true)} className="mt-1.5 flex items-center justify-center gap-1 w-full px-2 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[9px] font-bold transition-all hover:opacity-90">
+              <Sparkles className="w-2.5 h-2.5" /> Become Creator
+            </button>
           </div>
         </div>
 
@@ -179,6 +184,19 @@ export default function BuyerDashboard({ user, profile }) {
 
         </div>
       </main>
+
+      {/* Transition Modal */}
+      {showTransition && (
+        <AccountTypeTransitionModal
+          currentType="regular"
+          user={user}
+          onClose={() => setShowTransition(false)}
+          onSuccess={() => {
+            setShowTransition(false);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Grid, Upload, Radio, Film } from "lucide-react";
+import { Grid, Upload, Radio, Film, Sparkles, Store } from "lucide-react";
 import { Link } from "react-router-dom";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
@@ -15,6 +15,7 @@ import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
 import SocialLinksPanel from "@/components/profile/SocialLinksPanel";
 import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
 import ReelCreator from "@/components/shared/ReelCreator";
+import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -24,6 +25,7 @@ export default function Profile() {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [showStudio, setShowStudio] = useState(false);
   const [showReelCreator, setShowReelCreator] = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
 
   const params = new URLSearchParams(window.location.search);
@@ -128,9 +130,21 @@ export default function Profile() {
                 <FollowerRankBadge followers={followers} size="md" />
                 {profile?.honor_badge && <HonorBadge label={profile.honor_badge_label || "Founding Member"} size="sm" />}
               </div>
-              <p className={`text-sm font-semibold ${accountColors[profile?.account_type] || "text-gray-400"}`}>
-                {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : profile?.account_type === "business" ? "🏢 Business" : "👤 Gamer"}
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className={`text-sm font-semibold ${accountColors[profile?.account_type] || "text-gray-400"}`}>
+                  {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : profile?.account_type === "business" ? "🏢 Business" : "👤 Gamer"}
+                </p>
+                {isOwnProfile && profile?.account_type === "regular" && (
+                  <button onClick={() => setShowTransition(true)} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-bold transition-all hover:opacity-90">
+                    <Sparkles className="w-3 h-3" /> Upgrade
+                  </button>
+                )}
+                {isOwnProfile && profile?.account_type === "digital_creator" && (
+                  <button onClick={() => setShowTransition(true)} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white text-[10px] font-bold transition-all hover:opacity-90">
+                    <Store className="w-3 h-3" /> Upgrade
+                  </button>
+                )}
+              </div>
               {profile?.bio && <p className="text-gray-400 text-sm mt-1">{profile.bio}</p>}
               {profile?.location && <p className="text-gray-600 text-xs mt-1">📍 {profile.location}</p>}
             </div>
@@ -266,6 +280,19 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Transition Modal */}
+      {showTransition && (
+        <AccountTypeTransitionModal
+          currentType={profile?.account_type || "regular"}
+          user={user}
+          onClose={() => setShowTransition(false)}
+          onSuccess={() => {
+            setShowTransition(false);
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }
