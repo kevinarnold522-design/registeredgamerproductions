@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download, Gamepad2, Image, Video, Trash2, Sparkles } from "lucide-react";
 import { EffectSelector } from "@/components/community/PostSpecialEffects";
+import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
 import MemberLeaderboard from "@/components/community/MemberLeaderboard";
 import PostNotifications from "@/components/community/PostNotifications";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
@@ -524,11 +525,11 @@ export default function CommunityLandingPage() {
                       </label>
                       <div className="relative ml-auto">
                         <button onClick={() => setShowEffectSelector(v => !v)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-xs font-semibold transition-colors">
-                          <Sparkles className="w-4 h-4" /> Effects
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer text-xs font-semibold transition-all ${selectedEffect !== "none" ? "bg-purple-900/40 border-purple-500/60 text-purple-300" : "bg-gray-800 border-gray-700 text-gray-400 hover:text-purple-400"}`}>
+                          <Sparkles className="w-4 h-4" /> {selectedEffect !== "none" ? selectedEffect.replace("_"," ") : "Effects"}
                         </button>
                         {showEffectSelector && (
-                          <EffectSelector selectedEffect={selectedEffect} onSelect={setSelectedEffect} onClose={() => setShowEffectSelector(false)} />
+                          <EffectSelector selectedEffect={selectedEffect} onSelect={(e) => { setSelectedEffect(e); setShowEffectSelector(false); }} onClose={() => setShowEffectSelector(false)} />
                         )}
                       </div>
                       <button onClick={handlePost} disabled={(!newPost.trim() && !postDescription.trim()) || posting}
@@ -537,6 +538,39 @@ export default function CommunityLandingPage() {
                         <Send className="w-4 h-4" /> Post
                       </button>
                     </div>
+
+                    {/* Live animation preview */}
+                    {selectedEffect !== "none" && (newPost.trim() || postDescription.trim() || postImages.length > 0) && (
+                      <div className="mt-3 pt-3 border-t border-gray-700">
+                        <p className="text-purple-400 text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3" /> Live Preview — {selectedEffect.replace("_", " ")} effect
+                        </p>
+                        <div className="rounded-2xl border border-purple-700/40 overflow-hidden bg-gray-950 text-sm">
+                          <SpecialEffectsRenderer effect={selectedEffect}>
+                            <div className="p-4">
+                              <div className="flex items-center gap-2.5 mb-3">
+                                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-800">
+                                  {profile?.avatar_url ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-sm">🎮</div>}
+                                </div>
+                                <div>
+                                  <p className="text-white font-black text-xs">{profile?.username || user?.full_name || "You"}</p>
+                                  <p className="text-gray-500 text-[10px]">Just now</p>
+                                </div>
+                              </div>
+                              {newPost && <p className="text-gray-100 text-sm mb-1">{newPost}</p>}
+                              {postDescription && <p className="text-gray-400 text-xs bg-gray-800/50 rounded-xl p-2 mt-1">{postDescription}</p>}
+                              {postImages.length > 0 && (
+                                <div className={`grid gap-1.5 mt-2 ${postImages.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                                  {postImages.slice(0, 4).map((url, i) => (
+                                    <img key={i} src={url} className={`rounded-xl object-cover w-full ${postImages.length === 1 ? "max-h-48" : "h-24"}`} alt="" />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </SpecialEffectsRenderer>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
