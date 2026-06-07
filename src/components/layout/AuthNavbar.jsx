@@ -169,10 +169,10 @@ export default function AuthNavbar({ user, profile }) {
             </div>
           )}
 
-          <div className={`flex items-center gap-2 mt-2 ${collapsed && !isMobile ? "flex-col" : ""}`}>
+          <div className={`flex items-center gap-2 mt-3 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <Link to="/" className="flex items-center gap-1.5 min-w-0">
               <motion.div
-                className="w-6 h-6 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0"
+                className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0"
                 animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 4 }}
               >
@@ -212,7 +212,12 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Bottom */}
         <div className={`border-t border-purple-900/30 p-2 space-y-1.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
-          {!admin && s && <EarnNowButton />}
+          {!admin && s && (
+            <>
+              <div className="mb-2" />
+              <EarnNowButton />
+            </>
+          )}
           <div className={`flex items-center gap-1 flex-wrap ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <LanguageSelector />
             <NotificationBell userEmail={user?.email} />

@@ -715,7 +715,6 @@ export default function GamingCommunity() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      <AnimatedController />
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       {/* Back button */}
