@@ -194,7 +194,62 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
             <p className="text-3xl mb-2">{franchise.emoji}</p>
             <p className="text-gray-600 text-sm">No posts yet. Be the first!</p>
           </div>
-        ) : merged.map(({ type, item }) => (
+        ) : !user ? (
+          <>
+            <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-xl mx-4 mt-4 text-center">
+              <p className="text-gray-400 text-sm mb-3 font-semibold">🎮 Become a member to start posting and join the group chat!</p>
+              <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                className="px-6 py-2.5 rounded-xl font-black text-sm text-white"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                Sign In / Register
+              </button>
+            </div>
+            {merged.map(({ type, item }) => (
+              type === "listing" ? (
+                <a key={item.id} href={`/listing?id=${item.id}`}
+                  onClick={async (e) => {
+                    try {
+                      const fresh = await base44.entities.Listing.get(item.id);
+                      const newViews = (fresh.views || 0) + 1;
+                      await base44.entities.Listing.update(item.id, { views: newViews });
+                    } catch {}
+                  }}
+                  className="flex gap-3 px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+                    {item.images?.[0]
+                      ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
+                      : <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
+                    <p className="text-gray-500 text-[9px]">📦 by @{item.seller_username}</p>
+                    <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+                    <div className="mt-1.5">
+                      <ListingEngagementBar listing={item} user={user} profile={profile} compact />
+                    </div>
+                  </div>
+                </a>
+              ) : (
+                <div key={item.id} className="px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
+                      {item.author_avatar
+                        ? <img src={item.author_avatar} className="w-full h-full object-cover" alt="" />
+                        : <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{(item.author_username || "G")[0]}</div>}
+                    </div>
+                    <p className="text-gray-400 text-[10px] font-bold">{item.author_username}</p>
+                    <p className="text-gray-700 text-[9px]">{new Date(item.created_date).toLocaleDateString()}</p>
+                  </div>
+                  <p className="text-gray-200 text-sm leading-relaxed">{item.content}</p>
+                  {item.image_urls?.length > 0 && (
+                    <img src={item.image_urls[0]} className="mt-2 rounded-xl max-h-40 object-cover w-full" alt="" />
+                  )}
+                </div>
+              )
+            ))}
+          </>
+        ) : (
+          merged.map(({ type, item }) => (
           type === "listing" ? (
             <a key={item.id} href={`/listing?id=${item.id}`}
               onClick={async (e) => {

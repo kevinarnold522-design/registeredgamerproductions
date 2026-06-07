@@ -396,8 +396,8 @@ export default function CommunityLandingPage() {
 
           {/* Feed */}
           <div className="lg:col-span-2">
-            {/* Post input — free for all authenticated users (no join requirement) */}
-            {user && (
+            {/* Post input */}
+            {user ? (
               <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5">
                 <div className="flex gap-3 items-center">
                   <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-800">
@@ -413,6 +413,15 @@ export default function CommunityLandingPage() {
                     <Send className="w-4 h-4 text-white" />
                   </button>
                 </div>
+              </div>
+            ) : (
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5 text-center">
+                <p className="text-gray-400 text-sm font-semibold mb-2">🎮 Become a member to start posting and join the group chat!</p>
+                <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                  className="px-6 py-2.5 rounded-xl font-black text-sm text-white"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  Sign In / Register
+                </button>
               </div>
             )}
 

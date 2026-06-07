@@ -184,13 +184,16 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                  className="w-full py-2.5 rounded-xl text-white font-black text-sm"
-                  style={{ background: `linear-gradient(135deg, ${accentColor}, #ec4899)` }}
-                >
-                  Sign in to chat
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                    className="w-full py-2.5 rounded-xl text-white font-black text-sm"
+                    style={{ background: `linear-gradient(135deg, ${accentColor}, #ec4899)` }}
+                  >
+                    Sign in to chat
+                  </button>
+                  <p className="text-gray-500 text-[10px] text-center font-semibold">Join the Group to start posting & chatting!</p>
+                </div>
               )}
             </div>
           </motion.div>

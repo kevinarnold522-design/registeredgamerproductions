@@ -198,6 +198,12 @@ export default function ListingPage() {
     if (!url) return;
     const isExempt = user && (isAdmin(user.email) || profile?.moderator_type === "account_moderator");
     if (isExempt) {
+      // Increment download count for exempt users too
+      base44.entities.Listing.get(listing.id).then(fresh => {
+        const newDownloads = (fresh.downloads || 0) + 1;
+        base44.entities.Listing.update(listing.id, { downloads: newDownloads });
+        setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
+      }).catch(() => {});
       autoFollowSeller();
       window.open(url, "_blank");
       return;

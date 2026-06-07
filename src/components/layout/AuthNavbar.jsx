@@ -145,7 +145,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
     ...(admin || isSeller ? [{ icon: Upload, label: "Add Listing", href: "/create-listing", color: "text-green-400" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
-    { icon: MessageCircle, label: "Messages", href: "/messages" },
+    { icon: MessageCircle, label: "Group Chats", href: "/messages" },
     { icon: Store, label: "Store", href: "/category?cat=store", color: "text-green-400" },
   ];
 
