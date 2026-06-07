@@ -44,6 +44,10 @@ function VideoCard({ video, index }) {
 }
 
 export default function ContentLandingPage({ user, profile }) {
+  // Redirect to the full YouTube-like content page
+  React.useEffect(() => { window.location.href = "/content"; }, []);
+  return null;
+  // eslint-disable-next-line no-unreachable
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

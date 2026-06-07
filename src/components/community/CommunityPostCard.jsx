@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video, Image } from "lucide-react";
+import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video, Image, Maximize2 } from "lucide-react";
 import ImageGalleryModal from "@/components/community/ImageGalleryModal";
 import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
+import PostExpandedModal from "@/components/community/PostExpandedModal";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import UserAvatar from "@/components/shared/UserAvatar";
@@ -123,7 +124,7 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
   const [showComments, setShowComments] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
-  const [showEffectSelector, setShowEffectSelector] = useState(false);
+  const [showExpanded, setShowExpanded] = useState(false);
   const admin = isAdmin(user?.email);
   const isMod = canManage;
   const postEffect = post.special_effect || "none";
@@ -169,8 +170,15 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
   const [shareOpen, setShareOpen] = useState(false);
 
   return (
+    <>
     <SpecialEffectsRenderer effect={postEffect}>
       <div className="px-5 py-4 flex gap-3 group relative">
+        {/* Expand button */}
+        <button onClick={() => setShowExpanded(true)}
+          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg bg-gray-800/80 flex items-center justify-center text-gray-400 hover:text-white transition-all z-10"
+          title="Expand post">
+          <Maximize2 className="w-3.5 h-3.5" />
+        </button>
         {/* Avatar */}
         <UserAvatar avatarUrl={post.author_avatar} username={post.author_username} size={36} />
 
@@ -326,5 +334,21 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
         initialIndex={galleryIndex}
       />
     </SpecialEffectsRenderer>
+
+    {/* Expanded Facebook-style modal */}
+    {showExpanded && (
+      <PostExpandedModal
+        post={post}
+        user={user}
+        profile={profile}
+        isTier1={isTier1}
+        canManage={canManage}
+        canDelete={canDelete}
+        onFlag={onFlag}
+        onRemove={onRemove}
+        onClose={() => setShowExpanded(false)}
+      />
+    )}
+    </>
   );
 }

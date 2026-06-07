@@ -4,7 +4,7 @@ import {
   Gamepad2, ShoppingCart, ClipboardList, Store, BarChart2, Shield,
   Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy,
   Star, GitBranch, ChevronLeft, ChevronRight, Menu, X, DollarSign,
-  Settings, Share2, LogOut, Globe, Crown, Users, TrendingUp, Sparkles
+  Settings, Share2, LogOut, Globe, Crown, Users, TrendingUp, Sparkles, Play
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
@@ -141,6 +141,7 @@ export default function AuthNavbar({ user, profile }) {
 
   const toolLinks = [
     { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
+    { icon: Play, label: "Content Hub", href: "/content", color: "text-purple-400" },
     { icon: User, label: "My Channel", href: "/profile", color: "text-blue-400" },
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
     ...(admin || isSeller ? [{ icon: Upload, label: "Add Listing", href: "/create-listing", color: "text-green-400" }] : []),
