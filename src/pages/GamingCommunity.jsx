@@ -184,13 +184,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
             <span className="text-[9px] text-orange-400 font-semibold">Also post in Modding Community 🔧</span>
           </label>
         </div>
-      ) : (
-        <div className="px-4 py-2 border-b border-gray-800 flex-shrink-0 text-center">
-          <button onClick={() => base44.auth.redirectToLogin()} className="text-xs text-purple-400 font-bold hover:underline">
-            Sign in to post →
-          </button>
-        </div>
-      )}
+      ) : null}
       {/* Feed: posts + listings mixed */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (

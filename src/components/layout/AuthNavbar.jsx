@@ -140,12 +140,12 @@ export default function AuthNavbar({ user, profile }) {
   const navLinks = admin ? adminLinks : isSeller ? sellerLinks : regularLinks;
 
   const toolLinks = [
+    { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
     { icon: User, label: "My Channel", href: "/profile", color: "text-blue-400" },
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
     ...(admin || isSeller ? [{ icon: Upload, label: "Add Listing", href: "/create-listing", color: "text-green-400" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
     { icon: MessageCircle, label: "Messages", href: "/messages" },
-    { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
   ];
 
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;

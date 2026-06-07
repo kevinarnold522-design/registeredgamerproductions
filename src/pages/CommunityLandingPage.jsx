@@ -415,11 +415,6 @@ export default function CommunityLandingPage() {
                 </div>
               </div>
             )}
-            {user && !admin && !isModerator && !isJoined && (
-              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5 text-center">
-                <p className="text-gray-500 text-sm">Join this community to post</p>
-              </div>
-            )}
 
             {/* Search & Sort */}
             <div className="flex gap-3 mb-3 flex-wrap">

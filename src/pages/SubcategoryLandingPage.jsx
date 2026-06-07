@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
+import EnhancedListingCard from "@/components/community/EnhancedListingCard";
 
 // Storage key for cards in a subcategory landing page
 const getStorageKey = (parentCat, subId) => `subcat_landing_${parentCat}_${subId}`;
@@ -420,26 +421,23 @@ export default function SubcategoryLandingPage() {
                 )}
               </div>
               
-              {/* Listings Sidebar */}
-              <div>
-                <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-3">Listings</h3>
+              {/* Listings - Enhanced Cards */}
+              <div className="lg:col-span-3">
+                <h3 className="text-white font-bold text-sm uppercase tracking-wider mb-4">Listings</h3>
                 {listings.length === 0 ? (
                   <div className="text-center py-8 rounded-xl bg-gray-900 border border-gray-800">
                     <p className="text-gray-500 text-sm">No listings yet</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {listings.map(listing => (
-                      <a key={listing.id} href={`/listing?id=${listing.id}`}
-                        className="flex gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 transition-all group">
-                        <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-800">
-                          {listing.images?.[0] ? <img src={listing.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white font-bold text-xs line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</p>
-                          <p className="font-black text-xs mt-1" style={{ color: "#a855f7" }}>{listing.is_free || !listing.price ? "FREE" : `₱${listing.price}`}</p>
-                        </div>
-                      </a>
+                      <EnhancedListingCard
+                        key={listing.id}
+                        listing={listing}
+                        user={user}
+                        profile={profile}
+                        subcategory={sub}
+                      />
                     ))}
                   </div>
                 )}

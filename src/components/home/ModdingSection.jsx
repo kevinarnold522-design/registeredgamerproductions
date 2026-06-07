@@ -175,8 +175,11 @@ export default function ModdingSection() {
         <div className="mb-4">
           <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
-              <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
+              <p className="text-white font-bold text-sm">📂 Filter Modding Communities</p>
+              <div className="flex gap-2">
+                <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
+                <button onClick={clearAll} className="text-xs text-gray-500 hover:text-gray-300 font-semibold transition-colors">Clear</button>
+              </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-60 overflow-y-auto">
               {MODDING_SUBCATEGORIES.map(g => (
