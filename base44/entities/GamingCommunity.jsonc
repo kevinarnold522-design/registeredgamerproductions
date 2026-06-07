@@ -25,6 +25,14 @@
     "cover_url": {
       "type": "string"
     },
+    "cover_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Multiple cover photos \u2014 auto-transition",
+      "default": []
+    },
     "genre": {
       "type": "string"
     },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -9,6 +9,9 @@ import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import RecommendModal from "@/components/shared/RecommendModal";
+import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+
+const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all" };
 
 // Newsfeed for a community franchise
 function CommunityNewsfeed({ franchise, community, user, profile }) {
@@ -18,6 +21,8 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   const [crossPostModding, setCrossPostModding] = useState(false);
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [feedFilters, setFeedFilters] = useState(DEFAULT_FEED_FILTERS);
 
   useEffect(() => {
     const load = async () => {
@@ -69,27 +74,93 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
     setPosting(false);
   };
 
+  // Filtered listings
+  const filteredListings = listings.filter(l => {
+    if (feedFilters.isFree && !(l.price === 0 || l.is_free)) return false;
+    if (feedFilters.isPremium && !l.is_premium) return false;
+    if (feedFilters.priceMin !== "" && (l.price || 0) < parseFloat(feedFilters.priceMin)) return false;
+    if (feedFilters.priceMax !== "" && (l.price || 0) > parseFloat(feedFilters.priceMax)) return false;
+    return true;
+  });
+
   // Merge posts + listings by date inside the feed
-  const merged = [
-    ...posts.map(p => ({ type: "post", item: p, date: p.created_date })),
-    ...listings.map(l => ({ type: "listing", item: l, date: l.created_date })),
-  ].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const allMerged = [
+    ...(feedFilters.contentType !== "listings" ? posts.map(p => ({ type: "post", item: p, date: p.created_date })) : []),
+    ...(feedFilters.contentType !== "posts" ? filteredListings.map(l => ({ type: "listing", item: l, date: l.created_date })) : []),
+  ];
+  const merged = allMerged.sort((a, b) => {
+    if (feedFilters.sortBy === "newest") return new Date(b.date) - new Date(a.date);
+    if (feedFilters.sortBy === "oldest") return new Date(a.date) - new Date(b.date);
+    if (feedFilters.sortBy === "popular") {
+      const aScore = a.type === "listing" ? (a.item.views || 0) : (a.item.likes || 0);
+      const bScore = b.type === "listing" ? (b.item.views || 0) : (b.item.likes || 0);
+      return bScore - aScore;
+    }
+    return 0;
+  });
 
   return (
     <motion.div key={franchise.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
       className="h-[800px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0 flex items-center justify-between"
+      <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0"
         style={{ background: `linear-gradient(135deg, ${franchise.color}cc, ${franchise.color}88)` }}>
-        <div>
-          <p className="text-white text-sm font-black">{franchise.name} Feed</p>
-          <p className="text-white/40 text-[10px]">Posts & listings · {merged.length} items</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-white text-sm font-black">{franchise.name} Feed</p>
+            <p className="text-white/40 text-[10px]">Posts & listings · {merged.length} items</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowFilters(v => !v)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${showFilters ? "bg-purple-600/30 text-purple-300" : "bg-white/10 text-white/60 hover:text-white"}`}>
+              <SlidersHorizontal className="w-3 h-3" /> Filter
+            </button>
+            <a href={`/community/${franchise.id}`}
+              className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+              style={{ background: `${franchise.accent}30`, color: franchise.accent, border: `1px solid ${franchise.accent}44` }}>
+              Full Page →
+            </a>
+          </div>
         </div>
-        <a href={`/community/${franchise.id}`}
-          className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
-          style={{ background: `${franchise.accent}30`, color: franchise.accent, border: `1px solid ${franchise.accent}44` }}>
-          Full Page →
-        </a>
+        {/* Advanced filter panel */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mt-2">
+              <div className="bg-black/30 rounded-xl p-3 grid grid-cols-2 gap-2">
+                <select value={feedFilters.contentType} onChange={e => setFeedFilters(f => ({ ...f, contentType: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none">
+                  <option value="all">All Content</option>
+                  <option value="posts">Posts Only</option>
+                  <option value="listings">Listings Only</option>
+                </select>
+                <select value={feedFilters.sortBy} onChange={e => setFeedFilters(f => ({ ...f, sortBy: e.target.value }))}
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none">
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="popular">Most Popular</option>
+                </select>
+                <input type="number" value={feedFilters.priceMin} onChange={e => setFeedFilters(f => ({ ...f, priceMin: e.target.value }))}
+                  placeholder="Min ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none" />
+                <input type="number" value={feedFilters.priceMax} onChange={e => setFeedFilters(f => ({ ...f, priceMax: e.target.value }))}
+                  placeholder="Max ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none" />
+                <label className="flex items-center gap-1.5 cursor-pointer col-span-1">
+                  <input type="checkbox" checked={feedFilters.isFree} onChange={e => setFeedFilters(f => ({ ...f, isFree: e.target.checked }))} className="accent-green-500 w-3 h-3 rounded" />
+                  <span className="text-green-400 text-[10px] font-semibold">Free Only</span>
+                </label>
+                <label className="flex items-center gap-1.5 cursor-pointer col-span-1">
+                  <input type="checkbox" checked={feedFilters.isPremium} onChange={e => setFeedFilters(f => ({ ...f, isPremium: e.target.checked }))} className="accent-yellow-500 w-3 h-3 rounded" />
+                  <span className="text-yellow-400 text-[10px] font-semibold">Premium Only</span>
+                </label>
+              </div>
+              {(feedFilters.isFree || feedFilters.isPremium || feedFilters.priceMin || feedFilters.priceMax || feedFilters.sortBy !== "newest" || feedFilters.contentType !== "all") && (
+                <button onClick={() => setFeedFilters(DEFAULT_FEED_FILTERS)} className="mt-1.5 text-[9px] text-gray-500 hover:text-white transition-colors flex items-center gap-1">
+                  <X className="w-2.5 h-2.5" /> Reset filters
+                </button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       {/* Post input */}
       {user ? (
@@ -138,8 +209,11 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
-                <p className="text-gray-500 text-[9px]">📦 Listing by @{item.seller_username}</p>
+                <p className="text-gray-500 text-[9px]">📦 by @{item.seller_username}</p>
                 <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+                <div className="mt-1.5">
+                  <ListingEngagementBar listing={item} user={user} profile={profile} compact />
+                </div>
               </div>
             </a>
           ) : (
@@ -169,8 +243,21 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
   const cardRef = useRef(null);
   const [editMode, setEditMode] = useState(false);
   const [editLogo, setEditLogo] = useState(community?.logo_url || "");
+  const [editCoverUrls, setEditCoverUrls] = useState(community?.cover_urls || (community?.cover_url ? [community.cover_url] : []));
+  const [coverUrlInput, setCoverUrlInput] = useState("");
+  const [activeCoverIdx, setActiveCoverIdx] = useState(0);
   const fileRef = useRef(null);
+  const coverFileRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+
+  // Auto-transition cover photos
+  useEffect(() => {
+    const covers = community?.cover_urls?.length > 0 ? community.cover_urls : (community?.cover_url ? [community.cover_url] : []);
+    if (covers.length <= 1) return;
+    const t = setInterval(() => setActiveCoverIdx(i => (i + 1) % covers.length), 4000);
+    return () => clearInterval(t);
+  }, [community?.cover_urls, community?.cover_url]);
 
   const handlePencilClick = (e) => {
     e.stopPropagation();
@@ -189,6 +276,16 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
     setUploading(false);
   };
 
+  const handleCoverFileUpload = async (e) => {
+    e.stopPropagation();
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingCover(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setEditCoverUrls(prev => [...prev, file_url]);
+    setUploadingCover(false);
+  };
+
   const handleUrlPaste = (e) => {
     e.stopPropagation();
     if (urlInput.trim()) { setEditLogo(urlInput.trim()); setUrlInput(""); }
@@ -196,11 +293,17 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
 
   const handleSave = async (e) => {
     e.stopPropagation();
-    await onSaveProfile?.(franchise.id, { logo_url: editLogo }, community);
+    const covers = editCoverUrls.filter(Boolean);
+    await onSaveProfile?.(franchise.id, {
+      logo_url: editLogo,
+      cover_url: covers[0] || "",
+      cover_urls: covers,
+    }, community);
     setEditMode(false);
   };
 
   const logoSrc = community?.logo_url || editLogo || null;
+  const coverImages = community?.cover_urls?.length > 0 ? community.cover_urls : (community?.cover_url ? [community.cover_url] : []);
 
   return (
     <motion.div
@@ -218,10 +321,17 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
     >
-      {/* Cover/gradient bg */}
-      {community?.cover_url ? (
-        <div className="absolute inset-0 opacity-30"
-          style={{ backgroundImage: `url(${community.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+      {/* Cover/gradient bg — multi-image with crossfade */}
+      {coverImages.length > 0 ? (
+        <div className="absolute inset-0">
+          {coverImages.map((src, idx) => (
+            <div key={src} className="absolute inset-0 transition-opacity duration-1000"
+              style={{
+                backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center",
+                opacity: idx === activeCoverIdx ? 0.35 : 0,
+              }} />
+          ))}
+        </div>
       ) : (
         <div className="absolute inset-0 opacity-20"
           style={{ background: `radial-gradient(circle at 50% 30%, ${franchise.accent}, transparent 70%)` }} />
@@ -239,28 +349,56 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
 
       {/* Inline edit overlay */}
       {editMode && (
-        <div className="absolute inset-0 z-20 bg-black/90 rounded-2xl flex flex-col items-center justify-center gap-2 p-3" onClick={e => e.stopPropagation()}>
-          <p className="text-white text-xs font-bold">Edit Profile Picture</p>
-          {editLogo && <img src={editLogo} className="w-14 h-14 rounded-xl object-cover" alt="" />}
-          <div className="flex gap-1.5 w-full px-1">
-            <button onClick={() => fileRef.current?.click()}
-              className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-purple-700 text-white text-[10px] font-bold">
-              <Upload className="w-3 h-3" />{uploading ? "…" : "Device"}
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+        <div className="absolute inset-0 z-20 bg-black/95 rounded-2xl flex flex-col gap-2 p-3 overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <p className="text-white text-xs font-bold text-center">Edit Community Images</p>
+
+          {/* Logo */}
+          <div>
+            <p className="text-gray-400 text-[9px] font-bold mb-1">Logo</p>
+            {editLogo && <img src={editLogo} className="w-10 h-10 rounded-lg object-cover mb-1" alt="" />}
+            <div className="flex gap-1">
+              <button onClick={() => fileRef.current?.click()}
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded-lg bg-purple-700 text-white text-[9px] font-bold">
+                <Upload className="w-2.5 h-2.5" />{uploading ? "…" : "Logo"}
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+              <input value={urlInput} onChange={e => setUrlInput(e.target.value)} onClick={e => e.stopPropagation()}
+                placeholder="URL" className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[9px] focus:outline-none focus:border-purple-500" />
+              <button onClick={handleUrlPaste} className="px-1.5 py-1 rounded-lg bg-blue-700 text-white text-[9px]"><Link2 className="w-2.5 h-2.5" /></button>
+            </div>
           </div>
-          <div className="flex gap-1.5 w-full px-1">
-            <input value={urlInput} onChange={e => setUrlInput(e.target.value)} onClick={e => e.stopPropagation()}
-              placeholder="Paste image URL"
-              className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-2 py-1 text-white text-[9px] placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-            <button onClick={handleUrlPaste}
-              className="px-2 py-1 rounded-lg bg-blue-700 text-white text-[10px] font-bold flex items-center gap-0.5">
-              <Link2 className="w-2.5 h-2.5" />
-            </button>
+
+          {/* Cover photos */}
+          <div>
+            <p className="text-gray-400 text-[9px] font-bold mb-1">Cover Photos (multi — auto-slide)</p>
+            <div className="flex flex-wrap gap-1 mb-1">
+              {editCoverUrls.map((url, i) => (
+                <div key={i} className="relative group/img">
+                  <img src={url} className="w-10 h-10 rounded-lg object-cover border border-gray-700" alt="" />
+                  <button onClick={() => setEditCoverUrls(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px] flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">×</button>
+                </div>
+              ))}
+              {editCoverUrls.length < 5 && (
+                <button onClick={() => coverFileRef.current?.click()}
+                  className="w-10 h-10 rounded-lg border-2 border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-[9px] flex items-center justify-center hover:bg-blue-900/40 transition-all">
+                  {uploadingCover ? "…" : <Upload className="w-3 h-3" />}
+                </button>
+              )}
+            </div>
+            <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverFileUpload} className="hidden" />
+            <div className="flex gap-1">
+              <input value={coverUrlInput} onChange={e => setCoverUrlInput(e.target.value)} onClick={e => e.stopPropagation()}
+                placeholder="Paste cover URL"
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[9px] focus:outline-none focus:border-blue-500" />
+              <button onClick={() => { if (coverUrlInput.trim()) { setEditCoverUrls(prev => [...prev, coverUrlInput.trim()]); setCoverUrlInput(""); } }}
+                className="px-1.5 py-1 rounded-lg bg-blue-700 text-white text-[9px]"><Link2 className="w-2.5 h-2.5" /></button>
+            </div>
           </div>
+
           <div className="flex gap-2">
             <button onClick={handleSave}
-              className="px-3 py-1 rounded-lg bg-green-700 text-white text-[10px] font-bold flex items-center gap-1">
+              className="flex-1 px-3 py-1 rounded-lg bg-green-700 text-white text-[10px] font-bold flex items-center justify-center gap-1">
               <Check className="w-3 h-3" /> Save
             </button>
             <button onClick={e => { e.stopPropagation(); setEditMode(false); }}

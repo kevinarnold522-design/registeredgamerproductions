@@ -153,19 +153,37 @@ export default function ListingPage() {
     } catch {}
   };
 
+  const autoFollowSeller = async () => {
+    if (!user || !listing?.seller_email || listing.seller_email === user.email) return;
+    try {
+      const existing = await base44.entities.Follow.filter({ follower_email: user.email, following_email: listing.seller_email });
+      if (existing.length === 0) {
+        base44.entities.Follow.create({
+          follower_email: user.email,
+          following_email: listing.seller_email,
+          follower_username: profile?.username || user.full_name || "Gamer",
+          following_username: listing.seller_username || "",
+          source: "manual",
+        }).catch(() => {});
+      }
+    } catch {}
+  };
+
   const handleDownload = () => {
     const url = listing.download_url || listing.external_link;
     if (!url) return;
     if (user) base44.entities.Listing.update(listing.id, { views: (listing.views || 0) + 1 }).catch(() => {});
     const isExempt = user && (isAdmin(user.email) || profile?.moderator_type === "account_moderator");
     if (isExempt) {
+      autoFollowSeller();
       window.open(url, "_blank");
       return;
     }
-    // Auto-join on download for signed-in users
+    // Auto-join community + auto-follow seller on download for signed-in users
     if (user) {
       if (listing.community_franchise_id) autoJoinCommunity(listing.community_franchise_id);
       autoJoinCommunity("modding");
+      autoFollowSeller();
     }
     setPendingDownloadUrl(url);
     setShowAdOverlay(true);

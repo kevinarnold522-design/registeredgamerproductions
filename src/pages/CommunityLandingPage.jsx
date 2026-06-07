@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2 } from "lucide-react";
+import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download } from "lucide-react";
+import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -29,10 +30,14 @@ export default function CommunityLandingPage() {
   const [posting, setPosting] = useState(false);
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
+  const [showAdvFilter, setShowAdvFilter] = useState(false);
+  const [listingFilter, setListingFilter] = useState({ priceMin: "", priceMax: "", isFree: false, isPremium: false });
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editLogoUrl, setEditLogoUrl] = useState("");
   const [editLogoUrls, setEditLogoUrls] = useState([]);
   const [editCoverUrl, setEditCoverUrl] = useState("");
+  const [editCoverUrls, setEditCoverUrls] = useState([]);
+  const [activeCoverIdx, setActiveCoverIdx] = useState(0);
   const [editDesc, setEditDesc] = useState("");
   const [logoUrlInput, setLogoUrlInput] = useState("");
   const [coverUrlInput, setCoverUrlInput] = useState("");
@@ -74,6 +79,7 @@ export default function CommunityLandingPage() {
     setEditLogoUrl(comm?.logo_url || "");
     setEditLogoUrls(comm?.logo_urls || []);
     setEditCoverUrl(comm?.cover_url || "");
+    setEditCoverUrls(comm?.cover_urls || (comm?.cover_url ? [comm.cover_url] : []));
     setEditDesc(comm?.description || "");
     setMembers(membersData);
     const active = postsData.filter(p => p.status === "active")
@@ -152,14 +158,18 @@ export default function CommunityLandingPage() {
     const file = e.target.files[0]; if (!file) return;
     setUploadingCover(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setEditCoverUrl(file_url); setUploadingCover(false);
+    setEditCoverUrl(file_url);
+    setEditCoverUrls(prev => prev.includes(file_url) ? prev : [...prev, file_url]);
+    setUploadingCover(false);
   };
   const handleSaveProfile = async () => {
     const comm = await ensureCommunity();
+    const covers = editCoverUrls.filter(Boolean);
     const updated = await base44.entities.GamingCommunity.update(comm.id, {
       logo_url: editLogoUrl,
       logo_urls: editLogoUrls.filter(Boolean),
-      cover_url: editCoverUrl,
+      cover_url: covers[0] || editCoverUrl,
+      cover_urls: covers,
       description: editDesc,
     });
     setCommunity(updated); setShowEditProfile(false);
@@ -185,8 +195,18 @@ export default function CommunityLandingPage() {
       return 0;
     });
 
-  const coverStyle = community?.cover_url
-    ? { backgroundImage: `url(${community.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" }
+  // Cover images for hero crossfade
+  const coverImages = community?.cover_urls?.length > 0 ? community.cover_urls : (community?.cover_url ? [community.cover_url] : []);
+
+  // Auto-transition cover
+  useEffect(() => {
+    if (coverImages.length <= 1) return;
+    const t = setInterval(() => setActiveCoverIdx(i => (i + 1) % coverImages.length), 5000);
+    return () => clearInterval(t);
+  }, [coverImages.length]);
+
+  const coverStyle = coverImages.length > 0
+    ? { backgroundImage: `url(${coverImages[activeCoverIdx]})`, backgroundSize: "cover", backgroundPosition: "center", transition: "background-image 1s ease" }
     : { background: `linear-gradient(135deg, ${franchise.color}, #0a0a1a)` };
 
   return (
@@ -324,19 +344,30 @@ export default function CommunityLandingPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Cover Photo</label>
-                  <button onClick={() => coverRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-all">
-                    <Upload className="w-3.5 h-3.5" /> {uploadingCover ? "Uploading..." : editCoverUrl ? "Replace Cover" : "Upload Cover from Device"}
-                  </button>
-                  {editCoverUrl && <img src={editCoverUrl} className="w-full h-20 object-cover rounded-lg opacity-70 mt-1.5" alt="" />}
+                  <label className="text-gray-400 text-xs mb-1.5 block font-semibold">Cover Photos <span className="text-gray-600">(up to 5 — auto-slide)</span></label>
+                  {/* Cover gallery thumbnails */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {editCoverUrls.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img src={url} className="w-16 h-10 rounded-lg object-cover border-2 border-gray-700" alt="" />
+                        <button onClick={() => setEditCoverUrls(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                      </div>
+                    ))}
+                    {editCoverUrls.length < 5 && (
+                      <button onClick={() => coverRef.current?.click()}
+                        className="w-16 h-10 rounded-lg border-2 border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-xs font-bold flex items-center justify-center hover:bg-blue-900/40 transition-all">
+                        {uploadingCover ? "…" : <Upload className="w-3.5 h-3.5" />}
+                      </button>
+                    )}
+                  </div>
                   <input ref={coverRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
                   {/* URL paste for cover */}
-                  <div className="flex gap-2 mt-1.5">
+                  <div className="flex gap-2">
                     <input value={coverUrlInput} onChange={e => setCoverUrlInput(e.target.value)}
                       placeholder="Or paste cover image URL"
                       className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-1.5 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-blue-500" />
-                    <button onClick={() => { if (coverUrlInput.trim()) { setEditCoverUrl(coverUrlInput.trim()); setCoverUrlInput(""); } }}
+                    <button onClick={() => { if (coverUrlInput.trim()) { setEditCoverUrls(prev => [...prev, coverUrlInput.trim()]); setEditCoverUrl(coverUrlInput.trim()); setCoverUrlInput(""); } }}
                       className="px-3 py-1.5 rounded-xl bg-blue-700/60 border border-blue-600/50 text-blue-300 text-xs font-bold flex items-center gap-1">
                       <Link2 className="w-3 h-3" /> Add URL
                     </button>
@@ -390,8 +421,8 @@ export default function CommunityLandingPage() {
             )}
 
             {/* Search & Sort */}
-            <div className="flex gap-3 mb-4">
-              <div className="flex-1 relative">
+            <div className="flex gap-3 mb-3 flex-wrap">
+              <div className="flex-1 relative min-w-[140px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Search posts..."
@@ -403,7 +434,33 @@ export default function CommunityLandingPage() {
                 <option value="oldest">Oldest</option>
                 <option value="popular">Most Liked</option>
               </select>
+              <button onClick={() => setShowAdvFilter(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-bold border transition-all ${showAdvFilter ? "border-purple-500/60 bg-purple-900/20 text-purple-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
+                <SlidersHorizontal className="w-4 h-4" /> Filter
+              </button>
             </div>
+            {/* Advanced listing filters */}
+            <AnimatePresence>
+              {showAdvFilter && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden mb-4">
+                  <div className="bg-gray-900 border border-purple-700/30 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <input type="number" value={listingFilter.priceMin} onChange={e => setListingFilter(f => ({ ...f, priceMin: e.target.value }))}
+                      placeholder="Min ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                    <input type="number" value={listingFilter.priceMax} onChange={e => setListingFilter(f => ({ ...f, priceMax: e.target.value }))}
+                      placeholder="Max ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={listingFilter.isFree} onChange={e => setListingFilter(f => ({ ...f, isFree: e.target.checked }))} className="accent-green-500 w-3.5 h-3.5 rounded" />
+                      <span className="text-green-400 text-xs font-semibold">Free Only</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={listingFilter.isPremium} onChange={e => setListingFilter(f => ({ ...f, isPremium: e.target.checked }))} className="accent-yellow-500 w-3.5 h-3.5 rounded" />
+                      <span className="text-yellow-400 text-xs font-semibold">Premium Only</span>
+                    </label>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Posts */}
             {loading ? (
@@ -494,18 +551,28 @@ export default function CommunityLandingPage() {
             {listings.length > 0 && (
               <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
                 <h3 className="text-white font-black text-sm mb-3">📦 Community Listings</h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {listings.map(l => (
-                    <Link key={l.id} to={`/listing?id=${l.id}`}
-                      className="flex gap-3 p-2 rounded-xl hover:bg-gray-800 transition-colors group">
-                      <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                        {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center">🎮</div>}
+                    <div key={l.id}>
+                      <Link to={`/listing?id=${l.id}`}
+                        className="flex gap-3 p-2 rounded-xl hover:bg-gray-800 transition-colors group">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
+                          {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center">🎮</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{l.title}</p>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `₱${l.price}`}</p>
+                            <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                              <Eye className="w-2.5 h-2.5" />{(l.views || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                      <div className="px-2 pb-1">
+                        <ListingEngagementBar listing={l} user={user} profile={profile} compact />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{l.title}</p>
-                        <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{l.is_free ? "FREE" : `₱${l.price}`}</p>
-                      </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               </div>
