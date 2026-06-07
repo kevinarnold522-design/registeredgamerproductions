@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Heart, MessageCircle, Share2, Star, Trash2, Flag } from "lucide-react";
+import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import UserAvatar from "@/components/shared/UserAvatar";
@@ -180,11 +180,32 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
         {/* Content */}
         <p className="text-gray-300 text-sm leading-relaxed mt-0.5">{post.content}</p>
 
+        {/* Description */}
+        {post.description && (
+          <p className="text-gray-400 text-xs mt-1.5 leading-relaxed bg-gray-800/40 rounded-lg p-2.5 border border-gray-700/50">
+            {post.description}
+          </p>
+        )}
+
         {/* Images */}
         {post.image_urls?.length > 0 && (
           <div className="flex gap-2 mt-2 flex-wrap">
             {post.image_urls.map((url, i) => (
               <img key={i} src={url} className="w-32 h-24 object-cover rounded-xl border border-gray-700" alt="" />
+            ))}
+          </div>
+        )}
+
+        {/* Videos */}
+        {post.video_urls?.length > 0 && (
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {post.video_urls.map((url, i) => (
+              <div key={i} className="relative group">
+                <video src={url} controls className="w-64 h-36 object-cover rounded-xl border border-gray-700 bg-black" />
+                <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/70 text-white text-[9px] font-bold flex items-center gap-1">
+                  <Video className="w-2.5 h-2.5" /> Video
+                </div>
+              </div>
             ))}
           </div>
         )}

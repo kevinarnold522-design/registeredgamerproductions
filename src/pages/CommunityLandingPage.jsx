@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download, Gamepad2 } from "lucide-react";
+import { ArrowLeft, Users, Share2, Search, Send, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Download, Gamepad2, Image, Video, Trash2 } from "lucide-react";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
@@ -28,11 +28,16 @@ export default function CommunityLandingPage() {
   const [showMembershipModal, setShowMembershipModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [newPost, setNewPost] = useState("");
+  const [postImages, setPostImages] = useState([]);
+  const [postVideos, setPostVideos] = useState([]);
+  const [postDescription, setPostDescription] = useState("");
   const [posting, setPosting] = useState(false);
+  const [bulkPosts, setBulkPosts] = useState([{ content: "", description: "", images: [], videos: [] }]);
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
   const [showAdvFilter, setShowAdvFilter] = useState(false);
   const [listingFilter, setListingFilter] = useState({ priceMin: "", priceMax: "", isFree: false, isPremium: false });
+  const [showBulkPost, setShowBulkPost] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editLogoUrl, setEditLogoUrl] = useState("");
   const [editLogoUrls, setEditLogoUrls] = useState([]);
@@ -114,10 +119,9 @@ export default function CommunityLandingPage() {
     if (!user) { base44.auth.redirectToLogin(); return; }
     const comm = await ensureCommunity();
     if (isJoined) {
-      const existing = members.find(m => m.user_email === user.email);
-      if (existing) await base44.entities.CommunityMember.delete(existing.id);
-      setIsJoined(false);
-      setMembers(prev => prev.filter(m => m.user_email !== user.email));
+      // Cannot leave once joined - show message
+      alert("⚠️ Once you join a community, you cannot leave. This helps maintain community engagement.");
+      return;
     } else {
       const nm = await base44.entities.CommunityMember.create({
         community_id: comm.id, franchise_id: franchise.id,
@@ -126,12 +130,23 @@ export default function CommunityLandingPage() {
       });
       setIsJoined(true);
       setMembers(prev => [...prev, nm]);
+      
+      // Notify all existing members via email
+      try {
+        await base44.functions.invoke('notifyNewMember', {
+          franchise_id: franchise.id,
+          franchise_name: franchise.name,
+          new_member_email: user.email,
+          new_member_username: profile?.username || user.full_name || "Gamer",
+        });
+      } catch (error) {
+        console.error('Failed to send member notifications:', error);
+      }
     }
   };
 
   const handlePost = async () => {
-    if (!newPost.trim() || !user) return;
-    // Free posting for all joined members
+    if ((!newPost.trim() && !postDescription.trim()) || !user) return;
     if (!isJoined && !admin && !isModerator) return;
     setPosting(true);
     const comm = await ensureCommunity();
@@ -140,12 +155,48 @@ export default function CommunityLandingPage() {
       author_email: user.email,
       author_username: profile?.username || user.full_name || "Gamer",
       author_avatar: profile?.avatar_url || "",
-      content: newPost, likes: 0, status: "active",
+      content: newPost,
+      description: postDescription,
+      image_urls: postImages,
+      video_urls: postVideos,
+      likes: 0, status: "active",
     });
     setPosts(prev => [post, ...prev]);
     setNewPost("");
+    setPostDescription("");
+    setPostImages([]);
+    setPostVideos([]);
     setPosting(false);
   };
+
+  const handleBulkPost = async () => {
+    if (!user || bulkPosts.length === 0) return;
+    if (!isJoined && !admin && !isModerator) return;
+    setPosting(true);
+    const comm = await ensureCommunity();
+    const validPosts = bulkPosts.filter(p => p.content.trim() || p.description.trim());
+    
+    for (const post of validPosts) {
+      await base44.entities.CommunityPost.create({
+        community_id: comm.id, franchise_id: franchise.id,
+        author_email: user.email,
+        author_username: profile?.username || user.full_name || "Gamer",
+        author_avatar: profile?.avatar_url || "",
+        content: post.content,
+        description: post.description,
+        image_urls: post.images || [],
+        video_urls: post.videos || [],
+        likes: 0, status: "active",
+      });
+    }
+    
+    setBulkPosts([{ content: "", description: "", images: [], videos: [] }]);
+    setPosting(false);
+  };
+
+  const addBulkPost = () => setBulkPosts(prev => [...prev, { content: "", description: "", images: [], videos: [] }]);
+  const removeBulkPost = (idx) => setBulkPosts(prev => prev.filter((_, i) => i !== idx));
+  const updateBulkPost = (idx, field, value) => setBulkPosts(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
@@ -154,6 +205,30 @@ export default function CommunityLandingPage() {
     setEditLogoUrl(file_url);
     setEditLogoUrls(prev => prev.includes(file_url) ? prev : [...prev, file_url]);
     setUploadingLogo(false);
+  };
+
+  const handlePostImageUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setPostImages(prev => [...prev, file_url]);
+  };
+
+  const handlePostVideoUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setPostVideos(prev => [...prev, file_url]);
+  };
+
+  const handleBulkImageUpload = async (idx, e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    updateBulkPost(idx, 'images', [...(bulkPosts[idx].images || []), file_url]);
+  };
+
+  const handleBulkVideoUpload = async (idx, e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    updateBulkPost(idx, 'videos', [...(bulkPosts[idx].videos || []), file_url]);
   };
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
@@ -399,28 +474,135 @@ export default function CommunityLandingPage() {
             {/* Post input */}
             {user ? (
               <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5">
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-3 items-start">
                   <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-800">
                     {profile?.avatar_url ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-sm">{franchise.emoji}</div>}
                   </div>
-                  <input value={newPost} onChange={e => setNewPost(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
-                    placeholder={`Post in ${franchise.name} community...`}
-                    className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-                  <button onClick={handlePost} disabled={!newPost.trim() || posting}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center disabled:opacity-50 flex-shrink-0"
-                    style={{ background: franchise.accent }}>
-                    <Send className="w-4 h-4 text-white" />
+                  <div className="flex-1">
+                    <input value={newPost} onChange={e => setNewPost(e.target.value)}
+                      placeholder={`What's on your mind in ${franchise.name}?`}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2" />
+                    <textarea value={postDescription} onChange={e => setPostDescription(e.target.value)}
+                      placeholder="Add a description (optional)..."
+                      rows={2}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2 resize-none" />
+                    
+                    {/* Media previews */}
+                    {(postImages.length > 0 || postVideos.length > 0) && (
+                      <div className="flex gap-2 flex-wrap mb-2">
+                        {postImages.map((url, i) => (
+                          <div key={i} className="relative group">
+                            <img src={url} className="w-20 h-20 object-cover rounded-lg border border-gray-700" alt="" />
+                            <button onClick={() => setPostImages(prev => prev.filter((_, idx) => idx !== i))}
+                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100">×</button>
+                          </div>
+                        ))}
+                        {postVideos.map((url, i) => (
+                          <div key={i} className="relative group">
+                            <video src={url} className="w-20 h-20 object-cover rounded-lg border border-gray-700" muted loop onMouseEnter={e => e.target.play()} onMouseLeave={e => e.target.pause()} />
+                            <button onClick={() => setPostVideos(prev => prev.filter((_, idx) => idx !== i))}
+                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center opacity-0 group-hover:opacity-100">×</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-xs font-semibold transition-colors">
+                        <Image className="w-4 h-4" /> Images
+                        <input type="file" accept="image/*" onChange={handlePostImageUpload} className="hidden" multiple />
+                      </label>
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-xs font-semibold transition-colors">
+                        <Video className="w-4 h-4" /> Videos
+                        <input type="file" accept="video/*" onChange={handlePostVideoUpload} className="hidden" multiple />
+                      </label>
+                      <button onClick={handlePost} disabled={(!newPost.trim() && !postDescription.trim()) || posting}
+                        className="ml-auto px-4 py-1.5 rounded-xl font-bold text-sm text-white flex items-center gap-2 disabled:opacity-50"
+                        style={{ background: franchise.accent }}>
+                        <Send className="w-4 h-4" /> Post
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Bulk post toggle */}
+                <div className="mt-3 pt-3 border-t border-gray-800">
+                  <button onClick={() => setShowBulkPost(v => !v)} className="text-xs text-purple-400 font-semibold hover:text-purple-300 transition-colors flex items-center gap-1">
+                    <Plus className="w-3.5 h-3.5" /> {showBulkPost ? 'Hide' : 'Create Multiple Posts'} (Bulk Posting)
                   </button>
                 </div>
               </div>
             ) : (
               <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5 text-center">
-                <p className="text-gray-400 text-sm font-semibold mb-2">🎮 Become a member to start posting and join the group chat!</p>
+                <p className="text-gray-400 text-sm font-semibold mb-2">🎮 Sign in to start posting!</p>
                 <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
                   className="px-6 py-2.5 rounded-xl font-black text-sm text-white"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
                   Sign In / Register
+                </button>
+              </div>
+            )}
+            
+            {/* Bulk Post Panel */}
+            {user && showBulkPost && (
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-bold text-sm">📦 Bulk Posting</h3>
+                  <button onClick={addBulkPost} className="text-xs text-purple-400 font-semibold hover:text-purple-300 flex items-center gap-1">
+                    <Plus className="w-3.5 h-3.5" /> Add Another Post
+                  </button>
+                </div>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {bulkPosts.map((post, idx) => (
+                    <div key={idx} className="bg-gray-800 rounded-xl p-3 border border-gray-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-gray-500 font-semibold">Post #{idx + 1}</span>
+                        {bulkPosts.length > 1 && (
+                          <button onClick={() => removeBulkPost(idx)} className="text-gray-500 hover:text-red-400">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <input value={post.content} onChange={e => updateBulkPost(idx, 'content', e.target.value)}
+                        placeholder="Post content..."
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2" />
+                      <textarea value={post.description} onChange={e => updateBulkPost(idx, 'description', e.target.value)}
+                        placeholder="Description (optional)..."
+                        rows={2}
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2 resize-none" />
+                      <div className="flex gap-2 flex-wrap mb-2">
+                        {(post.images || []).map((url, i) => (
+                          <div key={i} className="relative">
+                            <img src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" alt="" />
+                            <button onClick={() => updateBulkPost(idx, 'images', (post.images || []).filter((_, j) => j !== i))}
+                              className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
+                          </div>
+                        ))}
+                        {(post.videos || []).map((url, i) => (
+                          <div key={i} className="relative">
+                            <video src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" muted />
+                            <button onClick={() => updateBulkPost(idx, 'videos', (post.videos || []).filter((_, j) => j !== i))}
+                              className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <label className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-900 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
+                          <Image className="w-3 h-3" /> Add Image
+                          <input type="file" accept="image/*" onChange={(e) => handleBulkImageUpload(idx, e)} className="hidden" />
+                        </label>
+                        <label className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-900 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
+                          <Video className="w-3 h-3" /> Add Video
+                          <input type="file" accept="video/*" onChange={(e) => handleBulkVideoUpload(idx, e)} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={handleBulkPost} disabled={posting || bulkPosts.every(p => !p.content.trim() && !p.description.trim())}
+                  className="mt-3 w-full py-2.5 rounded-xl font-bold text-sm text-white disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  <Upload className="w-4 h-4 inline mr-2" /> Post All ({bulkPosts.filter(p => p.content.trim() || p.description.trim()).length})
                 </button>
               </div>
             )}

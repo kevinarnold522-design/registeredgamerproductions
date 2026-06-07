@@ -53,6 +53,26 @@ const SOCIALS = [
     border: "#ff0000",
     glow: "rgba(255,0,0,0.4)",
   },
+  {
+    id: "kofi",
+    label: "Ko-fi",
+    placeholder: "https://ko-fi.com/yourusername",
+    icon: "☕",
+    color: "#ff6347",
+    bg: "#1a0a0a",
+    border: "#ff6347",
+    glow: "rgba(255,99,71,0.5)",
+  },
+  {
+    id: "buymeacoffee",
+    label: "Buy Me a Coffee",
+    placeholder: "https://buymeacoffee.com/yourusername",
+    icon: "💛",
+    color: "#ffdd00",
+    bg: "#1a1500",
+    border: "#ffdd00",
+    glow: "rgba(255,221,0,0.5)",
+  },
 ];
 
 export default function SocialLinksPanel({ profile, isOwnProfile, onUpdated }) {
@@ -62,8 +82,12 @@ export default function SocialLinksPanel({ profile, isOwnProfile, onUpdated }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.entities.UserProfile.update(profile.id, { social_links: links });
-    onUpdated({ ...profile, social_links: links });
+    // Also save kofi and buymeacoffee to their dedicated fields
+    const updates = { social_links: links };
+    if (links.kofi) updates.kofi_url = links.kofi;
+    if (links.buymeacoffee) updates.buymeacoffee_url = links.buymeacoffee;
+    await base44.entities.UserProfile.update(profile.id, updates);
+    onUpdated({ ...profile, social_links: links, kofi_url: links.kofi || profile.kofi_url, buymeacoffee_url: links.buymeacoffee || profile.buymeacoffee_url });
     setSaving(false);
     setEditing(false);
   };

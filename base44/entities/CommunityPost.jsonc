@@ -20,11 +20,22 @@
     "content": {
       "type": "string"
     },
+    "description": {
+      "type": "string",
+      "description": "Extended description or details for the post"
+    },
     "image_urls": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "video_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Video attachments for the post"
     },
     "likes": {
       "type": "number",

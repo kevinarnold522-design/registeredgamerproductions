@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2 } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2, Image, Video, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -19,6 +19,9 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   const [posts, setPosts] = useState([]);
   const [listings, setListings] = useState([]);
   const [newPost, setNewPost] = useState("");
+  const [postDescription, setPostDescription] = useState("");
+  const [postImages, setPostImages] = useState([]);
+  const [postVideos, setPostVideos] = useState([]);
   const [crossPostModding, setCrossPostModding] = useState(false);
   const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -45,7 +48,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   }, [franchise.id]);
 
   const handlePost = async () => {
-    if (!newPost.trim() || !user) return;
+    if ((!newPost.trim() && !postDescription.trim()) || !user) return;
     setPosting(true);
     const post = await base44.entities.CommunityPost.create({
       community_id: community?.id || franchise.id,
@@ -54,6 +57,9 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
       author_username: profile?.username || user.full_name || "Gamer",
       author_avatar: profile?.avatar_url || "",
       content: newPost,
+      description: postDescription,
+      image_urls: postImages,
+      video_urls: postVideos,
       likes: 0,
       status: "active",
     });
@@ -67,13 +73,31 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         author_username: profile?.username || user.full_name || "Gamer",
         author_avatar: profile?.avatar_url || "",
         content: newPost,
+        description: postDescription,
+        image_urls: postImages,
+        video_urls: postVideos,
         likes: 0,
         status: "active",
         section_id: franchise.id,
       }).catch(() => {});
     }
     setNewPost("");
+    setPostDescription("");
+    setPostImages([]);
+    setPostVideos([]);
     setPosting(false);
+  };
+
+  const handlePostImageUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setPostImages(prev => [...prev, file_url]);
+  };
+
+  const handlePostVideoUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setPostVideos(prev => [...prev, file_url]);
   };
 
   // Filtered listings
@@ -166,16 +190,50 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
       </div>
       {/* Post input */}
       {user ? (
-        <div className="px-4 py-2 border-b border-gray-800 flex-shrink-0">
-          <div className="flex gap-2 mb-1.5">
+        <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
+          <div className="flex gap-2 mb-2">
             <input value={newPost} onChange={e => setNewPost(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
-              placeholder={`Post in ${franchise.name}...`}
+              placeholder={`What's on your mind in ${franchise.name}?`}
               className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-            <button onClick={handlePost} disabled={!newPost.trim() || posting}
-              className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+          </div>
+          <textarea value={postDescription} onChange={e => setPostDescription(e.target.value)}
+            placeholder="Add description (optional)..."
+            rows={2}
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2 resize-none" />
+          
+          {/* Media previews */}
+          {(postImages.length > 0 || postVideos.length > 0) && (
+            <div className="flex gap-2 flex-wrap mb-2">
+              {postImages.map((url, i) => (
+                <div key={i} className="relative group">
+                  <img src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" alt="" />
+                  <button onClick={() => setPostImages(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
+                </div>
+              ))}
+              {postVideos.map((url, i) => (
+                <div key={i} className="relative group">
+                  <video src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" muted />
+                  <button onClick={() => setPostVideos(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            <label className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
+              <Image className="w-3.5 h-3.5" /> Images
+              <input type="file" accept="image/*" onChange={handlePostImageUpload} className="hidden" multiple />
+            </label>
+            <label className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
+              <Video className="w-3.5 h-3.5" /> Videos
+              <input type="file" accept="video/*" onChange={handlePostVideoUpload} className="hidden" multiple />
+            </label>
+            <button onClick={handlePost} disabled={(!newPost.trim() && !postDescription.trim()) || posting}
+              className="ml-auto px-3 py-1.5 rounded-xl font-bold text-[10px] text-white flex items-center gap-1 disabled:opacity-50"
               style={{ background: franchise.accent }}>
-              <Send className="w-3.5 h-3.5 text-white" />
+              <Send className="w-3.5 h-3.5" /> Post
             </button>
           </div>
           <label className="flex items-center gap-1.5 cursor-pointer">
@@ -184,7 +242,16 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
             <span className="text-[9px] text-orange-400 font-semibold">Also post in Modding Community 🔧</span>
           </label>
         </div>
-      ) : null}
+      ) : (
+        <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0 text-center">
+          <p className="text-gray-400 text-xs font-semibold mb-2">🎮 Sign in to start posting!</p>
+          <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+            className="px-4 py-2 rounded-xl font-bold text-xs text-white"
+            style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+            Sign In / Register
+          </button>
+        </div>
+      )}
       {/* Feed: posts + listings mixed */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
@@ -241,8 +308,22 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                     <p className="text-gray-700 text-[9px]">{new Date(item.created_date).toLocaleDateString()}</p>
                   </div>
                   <p className="text-gray-200 text-sm leading-relaxed">{item.content}</p>
+                  {item.description && (
+                    <p className="text-gray-400 text-xs mt-1.5 leading-relaxed bg-gray-800/40 rounded-lg p-2 border border-gray-700/50">{item.description}</p>
+                  )}
                   {item.image_urls?.length > 0 && (
-                    <img src={item.image_urls[0]} className="mt-2 rounded-xl max-h-40 object-cover w-full" alt="" />
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      {item.image_urls.map((url, i) => (
+                        <img key={i} src={url} className="w-32 h-24 object-cover rounded-xl border border-gray-700" alt="" />
+                      ))}
+                    </div>
+                  )}
+                  {item.video_urls?.length > 0 && (
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      {item.video_urls.map((url, i) => (
+                        <video key={i} src={url} controls className="w-64 h-36 object-cover rounded-xl border border-gray-700 bg-black" />
+                      ))}
+                    </div>
                   )}
                 </div>
               )
@@ -287,8 +368,22 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                 <p className="text-gray-700 text-[9px]">{new Date(item.created_date).toLocaleDateString()}</p>
               </div>
               <p className="text-gray-200 text-sm leading-relaxed">{item.content}</p>
+              {item.description && (
+                <p className="text-gray-400 text-xs mt-1.5 leading-relaxed bg-gray-800/40 rounded-lg p-2 border border-gray-700/50">{item.description}</p>
+              )}
               {item.image_urls?.length > 0 && (
-                <img src={item.image_urls[0]} className="mt-2 rounded-xl max-h-40 object-cover w-full" alt="" />
+                <div className="flex gap-2 flex-wrap mt-2">
+                  {item.image_urls.map((url, i) => (
+                    <img key={i} src={url} className="w-32 h-24 object-cover rounded-xl border border-gray-700" alt="" />
+                  ))}
+                </div>
+              )}
+              {item.video_urls?.length > 0 && (
+                <div className="flex gap-2 flex-wrap mt-2">
+                  {item.video_urls.map((url, i) => (
+                    <video key={i} src={url} controls className="w-64 h-36 object-cover rounded-xl border border-gray-700 bg-black" />
+                  ))}
+                </div>
               )}
             </div>
           )))
