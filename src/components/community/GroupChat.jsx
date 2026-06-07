@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Send, X, ChevronDown, Trash2 } from "lucide-react";
+import { MessageCircle, Send, X, ChevronDown, Pencil, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 
@@ -10,10 +10,11 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
   const bottomRef = useRef(null);
   const admin = isAdmin(user?.email);
 
-  // Load messages and subscribe to real-time updates
   useEffect(() => {
     if (!franchiseId) return;
     base44.entities.GroupChatMessage.filter({ franchise_id: franchiseId }, "created_date", 60)
@@ -38,7 +39,6 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
     return unsub;
   }, [franchiseId]);
 
-  // Scroll to bottom when opened or new message
   useEffect(() => {
     if (open) {
       setUnread(0);
@@ -66,9 +66,20 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
     setMessages(prev => prev.filter(m => m.id !== msgId));
   };
 
-  const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const handleEditStart = (msg) => {
+    setEditingId(msg.id);
+    setEditText(msg.content);
   };
+
+  const handleEditSave = async (msgId) => {
+    if (!editText.trim()) return;
+    await base44.entities.GroupChatMessage.update(msgId, { content: editText.trim(), is_edited: true });
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: editText.trim(), is_edited: true } : m));
+    setEditingId(null);
+    setEditText("");
+  };
+
+  const formatTime = (date) => new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
     <>
@@ -123,10 +134,12 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
               ) : (
                 messages.map((msg) => {
                   const isMe = msg.author_email === user?.email;
+                  const canEdit = isMe;
                   const canDel = isMe || admin;
+                  const isEditing = editingId === msg.id;
+
                   return (
                     <div key={msg.id} className={`flex gap-2 group ${isMe ? "flex-row-reverse" : ""}`}>
-                      {/* Avatar */}
                       <div className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden bg-gray-800 flex items-center justify-center text-[10px] text-white font-bold mt-0.5">
                         {msg.author_avatar
                           ? <img src={msg.author_avatar} className="w-full h-full object-cover" alt="" />
@@ -137,22 +150,49 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
                         {!isMe && (
                           <span className="text-[9px] text-gray-500 font-semibold mb-0.5 ml-1">{msg.author_username}</span>
                         )}
-                        <div className={`relative px-3 py-2 rounded-2xl text-sm leading-relaxed ${
-                          isMe
-                            ? "text-white rounded-tr-sm"
-                            : "bg-gray-800 text-gray-200 rounded-tl-sm"
-                        }`}
-                          style={isMe ? { background: `linear-gradient(135deg, ${accentColor}, #ec4899)` } : {}}>
-                          {msg.content}
-                          {canDel && (
-                            <button
-                              onClick={() => handleDelete(msg.id)}
-                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                            >
-                              <X className="w-2.5 h-2.5" />
+
+                        {isEditing ? (
+                          <div className="flex gap-1 items-center">
+                            <input
+                              value={editText}
+                              onChange={e => setEditText(e.target.value)}
+                              onKeyDown={e => { if (e.key === "Enter") handleEditSave(msg.id); if (e.key === "Escape") setEditingId(null); }}
+                              className="bg-gray-800 border border-purple-500 rounded-xl px-3 py-1.5 text-white text-sm focus:outline-none"
+                              autoFocus
+                            />
+                            <button onClick={() => handleEditSave(msg.id)} className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
+                              <Check className="w-3 h-3 text-white" />
                             </button>
-                          )}
-                        </div>
+                            <button onClick={() => setEditingId(null)} className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center">
+                              <X className="w-3 h-3 text-white" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={`relative px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                            isMe ? "text-white rounded-tr-sm" : "bg-gray-800 text-gray-200 rounded-tl-sm"
+                          }`}
+                            style={isMe ? { background: `linear-gradient(135deg, ${accentColor}, #ec4899)` } : {}}>
+                            {msg.content}
+                            {msg.is_edited && (
+                              <span className="text-[8px] text-white/50 ml-1">(edited)</span>
+                            )}
+                            {/* Action buttons on hover */}
+                            <div className={`absolute ${isMe ? "-left-14" : "-right-14"} top-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity`}>
+                              {canEdit && (
+                                <button onClick={() => handleEditStart(msg)}
+                                  className="w-5 h-5 rounded-full bg-gray-700 hover:bg-blue-600 flex items-center justify-center transition-colors">
+                                  <Pencil className="w-2.5 h-2.5 text-white" />
+                                </button>
+                              )}
+                              {canDel && (
+                                <button onClick={() => handleDelete(msg.id)}
+                                  className="w-5 h-5 rounded-full bg-gray-700 hover:bg-red-600 flex items-center justify-center transition-colors">
+                                  <X className="w-2.5 h-2.5 text-white" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         <span className="text-[8px] text-gray-700 mt-0.5 mx-1">{formatTime(msg.created_date)}</span>
                       </div>
                     </div>
@@ -190,9 +230,9 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
                     className="w-full py-2.5 rounded-xl text-white font-black text-sm"
                     style={{ background: `linear-gradient(135deg, ${accentColor}, #ec4899)` }}
                   >
-                    Sign in to chat
+                    🎮 Sign in to join the chat!
                   </button>
-                  <p className="text-gray-500 text-[10px] text-center font-semibold">Join the Group to start posting & chatting!</p>
+                  <p className="text-gray-500 text-[10px] text-center font-semibold">Join now to be part of the group chat!</p>
                 </div>
               )}
             </div>

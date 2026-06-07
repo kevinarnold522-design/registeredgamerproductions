@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Hash, Users, Package, MessageSquare } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Hash, Users, Package, MessageSquare, Send, Image, Video, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { Link } from "react-router-dom";
+import CommunityPostCard from "@/components/community/CommunityPostCard";
+import { EffectSelector } from "@/components/community/PostSpecialEffects";
+import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
+import GroupChat from "@/components/community/GroupChat";
 
 export default function CommunitySectionPage() {
   const { user } = useAuth();
@@ -15,6 +20,13 @@ export default function CommunitySectionPage() {
   const [listings, setListings] = useState([]);
   const [community, setCommunity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [newPost, setNewPost] = useState("");
+  const [postDescription, setPostDescription] = useState("");
+  const [postImages, setPostImages] = useState([]);
+  const [postVideos, setPostVideos] = useState([]);
+  const [selectedEffect, setSelectedEffect] = useState("none");
+  const [showEffectSelector, setShowEffectSelector] = useState(false);
+  const [posting, setPosting] = useState(false);
 
   const params = new URLSearchParams(window.location.search);
   const franchiseId = params.get("franchise") || "";
@@ -24,6 +36,8 @@ export default function CommunitySectionPage() {
   const franchise = TOP_FRANCHISES.find(f => f.id === franchiseId) || {
     id: franchiseId, name: franchiseId, emoji: "🎮", color: "#1a1a2e", accent: "#7c3aed", genre: "Gaming"
   };
+  const admin = isAdmin(user?.email);
+  const accentColor = franchise.color !== "#1a1a2e" ? franchise.accent : "#7c3aed";
 
   useEffect(() => {
     if (user?.email) {
@@ -39,11 +53,8 @@ export default function CommunitySectionPage() {
       base44.entities.CommunityPost.filter({ franchise_id: franchiseId }),
       base44.entities.Listing.filter({ community_franchise_id: franchiseId, status: "active" }),
     ]);
-
     const comm = comms[0] || null;
     setCommunity(comm);
-
-    // Filter posts by section_id if set, otherwise show all for this franchise
     const filteredPosts = postsData
       .filter(p => p.status === "active" && (p.section_id === sectionId || p.section_id === sectionName || !p.section_id))
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
@@ -53,7 +64,40 @@ export default function CommunitySectionPage() {
     setLoading(false);
   };
 
-  const accentColor = franchise.color !== "#1a1a2e" ? franchise.accent : "#7c3aed";
+  const handlePostImageUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setPostImages(prev => [...prev, file_url]);
+  };
+
+  const handlePostVideoUpload = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setPostVideos(prev => [...prev, file_url]);
+  };
+
+  const handlePost = async () => {
+    if ((!newPost.trim() && !postDescription.trim()) || !user) return;
+    setPosting(true);
+    const post = await base44.entities.CommunityPost.create({
+      community_id: community?.id || franchiseId,
+      franchise_id: franchiseId,
+      section_id: sectionId,
+      author_email: user.email,
+      author_username: profile?.username || user.full_name || "Gamer",
+      author_avatar: profile?.avatar_url || "",
+      content: newPost,
+      description: postDescription,
+      image_urls: postImages,
+      video_urls: postVideos,
+      likes: 0,
+      status: "active",
+      special_effect: selectedEffect,
+    });
+    setPosts(prev => [post, ...prev]);
+    setNewPost(""); setPostDescription(""); setPostImages([]); setPostVideos([]); setSelectedEffect("none");
+    setPosting(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -78,8 +122,7 @@ export default function CommunitySectionPage() {
               style={{ background: `${accentColor}22`, border: `2px solid ${accentColor}44` }}>
               {community?.logo_url
                 ? <img src={community.logo_url} className="w-full h-full object-cover" alt="" />
-                : franchise.emoji
-              }
+                : franchise.emoji}
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -107,17 +150,102 @@ export default function CommunitySectionPage() {
               <h2 className="text-white font-black text-sm uppercase tracking-wider">Community Posts</h2>
             </div>
 
+            {/* Post Composer */}
+            {user ? (
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-4">
+                <input value={newPost} onChange={e => setNewPost(e.target.value)}
+                  placeholder={`What's on your mind in #${sectionName}?`}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2" />
+                <textarea value={postDescription} onChange={e => setPostDescription(e.target.value)}
+                  placeholder="Add description (optional)..."
+                  rows={2}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2 resize-none" />
+                {(postImages.length > 0 || postVideos.length > 0) && (
+                  <div className="flex gap-2 flex-wrap mb-2">
+                    {postImages.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" alt="" />
+                        <button onClick={() => setPostImages(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white text-[8px] flex items-center justify-center">×</button>
+                      </div>
+                    ))}
+                    {postVideos.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <video src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" muted />
+                        <button onClick={() => setPostVideos(prev => prev.filter((_, idx) => idx !== i))}
+                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 text-white text-[8px] flex items-center justify-center">×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-xs font-semibold">
+                    <Image className="w-4 h-4" /> Images
+                    <input type="file" accept="image/*" onChange={handlePostImageUpload} className="hidden" multiple />
+                  </label>
+                  <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-xs font-semibold">
+                    <Video className="w-4 h-4" /> Videos
+                    <input type="file" accept="video/*" onChange={handlePostVideoUpload} className="hidden" multiple />
+                  </label>
+                  {/* Effect Selector */}
+                  <div className="relative">
+                    <button onClick={() => setShowEffectSelector(v => !v)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer text-xs font-semibold transition-all ${selectedEffect !== "none" ? "bg-purple-900/40 border-purple-500/60 text-purple-300" : "bg-gray-800 border-gray-700 text-gray-400 hover:text-purple-400"}`}>
+                      <Sparkles className="w-4 h-4" /> {selectedEffect !== "none" ? selectedEffect.replace("_", " ") : "Effects"}
+                    </button>
+                    {showEffectSelector && (
+                      <EffectSelector selectedEffect={selectedEffect} onSelect={(e) => { setSelectedEffect(e); setShowEffectSelector(false); }} onClose={() => setShowEffectSelector(false)} />
+                    )}
+                  </div>
+                  <button onClick={handlePost} disabled={(!newPost.trim() && !postDescription.trim()) || posting}
+                    className="ml-auto px-4 py-1.5 rounded-xl font-bold text-sm text-white flex items-center gap-2 disabled:opacity-50"
+                    style={{ background: accentColor }}>
+                    <Send className="w-4 h-4" /> Post
+                  </button>
+                </div>
+
+                {/* Live preview */}
+                {selectedEffect !== "none" && (newPost.trim() || postDescription.trim() || postImages.length > 0) && (
+                  <div className="mt-3 pt-3 border-t border-gray-700">
+                    <p className="text-purple-400 text-[10px] font-bold mb-2 flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" /> Live Preview — {selectedEffect.replace("_", " ")} effect
+                    </p>
+                    <div className="rounded-xl border border-purple-700/40 overflow-hidden">
+                      <SpecialEffectsRenderer effect={selectedEffect}>
+                        <div className="p-3 bg-gray-950">
+                          {newPost && <p className="text-gray-100 text-sm">{newPost}</p>}
+                          {postDescription && <p className="text-gray-400 text-xs mt-1">{postDescription}</p>}
+                          {postImages.length > 0 && (
+                            <div className="flex gap-1.5 mt-2 flex-wrap">
+                              {postImages.slice(0, 3).map((url, i) => <img key={i} src={url} className="w-20 h-16 object-cover rounded-lg" alt="" />)}
+                            </div>
+                          )}
+                        </div>
+                      </SpecialEffectsRenderer>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-4 text-center">
+                <p className="text-gray-400 text-sm font-semibold mb-2">🎮 Sign in to post in this section!</p>
+                <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                  className="px-6 py-2.5 rounded-xl font-black text-sm text-white"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  Sign In / Register
+                </button>
+              </div>
+            )}
+
             {loading ? (
               <div className="space-y-3">
-                {[1,2,3].map(i => (
-                  <div key={i} className="h-24 rounded-2xl bg-gray-900 animate-pulse" />
-                ))}
+                {[1,2,3].map(i => <div key={i} className="h-24 rounded-2xl bg-gray-900 animate-pulse" />)}
               </div>
             ) : posts.length === 0 ? (
               <div className="text-center py-16 rounded-2xl bg-gray-900 border border-gray-800">
                 <p className="text-4xl mb-3">{franchise.emoji}</p>
                 <p className="text-gray-400 font-semibold">No posts yet in this section</p>
-                <p className="text-gray-600 text-sm mt-1">Be the first to post! (Tier 1 required)</p>
+                <p className="text-gray-600 text-sm mt-1">Be the first to post!</p>
                 <Link to="/gaming-community"
                   className="inline-block mt-4 px-5 py-2.5 rounded-xl text-sm font-black text-white"
                   style={{ background: `linear-gradient(135deg, #7c3aed, #ec4899)` }}>
@@ -125,41 +253,28 @@ export default function CommunitySectionPage() {
                 </Link>
               </div>
             ) : (
-              posts.map(post => (
-                <motion.div
-                  key={post.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gray-900 rounded-2xl border border-gray-800 p-4 hover:border-gray-700 transition-colors"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
-                      style={{ background: `${accentColor}22`, border: `1px solid ${accentColor}44` }}>
-                      {post.author_avatar
-                        ? <img src={post.author_avatar} className="w-full h-full object-cover" alt="" />
-                        : <div className="w-full h-full flex items-center justify-center text-sm">{franchise.emoji}</div>
-                      }
-                    </div>
-                    <div>
-                      <p className="text-white font-bold text-sm">{post.author_username || "Gamer"}</p>
-                      <p className="text-gray-600 text-[10px]">
-                        {new Date(post.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
-                  {post.image_urls?.length > 0 && (
-                    <div className="mt-3 grid grid-cols-2 gap-2">
-                      {post.image_urls.slice(0, 4).map((img, i) => (
-                        <img key={i} src={img} className="rounded-xl w-full h-28 object-cover" alt="" />
-                      ))}
-                    </div>
-                  )}
-                  <div className="mt-3 flex items-center gap-3 text-gray-600 text-xs">
-                    <span>❤️ {post.likes || 0}</span>
-                  </div>
-                </motion.div>
-              ))
+              <div className="space-y-4">
+                {posts.map(post => (
+                  <CommunityPostCard
+                    key={post.id}
+                    post={post}
+                    user={user}
+                    profile={profile}
+                    isTier1={admin || true}
+                    canManage={admin}
+                    canDelete={admin}
+                    accentColor={accentColor}
+                    onFlag={async (p) => {
+                      await base44.entities.CommunityPost.update(p.id, { status: "pending_review" });
+                      setPosts(prev => prev.filter(x => x.id !== p.id));
+                    }}
+                    onRemove={async (p) => {
+                      await base44.entities.CommunityPost.update(p.id, { status: "removed" });
+                      setPosts(prev => prev.filter(x => x.id !== p.id));
+                    }}
+                  />
+                ))}
+              </div>
             )}
           </div>
 
@@ -171,11 +286,7 @@ export default function CommunitySectionPage() {
             </div>
 
             {loading ? (
-              <div className="space-y-3">
-                {[1,2,3].map(i => (
-                  <div key={i} className="h-20 rounded-2xl bg-gray-900 animate-pulse" />
-                ))}
-              </div>
+              <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-20 rounded-2xl bg-gray-900 animate-pulse" />)}</div>
             ) : listings.length === 0 ? (
               <div className="text-center py-8 rounded-2xl bg-gray-900 border border-gray-800">
                 <Package className="w-8 h-8 text-gray-700 mx-auto mb-2" />
@@ -189,16 +300,12 @@ export default function CommunitySectionPage() {
             ) : (
               <div className="space-y-3">
                 {listings.map(listing => (
-                  <Link
-                    key={listing.id}
-                    to={`/listing?id=${listing.id}`}
-                    className="flex gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 transition-all group"
-                  >
+                  <Link key={listing.id} to={`/listing?id=${listing.id}`}
+                    className="flex gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 transition-all group">
                     <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-800">
                       {listing.images?.[0]
                         ? <img src={listing.images[0]} className="w-full h-full object-cover" alt="" />
-                        : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>
-                      }
+                        : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold text-xs line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</p>
@@ -235,6 +342,15 @@ export default function CommunitySectionPage() {
           </div>
         </div>
       </div>
+
+      {/* Group Chat */}
+      <GroupChat
+        franchiseId={franchiseId}
+        communityId={community?.id}
+        user={user}
+        profile={profile}
+        accentColor={accentColor}
+      />
     </div>
   );
 }

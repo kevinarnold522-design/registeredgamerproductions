@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2, Image, Video, Trash2 } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2, Image, Video, Trash2, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -11,6 +11,10 @@ import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import RecommendModal from "@/components/shared/RecommendModal";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import AnimatedController from "@/components/shared/AnimatedController";
+import CommunityPostCard from "@/components/community/CommunityPostCard";
+import { EffectSelector } from "@/components/community/PostSpecialEffects";
+import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
+import GroupChat from "@/components/community/GroupChat";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all" };
 
@@ -27,6 +31,9 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [feedFilters, setFeedFilters] = useState(DEFAULT_FEED_FILTERS);
+  const [selectedEffect, setSelectedEffect] = useState("none");
+  const [showEffectSelector, setShowEffectSelector] = useState(false);
+  const admin = isAdmin(user?.email);
 
   useEffect(() => {
     const load = async () => {
@@ -62,29 +69,26 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
       video_urls: postVideos,
       likes: 0,
       status: "active",
+      special_effect: selectedEffect,
     });
     setPosts(prev => [post, ...prev]);
-    // Cross-post to modding community if selected
     if (crossPostModding) {
       base44.entities.CommunityPost.create({
-        community_id: "modding",
-        franchise_id: "modding",
+        community_id: "modding", franchise_id: "modding",
         author_email: user.email,
         author_username: profile?.username || user.full_name || "Gamer",
         author_avatar: profile?.avatar_url || "",
-        content: newPost,
-        description: postDescription,
-        image_urls: postImages,
-        video_urls: postVideos,
-        likes: 0,
-        status: "active",
-        section_id: franchise.id,
+        content: newPost, description: postDescription,
+        image_urls: postImages, video_urls: postVideos,
+        likes: 0, status: "active", section_id: franchise.id,
+        special_effect: selectedEffect,
       }).catch(() => {});
     }
     setNewPost("");
     setPostDescription("");
     setPostImages([]);
     setPostVideos([]);
+    setSelectedEffect("none");
     setPosting(false);
   };
 
@@ -230,12 +234,43 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
               <Video className="w-3.5 h-3.5" /> Videos
               <input type="file" accept="video/*" onChange={handlePostVideoUpload} className="hidden" multiple />
             </label>
+            {/* Effect selector */}
+            <div className="relative">
+              <button onClick={() => setShowEffectSelector(v => !v)}
+                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border cursor-pointer text-[10px] font-semibold transition-all ${selectedEffect !== "none" ? "bg-purple-900/40 border-purple-500/60 text-purple-300" : "bg-gray-800 border-gray-700 text-gray-400 hover:text-purple-400"}`}>
+                <Sparkles className="w-3.5 h-3.5" /> {selectedEffect !== "none" ? selectedEffect.replace("_", " ") : "FX"}
+              </button>
+              {showEffectSelector && (
+                <EffectSelector selectedEffect={selectedEffect} onSelect={(e) => { setSelectedEffect(e); setShowEffectSelector(false); }} onClose={() => setShowEffectSelector(false)} />
+              )}
+            </div>
             <button onClick={handlePost} disabled={(!newPost.trim() && !postDescription.trim()) || posting}
               className="ml-auto px-3 py-1.5 rounded-xl font-bold text-[10px] text-white flex items-center gap-1 disabled:opacity-50"
               style={{ background: franchise.accent }}>
               <Send className="w-3.5 h-3.5" /> Post
             </button>
           </div>
+
+          {/* Live preview */}
+          {selectedEffect !== "none" && (newPost.trim() || postDescription.trim() || postImages.length > 0) && (
+            <div className="mb-2 rounded-xl border border-purple-700/40 overflow-hidden text-xs">
+              <p className="text-purple-400 text-[9px] font-bold px-2 py-1 bg-purple-900/20 flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5" /> Preview — {selectedEffect.replace("_", " ")} effect
+              </p>
+              <SpecialEffectsRenderer effect={selectedEffect}>
+                <div className="p-2 bg-gray-900">
+                  {newPost && <p className="text-gray-100 text-xs">{newPost}</p>}
+                  {postDescription && <p className="text-gray-400 text-[10px] mt-1">{postDescription}</p>}
+                  {postImages.length > 0 && (
+                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                      {postImages.slice(0, 2).map((url, i) => <img key={i} src={url} className="w-16 h-12 object-cover rounded-lg" alt="" />)}
+                    </div>
+                  )}
+                </div>
+              </SpecialEffectsRenderer>
+            </div>
+          )}
+
           <label className="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" checked={crossPostModding} onChange={e => setCrossPostModding(e.target.checked)}
               className="w-3 h-3 rounded accent-orange-500" />
@@ -253,7 +288,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         </div>
       )}
       {/* Feed: posts + listings mixed */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-2 space-y-2">
         {loading ? (
           <div className="p-6 text-center text-gray-600 text-sm">Loading...</div>
         ) : merged.length === 0 ? (
@@ -261,31 +296,30 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
             <p className="text-3xl mb-2">{franchise.emoji}</p>
             <p className="text-gray-600 text-sm">No posts yet. Be the first!</p>
           </div>
-        ) : !user ? (
+        ) : (
           <>
-            <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-xl mx-4 mt-4 text-center">
-              <p className="text-gray-400 text-sm mb-3 font-semibold">🎮 Become a member to start posting and join the group chat!</p>
-              <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
-                className="px-6 py-2.5 rounded-xl font-black text-sm text-white"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                Sign In / Register
-              </button>
-            </div>
+            {!user && (
+              <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-xl text-center mb-2">
+                <p className="text-gray-400 text-sm mb-3 font-semibold">🎮 Join now to post and chat!</p>
+                <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                  className="px-6 py-2.5 rounded-xl font-black text-sm text-white"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  Sign In / Register
+                </button>
+              </div>
+            )}
             {merged.map(({ type, item }) => (
               type === "listing" ? (
                 <a key={item.id} href={`/listing?id=${item.id}`}
-                  onClick={async (e) => {
+                  onClick={async () => {
                     try {
                       const fresh = await base44.entities.Listing.get(item.id);
-                      const newViews = (fresh.views || 0) + 1;
-                      await base44.entities.Listing.update(item.id, { views: newViews });
+                      await base44.entities.Listing.update(item.id, { views: (fresh.views || 0) + 1 });
                     } catch {}
                   }}
-                  className="flex gap-3 px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
+                  className="flex gap-3 px-3 py-2.5 rounded-xl border border-gray-800 hover:bg-gray-800/30 transition-colors group bg-gray-900/60">
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
-                    {item.images?.[0]
-                      ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
-                      : <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>}
+                    {item.images?.[0] ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
@@ -297,96 +331,27 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                   </div>
                 </a>
               ) : (
-                <div key={item.id} className="px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
-                      {item.author_avatar
-                        ? <img src={item.author_avatar} className="w-full h-full object-cover" alt="" />
-                        : <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{(item.author_username || "G")[0]}</div>}
-                    </div>
-                    <p className="text-gray-400 text-[10px] font-bold">{item.author_username}</p>
-                    <p className="text-gray-700 text-[9px]">{new Date(item.created_date).toLocaleDateString()}</p>
-                  </div>
-                  <p className="text-gray-200 text-sm leading-relaxed">{item.content}</p>
-                  {item.description && (
-                    <p className="text-gray-400 text-xs mt-1.5 leading-relaxed bg-gray-800/40 rounded-lg p-2 border border-gray-700/50">{item.description}</p>
-                  )}
-                  {item.image_urls?.length > 0 && (
-                    <div className="flex gap-2 flex-wrap mt-2">
-                      {item.image_urls.map((url, i) => (
-                        <img key={i} src={url} className="w-32 h-24 object-cover rounded-xl border border-gray-700" alt="" />
-                      ))}
-                    </div>
-                  )}
-                  {item.video_urls?.length > 0 && (
-                    <div className="flex gap-2 flex-wrap mt-2">
-                      {item.video_urls.map((url, i) => (
-                        <video key={i} src={url} controls className="w-64 h-36 object-cover rounded-xl border border-gray-700 bg-black" />
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <CommunityPostCard
+                  key={item.id}
+                  post={item}
+                  user={user}
+                  profile={profile}
+                  isTier1={admin || true}
+                  canManage={admin}
+                  canDelete={admin}
+                  accentColor={franchise.accent}
+                  onFlag={async (p) => {
+                    await base44.entities.CommunityPost.update(p.id, { status: "pending_review" });
+                    setPosts(prev => prev.filter(x => x.id !== p.id));
+                  }}
+                  onRemove={async (p) => {
+                    await base44.entities.CommunityPost.update(p.id, { status: "removed" });
+                    setPosts(prev => prev.filter(x => x.id !== p.id));
+                  }}
+                />
               )
             ))}
           </>
-        ) : (
-          merged.map(({ type, item }) => (
-            type === "listing" ? (
-              <a key={item.id} href={`/listing?id=${item.id}`}
-              onClick={async (e) => {
-                // Increment view count on click
-                try {
-                  const fresh = await base44.entities.Listing.get(item.id);
-                  const newViews = (fresh.views || 0) + 1;
-                  await base44.entities.Listing.update(item.id, { views: newViews });
-                } catch {}
-              }}
-              className="flex gap-3 px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
-                {item.images?.[0]
-                  ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
-                <p className="text-gray-500 text-[9px]">📦 by @{item.seller_username}</p>
-                <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
-                <div className="mt-1.5">
-                  <ListingEngagementBar listing={item} user={user} profile={profile} compact />
-                </div>
-              </div>
-            </a>
-          ) : (
-            <div key={item.id} className="px-4 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors">
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="w-6 h-6 rounded-full bg-gray-700 overflow-hidden flex-shrink-0">
-                  {item.author_avatar
-                    ? <img src={item.author_avatar} className="w-full h-full object-cover" alt="" />
-                    : <div className="w-full h-full flex items-center justify-center text-[9px] text-gray-400">{(item.author_username || "G")[0]}</div>}
-                </div>
-                <p className="text-gray-400 text-[10px] font-bold">{item.author_username}</p>
-                <p className="text-gray-700 text-[9px]">{new Date(item.created_date).toLocaleDateString()}</p>
-              </div>
-              <p className="text-gray-200 text-sm leading-relaxed">{item.content}</p>
-              {item.description && (
-                <p className="text-gray-400 text-xs mt-1.5 leading-relaxed bg-gray-800/40 rounded-lg p-2 border border-gray-700/50">{item.description}</p>
-              )}
-              {item.image_urls?.length > 0 && (
-                <div className="flex gap-2 flex-wrap mt-2">
-                  {item.image_urls.map((url, i) => (
-                    <img key={i} src={url} className="w-32 h-24 object-cover rounded-xl border border-gray-700" alt="" />
-                  ))}
-                </div>
-              )}
-              {item.video_urls?.length > 0 && (
-                <div className="flex gap-2 flex-wrap mt-2">
-                  {item.video_urls.map((url, i) => (
-                    <video key={i} src={url} controls className="w-64 h-36 object-cover rounded-xl border border-gray-700 bg-black" />
-                  ))}
-                </div>
-              )}
-            </div>
-          )))
         )}
       </div>
     </motion.div>
@@ -1001,11 +966,21 @@ export default function GamingCommunity() {
               className="overflow-hidden mb-5">
               <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
-                  <div className="flex gap-2">
-                    <button onClick={selectAllCommunities} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
-                  </div>
-                </div>
+                   <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
+                   <div className="flex gap-2">
+                     <button onClick={selectAllCommunities} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors flex items-center gap-1">
+                       <CheckSquare className="w-3 h-3" /> Select All
+                     </button>
+                     <button onClick={() => {
+                       const allIds = new Set(allFranchises.map(f => f.id));
+                       const emptySet = new Set();
+                       setVisibleCommunities(emptySet);
+                       localStorage.setItem("gc_visible_ids", JSON.stringify([]));
+                     }} className="text-xs text-gray-500 hover:text-red-400 font-semibold transition-colors flex items-center gap-1">
+                       <Square className="w-3 h-3" /> Unselect All
+                     </button>
+                   </div>
+                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-60 overflow-y-auto">
                   {allFranchises.map(f => (
                     <label key={f.id} className="flex items-center gap-2 cursor-pointer group/lbl">
@@ -1054,12 +1029,14 @@ export default function GamingCommunity() {
             )}
             {filtered.filter(f => !hiddenIds.has(f.id)).map((franchise) => (
               <div key={franchise.id} className="relative group/hide">
-                <button
-                  onClick={e => { e.stopPropagation(); toggleHide(franchise.id); }}
-                  className="absolute top-1 left-1 z-20 w-5 h-5 rounded bg-black/60 text-gray-500 hover:text-red-400 hover:bg-black/80 transition-all opacity-0 group-hover/hide:opacity-100 flex items-center justify-center"
-                  title="Hide this community">
-                  <EyeOff className="w-3 h-3" />
-                </button>
+                {user && admin && (
+                  <button
+                    onClick={e => { e.stopPropagation(); toggleHide(franchise.id); }}
+                    className="absolute top-1 left-1 z-20 w-5 h-5 rounded bg-black/60 text-gray-500 hover:text-red-400 hover:bg-black/80 transition-all opacity-0 group-hover/hide:opacity-100 flex items-center justify-center"
+                    title="Hide this community">
+                    <EyeOff className="w-3 h-3" />
+                  </button>
+                )}
                 <CommunityCard
                   franchise={franchise}
                   memberCount={memberCounts[franchise.id] || 0}
@@ -1119,6 +1096,17 @@ export default function GamingCommunity() {
           user={user}
           profile={profile}
           onClose={() => setShowRecommend(false)}
+        />
+      )}
+
+      {/* Group Chat for active franchise */}
+      {activeFranchise && (
+        <GroupChat
+          franchiseId={activeFranchise.id}
+          communityId={communities[activeFranchise.id]?.id}
+          user={user}
+          profile={profile}
+          accentColor={activeFranchise.accent}
         />
       )}
     </div>
