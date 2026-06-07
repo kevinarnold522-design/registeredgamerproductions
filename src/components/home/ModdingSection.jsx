@@ -30,7 +30,7 @@ export default function ModdingSection() {
   const [profile, setProfile] = useState(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [showGroupFilter, setShowGroupFilter] = useState(false);
+  const [showGroupFilter, setShowGroupFilter] = useState(true);
   const [visibleGroups, setVisibleGroups] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("modding_visible_groups") || "null");
@@ -149,11 +149,7 @@ export default function ModdingSection() {
             <p className="text-gray-500 text-sm mt-1">Premium and free mods by our community</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <button onClick={() => setShowGroupFilter(v => !v)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${showGroupFilter ? "border-cyan-500/60 bg-cyan-900/20 text-cyan-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
-              <Filter className="w-4 h-4" />
-              Filter Groups {visibleGroups && <span className="w-2 h-2 rounded-full bg-cyan-400 ml-1" />}
-            </button>
+            
             {hiddenIds.size > 0 && (
               <button onClick={() => setShowHiddenPanel(v => !v)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border border-gray-700 text-gray-400 hover:text-white transition-all">
@@ -175,34 +171,27 @@ export default function ModdingSection() {
           </div>
         </div>
 
-        {/* Community Group Filter Panel */}
-        <AnimatePresence>
-          {showGroupFilter && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden mb-4">
-              <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
-                  <div className="flex gap-2">
-                    <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-60 overflow-y-auto">
-                  {MODDING_SUBCATEGORIES.map(g => (
-                    <label key={g} className="flex items-center gap-2 cursor-pointer group/lbl">
-                      <button type="button" onClick={() => toggleGroup(g)} className="flex-shrink-0">
-                        {isVisible(g)
-                          ? <CheckSquare className="w-4 h-4 text-cyan-400" />
-                          : <Square className="w-4 h-4 text-gray-600 group-hover/lbl:text-gray-400" />}
-                      </button>
-                      <span className={`text-xs font-semibold transition-colors truncate ${isVisible(g) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{g}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Community Group Filter Panel — permanently visible */}
+        <div className="mb-4">
+          <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
+              <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-60 overflow-y-auto">
+              {MODDING_SUBCATEGORIES.map(g => (
+                <label key={g} className="flex items-center gap-2 cursor-pointer group/lbl">
+                  <button type="button" onClick={() => toggleGroup(g)} className="flex-shrink-0">
+                    {isVisible(g)
+                      ? <CheckSquare className="w-4 h-4 text-cyan-400" />
+                      : <Square className="w-4 h-4 text-gray-600 group-hover/lbl:text-gray-400" />}
+                  </button>
+                  <span className={`text-xs font-semibold transition-colors truncate ${isVisible(g) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{g}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* Hidden Panel */}
         <AnimatePresence>

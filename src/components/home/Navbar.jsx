@@ -96,12 +96,12 @@ export default function Navbar() {
               <motion.div
                 onClick={handleControllerClick}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
-                animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
-                transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+                animate={{ rotate: [0, -2, 2, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
                 style={{
                   boxShadow: controllerCycling
-                    ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6)"
-                    : "0 0 10px rgba(168,85,247,0.4)",
+                    ? "0 0 16px rgba(168,85,247,0.5)"
+                    : "0 0 6px rgba(168,85,247,0.25)",
                   transition: "box-shadow 0.4s ease",
                 }}
               >
