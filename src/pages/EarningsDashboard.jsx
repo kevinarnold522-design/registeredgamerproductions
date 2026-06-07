@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, TrendingUp, ShoppingBag, Star, Download, Eye, BarChart2, Package, Clock, ArrowUpRight } from "lucide-react";
+import { DollarSign, TrendingUp, ShoppingBag, Star, Download, Eye, BarChart2, Package, Clock, ArrowUpRight, Gift, Flame, Target, Wallet } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -31,6 +31,7 @@ export default function EarningsDashboard() {
   const [tier1Subs, setTier1Subs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
+  const [dailyData, setDailyData] = useState({ streak: 0, totalDays: 0, lastClaim: null });
 
   useEffect(() => {
     const init = async () => {
@@ -50,6 +51,15 @@ export default function EarningsDashboard() {
       setOrders(ordersData);
       setListings(listingsData);
       setTier1Subs(subs);
+
+      // Load daily reward data from localStorage
+      const rewardData = JSON.parse(localStorage.getItem(`gp_rewards_${me.email}`) || "{}");
+      setDailyData({
+        streak: rewardData.totalStreak || 0,
+        totalDays: (rewardData.claimedDays || []).length,
+        lastClaim: rewardData.lastClaim || null,
+      });
+
       setLoading(false);
     };
     init();
@@ -109,11 +119,11 @@ export default function EarningsDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-          {["overview", "orders", "listings", ...(admin ? ["subscriptions"] : [])].map(t => (
+          {["overview", "daily rewards", "orders", "listings", ...(admin ? ["subscriptions"] : [])].map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-2 rounded-xl text-sm font-bold capitalize whitespace-nowrap transition-all ${tab === t ? "text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}
               style={tab === t ? { background: "linear-gradient(135deg, #22c55e, #16a34a)" } : {}}>
-              {t}
+              {t === "daily rewards" ? "🎁 Daily Rewards" : t}
             </button>
           ))}
         </div>
@@ -166,6 +176,158 @@ export default function EarningsDashboard() {
             )}
           </div>
         )}
+
+        {/* ── DAILY REWARDS EARNINGS ── */}
+        {tab === "daily rewards" && (() => {
+          const DAILY_RATE = 0.01; // $0.01 per day
+          const TARGET = 1.00;    // $1.00 goal
+          const earned = parseFloat((dailyData.totalDays * DAILY_RATE).toFixed(2));
+          const progress = Math.min(100, (earned / TARGET) * 100);
+          const daysToGoal = Math.max(0, Math.ceil((TARGET - earned) / DAILY_RATE));
+          const canClaimToday = !dailyData.lastClaim || new Date(dailyData.lastClaim).toDateString() !== new Date().toDateString();
+          const projectedDate = new Date();
+          projectedDate.setDate(projectedDate.getDate() + daysToGoal);
+
+          return (
+            <div className="space-y-5">
+              {/* Hero card */}
+              <div className="rounded-3xl p-6 border border-green-500/30 relative overflow-hidden"
+                style={{ background: "linear-gradient(135deg, rgba(34,197,94,0.12), rgba(16,163,74,0.06))" }}>
+                <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10"
+                  style={{ background: "radial-gradient(circle, #22c55e, transparent)", transform: "translate(30%, -30%)" }} />
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
+                      <Wallet className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-white font-black text-xl">$1.00 Daily Reward Goal</h2>
+                      <p className="text-gray-400 text-sm">Earn $0.01 every day you log in and claim your reward</p>
+                    </div>
+                  </div>
+
+                  {/* Big progress number */}
+                  <div className="flex items-end gap-3 mb-4">
+                    <span className="text-green-400 font-black" style={{ fontSize: "3.5rem", lineHeight: 1 }}>
+                      ${earned.toFixed(2)}
+                    </span>
+                    <span className="text-gray-500 text-xl font-bold mb-2">/ $1.00</span>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full h-4 bg-gray-800 rounded-full mb-3 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full rounded-full relative overflow-hidden"
+                      style={{ background: "linear-gradient(90deg, #22c55e, #16a34a, #86efac)" }}
+                    >
+                      <div className="absolute inset-0 opacity-40"
+                        style={{ background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)", animation: "shimmer 2s infinite" }} />
+                    </motion.div>
+                  </div>
+                  <style>{`@keyframes shimmer { 0%,100%{transform:translateX(-100%)} 50%{transform:translateX(100%)} }`}</style>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">{progress.toFixed(1)}% complete</span>
+                    <span className="text-green-300 font-bold">{daysToGoal > 0 ? `${daysToGoal} days to go` : "🎉 Goal Reached!"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
+                  <Flame className="w-6 h-6 text-orange-400 mx-auto mb-2" />
+                  <p className="text-white font-black text-2xl">{dailyData.streak}</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide">Day Streak</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
+                  <Gift className="w-6 h-6 text-purple-400 mx-auto mb-2" />
+                  <p className="text-white font-black text-2xl">{dailyData.totalDays}</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide">Days Claimed</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
+                  <DollarSign className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                  <p className="text-white font-black text-2xl">${earned.toFixed(2)}</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide">Earned (USD)</p>
+                </div>
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
+                  <Target className="w-6 h-6 text-cyan-400 mx-auto mb-2" />
+                  <p className="text-white font-black text-2xl">{daysToGoal}</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide">Days to $1</p>
+                </div>
+              </div>
+
+              {/* Milestone timeline */}
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                <h3 className="text-white font-black mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-400" /> Earnings Milestones
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { days: 10, amount: 0.10, label: "First Dime" },
+                    { days: 25, amount: 0.25, label: "Quarter Dollar" },
+                    { days: 50, amount: 0.50, label: "Half Dollar" },
+                    { days: 75, amount: 0.75, label: "Three Quarters" },
+                    { days: 100, amount: 1.00, label: "🎉 Full Dollar Goal!" },
+                  ].map(m => {
+                    const reached = dailyData.totalDays >= m.days;
+                    const isCurrent = !reached && dailyData.totalDays < m.days;
+                    return (
+                      <div key={m.days} className={`flex items-center gap-4 p-3 rounded-xl transition-all ${reached ? "bg-green-900/20 border border-green-700/40" : "bg-gray-800/50 border border-gray-700/30"}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${reached ? "bg-green-500" : "bg-gray-700"}`}>
+                          {reached ? <span className="text-white text-sm">✓</span> : <span className="text-gray-500 text-xs font-bold">{m.days}</span>}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-bold text-sm ${reached ? "text-green-300" : "text-gray-400"}`}>{m.label}</p>
+                          <p className="text-gray-600 text-xs">{m.days} days → ${m.amount.toFixed(2)}</p>
+                        </div>
+                        <span className={`font-black text-sm ${reached ? "text-green-400" : "text-gray-600"}`}>${m.amount.toFixed(2)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* CTA */}
+              {canClaimToday && (
+                <div className="bg-purple-900/20 border border-purple-600/40 rounded-2xl p-5 text-center">
+                  <Gift className="w-10 h-10 text-purple-400 mx-auto mb-3" />
+                  <p className="text-white font-black text-lg mb-1">You haven't claimed today's reward yet!</p>
+                  <p className="text-gray-400 text-sm mb-4">Claim now to earn your daily $0.01 and keep your streak alive.</p>
+                  <button
+                    onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    className="px-8 py-3.5 rounded-xl font-black text-white text-base"
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)", boxShadow: "0 0 24px rgba(124,58,237,0.5)" }}
+                  >
+                    🎁 Claim Today's +$0.01
+                  </button>
+                  <p className="text-gray-600 text-xs mt-3">Use the Rewards button (top right) to claim your daily reward</p>
+                </div>
+              )}
+
+              {!canClaimToday && (
+                <div className="bg-green-900/20 border border-green-700/40 rounded-2xl p-4 text-center">
+                  <p className="text-green-400 font-black">✅ Today's $0.01 claimed! Come back tomorrow.</p>
+                  {daysToGoal > 0 && (
+                    <p className="text-gray-500 text-sm mt-1">Projected $1.00 goal: {projectedDate.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" })}</p>
+                  )}
+                </div>
+              )}
+
+              {earned >= 1.00 && (
+                <div className="rounded-2xl p-6 text-center border-2 border-yellow-500/60"
+                  style={{ background: "linear-gradient(135deg, rgba(234,179,8,0.15), rgba(239,68,68,0.1))", boxShadow: "0 0 40px rgba(234,179,8,0.3)" }}>
+                  <p className="text-5xl mb-3">🎉</p>
+                  <p className="text-yellow-400 font-black text-2xl mb-1">$1.00 Goal Reached!</p>
+                  <p className="text-gray-300 text-sm">Your payout request is being processed. Make sure your PayPal email is set in your profile settings.</p>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── ORDERS ── */}
         {tab === "orders" && (
