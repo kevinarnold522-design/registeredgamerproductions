@@ -66,7 +66,24 @@ export default function AuthNavbar({ user, profile }) {
     try { return localStorage.getItem("sidebar_collapsed") === "true"; } catch { return false; }
   });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [controllerColorIdx, setControllerColorIdx] = useState(0);
+  const [controllerAnimating, setControllerAnimating] = useState(false);
   const location = useLocation();
+
+  const colorCycles = [
+    "from-purple-600 to-pink-600",
+    "from-blue-500 to-cyan-500",
+    "from-green-500 to-emerald-500",
+    "from-yellow-500 to-orange-500",
+    "from-red-500 to-pink-500",
+    "from-indigo-500 to-violet-500",
+  ];
+
+  const handleControllerClick = () => {
+    setControllerAnimating(true);
+    setControllerColorIdx(i => (i + 1) % colorCycles.length);
+    setTimeout(() => setControllerAnimating(false), 600);
+  };
 
   const admin = isAdmin(user?.email);
   const accountType = profile?.account_type || "regular";
@@ -170,13 +187,22 @@ export default function AuthNavbar({ user, profile }) {
           )}
 
           <div className={`flex items-center gap-2 mt-3 ${collapsed && !isMobile ? "flex-col" : ""}`}>
-            <Link to="/" className="flex items-center gap-1.5 min-w-0">
+            <Link to="/" className="flex items-center gap-1.5 min-w-0" onClick={(e) => { e.preventDefault(); handleControllerClick(); window.location.href = "/"; }}>
               <motion.div
-                className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0"
-                animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
-                transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 4 }}
+                className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorCycles[controllerColorIdx]} cursor-pointer`}
+                animate={{
+                  rotate: [0, -8, 8, -6, 6, 0],
+                  scale: controllerAnimating ? [1, 1.15, 1] : [1, 1.05, 1],
+                }}
+                transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+                style={{
+                  boxShadow: controllerAnimating
+                    ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6)"
+                    : "0 0 10px rgba(168,85,247,0.4)",
+                  transition: "box-shadow 0.4s ease",
+                }}
               >
-                <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
+                <Gamepad2 className={`w-4 h-4 text-white ${controllerAnimating ? "controller-color-cycle" : ""}`} />
               </motion.div>
               {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
             </Link>
@@ -270,10 +296,14 @@ export default function AuthNavbar({ user, profile }) {
         <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />
         </button>
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center">
-            <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
-          </div>
+        <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1) % 6); window.location.href = "/"; }}>
+          <motion.div
+            className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]}`}
+            animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
+            transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
+          >
+            <Gamepad2 className="w-4 h-4 text-white" />
+          </motion.div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
         <div className="ml-auto flex items-center gap-2">

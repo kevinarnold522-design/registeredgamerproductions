@@ -66,7 +66,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         author_email: user.email,
         author_username: profile?.username || user.full_name || "Gamer",
         author_avatar: profile?.avatar_url || "",
-        content: `[From ${franchise.name}] ${newPost}`,
+        content: newPost,
         likes: 0,
         status: "active",
       }).catch(() => {});
