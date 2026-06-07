@@ -111,6 +111,17 @@ export default function DownloadAdGate({ onComplete, isGuest = false }) {
         </button>
       )}
 
+      {/* Guest: sign-in nudge for close button */}
+      {isGuest && canSkip && (
+        <div className="absolute top-4 right-4 z-10">
+          <a href="/register"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black text-white border border-purple-600/60"
+            style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+            🔒 Sign in to close ads
+          </a>
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         <motion.div key={adIndex}
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
@@ -152,11 +163,22 @@ export default function DownloadAdGate({ onComplete, isGuest = false }) {
 
           <div className="mt-2">
             {canSkip ? (
-              <button onClick={handleNext}
-                className="w-full py-3 rounded-xl font-black text-white text-sm transition-all hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-                {isLast ? (isGuest ? "Sign In to Download" : "Continue to Download →") : `Next Ad (${adIndex + 2}/${ADS.length}) →`}
-              </button>
+              isGuest ? (
+                <div className="space-y-2">
+                  <a href="/register"
+                    className="w-full py-3 rounded-xl font-black text-white text-sm flex items-center justify-center gap-2"
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                    🔒 Sign In to Download Free
+                  </a>
+                  <p className="text-gray-600 text-xs">Sign in = no ads + instant download access</p>
+                </div>
+              ) : (
+                <button onClick={handleNext}
+                  className="w-full py-3 rounded-xl font-black text-white text-sm transition-all hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  {isLast ? "Continue to Download →" : `Next Ad (${adIndex + 2}/${ADS.length}) →`}
+                </button>
+              )
             ) : (
               <div className="flex items-center justify-center gap-2 py-3">
                 <div className="w-5 h-5 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
@@ -165,9 +187,9 @@ export default function DownloadAdGate({ onComplete, isGuest = false }) {
             )}
           </div>
 
-          {isGuest && (
+          {isGuest && !canSkip && (
             <p className="text-gray-600 text-xs mt-3">
-              <a href="/register" className="text-purple-400 hover:underline font-semibold">Sign up free</a> to get faster downloads
+              <a href="/register" className="text-purple-400 hover:underline font-semibold">Sign up free</a> to skip ads & download instantly
             </p>
           )}
         </motion.div>

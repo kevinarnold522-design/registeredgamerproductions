@@ -95,23 +95,17 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-2 group">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colorCycles[colorIdx]} flex items-center justify-center cursor-pointer transition-all duration-300 relative`}
+                className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden transition-all duration-300 relative flex-shrink-0"
                 animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 3 }}
                 style={{
                   boxShadow: controllerCycling
-                    ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6), 0 0 80px rgba(236,72,153,0.4)"
+                    ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6)"
                     : "0 0 10px rgba(168,85,247,0.4)",
                   transition: "box-shadow 0.4s ease",
                 }}
               >
-                <Gamepad2 className="w-5 h-5 text-white" />
-                {controllerCycling && (
-                  <span className="absolute inset-0 rounded-lg pointer-events-none" style={{
-                    background: "radial-gradient(circle, rgba(168,85,247,0.4) 0%, transparent 70%)",
-                    animation: "none",
-                  }} />
-                )}
+                <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
               </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-sm">Gamer</span>
@@ -235,8 +229,8 @@ export default function Navbar() {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                    <Gamepad2 className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                    <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
                   </div>
                   <div>
                     <span className="font-black text-white text-sm">Gamer</span>

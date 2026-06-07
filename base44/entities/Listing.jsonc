@@ -133,6 +133,10 @@
       "type": "number",
       "default": 0
     },
+    "downloads": {
+      "type": "number",
+      "default": 0
+    },
     "likes": {
       "type": "number",
       "default": 0

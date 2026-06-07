@@ -172,11 +172,11 @@ export default function AuthNavbar({ user, profile }) {
           <div className={`flex items-center gap-2 mt-2 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <Link to="/" className="flex items-center gap-1.5 min-w-0">
               <motion.div
-                className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0"
+                className="w-6 h-6 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0"
                 animate={{ rotate: [0, -8, 8, -6, 6, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, repeatDelay: 4 }}
               >
-                <Gamepad2 className="w-3.5 h-3.5 text-white" />
+                <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
               </motion.div>
               {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
             </Link>
@@ -266,8 +266,8 @@ export default function AuthNavbar({ user, profile }) {
           <Menu className="w-5 h-5" />
         </button>
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-            <Gamepad2 className="w-4 h-4 text-white" />
+          <div className="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center">
+            <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="GP" className="w-full h-full object-contain" />
           </div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>

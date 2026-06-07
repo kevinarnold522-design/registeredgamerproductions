@@ -87,6 +87,7 @@ export default function ListingPage() {
         if (l) {
           setListing(l);
           setLikeCount(l.likes || 0);
+          // Increment view count on every page visit
           base44.entities.Listing.update(l.id, { views: (l.views || 0) + 1 }).catch(() => {});
           if (l.seller_email) {
             base44.entities.UserProfile.filter({ user_email: l.seller_email }).then(p => { if (p[0]) setSeller(p[0]); });
@@ -195,7 +196,14 @@ export default function ListingPage() {
       base44.auth.redirectToLogin(window.location.href);
       return;
     }
-    if (pendingDownloadUrl) { window.open(pendingDownloadUrl, "_blank"); setPendingDownloadUrl(null); }
+    if (pendingDownloadUrl) {
+      // Increment download count
+      base44.entities.Listing.update(listing.id, { downloads: (listing.downloads || 0) + 1 })
+        .then(updated => setListing(updated))
+        .catch(() => {});
+      window.open(pendingDownloadUrl, "_blank");
+      setPendingDownloadUrl(null);
+    }
   };
 
   const handleShare = async () => {
@@ -393,7 +401,10 @@ export default function ListingPage() {
             <div className="flex items-center gap-4">
               {!isFree && <span className="text-3xl font-black text-purple-300">₱{listing.price?.toLocaleString()}</span>}
               <span className="text-gray-500 text-sm flex items-center gap-1">
-                <Download className="w-3.5 h-3.5" /> {(listing.views || 0).toLocaleString()} downloads
+                <Eye className="w-3.5 h-3.5" /> {(listing.views || 0).toLocaleString()} views
+              </span>
+              <span className="text-gray-500 text-sm flex items-center gap-1">
+                <Download className="w-3.5 h-3.5" /> {(listing.downloads || 0).toLocaleString()} downloads
               </span>
             </div>
 
