@@ -85,10 +85,13 @@ export default function ListingPage() {
       try {
         const l = await base44.entities.Listing.get(id);
         if (l) {
-          setListing(l);
+          // Increment view count and update local state with the new value
+          const newViews = (l.views || 0) + 1;
+          base44.entities.Listing.update(l.id, { views: newViews })
+            .then(() => setListing(prev => prev ? { ...prev, views: newViews } : prev))
+            .catch(() => {});
+          setListing({ ...l, views: newViews });
           setLikeCount(l.likes || 0);
-          // Increment view count on every page visit
-          base44.entities.Listing.update(l.id, { views: (l.views || 0) + 1 }).catch(() => {});
           if (l.seller_email) {
             base44.entities.UserProfile.filter({ user_email: l.seller_email }).then(p => { if (p[0]) setSeller(p[0]); });
           }
@@ -173,7 +176,6 @@ export default function ListingPage() {
   const handleDownload = () => {
     const url = listing.download_url || listing.external_link;
     if (!url) return;
-    if (user) base44.entities.Listing.update(listing.id, { views: (listing.views || 0) + 1 }).catch(() => {});
     const isExempt = user && (isAdmin(user.email) || profile?.moderator_type === "account_moderator");
     if (isExempt) {
       autoFollowSeller();
@@ -197,10 +199,13 @@ export default function ListingPage() {
       return;
     }
     if (pendingDownloadUrl) {
-      // Increment download count
-      base44.entities.Listing.update(listing.id, { downloads: (listing.downloads || 0) + 1 })
-        .then(updated => setListing(updated))
-        .catch(() => {});
+      // Fetch current download count fresh from DB then increment
+      base44.entities.Listing.get(listing.id).then(fresh => {
+        const newDownloads = (fresh.downloads || 0) + 1;
+        return base44.entities.Listing.update(listing.id, { downloads: newDownloads }).then(() => newDownloads);
+      }).then(newDownloads => {
+        setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
+      }).catch(() => {});
       window.open(pendingDownloadUrl, "_blank");
       setPendingDownloadUrl(null);
     }
