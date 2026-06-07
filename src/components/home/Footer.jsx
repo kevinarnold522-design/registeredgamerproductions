@@ -38,11 +38,11 @@ const links = {
 
 const socials = [
   { icon: Twitter, label: "Twitter / X", href: "https://twitter.com", external: true },
-  { icon: Youtube, label: "YouTube", href: "https://youtube.com/@registeredgamerproductions?si=WfWn2yT15uvp5LnF", external: true },
+  { icon: Youtube, label: "YouTube", href: "https://youtube.com/@registeredgamerproductions?si=Ypv_k-lHs-UBRDAe", external: true },
   { icon: Twitch, label: "Twitch", href: "https://twitch.tv", external: true },
   { icon: MessageCircle, label: "Discord", href: "https://discord.com", external: true },
   { icon: Instagram, label: "Instagram", href: "https://instagram.com", external: true },
-  { label: "Facebook", href: "https://www.facebook.com/share/1D9ey9w8Rw/?mibextid=wwXIfr", external: true, isFb: true },
+  { label: "Facebook", href: "https://www.facebook.com/share/1HEwVHqjHc/?mibextid=wwXIfr", external: true, isFb: true },
 ];
 
 export default function Footer() {

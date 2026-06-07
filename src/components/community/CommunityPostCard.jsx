@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share2, Star, Trash2, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import UserAvatar from "@/components/shared/UserAvatar";
+import RepostButton from "@/components/shared/RepostButton";
 
 function StarRating({ postId, userEmail, initialRating = 0 }) {
   const [rating, setRating] = useState(initialRating);
@@ -244,6 +245,11 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
           {/* Star rating — free for all members */}
           {user && (
             <StarRating postId={post.id} userEmail={user.email} initialRating={userRating} />
+          )}
+
+          {/* Repost */}
+          {user && post.author_email !== user.email && (
+            <RepostButton item={post} type="post" user={user} profile={profile} compact />
           )}
 
           {/* Mod actions — flag for all mods; delete only for admin/account_mod */}

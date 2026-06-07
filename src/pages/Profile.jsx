@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Grid, Upload, Radio } from "lucide-react";
+import { Grid, Upload, Radio, Film } from "lucide-react";
 import { Link } from "react-router-dom";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
@@ -12,7 +12,9 @@ import LiveStreamStudio from "@/components/streaming/LiveStreamStudio";
 import AvatarEditor from "@/components/profile/AvatarEditor";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
+import SocialLinksPanel from "@/components/profile/SocialLinksPanel";
 import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
+import ReelCreator from "@/components/shared/ReelCreator";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -21,6 +23,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [showStudio, setShowStudio] = useState(false);
+  const [showReelCreator, setShowReelCreator] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
 
   const params = new URLSearchParams(window.location.search);
@@ -78,6 +81,9 @@ export default function Profile() {
       <AnimatePresence>
         {showStudio && (
           <LiveStreamStudio user={user} profile={profile} onClose={() => setShowStudio(false)} />
+        )}
+        {showReelCreator && (
+          <ReelCreator user={user} profile={profile} onClose={() => setShowReelCreator(false)} onPosted={() => {}} />
         )}
       </AnimatePresence>
 
@@ -142,11 +148,37 @@ export default function Profile() {
                 </motion.button>
               )}
               {isOwnProfile && (
+                <motion.button
+                  onClick={() => setShowReelCreator(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white"
+                  style={{ background: "linear-gradient(90deg, #7c3aed, #ec4899)", boxShadow: "0 0 15px rgba(124,58,237,0.4)" }}
+                >
+                  <Film className="w-4 h-4" /> Create Reel
+                </motion.button>
+              )}
+              {isOwnProfile && (
                 <Link to="/dashboard?tab=profile" className="px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors text-center">
                   Edit Profile
                 </Link>
               )}
             </div>
+            {/* Admin social links */}
+            {admin && isOwnProfile && (
+              <div className="flex flex-col gap-1.5 ml-2">
+                <a href="https://www.facebook.com/share/1HEwVHqjHc/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-white text-xs font-bold"
+                  style={{ background: "#1877f2", boxShadow: "0 0 10px rgba(24,119,242,0.4)" }}>
+                  <span className="font-black">f</span> Facebook
+                </a>
+                <a href="https://youtube.com/@registeredgamerproductions?si=Ypv_k-lHs-UBRDAe" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-white text-xs font-bold"
+                  style={{ background: "#ff0000", boxShadow: "0 0 10px rgba(255,0,0,0.4)" }}>
+                  <span className="font-black">▶</span> YouTube
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Rank progress banner */}
@@ -184,6 +216,9 @@ export default function Profile() {
 
           {/* Gaming Accounts */}
           <GamingAccountsPanel profile={profile} isOwnProfile={isOwnProfile} onUpdated={setProfile} />
+
+          {/* Social Links */}
+          {profile && <SocialLinksPanel profile={profile} isOwnProfile={isOwnProfile} onUpdated={setProfile} />}
 
           {/* Listings grid */}
           <div>

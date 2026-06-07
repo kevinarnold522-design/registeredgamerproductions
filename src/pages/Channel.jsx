@@ -29,6 +29,8 @@ const SOCIAL_PLATFORMS = [
   { key: "twitter", label: "X / Twitter", icon: <Twitter className="w-4 h-4" />, color: "text-blue-400 border-blue-700/40 bg-blue-900/10", placeholder: "https://x.com/yourhandle" },
   { key: "facebook", label: "Facebook", icon: <Facebook className="w-4 h-4" />, color: "text-blue-500 border-blue-600/40 bg-blue-900/10", placeholder: "https://facebook.com/yourpage" },
   { key: "tiktok", label: "TikTok", icon: <span className="text-xs font-black">TT</span>, color: "text-white border-gray-600/40 bg-gray-800/50", placeholder: "https://tiktok.com/@yourhandle" },
+  { key: "whatsapp", label: "WhatsApp", icon: <span className="text-xs font-black">💬</span>, color: "text-green-400 border-green-600/40 bg-green-900/10", placeholder: "+639XXXXXXXXX or https://wa.me/..." },
+  { key: "telegram", label: "Telegram", icon: <span className="text-xs font-black">✈️</span>, color: "text-sky-400 border-sky-600/40 bg-sky-900/10", placeholder: "@yourusername or https://t.me/..." },
   { key: "website", label: "Website", icon: <Globe className="w-4 h-4" />, color: "text-green-400 border-green-700/40 bg-green-900/10", placeholder: "https://yourwebsite.com" },
 ];
 
@@ -212,6 +214,21 @@ export default function Channel() {
                     <Youtube className="w-3.5 h-3.5" />
                     {profile.youtube_subscribers > 0 ? `${profile.youtube_subscribers.toLocaleString()} subscribers` : "YouTube Channel"}
                     <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+              {/* Admin official social links */}
+              {isAdmin(profile?.user_email) && (
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <a href="https://www.facebook.com/share/1HEwVHqjHc/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-xs font-bold hover:opacity-80"
+                    style={{ background: "#1877f2" }}>
+                    <span className="font-black">f</span> Facebook
+                  </a>
+                  <a href="https://youtube.com/@registeredgamerproductions?si=Ypv_k-lHs-UBRDAe" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-xs font-bold hover:opacity-80"
+                    style={{ background: "#ff0000" }}>
+                    <span className="font-black">▶</span> YouTube
                   </a>
                 </div>
               )}
