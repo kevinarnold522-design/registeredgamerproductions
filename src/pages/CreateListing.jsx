@@ -90,6 +90,9 @@ export default function CreateListing() {
     patreon_url: "",
     community_franchise_id: "",
     modding_subcategory: "",
+    cross_post_gaming: false,
+    cross_post_modding: false,
+    bulk_cross_post_ids: [],
   });
 
   useEffect(() => {
@@ -693,6 +696,34 @@ export default function CreateListing() {
               </select>
               {form.community_franchise_id && (
                 <p className="text-cyan-400 text-xs mt-2">✓ Will be shared with {TOP_FRANCHISES.find(f => f.id === form.community_franchise_id)?.name}</p>
+              )}
+            </div>
+
+            {/* Bulk Cross-Posting - Multiple Gaming Communities */}
+            <div className="bg-purple-900/20 border border-purple-500/60 rounded-xl p-4">
+              <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                📢 Bulk Cross-Posting (Optional)
+              </label>
+              <p className="text-gray-500 text-xs mb-3">Share your listing to multiple gaming communities at once</p>
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                {TOP_FRANCHISES.filter(f => f.id !== form.community_franchise_id).map(f => {
+                  const selected = form.bulk_cross_post_ids.includes(f.id);
+                  return (
+                    <button key={f.id} type="button"
+                      onClick={() => setForm(f => ({ 
+                        ...f, 
+                        bulk_cross_post_ids: selected 
+                          ? f.bulk_cross_post_ids.filter(id => id !== f.id)
+                          : [...f.bulk_cross_post_ids, f.id]
+                      }))}
+                      className={`px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-all text-left ${selected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}>
+                      {f.emoji} {f.name}
+                    </button>
+                  );
+                })}
+              </div>
+              {form.bulk_cross_post_ids.length > 0 && (
+                <p className="text-purple-400 text-xs mt-2">✓ Will cross-post to {form.bulk_cross_post_ids.length} communities</p>
               )}
             </div>
 

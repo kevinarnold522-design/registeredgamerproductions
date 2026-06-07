@@ -124,13 +124,16 @@ export default function Profile() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-black text-white">{profile?.username || user?.full_name}</h1>
+                <h1 className="text-2xl font-black text-white">{profile?.business_name || profile?.username || user?.full_name}</h1>
                 {profile?.is_verified && <VerifiedCheckmark size="md" showLabel={true} />}
                 {admin && isOwnProfile && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold">⚡ ADMIN</span>}
                 <FollowerRankBadge followers={followers} size="md" />
                 {profile?.honor_badge && <HonorBadge label={profile.honor_badge_label || "Founding Member"} size="sm" />}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
+                {profile?.business_name && (
+                  <p className="text-gray-400 text-xs">@{profile?.username}</p>
+                )}
                 <p className={`text-sm font-semibold ${accountColors[profile?.account_type] || "text-gray-400"}`}>
                   {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : profile?.account_type === "business" ? "🏢 Business" : "👤 Gamer"}
                 </p>

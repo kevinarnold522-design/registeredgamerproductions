@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
 
 const TOTAL_SLOTS = 10000;
 
@@ -111,7 +112,7 @@ export default function First10KBanner({ user, profile }) {
               </a>
             ) : claimed ? (
               <div className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-green-900/40 border border-green-500/50 text-green-300 text-sm font-black">
-                ✅ Badge Claimed!
+                <VerifiedCheckmark size="md" /> Verified!
               </div>
             ) : isFull ? (
               <div className="px-6 py-3 rounded-2xl bg-gray-800 text-gray-500 text-sm font-black">All slots taken</div>

@@ -39,6 +39,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import ListingPage from "./pages/ListingPage.jsx";
 import RoutingDashboard from "./pages/RoutingDashboard";
 import EarningsDashboard from "./pages/EarningsDashboard";
+import UploadContent from "./pages/UploadContent";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -95,6 +96,7 @@ const AuthenticatedApp = () => {
       <Route path="/listing" element={<ListingPage />} />
       <Route path="/routing-dashboard" element={<RoutingDashboard />} />
       <Route path="/earnings" element={<EarningsDashboard />} />
+      <Route path="/upload-content" element={<UploadContent />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

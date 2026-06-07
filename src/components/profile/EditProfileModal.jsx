@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, User, Mail, Globe } from "lucide-react";
+import { X, Check, User, Mail, Globe, Store } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NATIONS = [
@@ -18,9 +18,19 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
     favorite_sports_team: profile?.favorite_sports_team || "",
     favorite_game: profile?.favorite_game || "",
     favorite_hobby: profile?.favorite_hobby || "",
+    business_name: profile?.business_name || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [isTier1, setIsTier1] = useState(false);
+
+  useEffect(() => {
+    if (user?.email) {
+      base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" }).then(subs => {
+        setIsTier1(subs.length > 0);
+      });
+    }
+  }, [user?.email]);
 
   const handleSave = async () => {
     if (!form.username.trim()) { setError("Username is required"); return; }
@@ -34,6 +44,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
         favorite_sports_team: form.favorite_sports_team.trim(),
         favorite_game: form.favorite_game.trim(),
         favorite_hobby: form.favorite_hobby.trim(),
+        business_name: form.business_name.trim(),
       });
       onSaved?.({ ...profile, ...form });
       onClose();
@@ -176,6 +187,25 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
                 />
               </div>
             </div>
+
+            {/* Business Name - Tier 1 Only */}
+            {isTier1 && (profile?.account_type === "digital_creator" || profile?.account_type === "business") && (
+              <div className="pt-3 border-t border-gray-800">
+                <p className="text-green-400 text-xs font-bold mb-3 uppercase tracking-wide flex items-center gap-1">
+                  <Store className="w-3 h-3" /> Verified Seller Profile
+                </p>
+                <div>
+                  <label className="text-gray-400 text-xs font-bold mb-1 block">Business Name (Displayed on Store)</label>
+                  <input
+                    value={form.business_name}
+                    onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))}
+                    placeholder="e.g. Kevin's Gaming Store"
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-green-500"
+                  />
+                  <p className="text-gray-600 text-[10px] mt-1">This name will appear on your Store listings instead of your username</p>
+                </div>
+              </div>
+            )}
 
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
