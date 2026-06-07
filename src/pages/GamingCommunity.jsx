@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
