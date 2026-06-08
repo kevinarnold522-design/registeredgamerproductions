@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, Send, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Download, Filter, CheckSquare, Square, Gamepad2, Image, Video, Trash2, Sparkles } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Filter, CheckSquare, Square } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -12,9 +12,8 @@ import RecommendModal from "@/components/shared/RecommendModal";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import AnimatedController from "@/components/shared/AnimatedController";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
-import { EffectSelector } from "@/components/community/PostSpecialEffects";
-import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
 import GroupChat from "@/components/community/GroupChat";
+import PostComposer from "@/components/community/PostComposer";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all" };
 
@@ -22,17 +21,9 @@ const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPrem
 function CommunityNewsfeed({ franchise, community, user, profile }) {
   const [posts, setPosts] = useState([]);
   const [listings, setListings] = useState([]);
-  const [newPost, setNewPost] = useState("");
-  const [postDescription, setPostDescription] = useState("");
-  const [postImages, setPostImages] = useState([]);
-  const [postVideos, setPostVideos] = useState([]);
-  const [crossPostModding, setCrossPostModding] = useState(false);
-  const [posting, setPosting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [feedFilters, setFeedFilters] = useState(DEFAULT_FEED_FILTERS);
-  const [selectedEffect, setSelectedEffect] = useState("none");
-  const [showEffectSelector, setShowEffectSelector] = useState(false);
   const admin = isAdmin(user?.email);
 
   useEffect(() => {
@@ -54,55 +45,8 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
     load();
   }, [franchise.id]);
 
-  const handlePost = async () => {
-    if ((!newPost.trim() && !postDescription.trim()) || !user) return;
-    setPosting(true);
-    const post = await base44.entities.CommunityPost.create({
-      community_id: community?.id || franchise.id,
-      franchise_id: franchise.id,
-      author_email: user.email,
-      author_username: profile?.username || user.full_name || "Gamer",
-      author_avatar: profile?.avatar_url || "",
-      content: newPost,
-      description: postDescription,
-      image_urls: postImages,
-      video_urls: postVideos,
-      likes: 0,
-      status: "active",
-      special_effect: selectedEffect,
-    });
-    setPosts(prev => [post, ...prev]);
-    if (crossPostModding) {
-      base44.entities.CommunityPost.create({
-        community_id: "modding", franchise_id: "modding",
-        author_email: user.email,
-        author_username: profile?.username || user.full_name || "Gamer",
-        author_avatar: profile?.avatar_url || "",
-        content: newPost, description: postDescription,
-        image_urls: postImages, video_urls: postVideos,
-        likes: 0, status: "active", section_id: franchise.id,
-        special_effect: selectedEffect,
-      }).catch(() => {});
-    }
-    setNewPost("");
-    setPostDescription("");
-    setPostImages([]);
-    setPostVideos([]);
-    setSelectedEffect("none");
-    setPosting(false);
-  };
-
-  const handlePostImageUpload = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setPostImages(prev => [...prev, file_url]);
-  };
-
-  const handlePostVideoUpload = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setPostVideos(prev => [...prev, file_url]);
-  };
+  const handlePostCreated = (post) => setPosts(prev => [post, ...prev]);
+  const handlePostUpdate = (postId, updates) => setPosts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
 
   // Filtered listings
   const filteredListings = listings.filter(l => {
@@ -192,101 +136,20 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
           )}
         </AnimatePresence>
       </div>
-      {/* Post input */}
-      {user ? (
-        <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0">
-          <div className="flex gap-2 mb-2">
-            <input value={newPost} onChange={e => setNewPost(e.target.value)}
-              placeholder={`What's on your mind in ${franchise.name}?`}
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-          </div>
-          <textarea value={postDescription} onChange={e => setPostDescription(e.target.value)}
-            placeholder="Add description (optional)..."
-            rows={2}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2 resize-none" />
-          
-          {/* Media previews */}
-          {(postImages.length > 0 || postVideos.length > 0) && (
-            <div className="flex gap-2 flex-wrap mb-2">
-              {postImages.map((url, i) => (
-                <div key={i} className="relative group">
-                  <img src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" alt="" />
-                  <button onClick={() => setPostImages(prev => prev.filter((_, idx) => idx !== i))}
-                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
-                </div>
-              ))}
-              {postVideos.map((url, i) => (
-                <div key={i} className="relative group">
-                  <video src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" muted />
-                  <button onClick={() => setPostVideos(prev => prev.filter((_, idx) => idx !== i))}
-                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <div className="flex items-center gap-2 flex-wrap mb-2">
-            <label className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
-              <Image className="w-3.5 h-3.5" /> Images
-              <input type="file" accept="image/*" onChange={handlePostImageUpload} className="hidden" multiple />
-            </label>
-            <label className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
-              <Video className="w-3.5 h-3.5" /> Videos
-              <input type="file" accept="video/*" onChange={handlePostVideoUpload} className="hidden" multiple />
-            </label>
-            {/* Effect selector */}
-            <div className="relative">
-              <button onClick={() => setShowEffectSelector(v => !v)}
-                className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border cursor-pointer text-[10px] font-semibold transition-all ${selectedEffect !== "none" ? "bg-purple-900/40 border-purple-500/60 text-purple-300" : "bg-gray-800 border-gray-700 text-gray-400 hover:text-purple-400"}`}>
-                <Sparkles className="w-3.5 h-3.5" /> {selectedEffect !== "none" ? selectedEffect.replace("_", " ") : "FX"}
-              </button>
-              {showEffectSelector && (
-                <EffectSelector selectedEffect={selectedEffect} onSelect={(e) => { setSelectedEffect(e); setShowEffectSelector(false); }} onClose={() => setShowEffectSelector(false)} />
-              )}
-            </div>
-            <button onClick={handlePost} disabled={(!newPost.trim() && !postDescription.trim()) || posting}
-              className="ml-auto px-3 py-1.5 rounded-xl font-bold text-[10px] text-white flex items-center gap-1 disabled:opacity-50"
-              style={{ background: franchise.accent }}>
-              <Send className="w-3.5 h-3.5" /> Post
-            </button>
-          </div>
-
-          {/* Live preview */}
-          {selectedEffect !== "none" && (newPost.trim() || postDescription.trim() || postImages.length > 0) && (
-            <div className="mb-2 rounded-xl border border-purple-700/40 overflow-hidden text-xs">
-              <p className="text-purple-400 text-[9px] font-bold px-2 py-1 bg-purple-900/20 flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5" /> Preview — {selectedEffect.replace("_", " ")} effect
-              </p>
-              <SpecialEffectsRenderer effect={selectedEffect}>
-                <div className="p-2 bg-gray-900">
-                  {newPost && <p className="text-gray-100 text-xs">{newPost}</p>}
-                  {postDescription && <p className="text-gray-400 text-[10px] mt-1">{postDescription}</p>}
-                  {postImages.length > 0 && (
-                    <div className="flex gap-1 mt-1.5 flex-wrap">
-                      {postImages.slice(0, 2).map((url, i) => <img key={i} src={url} className="w-16 h-12 object-cover rounded-lg" alt="" />)}
-                    </div>
-                  )}
-                </div>
-              </SpecialEffectsRenderer>
-            </div>
-          )}
-
-          <label className="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" checked={crossPostModding} onChange={e => setCrossPostModding(e.target.checked)}
-              className="w-3 h-3 rounded accent-orange-500" />
-            <span className="text-[9px] text-orange-400 font-semibold">Also post in Modding Community 🔧</span>
-          </label>
-        </div>
-      ) : (
-        <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0 text-center">
-          <p className="text-gray-400 text-xs font-semibold mb-2">🎮 Sign in to start posting!</p>
-          <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
-            className="px-4 py-2 rounded-xl font-bold text-xs text-white"
-            style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-            Sign In / Register
-          </button>
-        </div>
-      )}
+      {/* Post Composer */}
+      <div className="px-2 py-2 border-b border-gray-800 flex-shrink-0">
+        <PostComposer
+          user={user}
+          profile={profile}
+          franchise={franchise}
+          community={community}
+          isJoined={true}
+          admin={admin}
+          isModerator={false}
+          onPostCreated={handlePostCreated}
+          accentColor={franchise.accent}
+        />
+      </div>
       {/* Feed: posts + listings mixed */}
       <div className="flex-1 overflow-y-auto p-2 space-y-2">
         {loading ? (
@@ -336,10 +199,11 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                   post={item}
                   user={user}
                   profile={profile}
-                  isTier1={admin || true}
+                  isTier1={true}
                   canManage={admin}
                   canDelete={admin}
                   accentColor={franchise.accent}
+                  onUpdate={handlePostUpdate}
                   onFlag={async (p) => {
                     await base44.entities.CommunityPost.update(p.id, { status: "pending_review" });
                     setPosts(prev => prev.filter(x => x.id !== p.id));

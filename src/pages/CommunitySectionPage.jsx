@@ -19,12 +19,6 @@ export default function CommunitySectionPage() {
   const [listings, setListings] = useState([]);
   const [community, setCommunity] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [newPost, setNewPost] = useState("");
-  const [postDescription, setPostDescription] = useState("");
-  const [postImages, setPostImages] = useState([]);
-  const [postVideos, setPostVideos] = useState([]);
-  const [selectedEffect, setSelectedEffect] = useState("none");
-  const [showEffectSelector, setShowEffectSelector] = useState(false);
   const params = new URLSearchParams(window.location.search);
   const franchiseId = params.get("franchise") || "";
   const sectionId = params.get("section") || "";
@@ -168,6 +162,18 @@ export default function CommunitySectionPage() {
                 ))}
               </div>
             )}
+
+            {/* Group Chat inline below posts */}
+            <div className="mt-6">
+              <GroupChat
+                franchiseId={franchiseId}
+                communityId={community?.id}
+                user={user}
+                profile={profile}
+                accentColor={accentColor}
+                inline={true}
+              />
+            </div>
           </div>
 
           {/* Sidebar: Listings */}
@@ -235,14 +241,6 @@ export default function CommunitySectionPage() {
         </div>
       </div>
 
-      {/* Group Chat */}
-      <GroupChat
-        franchiseId={franchiseId}
-        communityId={community?.id}
-        user={user}
-        profile={profile}
-        accentColor={accentColor}
-      />
     </div>
   );
 }
