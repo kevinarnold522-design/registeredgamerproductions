@@ -15,7 +15,7 @@ import CommunityPostCard from "@/components/community/CommunityPostCard";
 import GroupChat from "@/components/community/GroupChat";
 import PostComposer from "@/components/community/PostComposer";
 
-const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all" };
+const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
 // Newsfeed for a community franchise
 function CommunityNewsfeed({ franchise, community, user, profile }) {
@@ -29,12 +29,9 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   useEffect(() => {
     const load = async () => {
       try {
-        // Load posts for this franchise
         const allPosts = await base44.entities.CommunityPost.filter({ franchise_id: franchise.id });
-        // Load listings: first try franchise-linked, then fallback to recent active listings
         let allListings = await base44.entities.Listing.filter({ community_franchise_id: franchise.id }, "-created_date", 20);
         if (allListings.length === 0) {
-          // Fallback: show recent listings matching franchise name or any active listings
           allListings = await base44.entities.Listing.list("-created_date", 20);
         }
         setPosts(allPosts.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50));
@@ -48,18 +45,22 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   const handlePostCreated = (post) => setPosts(prev => [post, ...prev]);
   const handlePostUpdate = (postId, updates) => setPosts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
 
-  // Filtered listings
   const filteredListings = listings.filter(l => {
     if (feedFilters.isFree && !(l.price === 0 || l.is_free)) return false;
     if (feedFilters.isPremium && !l.is_premium) return false;
     if (feedFilters.priceMin !== "" && (l.price || 0) < parseFloat(feedFilters.priceMin)) return false;
     if (feedFilters.priceMax !== "" && (l.price || 0) > parseFloat(feedFilters.priceMax)) return false;
+    if (feedFilters.search && !l.title?.toLowerCase().includes(feedFilters.search.toLowerCase())) return false;
     return true;
   });
 
-  // Merge posts + listings by date inside the feed
+  const filteredPosts = posts.filter(p => {
+    if (feedFilters.search && !p.content?.toLowerCase().includes(feedFilters.search.toLowerCase()) && !p.author_username?.toLowerCase().includes(feedFilters.search.toLowerCase())) return false;
+    return true;
+  });
+
   const allMerged = [
-    ...(feedFilters.contentType !== "listings" ? posts.map(p => ({ type: "post", item: p, date: p.created_date })) : []),
+    ...(feedFilters.contentType !== "listings" ? filteredPosts.map(p => ({ type: "post", item: p, date: p.created_date })) : []),
     ...(feedFilters.contentType !== "posts" ? filteredListings.map(l => ({ type: "listing", item: l, date: l.created_date })) : []),
   ];
   const merged = allMerged.sort((a, b) => {
@@ -82,7 +83,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-white text-sm font-black">{franchise.name} Feed</p>
-            <p className="text-white/40 text-[10px]">Posts & listings · {merged.length} items</p>
+            <p className="text-white/40 text-[10px]">Posts + listings &middot; {merged.length} items</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowFilters(v => !v)}
@@ -92,7 +93,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
             <a href={`/community/${franchise.id}`}
               className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
               style={{ background: `${franchise.accent}30`, color: franchise.accent, border: `1px solid ${franchise.accent}44` }}>
-              Full Page →
+              Full Page &rarr;
             </a>
           </div>
         </div>
@@ -101,33 +102,42 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
           {showFilters && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden mt-2">
-              <div className="bg-black/30 rounded-xl p-3 grid grid-cols-2 gap-2">
-                <select value={feedFilters.contentType} onChange={e => setFeedFilters(f => ({ ...f, contentType: e.target.value }))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none">
-                  <option value="all">All Content</option>
-                  <option value="posts">Posts Only</option>
-                  <option value="listings">Listings Only</option>
-                </select>
-                <select value={feedFilters.sortBy} onChange={e => setFeedFilters(f => ({ ...f, sortBy: e.target.value }))}
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none">
-                  <option value="newest">Newest</option>
-                  <option value="oldest">Oldest</option>
-                  <option value="popular">Most Popular</option>
-                </select>
-                <input type="number" value={feedFilters.priceMin} onChange={e => setFeedFilters(f => ({ ...f, priceMin: e.target.value }))}
-                  placeholder="Min ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none" />
-                <input type="number" value={feedFilters.priceMax} onChange={e => setFeedFilters(f => ({ ...f, priceMax: e.target.value }))}
-                  placeholder="Max ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none" />
-                <label className="flex items-center gap-1.5 cursor-pointer col-span-1">
-                  <input type="checkbox" checked={feedFilters.isFree} onChange={e => setFeedFilters(f => ({ ...f, isFree: e.target.checked }))} className="accent-green-500 w-3 h-3 rounded" />
-                  <span className="text-green-400 text-[10px] font-semibold">Free Only</span>
-                </label>
-                <label className="flex items-center gap-1.5 cursor-pointer col-span-1">
-                  <input type="checkbox" checked={feedFilters.isPremium} onChange={e => setFeedFilters(f => ({ ...f, isPremium: e.target.checked }))} className="accent-yellow-500 w-3 h-3 rounded" />
-                  <span className="text-yellow-400 text-[10px] font-semibold">Premium Only</span>
-                </label>
+              <div className="bg-black/30 rounded-xl p-3 space-y-2">
+                {/* Search in feed */}
+                <div className="relative col-span-2">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500" />
+                  <input value={feedFilters.search} onChange={e => setFeedFilters(f => ({ ...f, search: e.target.value }))}
+                    placeholder="Search posts and listings..."
+                    className="w-full pl-8 pr-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-[10px] focus:outline-none focus:border-purple-500" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <select value={feedFilters.contentType} onChange={e => setFeedFilters(f => ({ ...f, contentType: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none">
+                    <option value="all">All Content</option>
+                    <option value="posts">Posts Only</option>
+                    <option value="listings">Listings Only</option>
+                  </select>
+                  <select value={feedFilters.sortBy} onChange={e => setFeedFilters(f => ({ ...f, sortBy: e.target.value }))}
+                    className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none">
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="popular">Most Popular</option>
+                  </select>
+                  <input type="number" value={feedFilters.priceMin} onChange={e => setFeedFilters(f => ({ ...f, priceMin: e.target.value }))}
+                    placeholder="Min Price" className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none" />
+                  <input type="number" value={feedFilters.priceMax} onChange={e => setFeedFilters(f => ({ ...f, priceMax: e.target.value }))}
+                    placeholder="Max Price" className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white text-[10px] focus:outline-none" />
+                  <label className="flex items-center gap-1.5 cursor-pointer col-span-1">
+                    <input type="checkbox" checked={feedFilters.isFree} onChange={e => setFeedFilters(f => ({ ...f, isFree: e.target.checked }))} className="accent-green-500 w-3 h-3 rounded" />
+                    <span className="text-green-400 text-[10px] font-semibold">Free Only</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer col-span-1">
+                    <input type="checkbox" checked={feedFilters.isPremium} onChange={e => setFeedFilters(f => ({ ...f, isPremium: e.target.checked }))} className="accent-yellow-500 w-3 h-3 rounded" />
+                    <span className="text-yellow-400 text-[10px] font-semibold">Premium Only</span>
+                  </label>
+                </div>
               </div>
-              {(feedFilters.isFree || feedFilters.isPremium || feedFilters.priceMin || feedFilters.priceMax || feedFilters.sortBy !== "newest" || feedFilters.contentType !== "all") && (
+              {(feedFilters.isFree || feedFilters.isPremium || feedFilters.priceMin || feedFilters.priceMax || feedFilters.sortBy !== "newest" || feedFilters.contentType !== "all" || feedFilters.search) && (
                 <button onClick={() => setFeedFilters(DEFAULT_FEED_FILTERS)} className="mt-1.5 text-[9px] text-gray-500 hover:text-white transition-colors flex items-center gap-1">
                   <X className="w-2.5 h-2.5" /> Reset filters
                 </button>
@@ -163,7 +173,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
           <>
             {!user && (
               <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-xl text-center mb-2">
-                <p className="text-gray-400 text-sm mb-3 font-semibold">🎮 Join now to post and chat!</p>
+                <p className="text-gray-400 text-sm mb-3 font-semibold">Join now to post and chat!</p>
                 <button onClick={() => base44.auth.redirectToLogin(window.location.href)}
                   className="px-6 py-2.5 rounded-xl font-black text-sm text-white"
                   style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
@@ -186,8 +196,8 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
-                    <p className="text-gray-500 text-[9px]">📦 by @{item.seller_username}</p>
-                    <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+                    <p className="text-gray-500 text-[9px]">by @{item.seller_username}</p>
+                    <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `\u20B1${item.price}`}</p>
                     <div className="mt-1.5">
                       <ListingEngagementBar listing={item} user={user} profile={profile} compact />
                     </div>
@@ -234,7 +244,6 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
   const [uploading, setUploading] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
 
-  // Auto-transition cover photos
   useEffect(() => {
     const covers = community?.cover_urls?.length > 0 ? community.cover_urls : (community?.cover_url ? [community.cover_url] : []);
     if (covers.length <= 1) return;
@@ -304,7 +313,6 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
     >
-      {/* Cover/gradient bg — multi-image with crossfade */}
       {coverImages.length > 0 ? (
         <div className="absolute inset-0">
           {coverImages.map((src, idx) => (
@@ -320,7 +328,6 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
           style={{ background: `radial-gradient(circle at 50% 30%, ${franchise.accent}, transparent 70%)` }} />
       )}
 
-      {/* Pencil icon — admin/mod only */}
       {canAdmin && !editMode && (
         <button
           onClick={handlePencilClick}
@@ -330,19 +337,16 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
         </button>
       )}
 
-      {/* Inline edit overlay */}
       {editMode && (
         <div className="absolute inset-0 z-20 bg-black/95 rounded-2xl flex flex-col gap-2 p-3 overflow-y-auto" onClick={e => e.stopPropagation()}>
           <p className="text-white text-xs font-bold text-center">Edit Community Images</p>
-
-          {/* Logo */}
           <div>
             <p className="text-gray-400 text-[9px] font-bold mb-1">Logo</p>
             {editLogo && <img src={editLogo} className="w-10 h-10 rounded-lg object-cover mb-1" alt="" />}
             <div className="flex gap-1">
               <button onClick={() => fileRef.current?.click()}
                 className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded-lg bg-purple-700 text-white text-[9px] font-bold">
-                <Upload className="w-2.5 h-2.5" />{uploading ? "…" : "Logo"}
+                <Upload className="w-2.5 h-2.5" />{uploading ? "..." : "Logo"}
               </button>
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
               <input value={urlInput} onChange={e => setUrlInput(e.target.value)} onClick={e => e.stopPropagation()}
@@ -350,8 +354,6 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
               <button onClick={handleUrlPaste} className="px-1.5 py-1 rounded-lg bg-blue-700 text-white text-[9px]"><Link2 className="w-2.5 h-2.5" /></button>
             </div>
           </div>
-
-          {/* Cover photos */}
           <div>
             <p className="text-gray-400 text-[9px] font-bold mb-1">Cover Photos (multi — auto-slide)</p>
             <div className="flex flex-wrap gap-1 mb-1">
@@ -359,13 +361,13 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
                 <div key={i} className="relative group/img">
                   <img src={url} className="w-10 h-10 rounded-lg object-cover border border-gray-700" alt="" />
                   <button onClick={() => setEditCoverUrls(prev => prev.filter((_, idx) => idx !== i))}
-                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px] flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">×</button>
+                    className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px] flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">x</button>
                 </div>
               ))}
               {editCoverUrls.length < 5 && (
                 <button onClick={() => coverFileRef.current?.click()}
                   className="w-10 h-10 rounded-lg border-2 border-dashed border-blue-700/60 bg-blue-900/20 text-blue-300 text-[9px] flex items-center justify-center hover:bg-blue-900/40 transition-all">
-                  {uploadingCover ? "…" : <Upload className="w-3 h-3" />}
+                  {uploadingCover ? "..." : <Upload className="w-3 h-3" />}
                 </button>
               )}
             </div>
@@ -378,7 +380,6 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
                 className="px-1.5 py-1 rounded-lg bg-blue-700 text-white text-[9px]"><Link2 className="w-2.5 h-2.5" /></button>
             </div>
           </div>
-
           <div className="flex gap-2">
             <button onClick={handleSave}
               className="flex-1 px-3 py-1 rounded-lg bg-green-700 text-white text-[10px] font-bold flex items-center justify-center gap-1">
@@ -393,7 +394,6 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
       )}
 
       <div className="relative p-4 flex gap-3 items-start">
-        {/* Logo — multi-image slide */}
         <div className="w-14 h-14 rounded-xl flex-shrink-0" style={{ border: `1px solid ${franchise.accent}55` }}>
           {(community?.logo_urls?.length > 0 || logoSrc) ? (
             <MultiAvatarDisplay
@@ -425,12 +425,12 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
 
           {isModerator && community?.moderator_type === "account_moderator" && (
             <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400 font-bold mt-1">
-              🛡️ Account Mod
+              Account Mod
             </span>
           )}
           {isModerator && community?.moderator_type !== "account_moderator" && (
             <span className="inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-400 font-bold mt-1">
-              🛡️ Captain
+              Captain
             </span>
           )}
           <p className="text-white/40 text-[10px] mt-1 flex items-center gap-1">
@@ -450,11 +450,11 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
             ? { background: `${franchise.accent}22`, color: franchise.accent, border: `1px solid ${franchise.accent}55` }
             : { background: franchise.accent, color: "#fff" }
           }>
-          {isJoined ? "✓ Joined" : "+ Join"}
+          {isJoined ? "Joined" : "+ Join"}
         </button>
         <a href={`/community/${franchise.id}`} onClick={e => e.stopPropagation()}
           className="px-2 py-1.5 rounded-xl text-[9px] font-bold text-white/50 hover:text-white/80 transition-colors border border-white/10 hover:border-white/30">
-          →
+          &rarr;
         </a>
         {isActive && <span className="absolute -top-1 -right-1 text-[8px] bg-purple-600 text-white font-black px-1.5 py-0.5 rounded-full">OPEN</span>}
       </div>
@@ -466,6 +466,7 @@ export default function GamingCommunity() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [search, setSearch] = useState("");
+  const [filterSearch, setFilterSearch] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All");
   const [memberCounts, setMemberCounts] = useState({});
   const [joinedIds, setJoinedIds] = useState(new Set());
@@ -527,7 +528,6 @@ export default function GamingCommunity() {
     });
   }, [user]);
 
-  // Also check moderator_emails array from communities
   useEffect(() => {
     if (!user?.email || Object.keys(communities).length === 0) return;
     const modSet = new Set(moderatorIds);
@@ -556,7 +556,6 @@ export default function GamingCommunity() {
     if (!newCatName.trim()) return;
     const id = newCatName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     const newFranchise = { id, name: newCatName, emoji: newCatEmoji, color: "#1a1a2e", accent: "#7c3aed", genre: newCatGenre };
-    // Save as GamingCommunity record so it persists
     const nc = await base44.entities.GamingCommunity.create({
       franchise_id: id, name: newCatName, genre: newCatGenre,
       color_primary: "#1a1a2e", color_secondary: "#7c3aed",
@@ -568,7 +567,6 @@ export default function GamingCommunity() {
     setShowAddCategory(false);
   };
 
-  // Load extra communities that were admin-created (not in TOP_FRANCHISES)
   useEffect(() => {
     base44.entities.GamingCommunity.list().then(comms => {
       const knownIds = new Set(TOP_FRANCHISES.map(f => f.id));
@@ -585,11 +583,10 @@ export default function GamingCommunity() {
   const allFranchises = [...TOP_FRANCHISES, ...extraFranchises];
   const allGenres = ["All", ...Array.from(new Set(allFranchises.map(f => f.genre)))];
 
-  // Per-community visibility (checkmark filter)
   const [visibleCommunities, setVisibleCommunities] = React.useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("gc_visible_ids") || "null");
-      return saved ? new Set(saved) : null; // null = all visible (default)
+      return saved ? new Set(saved) : null;
     } catch { return null; }
   });
   const toggleCommunityVisible = (id) => {
@@ -612,7 +609,6 @@ export default function GamingCommunity() {
     return matchSearch && matchGenre && matchVisible;
   });
 
-  // Auto-open first franchise on load
   const [autoOpened, setAutoOpened] = React.useState(false);
   React.useEffect(() => {
     if (!autoOpened && filtered.length > 0) {
@@ -655,10 +651,9 @@ export default function GamingCommunity() {
     return moderatorIds.has(franchiseId) || (communities[franchiseId]?.moderator_emails || []).includes(user?.email);
   };
 
-  // Moderators can only manage up to 3 groups
   const getModeratorGroupCount = () => {
     if (!user?.email || admin) return 0;
-    return Array.from(moderatorIds).filter(id => 
+    return Array.from(moderatorIds).filter(id =>
       (communities[id]?.moderator_emails || []).includes(user.email)
     ).length;
   };
@@ -666,7 +661,6 @@ export default function GamingCommunity() {
   const canAdminCard = (franchiseId) => {
     if (admin) return true;
     if (!isModerator(franchiseId)) return false;
-    // Mods can only manage their own groups (max 3)
     return getModeratorGroupCount() <= 3;
   };
 
@@ -692,7 +686,6 @@ export default function GamingCommunity() {
       <AnimatedController />
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
-      {/* Back button */}
       <div className="pt-6 px-4 max-w-7xl mx-auto">
         <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-2">
           <ArrowLeft className="w-4 h-4" /> Back
@@ -717,7 +710,7 @@ export default function GamingCommunity() {
               </span>
             </h1>
             <p className="text-gray-400 text-base max-w-2xl mx-auto mb-6">
-              Join franchise communities · Post, connect & celebrate gaming culture worldwide
+              Join franchise communities &middot; Post, connect &amp; celebrate gaming culture worldwide
             </p>
           </motion.div>
 
@@ -764,7 +757,6 @@ export default function GamingCommunity() {
                 <Eye className="w-3.5 h-3.5" /> Show Hidden ({hiddenIds.size})
               </button>
             )}
-            {/* Recommend Game — bar style with glow */}
             <button onClick={() => setShowRecommend(true)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black text-white transition-all"
               style={{
@@ -830,23 +822,31 @@ export default function GamingCommunity() {
               className="overflow-hidden mb-5">
               <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                   <p className="text-white font-bold text-sm">📂 Select Communities to Display</p>
-                   <div className="flex gap-2">
-                     <button onClick={selectAllCommunities} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors flex items-center gap-1">
-                       <CheckSquare className="w-3 h-3" /> Select All
-                     </button>
-                     <button onClick={() => {
-                       const allIds = new Set(allFranchises.map(f => f.id));
-                       const emptySet = new Set();
-                       setVisibleCommunities(emptySet);
-                       localStorage.setItem("gc_visible_ids", JSON.stringify([]));
-                     }} className="text-xs text-gray-500 hover:text-red-400 font-semibold transition-colors flex items-center gap-1">
-                       <Square className="w-3 h-3" /> Unselect All
-                     </button>
-                   </div>
-                 </div>
+                  <p className="text-white font-bold text-sm">Select Communities to Display</p>
+                  <div className="flex gap-2">
+                    <button onClick={selectAllCommunities} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors flex items-center gap-1">
+                      <CheckSquare className="w-3 h-3" /> Select All
+                    </button>
+                    <button onClick={() => {
+                      setVisibleCommunities(new Set());
+                      localStorage.setItem("gc_visible_ids", JSON.stringify([]));
+                    }} className="text-xs text-gray-500 hover:text-red-400 font-semibold transition-colors flex items-center gap-1">
+                      <Square className="w-3 h-3" /> Unselect All
+                    </button>
+                  </div>
+                </div>
+                {/* Search within filter panel */}
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                  <input
+                    value={filterSearch}
+                    onChange={e => setFilterSearch(e.target.value)}
+                    placeholder="Search communities in list..."
+                    className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-gray-800 border border-gray-700 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-60 overflow-y-auto">
-                  {allFranchises.map(f => (
+                  {allFranchises.filter(f => !filterSearch || f.name.toLowerCase().includes(filterSearch.toLowerCase())).map(f => (
                     <label key={f.id} className="flex items-center gap-2 cursor-pointer group/lbl">
                       <button type="button" onClick={() => toggleCommunityVisible(f.id)} className="flex-shrink-0">
                         {isVisible(f.id)
@@ -864,9 +864,8 @@ export default function GamingCommunity() {
           )}
         </AnimatePresence>
 
-        {/* Split layout: left card list + right newsfeed with drag-resize */}
+        {/* Split layout */}
         <div className="flex gap-0">
-          {/* LEFT: scrollable community cards */}
           <div className="flex-shrink-0 flex flex-col gap-3 overflow-y-auto pr-1" style={{ width: sidebarWidth, maxHeight: 800 }}>
             {filtered.length === 0 && (
               <div className="text-center py-12">
@@ -874,17 +873,16 @@ export default function GamingCommunity() {
                 <p className="text-gray-400 font-semibold">No communities found</p>
               </div>
             )}
-            {/* Hidden panel */}
             {showHiddenPanel && hiddenIds.size > 0 && (
               <div className="mb-2 p-2 bg-gray-800 rounded-xl border border-gray-700">
-                <p className="text-gray-400 text-[10px] font-bold mb-1.5">Hidden Communities — click to unhide:</p>
+                <p className="text-gray-400 text-[10px] font-bold mb-1.5">Hidden — click to unhide:</p>
                 <div className="flex flex-wrap gap-1">
                   {[...hiddenIds].map(id => {
                     const f = allFranchises.find(x => x.id === id);
                     return f ? (
                       <button key={id} onClick={() => toggleHide(id)}
                         className="px-2 py-1 rounded-lg bg-gray-700 text-white text-[10px] font-semibold hover:bg-purple-700 transition-colors">
-                        {f.name} 👁
+                        {f.name}
                       </button>
                     ) : null;
                   })}
@@ -926,7 +924,8 @@ export default function GamingCommunity() {
               <GripVertical className="w-3 h-3 text-gray-500 group-hover:text-purple-300 -ml-1" />
             </div>
           </div>
-          {/* RIGHT: newsfeed panel */}
+
+          {/* RIGHT: newsfeed */}
           <div className="flex-1 min-w-0">
             {activeFranchise ? (
               <CommunityNewsfeed
@@ -943,7 +942,7 @@ export default function GamingCommunity() {
                   <p className="text-gray-600 text-xs mt-1">to open its newsfeed</p>
                   <button onClick={() => { if (filtered[0]) window.location.href = `/community/${filtered[0].id}`; }}
                     className="mt-4 px-4 py-2 rounded-xl text-xs font-bold text-purple-300 border border-purple-700/40 hover:bg-purple-900/20 transition-all">
-                    Or browse full community →
+                    Or browse full community &rarr;
                   </button>
                 </div>
               </div>
@@ -952,7 +951,6 @@ export default function GamingCommunity() {
         </div>
       </div>
 
-      {/* Recommend Modal */}
       {showRecommend && (
         <RecommendModal
           type="game"
@@ -963,7 +961,6 @@ export default function GamingCommunity() {
         />
       )}
 
-      {/* Group Chat for active franchise */}
       {activeFranchise && (
         <GroupChat
           franchiseId={activeFranchise.id}

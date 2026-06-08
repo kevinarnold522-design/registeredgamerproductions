@@ -248,7 +248,7 @@ export function SpecialEffectsRenderer({ effect, children }) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden" style={{ isolation: "isolate" }}>
       {children}
       {renderEffect()}
     </div>

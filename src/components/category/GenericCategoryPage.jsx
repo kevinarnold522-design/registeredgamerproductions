@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Search, Plus, Radio } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Plus, Radio, SlidersHorizontal, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
@@ -62,6 +62,12 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeSub, setActiveSub] = useState(sub || "all");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [sortBy, setSortBy] = useState("newest");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [isFree, setIsFree] = useState(false);
+  const [productType, setProductType] = useState("all");
   const meta = CATEGORY_META[cat] || CATEGORY_META.services;
   const canPost = user;
 
@@ -72,10 +78,23 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
     });
   }, [cat]);
 
+  const resetFilters = () => { setSortBy("newest"); setPriceMin(""); setPriceMax(""); setIsFree(false); setProductType("all"); setSearch(""); };
+  const hasActiveFilters = sortBy !== "newest" || priceMin || priceMax || isFree || productType !== "all" || search;
+
   const filtered = listings.filter(l => {
     const matchSub = activeSub === "all" || l.subcategory === activeSub;
-    const matchSearch = !search || l.title?.toLowerCase().includes(search.toLowerCase());
-    return matchSub && matchSearch;
+    const matchSearch = !search || l.title?.toLowerCase().includes(search.toLowerCase()) || l.description?.toLowerCase().includes(search.toLowerCase()) || l.seller_username?.toLowerCase().includes(search.toLowerCase());
+    const matchFree = !isFree || l.price === 0 || l.is_free;
+    const matchMin = priceMin === "" || (l.price || 0) >= parseFloat(priceMin);
+    const matchMax = priceMax === "" || (l.price || 0) <= parseFloat(priceMax);
+    const matchType = productType === "all" || l.product_type === productType;
+    return matchSub && matchSearch && matchFree && matchMin && matchMax && matchType;
+  }).sort((a, b) => {
+    if (sortBy === "price_asc") return (a.price || 0) - (b.price || 0);
+    if (sortBy === "price_desc") return (b.price || 0) - (a.price || 0);
+    if (sortBy === "popular") return (b.views || 0) - (a.views || 0);
+    if (sortBy === "oldest") return new Date(a.created_date) - new Date(b.created_date);
+    return new Date(b.created_date) - new Date(a.created_date);
   });
 
   if (cat === "livestream") {
@@ -140,24 +159,90 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       )}
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-3 mb-6 items-center justify-between">
-          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 max-w-md">
-            <Search className="w-4 h-4 text-gray-500" />
+        <div className="flex gap-3 mb-3 items-center justify-between flex-wrap">
+          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 min-w-[200px] max-w-md">
+            <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder={`Search ${meta.title}...`}
               className="bg-transparent text-white text-sm placeholder-gray-600 outline-none flex-1" />
+            {search && <button onClick={() => setSearch("")} className="text-gray-600 hover:text-white"><X className="w-3.5 h-3.5" /></button>}
           </div>
-          {canPost && cat !== "tournaments" && (
-            <a href={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
-              <Plus className="w-4 h-4" /> Add Listing
-            </a>
-          )}
-          {cat === "tournaments" && (
-            <a href="/tournaments" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600/20 border border-green-600/40 text-green-300 text-sm font-semibold hover:bg-green-600/30 whitespace-nowrap">
-              <Plus className="w-4 h-4" /> {canPost ? "Create Tournament" : "View Tournaments"}
-            </a>
-          )}
+          <div className="flex gap-2 items-center flex-wrap">
+            <button onClick={() => setShowAdvanced(v => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition-all ${showAdvanced ? "border-purple-500/60 bg-purple-900/20 text-purple-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
+              <SlidersHorizontal className="w-4 h-4" /> Filters {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-purple-400" />}
+            </button>
+            {canPost && cat !== "tournaments" && (
+              <a href={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
+                <Plus className="w-4 h-4" /> Add Listing
+              </a>
+            )}
+            {cat === "tournaments" && (
+              <a href="/tournaments" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600/20 border border-green-600/40 text-green-300 text-sm font-semibold hover:bg-green-600/30 whitespace-nowrap">
+                <Plus className="w-4 h-4" /> {canPost ? "Create Tournament" : "View Tournaments"}
+              </a>
+            )}
+          </div>
         </div>
 
+        {/* Advanced filter panel */}
+        <AnimatePresence>
+          {showAdvanced && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-4">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-white font-bold text-sm">Advanced Filters</p>
+                  {hasActiveFilters && (
+                    <button onClick={resetFilters} className="text-xs text-gray-500 hover:text-red-400 flex items-center gap-1 transition-colors">
+                      <X className="w-3 h-3" /> Reset all
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                  <div>
+                    <label className="text-gray-500 text-xs font-semibold mb-1 block">Sort by</label>
+                    <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500">
+                      <option value="newest">Newest</option>
+                      <option value="oldest">Oldest</option>
+                      <option value="popular">Most Views</option>
+                      <option value="price_asc">Price: Low to High</option>
+                      <option value="price_desc">Price: High to Low</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-gray-500 text-xs font-semibold mb-1 block">Type</label>
+                    <select value={productType} onChange={e => setProductType(e.target.value)}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500">
+                      <option value="all">All Types</option>
+                      <option value="digital">Digital</option>
+                      <option value="physical">Physical</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-gray-500 text-xs font-semibold mb-1 block">Min Price</label>
+                    <input type="number" value={priceMin} onChange={e => setPriceMin(e.target.value)} placeholder="0"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div>
+                    <label className="text-gray-500 text-xs font-semibold mb-1 block">Max Price</label>
+                    <input type="number" value={priceMax} onChange={e => setPriceMax(e.target.value)} placeholder="Any"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                  </div>
+                  <div className="flex items-end pb-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={isFree} onChange={e => setIsFree(e.target.checked)} className="w-4 h-4 accent-green-500 rounded" />
+                      <span className="text-green-400 text-xs font-semibold">Free Only</span>
+                    </label>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-xs mt-2">{filtered.length} result{filtered.length !== 1 ? "s" : ""} found</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="mb-3" />
         {loading ? (
           <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>
         ) : filtered.length === 0 ? (

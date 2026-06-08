@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, Lock, User, Phone, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, User, ShieldCheck } from "lucide-react";
 import { ACCOUNT_TYPES, TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 
 export default function Register() {
   const navigate = useNavigate();
-  // Read ?type= param from URL to pre-select account type
   const urlParams = new URLSearchParams(window.location.search);
   const preselectedType = urlParams.get("type");
 
-  // If already signed in, redirect to home
   useEffect(() => {
     base44.auth.isAuthenticated().then(auth => {
       if (auth) navigate("/");
@@ -20,16 +18,7 @@ export default function Register() {
 
   const [step, setStep] = useState(preselectedType ? 2 : 1);
   const [accountType, setAccountType] = useState(preselectedType || null);
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-    otpMethod: "email",
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [form, setForm] = useState({ username: "", email: "" });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -46,11 +35,10 @@ export default function Register() {
 
   const handleAccountFormNext = (e) => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) { setError("Passwords do not match."); return; }
-    if (form.password.length < 8) { setError("Password must be at least 8 characters."); return; }
     if (!form.username.trim()) { setError("Username is required."); return; }
+    if (!form.email.trim()) { setError("Email is required."); return; }
     setError("");
-    setStep(3); // Go to Terms
+    setStep(3);
   };
 
   const handleRegister = async () => {
@@ -61,8 +49,6 @@ export default function Register() {
       localStorage.setItem("pending_profile", JSON.stringify({
         username: form.username,
         account_type: accountType,
-        phone_number: form.phone,
-        preferred_otp_method: form.otpMethod,
         display_name: form.username,
         honor_badge: "founding_member",
         honor_badge_label: "Founding Member",
@@ -74,7 +60,6 @@ export default function Register() {
     setLoading(false);
   };
 
-  // Detect email provider for opening correct inbox on step 4
   const EMAIL_PROVIDERS_MAP = [
     { match: ["gmail"], webmail: "https://mail.google.com" },
     { match: ["yahoo"], webmail: "https://mail.yahoo.com" },
@@ -88,14 +73,10 @@ export default function Register() {
     p.match.some(m => form.email.toLowerCase().includes(m))
   )?.webmail || null;
 
-
-
   const handleSocialLogin = () => {
     localStorage.setItem("pending_profile", JSON.stringify({
       username: "",
       account_type: accountType || "regular",
-      phone_number: "",
-      preferred_otp_method: "email",
       display_name: "",
     }));
     base44.auth.loginWithProvider("google", "/");
@@ -106,7 +87,6 @@ export default function Register() {
       className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ background: "radial-gradient(ellipse at center, #0f0f2e 0%, #000000 100%)" }}
     >
-      {/* Stars */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 40 }).map((_, i) => (
           <div key={i} className="absolute rounded-full bg-white opacity-20"
@@ -115,7 +95,6 @@ export default function Register() {
       </div>
 
       <div className="w-full max-w-lg relative z-10">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
@@ -155,29 +134,24 @@ export default function Register() {
                       <p className="text-gray-400 text-sm mt-0.5">{type.desc}</p>
                       {type.id === "digital_creator" && (
                         <div className="mt-2 space-y-1.5">
-                          <p className="text-purple-300 text-xs font-bold">📹 What to upload:</p>
+                          <p className="text-purple-300 text-xs font-bold">What to upload:</p>
                           <div className="flex flex-wrap gap-1.5">
-                            {["🎮 Gameplay","🔧 Mods","📚 Tutorials","📡 Streams","🗺️ Walkthroughs","🏆 Missions","✂️ Highlights","⚽ Sports Games","🎯 FPS Clips"].map(f => (
+                            {["Gameplay","Mods","Tutorials","Streams","Walkthroughs","Missions","Highlights","Sports Games","FPS Clips"].map(f => (
                               <span key={f} className="text-xs bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2 py-0.5 rounded-full">{f}</span>
-                            ))}
-                          </div>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            {["🔗 Link Shortener Earnings","🤖 AI Tools","🎮 Gaming Checkmark","💰 Earn $1/1K Views"].map(f => (
-                              <span key={f} className="text-xs bg-pink-900/30 border border-pink-700/30 text-pink-300 px-2 py-0.5 rounded-full">{f}</span>
                             ))}
                           </div>
                         </div>
                       )}
                       {type.id === "regular" && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
-                          {["📺 Link YouTube","🎬 Share Videos","🛒 Buy Products","❤️ Favorites"].map(f => (
+                          {["Link YouTube","Share Videos","Buy Products","Favorites"].map(f => (
                             <span key={f} className="text-xs bg-blue-900/30 border border-blue-700/30 text-blue-300 px-2 py-0.5 rounded-full">{f}</span>
                           ))}
                         </div>
                       )}
                       {type.id === "business" && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
-                          {["🏪 List Products","🎬 Share Videos","✅ Verified Badge","📊 Sales Analytics","💳 PayPal Payouts"].map(f => (
+                          {["List Products","Verified Badge","Sales Analytics","PayPal Payouts"].map(f => (
                             <span key={f} className="text-xs bg-green-900/30 border border-green-700/30 text-green-300 px-2 py-0.5 rounded-full">{f}</span>
                           ))}
                         </div>
@@ -190,17 +164,17 @@ export default function Register() {
               <div className="flex flex-col items-center gap-3 mt-6">
                 <p className="text-gray-500 text-sm">
                   Already have an account?{" "}
-                  <button onClick={() => base44.auth.loginWithProvider("google", "/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
+                  <button onClick={() => base44.auth.redirectToLogin("/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
                 </p>
-                <button onClick={() => base44.auth.loginWithProvider("google", "/")}
+                <button onClick={() => base44.auth.redirectToLogin("/")}
                   className="w-full py-3 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-sm hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
-                  🔐 Sign In to Existing Account
+                  Sign In to Existing Account
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 2: Create Account */}
+          {/* Step 2: Enter Email + Username */}
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
               <button onClick={() => setStep(1)} className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-5 transition-colors">
@@ -221,7 +195,7 @@ export default function Register() {
                   <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.5 35.3 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.1C9.5 36.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.3 5.3C43.1 34.7 44 29.7 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
                   Continue with Google
                 </button>
-                <button onClick={() => { base44.auth.loginWithProvider("microsoft", "/"); }}
+                <button onClick={() => base44.auth.loginWithProvider("microsoft", "/")}
                   className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-all">
                   <svg width="18" height="18" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
                   Continue with Microsoft
@@ -230,7 +204,7 @@ export default function Register() {
 
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex-1 h-px bg-gray-800" />
-                <span className="text-gray-600 text-xs">or create manually</span>
+                <span className="text-gray-600 text-xs">or continue with email</span>
                 <div className="flex-1 h-px bg-gray-800" />
               </div>
 
@@ -245,39 +219,11 @@ export default function Register() {
                   <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email address" required
                     className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
                 </div>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone number (optional)"
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={handleChange} placeholder="Create password (min 8 chars)" required
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input name="confirmPassword" type={showConfirm ? "text" : "password"} value={form.confirmPassword} onChange={handleChange} placeholder="Confirm password" required
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
-                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
 
-                {/* OTP Method */}
-                <div>
-                  <p className="text-gray-400 text-xs mb-2 font-semibold">Preferred OTP verification method:</p>
-                  <div className="flex gap-3">
-                    {["email", "sms"].map((method) => (
-                      <label key={method} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border cursor-pointer text-sm font-semibold transition-colors ${form.otpMethod === method ? "border-purple-500 bg-purple-900/30 text-purple-300" : "border-gray-700 text-gray-500"}`}>
-                        <input type="radio" name="otpMethod" value={method} checked={form.otpMethod === method} onChange={handleChange} className="hidden" />
-                        {method === "email" ? "📧 Email OTP" : "📱 SMS OTP"}
-                      </label>
-                    ))}
-                  </div>
+                <div className="bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3">
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    <span className="text-purple-300 font-semibold">How it works:</span> We'll send a magic sign-in link to your email. Click it to activate your account and set up your username — no OTP or password needed.
+                  </p>
                 </div>
 
                 {error && <p className="text-red-400 text-sm text-center">{error}</p>}
@@ -290,7 +236,7 @@ export default function Register() {
             </motion.div>
           )}
 
-          {/* Step 3: Terms & Conditions */}
+          {/* Step 3: Terms */}
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
               <button onClick={() => setStep(2)} className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-5 transition-colors">
@@ -298,7 +244,7 @@ export default function Register() {
               </button>
               <div className="text-center mb-5">
                 <ShieldCheck className="w-10 h-10 text-purple-400 mx-auto mb-2" />
-                <h2 className="text-2xl font-black text-white">Terms & Conditions</h2>
+                <h2 className="text-2xl font-black text-white">Terms &amp; Conditions</h2>
                 <p className="text-gray-400 text-sm mt-1">Please read and accept before creating your account</p>
               </div>
 
@@ -310,8 +256,7 @@ export default function Register() {
                 <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)}
                   className="w-5 h-5 mt-0.5 rounded accent-purple-600 flex-shrink-0" />
                 <span className="text-gray-300 text-sm">
-                  I have read and agree to the <span className="text-purple-400 font-semibold">Terms and Conditions</span>, 
-                  including the Privacy Policy and Google AdSense policy compliance.
+                  I have read and agree to the <span className="text-purple-400 font-semibold">Terms and Conditions</span>, including the Privacy Policy.
                 </span>
               </label>
 
@@ -319,15 +264,14 @@ export default function Register() {
 
               <button onClick={handleRegister} disabled={!termsAccepted || loading}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base hover:opacity-90 transition-opacity disabled:opacity-40">
-                {loading ? "Creating Account..." : "✅ Accept & Create Account"}
+                {loading ? "Creating Account..." : "Accept & Send Sign-In Link"}
               </button>
             </motion.div>
           )}
 
-          {/* Step 4: Email Verification Sent */}
+          {/* Step 4: Check Email */}
           {step === 4 && (
             <motion.div key="step4" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-              {/* Honor Badge Award */}
               <div className="mb-4 px-4 py-3 rounded-2xl border border-orange-500/40 bg-orange-900/10 flex items-center justify-center gap-3">
                 <span className="text-3xl">🏅</span>
                 <div className="text-left">
@@ -340,37 +284,37 @@ export default function Register() {
                 📧
               </div>
               <h2 className="text-2xl font-black text-white mb-3">Check Your Email!</h2>
-              <p className="text-gray-400 mb-2">We've sent a verification link to:</p>
+              <p className="text-gray-400 mb-2">We've sent a magic sign-in link to:</p>
               <p className="text-purple-400 font-bold text-lg mb-4">{form.email}</p>
 
-              {/* Open correct inbox button */}
               {detectedWebmail && (
                 <button
                   onClick={() => window.open(detectedWebmail, "_blank", "noopener,noreferrer")}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-purple-600/50 bg-gray-900 text-white font-semibold text-sm hover:bg-gray-800 transition-colors mb-4"
                 >
-                  📬 Open My Email Inbox
+                  Open My Email Inbox
                 </button>
               )}
 
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6 text-left">
-                <p className="text-white font-semibold text-sm mb-2">📋 What happens next:</p>
+                <p className="text-white font-semibold text-sm mb-2">What happens next:</p>
                 <ol className="text-gray-400 text-xs space-y-1.5 list-decimal list-inside">
-                  <li>Click the verification link sent to your email</li>
-                  <li>Your account will be activated automatically</li>
-                  <li>Sign in and complete your profile setup</li>
-                  {accountType !== "regular" && <li>Submit verification documents to become a seller</li>}
+                  <li>Click the sign-in link sent to your email</li>
+                  <li>Your account activates automatically</li>
+                  <li>Set up your profile with username <span className="text-purple-300 font-semibold">@{form.username}</span></li>
+                  {accountType !== "regular" && <li>Submit verification docs to become a seller</li>}
                   <li>Start exploring GAMER Productions!</li>
                 </ol>
               </div>
-              <p className="text-gray-500 text-xs mb-1">An OTP will be required on each login via <span className="text-purple-400">{form.otpMethod === "email" ? "Email" : "SMS"}</span>.</p>
+
               <button
-                onClick={() => base44.auth.loginWithProvider("google", "/")}
-                className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity mt-4">
+                onClick={() => base44.auth.redirectToLogin("/")}
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity mt-2">
                 <Check className="w-5 h-5" /> Go to Sign In
               </button>
               <p className="text-gray-600 text-xs mt-4">
-                Didn't receive it? Check spam or <button onClick={async () => { try { await base44.users.inviteUser(form.email, "user"); } catch {} }} className="text-purple-400 underline">resend</button>
+                Didn't receive it? Check spam or{" "}
+                <button onClick={async () => { try { await base44.users.inviteUser(form.email, "user"); } catch {} }} className="text-purple-400 underline">resend</button>
               </p>
             </motion.div>
           )}
