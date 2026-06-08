@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video, Image, Maximize2, Send } from "lucide-react";
+import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video, Maximize2, Send, Pencil, Check, X, Music, Play, Pause } from "lucide-react";
 import ImageGalleryModal from "@/components/community/ImageGalleryModal";
 import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
 import PostExpandedModal from "@/components/community/PostExpandedModal";
@@ -108,7 +108,7 @@ function CommentsSection({ post, user, isTier1 }) {
   );
 }
 
-// Image grid layout — like Facebook
+// Facebook-style image grid
 function ImageGrid({ images, onImageClick }) {
   if (!images || images.length === 0) return null;
   const count = images.length;
@@ -120,7 +120,6 @@ function ImageGrid({ images, onImageClick }) {
       </button>
     );
   }
-
   if (count === 2) {
     return (
       <div className="grid grid-cols-2 gap-1.5 mt-3">
@@ -132,7 +131,6 @@ function ImageGrid({ images, onImageClick }) {
       </div>
     );
   }
-
   if (count === 3) {
     return (
       <div className="grid grid-cols-2 gap-1.5 mt-3">
@@ -147,8 +145,6 @@ function ImageGrid({ images, onImageClick }) {
       </div>
     );
   }
-
-  // 4+
   return (
     <div className="grid grid-cols-2 gap-1.5 mt-3">
       {images.slice(0, 4).map((url, i) => (
@@ -165,6 +161,51 @@ function ImageGrid({ images, onImageClick }) {
   );
 }
 
+// Inline music player
+function MusicPlayer({ musicUrl, musicTitle }) {
+  const audioRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (playing) { audioRef.current.pause(); setPlaying(false); }
+    else { audioRef.current.play(); setPlaying(true); }
+  };
+
+  const fmt = (s) => {
+    if (!s || isNaN(s)) return "0:00";
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
+  return (
+    <div className="mt-3 flex items-center gap-3 bg-gray-800/70 border border-gray-700 rounded-2xl px-4 py-3">
+      <audio ref={audioRef} src={musicUrl}
+        onTimeUpdate={() => setProgress(audioRef.current?.currentTime || 0)}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+        onEnded={() => setPlaying(false)} />
+      <button onClick={toggle}
+        className="w-9 h-9 rounded-full bg-purple-600 hover:bg-purple-500 flex items-center justify-center flex-shrink-0 transition-colors">
+        {playing ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white ml-0.5" />}
+      </button>
+      <div className="flex-1 min-w-0">
+        <p className="text-white text-xs font-bold truncate flex items-center gap-1.5">
+          <Music className="w-3 h-3 text-purple-400 flex-shrink-0" />
+          {musicTitle || "Audio Track"}
+        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <input type="range" min={0} max={duration || 1} step={0.1} value={progress}
+            onChange={e => { const t = parseFloat(e.target.value); setProgress(t); if (audioRef.current) audioRef.current.currentTime = t; }}
+            className="flex-1 h-1 accent-purple-500 cursor-pointer" />
+          <span className="text-gray-500 text-[10px] flex-shrink-0">{fmt(progress)} / {fmt(duration)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const EFFECT_LABELS = {
   none: null,
   fire: "🔥 Fire Effect",
@@ -174,7 +215,7 @@ const EFFECT_LABELS = {
   glass: "🔮 Glass Effect",
 };
 
-export default function CommunityPostCard({ post, user, profile, isTier1, canManage, canDelete, onFlag, onRemove, accentColor }) {
+export default function CommunityPostCard({ post, user, profile, isTier1, canManage, canDelete, onFlag, onRemove, onUpdate, accentColor }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
   const [userRating, setUserRating] = useState(0);
@@ -183,7 +224,15 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [showExpanded, setShowExpanded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  // Edit state
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content || "");
+  const [editDescription, setEditDescription] = useState(post.description || "");
+  const [saving, setSaving] = useState(false);
+
   const postEffect = post.special_effect || "none";
+  const isOwner = user?.email === post.author_email;
+  const canEdit = isOwner || canManage;
 
   useEffect(() => {
     if (!user?.email) return;
@@ -199,14 +248,23 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
     await base44.entities.CommunityPost.update(post.id, { likes: next ? likeCount + 1 : Math.max(0, likeCount - 1) });
   };
 
+  const handleSaveEdit = async () => {
+    if (!editContent.trim()) return;
+    setSaving(true);
+    await base44.entities.CommunityPost.update(post.id, { content: editContent, description: editDescription });
+    if (onUpdate) onUpdate(post.id, { content: editContent, description: editDescription });
+    setSaving(false);
+    setEditing(false);
+  };
+
   const handleShare = (platform) => {
-    const text = encodeURIComponent(`Check out this post on GAMER.PRODUCTIONS: "${post.content.slice(0, 100)}"`);
+    const text = encodeURIComponent(`Check out this post on GAMER.PRODUCTIONS: "${(post.content || "").slice(0, 100)}"`);
     const url = encodeURIComponent(window.location.href);
     if (platform === "facebook") window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, "_blank");
     else if (platform === "whatsapp") window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
     else if (platform === "telegram") window.open(`https://t.me/share/url?url=${url}&text=${text}`, "_blank");
     else if (platform === "viber") window.open(`viber://forward?text=${text}%20${url}`, "_blank");
-    else if (platform === "copy") navigator.clipboard?.writeText(post.content);
+    else if (platform === "copy") navigator.clipboard?.writeText(window.location.href);
     setShareOpen(false);
   };
 
@@ -245,6 +303,12 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
                   title="Expand post">
                   <Maximize2 className="w-3.5 h-3.5" />
                 </button>
+                {canEdit && !editing && (
+                  <button onClick={() => setEditing(true)}
+                    className="w-8 h-8 rounded-xl bg-blue-900/30 hover:bg-blue-900/60 flex items-center justify-center" title="Edit post">
+                    <Pencil className="w-3.5 h-3.5 text-blue-400" />
+                  </button>
+                )}
                 {canManage && (
                   <>
                     <button onClick={() => onFlag(post)} title="Flag"
@@ -262,14 +326,43 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
               </div>
             </div>
 
-            {/* Content */}
-            {post.content && (
-              <p className="text-gray-100 text-base leading-relaxed mb-1">{post.content}</p>
+            {/* Content — edit mode or display */}
+            {editing ? (
+              <div className="space-y-2 mb-3">
+                <textarea value={editContent} onChange={e => setEditContent(e.target.value)}
+                  rows={3}
+                  className="w-full bg-gray-800 border border-purple-500 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none resize-none" />
+                <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
+                  rows={2}
+                  placeholder="Description (optional)..."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none resize-none" />
+                <div className="flex gap-2">
+                  <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold disabled:opacity-50 transition-colors">
+                    <Check className="w-3.5 h-3.5" /> {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button onClick={() => { setEditing(false); setEditContent(post.content || ""); setEditDescription(post.description || ""); }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold transition-colors">
+                    <X className="w-3.5 h-3.5" /> Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {post.content && (
+                  <p className="text-gray-100 text-base leading-relaxed mb-1">{post.content}</p>
+                )}
+                {post.description && (
+                  <p className="text-gray-400 text-sm mt-2 leading-relaxed bg-gray-800/50 rounded-xl p-3 border border-gray-700/40">
+                    {post.description}
+                  </p>
+                )}
+              </>
             )}
-            {post.description && (
-              <p className="text-gray-400 text-sm mt-2 leading-relaxed bg-gray-800/50 rounded-xl p-3 border border-gray-700/40">
-                {post.description}
-              </p>
+
+            {/* Music Player */}
+            {post.music_url && !editing && (
+              <MusicPlayer musicUrl={post.music_url} musicTitle={post.music_title} />
             )}
 
             {/* Image Grid */}
@@ -293,7 +386,7 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
             )}
 
             {/* Actions */}
-            <div className="flex items-center gap-0.5 mt-4 pt-3 border-t border-gray-800">
+            <div className="flex items-center gap-0.5 mt-4 pt-3 border-t border-gray-800 flex-wrap">
               {/* Like */}
               <button onClick={handleLike}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${liked ? "text-pink-400 bg-pink-900/20" : "text-gray-500 hover:text-pink-400 hover:bg-gray-800"}`}>
@@ -319,7 +412,13 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
                   {shareOpen && (
                     <motion.div initial={{ opacity: 0, scale: 0.9, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 8 }}
                       className="absolute bottom-10 left-0 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-2 z-20 flex flex-col gap-1 min-w-[160px]">
-                      {[["facebook","f Facebook","text-blue-400"],["whatsapp","💬 WhatsApp","text-green-400"],["telegram","✈ Telegram","text-sky-400"],["viber","📲 Viber","text-violet-300"],["copy","📋 Copy Link","text-gray-300"]].map(([p,l,c]) => (
+                      {[
+                        ["facebook", "f  Facebook", "text-blue-400"],
+                        ["whatsapp", "💬 WhatsApp", "text-green-400"],
+                        ["telegram", "✈ Telegram", "text-sky-400"],
+                        ["viber", "📲 Viber", "text-violet-300"],
+                        ["copy", "📋 Copy Link", "text-gray-300"]
+                      ].map(([p, l, c]) => (
                         <button key={p} onClick={() => handleShare(p)}
                           className={`text-left px-3 py-1.5 rounded-xl text-xs font-bold ${c} hover:bg-gray-800 transition-colors`}>{l}</button>
                       ))}

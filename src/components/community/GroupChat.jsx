@@ -4,8 +4,8 @@ import { MessageCircle, Send, X, ChevronDown, Pencil, Check } from "lucide-react
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 
-export default function GroupChat({ franchiseId, communityId, user, profile, accentColor = "#7c3aed" }) {
-  const [open, setOpen] = useState(false);
+export default function GroupChat({ franchiseId, communityId, user, profile, accentColor = "#7c3aed", inline = false }) {
+  const [open, setOpen] = useState(inline);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -81,35 +81,12 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
 
   const formatTime = (date) => new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  return (
-    <>
-      {/* Floating chat button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          onClick={() => setOpen(v => !v)}
-          className="relative w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl transition-all hover:scale-105"
-          style={{ background: `linear-gradient(135deg, ${accentColor}, #ec4899)`, boxShadow: `0 0 24px ${accentColor}66` }}
-        >
-          <MessageCircle className="w-6 h-6 text-white" />
-          {unread > 0 && !open && (
-            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-gray-950">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Chat panel */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed bottom-24 right-6 z-40 w-80 sm:w-96 bg-gray-950 border border-purple-700/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
-            style={{ height: 480, boxShadow: `0 0 40px ${accentColor}33` }}
-          >
+  // Inline chat panel renderer
+  const chatPanel = (
+    <div
+      className={`bg-gray-950 border border-purple-700/40 rounded-3xl flex flex-col overflow-hidden ${inline ? "w-full" : "fixed bottom-24 right-6 z-40 w-80 sm:w-96"}`}
+      style={{ height: inline ? 420 : 480, boxShadow: `0 0 40px ${accentColor}33` }}
+    >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 flex-shrink-0 border-b border-gray-800"
               style={{ background: `linear-gradient(135deg, ${accentColor}22, transparent)` }}>
@@ -118,9 +95,11 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
                 <span className="text-white font-black text-sm">Group Chat</span>
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               </div>
-              <button onClick={() => setOpen(false)} className="text-gray-500 hover:text-white transition-colors">
-                <ChevronDown className="w-4 h-4" />
-              </button>
+              {!inline && (
+                <button onClick={() => setOpen(false)} className="text-gray-500 hover:text-white transition-colors">
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Messages */}
@@ -236,6 +215,49 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
                 </div>
               )}
             </div>
+    </div>
+  );
+
+  if (inline) {
+    return (
+      <div className="w-full">
+        <div className="flex items-center gap-2 mb-3">
+          <MessageCircle className="w-4 h-4" style={{ color: accentColor }} />
+          <h3 className="text-white font-black text-sm uppercase tracking-wider">Community Group Chat</h3>
+          {unread > 0 && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black">{unread} new</span>}
+        </div>
+        {chatPanel}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Floating chat button */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setOpen(v => !v)}
+          className="relative w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl transition-all hover:scale-105"
+          style={{ background: `linear-gradient(135deg, ${accentColor}, #ec4899)`, boxShadow: `0 0 24px ${accentColor}66` }}
+        >
+          <MessageCircle className="w-6 h-6 text-white" />
+          {unread > 0 && !open && (
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-gray-950">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            {chatPanel}
           </motion.div>
         )}
       </AnimatePresence>

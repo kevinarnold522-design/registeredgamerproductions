@@ -37,6 +37,14 @@
       },
       "description": "Video attachments for the post"
     },
+    "music_url": {
+      "type": "string",
+      "description": "Attached music/audio file URL"
+    },
+    "music_title": {
+      "type": "string",
+      "description": "Title/name of the attached music track"
+    },
     "likes": {
       "type": "number",
       "default": 0
