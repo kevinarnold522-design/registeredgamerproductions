@@ -14,6 +14,7 @@ import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
 import SocialLinksPanel from "@/components/profile/SocialLinksPanel";
 import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
+import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
 import ReelCreator from "@/components/shared/ReelCreator";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 
@@ -301,6 +302,13 @@ export default function Profile() {
             )}
           </div>
         </div>
+
+        {/* Login History */}
+        {isOwnProfile && user && (
+          <div className="mt-6">
+            <LoginHistoryPanel userEmail={user.email} />
+          </div>
+        )}
       </div>
 
       {/* Transition Modal */}

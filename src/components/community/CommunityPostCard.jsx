@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import RadiantGlowBorder from "@/components/shared/RadiantGlowBorder";
 import { Heart, MessageCircle, Share2, Star, Trash2, Flag, Video, Maximize2, Send, Pencil, Check, X, Music, Play, Pause } from "lucide-react";
 import ImageGalleryModal from "@/components/community/ImageGalleryModal";
 import SpecialEffectsRenderer from "@/components/community/PostSpecialEffects";
@@ -108,7 +109,6 @@ function CommentsSection({ post, user, isTier1 }) {
   );
 }
 
-// Facebook-style image grid
 function ImageGrid({ images, onImageClick }) {
   if (!images || images.length === 0) return null;
   const count = images.length;
@@ -161,7 +161,6 @@ function ImageGrid({ images, onImageClick }) {
   );
 }
 
-// Inline music player
 function MusicPlayer({ musicUrl, musicTitle }) {
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -224,7 +223,6 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [showExpanded, setShowExpanded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  // Edit state
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content || "");
   const [editDescription, setEditDescription] = useState(post.description || "");
@@ -270,185 +268,179 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden group hover:border-gray-700 transition-all"
-        style={postEffect !== "none" ? { boxShadow: `0 0 30px rgba(124,58,237,0.15)` } : {}}
-      >
-        <SpecialEffectsRenderer effect={postEffect}>
-          <div className="p-5">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <UserAvatar avatarUrl={post.author_avatar} username={post.author_username} size={42} />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-white font-black text-sm">{post.author_username}</p>
-                    {isAdmin(post.author_email) && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-black">👑 Admin</span>
-                    )}
-                  </div>
-                  <p className="text-gray-500 text-xs">
-                    {new Date(post.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                    {EFFECT_LABELS[postEffect] && (
-                      <span className="ml-2 text-purple-400 font-semibold">{EFFECT_LABELS[postEffect]}</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => setShowExpanded(true)}
-                  className="w-8 h-8 rounded-xl bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-all"
-                  title="Expand post">
-                  <Maximize2 className="w-3.5 h-3.5" />
-                </button>
-                {canEdit && !editing && (
-                  <button onClick={() => setEditing(true)}
-                    className="w-8 h-8 rounded-xl bg-blue-900/30 hover:bg-blue-900/60 flex items-center justify-center" title="Edit post">
-                    <Pencil className="w-3.5 h-3.5 text-blue-400" />
-                  </button>
-                )}
-                {canManage && (
-                  <>
-                    <button onClick={() => onFlag(post)} title="Flag"
-                      className="w-8 h-8 rounded-xl bg-orange-900/30 hover:bg-orange-900/60 flex items-center justify-center">
-                      <Flag className="w-3.5 h-3.5 text-orange-400" />
-                    </button>
-                    {canDelete && (
-                      <button onClick={() => onRemove(post)} title="Remove"
-                        className="w-8 h-8 rounded-xl bg-red-900/30 hover:bg-red-900/60 flex items-center justify-center">
-                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Content — edit mode or display */}
-            {editing ? (
-              <div className="space-y-2 mb-3">
-                <textarea value={editContent} onChange={e => setEditContent(e.target.value)}
-                  rows={3}
-                  className="w-full bg-gray-800 border border-purple-500 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none resize-none" />
-                <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
-                  rows={2}
-                  placeholder="Description (optional)..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none resize-none" />
-                <div className="flex gap-2">
-                  <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold disabled:opacity-50 transition-colors">
-                    <Check className="w-3.5 h-3.5" /> {saving ? "Saving..." : "Save"}
-                  </button>
-                  <button onClick={() => { setEditing(false); setEditContent(post.content || ""); setEditDescription(post.description || ""); }}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold transition-colors">
-                    <X className="w-3.5 h-3.5" /> Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {post.content && (
-                  <p className="text-gray-100 text-base leading-relaxed mb-1">{post.content}</p>
-                )}
-                {post.description && (
-                  <p className="text-gray-400 text-sm mt-2 leading-relaxed bg-gray-800/50 rounded-xl p-3 border border-gray-700/40">
-                    {post.description}
-                  </p>
-                )}
-              </>
-            )}
-
-            {/* Music Player */}
-            {post.music_url && !editing && (
-              <MusicPlayer musicUrl={post.music_url} musicTitle={post.music_title} />
-            )}
-
-            {/* Image Grid */}
-            <ImageGrid
-              images={post.image_urls}
-              onImageClick={(i) => { setGalleryIndex(i); setShowGallery(true); }}
-            />
-
-            {/* Videos */}
-            {post.video_urls?.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {post.video_urls.map((url, i) => (
-                  <div key={i} className="relative rounded-2xl overflow-hidden border border-gray-700">
-                    <video src={url} controls className="w-full max-h-80 bg-black" />
-                    <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/70 text-white text-[9px] font-bold flex items-center gap-1">
-                      <Video className="w-2.5 h-2.5" /> Video
+      <RadiantGlowBorder className="" glowColor={accentColor || "#a855f7"}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gray-900 rounded-2xl overflow-hidden"
+        >
+          <SpecialEffectsRenderer effect={postEffect}>
+            <div className="p-5">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <UserAvatar avatarUrl={post.author_avatar} username={post.author_username} size={42} />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-white font-black text-sm">{post.author_username}</p>
+                      {isAdmin(post.author_email) && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-black">👑 Admin</span>
+                      )}
                     </div>
+                    <p className="text-gray-500 text-xs">
+                      {new Date(post.created_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {EFFECT_LABELS[postEffect] && (
+                        <span className="ml-2 text-purple-400 font-semibold">{EFFECT_LABELS[postEffect]}</span>
+                      )}
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex items-center gap-0.5 mt-4 pt-3 border-t border-gray-800 flex-wrap">
-              {/* Like */}
-              <button onClick={handleLike}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${liked ? "text-pink-400 bg-pink-900/20" : "text-gray-500 hover:text-pink-400 hover:bg-gray-800"}`}>
-                <Heart className="w-4 h-4" fill={liked ? "currentColor" : "none"} />
-                <span>{likeCount}</span>
-              </button>
-
-              {/* Comment */}
-              <button onClick={() => setShowComments(v => !v)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${showComments ? "text-purple-400 bg-purple-900/20" : "text-gray-500 hover:text-purple-400 hover:bg-gray-800"}`}>
-                <MessageCircle className="w-4 h-4" />
-                <span>Comment</span>
-              </button>
-
-              {/* Share */}
-              <div className="relative">
-                <button onClick={() => setShareOpen(v => !v)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-gray-500 hover:text-blue-400 hover:bg-gray-800 transition-all">
-                  <Share2 className="w-4 h-4" />
-                  <span>Share</span>
-                </button>
-                <AnimatePresence>
-                  {shareOpen && (
-                    <motion.div initial={{ opacity: 0, scale: 0.9, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 8 }}
-                      className="absolute bottom-10 left-0 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-2 z-20 flex flex-col gap-1 min-w-[160px]">
-                      {[
-                        ["facebook", "f  Facebook", "text-blue-400"],
-                        ["whatsapp", "💬 WhatsApp", "text-green-400"],
-                        ["telegram", "✈ Telegram", "text-sky-400"],
-                        ["viber", "📲 Viber", "text-violet-300"],
-                        ["copy", "📋 Copy Link", "text-gray-300"]
-                      ].map(([p, l, c]) => (
-                        <button key={p} onClick={() => handleShare(p)}
-                          className={`text-left px-3 py-1.5 rounded-xl text-xs font-bold ${c} hover:bg-gray-800 transition-colors`}>{l}</button>
-                      ))}
-                    </motion.div>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => setShowExpanded(true)}
+                    className="w-8 h-8 rounded-xl bg-gray-800 hover:bg-gray-700 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                    title="Expand post">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                  </button>
+                  {canEdit && !editing && (
+                    <button onClick={() => setEditing(true)}
+                      className="w-8 h-8 rounded-xl bg-blue-900/30 hover:bg-blue-900/60 flex items-center justify-center" title="Edit post">
+                      <Pencil className="w-3.5 h-3.5 text-blue-400" />
+                    </button>
                   )}
-                </AnimatePresence>
+                  {canManage && (
+                    <>
+                      <button onClick={() => onFlag(post)} title="Flag"
+                        className="w-8 h-8 rounded-xl bg-orange-900/30 hover:bg-orange-900/60 flex items-center justify-center">
+                        <Flag className="w-3.5 h-3.5 text-orange-400" />
+                      </button>
+                      {canDelete && (
+                        <button onClick={() => onRemove(post)} title="Remove"
+                          className="w-8 h-8 rounded-xl bg-red-900/30 hover:bg-red-900/60 flex items-center justify-center">
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
 
-              {/* Star rating */}
-              {user && (
-                <div className="ml-auto">
-                  <StarRating postId={post.id} userEmail={user.email} initialRating={userRating} />
+              {/* Content */}
+              {editing ? (
+                <div className="space-y-2 mb-3">
+                  <textarea value={editContent} onChange={e => setEditContent(e.target.value)}
+                    rows={3}
+                    className="w-full bg-gray-800 border border-purple-500 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none resize-none" />
+                  <textarea value={editDescription} onChange={e => setEditDescription(e.target.value)}
+                    rows={2}
+                    placeholder="Description (optional)..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none resize-none" />
+                  <div className="flex gap-2">
+                    <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold disabled:opacity-50 transition-colors">
+                      <Check className="w-3.5 h-3.5" /> {saving ? "Saving..." : "Save"}
+                    </button>
+                    <button onClick={() => { setEditing(false); setEditContent(post.content || ""); setEditDescription(post.description || ""); }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold transition-colors">
+                      <X className="w-3.5 h-3.5" /> Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {post.content && (
+                    <p className="text-gray-100 text-base leading-relaxed mb-1">{post.content}</p>
+                  )}
+                  {post.description && (
+                    <p className="text-gray-400 text-sm mt-2 leading-relaxed bg-gray-800/50 rounded-xl p-3 border border-gray-700/40">
+                      {post.description}
+                    </p>
+                  )}
+                </>
+              )}
+
+              {/* Music Player */}
+              {post.music_url && !editing && (
+                <MusicPlayer musicUrl={post.music_url} musicTitle={post.music_title} />
+              )}
+
+              {/* Image Grid */}
+              <ImageGrid
+                images={post.image_urls}
+                onImageClick={(i) => { setGalleryIndex(i); setShowGallery(true); }}
+              />
+
+              {/* Videos */}
+              {post.video_urls?.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {post.video_urls.map((url, i) => (
+                    <div key={i} className="relative rounded-2xl overflow-hidden border border-gray-700">
+                      <video src={url} controls className="w-full max-h-80 bg-black" />
+                      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/70 text-white text-[9px] font-bold flex items-center gap-1">
+                        <Video className="w-2.5 h-2.5" /> Video
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
-              {/* Repost */}
-              {user && post.author_email !== user.email && (
-                <RepostButton item={post} type="post" user={user} profile={profile} compact />
+              {/* Actions */}
+              <div className="flex items-center gap-0.5 mt-4 pt-3 border-t border-gray-800 flex-wrap">
+                <button onClick={handleLike}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${liked ? "text-pink-400 bg-pink-900/20" : "text-gray-500 hover:text-pink-400 hover:bg-gray-800"}`}>
+                  <Heart className="w-4 h-4" fill={liked ? "currentColor" : "none"} />
+                  <span>{likeCount}</span>
+                </button>
+
+                <button onClick={() => setShowComments(v => !v)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${showComments ? "text-purple-400 bg-purple-900/20" : "text-gray-500 hover:text-purple-400 hover:bg-gray-800"}`}>
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Comment</span>
+                </button>
+
+                <div className="relative">
+                  <button onClick={() => setShareOpen(v => !v)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-gray-500 hover:text-blue-400 hover:bg-gray-800 transition-all">
+                    <Share2 className="w-4 h-4" />
+                    <span>Share</span>
+                  </button>
+                  <AnimatePresence>
+                    {shareOpen && (
+                      <motion.div initial={{ opacity: 0, scale: 0.9, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 8 }}
+                        className="absolute bottom-10 left-0 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl p-2 z-20 flex flex-col gap-1 min-w-[160px]">
+                        {[
+                          ["facebook", "f  Facebook", "text-blue-400"],
+                          ["whatsapp", "💬 WhatsApp", "text-green-400"],
+                          ["telegram", "✈ Telegram", "text-sky-400"],
+                          ["viber", "📲 Viber", "text-violet-300"],
+                          ["copy", "📋 Copy Link", "text-gray-300"]
+                        ].map(([p, l, c]) => (
+                          <button key={p} onClick={() => handleShare(p)}
+                            className={`text-left px-3 py-1.5 rounded-xl text-xs font-bold ${c} hover:bg-gray-800 transition-colors`}>{l}</button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {user && (
+                  <div className="ml-auto">
+                    <StarRating postId={post.id} userEmail={user.email} initialRating={userRating} />
+                  </div>
+                )}
+
+                {user && post.author_email !== user.email && (
+                  <RepostButton item={post} type="post" user={user} profile={profile} compact />
+                )}
+              </div>
+
+              {showComments && (
+                <CommentsSection post={post} user={user} isTier1={isTier1} />
               )}
             </div>
+          </SpecialEffectsRenderer>
+        </motion.div>
+      </RadiantGlowBorder>
 
-            {/* Comments */}
-            {showComments && (
-              <CommentsSection post={post} user={user} isTier1={isTier1} />
-            )}
-          </div>
-        </SpecialEffectsRenderer>
-      </motion.div>
-
-      {/* Gallery Modal */}
       <ImageGalleryModal
         images={post.image_urls || []}
         isOpen={showGallery}
@@ -456,7 +448,6 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
         initialIndex={galleryIndex}
       />
 
-      {/* Expanded Modal */}
       {showExpanded && (
         <PostExpandedModal
           post={post}

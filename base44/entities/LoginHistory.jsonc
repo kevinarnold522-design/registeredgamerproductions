@@ -1,0 +1,32 @@
+{
+  "name": "LoginHistory",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "login_date": {
+      "type": "string"
+    },
+    "ip_address": {
+      "type": "string"
+    },
+    "device_type": {
+      "type": "string"
+    },
+    "browser": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_email",
+    "login_date"
+  ]
+}

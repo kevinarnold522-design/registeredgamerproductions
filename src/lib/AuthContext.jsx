@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const handleSetUser = (supaUser) => {
+  const handleSetUser = async (supaUser) => {
     const formattedUser = {
       id: supaUser.id,
       email: supaUser.email,
@@ -39,6 +39,14 @@ export const AuthProvider = ({ children }) => {
     };
     setUser(formattedUser);
     setIsAuthenticated(true);
+    
+    // Log login to database
+    try {
+      await base44.functions.invoke('logLogin', {});
+    } catch (e) {
+      console.error("Failed to log login", e);
+    }
+    
     if (isAdmin(supaUser.email)) {
       blockAdsForAdmin();
     }
