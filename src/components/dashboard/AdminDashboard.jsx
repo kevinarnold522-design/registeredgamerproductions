@@ -46,7 +46,20 @@ export default function AdminDashboard({ user, profile }) {
       setAllListings(listings);
       setAllOrders(orders);
       setPendingVerifications(profiles.filter(p => p.verification_status === "pending"));
-      setStats({ users: profiles.length, listings: listings.length, orders: orders.length, revenue: totalRev, commission: totalComm });
+      
+      // Count ghost accounts separately but include them in total users (they're live accounts)
+      const ghostAccounts = profiles.filter(p => p.is_managed_account === true).length;
+      const regularUsers = profiles.length - ghostAccounts;
+      
+      setStats({ 
+        users: profiles.length, // Total includes ghost accounts (they're live users)
+        ghostAccounts,
+        regularUsers,
+        listings: listings.length, 
+        orders: orders.length, 
+        revenue: totalRev, 
+        commission: totalComm 
+      });
       setLoading(false);
     };
     load();
@@ -151,9 +164,9 @@ export default function AdminDashboard({ user, profile }) {
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-green-400 text-xs font-semibold">LIVE DATA — Real-time platform stats</span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             {[
-              { label: "Registered Users", value: stats.users, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
+              { label: "Total Users (Live)", value: stats.users, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30", sub: `${stats.regularUsers || 0} regular + ${stats.ghostAccounts || 0} ghost` },
               { label: "Active Listings", value: stats.listings, icon: Store, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
               { label: "Total Orders", value: stats.orders, icon: Package, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
               { label: "Total Revenue", value: `₱${stats.revenue.toLocaleString()}`, icon: DollarSign, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
@@ -165,6 +178,7 @@ export default function AdminDashboard({ user, profile }) {
                 <s.icon className={`w-5 h-5 ${s.color} mb-2`} />
                 <p className="text-gray-400 text-xs mb-1">{s.label}</p>
                 <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+                {s.sub && <p className="text-[9px] text-gray-500 mt-1">{s.sub}</p>}
               </motion.div>
             ))}
           </div>

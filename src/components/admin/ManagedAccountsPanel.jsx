@@ -90,6 +90,35 @@ export default function ManagedAccountsPanel() {
     }
   };
 
+  const handleLoginAsGhost = async (account) => {
+    try {
+      const response = await base44.functions.invoke('loginAsGhost', {
+        target_email: account.user_email,
+      });
+
+      if (response.data.success) {
+        // Store impersonation data
+        const impersonationData = {
+          isImpersonating: true,
+          isGhostLogin: true,
+          originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
+          targetEmail: account.user_email,
+          targetUsername: account.username,
+        };
+        localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
+        
+        toast.success(`Logged in as ${account.username}`);
+        
+        // Reload to apply new session
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to login as ghost account");
+    }
+  };
+
   const handleImpersonate = async (account) => {
     try {
       const response = await base44.functions.invoke('createManagedAccount', {
@@ -158,7 +187,12 @@ export default function ManagedAccountsPanel() {
             <Users className="w-6 h-6 text-purple-400" />
             Created Accounts
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage shadow accounts controlled by admins</p>
+          <p className="text-gray-500 text-sm mt-1 flex items-center gap-1.5">
+            Live user accounts counted in system
+            <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-700/50 text-green-400 text-[10px] font-bold">
+              ✓ Live Users
+            </span>
+          </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -231,6 +265,13 @@ export default function ManagedAccountsPanel() {
                 <div className="col-span-2 text-white text-sm font-semibold">{account.stats?.posts || 0}</div>
                 <div className="col-span-2 text-white text-sm font-semibold">{account.stats?.following || 0}</div>
                 <div className="col-span-1 flex items-center justify-end gap-1">
+                  <button
+                    onClick={() => handleLoginAsGhost(account)}
+                    className="w-8 h-8 rounded-lg bg-green-600 hover:bg-green-500 flex items-center justify-center transition-colors"
+                    title="Login as this account"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-white" />
+                  </button>
                   <button
                     onClick={() => handleImpersonate(account)}
                     className="w-8 h-8 rounded-lg bg-purple-600 hover:bg-purple-500 flex items-center justify-center transition-colors"
