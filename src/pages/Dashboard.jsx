@@ -22,12 +22,13 @@ export default function Dashboard() {
       const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
       
       let emailToLoad;
+      let me = null;
       if (ghostEmail) {
         emailToLoad = ghostEmail;
       } else if (isGhostLogin) {
         emailToLoad = impersonationData.targetEmail;
       } else {
-        const me = await base44.auth.me();
+        me = await base44.auth.me();
         emailToLoad = me?.email;
         setUser(me);
       }
@@ -69,7 +70,9 @@ export default function Dashboard() {
             try {
               const settingsRows = await base44.entities.SiteSettings.filter({ key: "welcome_email" });
               if (settingsRows.length > 0) emailSettings = { ...emailSettings, ...settingsRows[0] };
-            } catch {}
+            } catch (err) {
+              console.log("Using default email settings");
+            }
 
             const username = data.username || me?.full_name || "Gamer";
             const isCreator = data.account_type === "digital_creator";
@@ -205,8 +208,10 @@ export default function Dashboard() {
           }
         }
       }
+      
       setLoading(false);
     };
+    
     init();
   }, []);
 
