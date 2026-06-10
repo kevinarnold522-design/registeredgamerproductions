@@ -82,10 +82,14 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
     favorite_game: profile?.favorite_game || "",
     favorite_hobby: profile?.favorite_hobby || "",
     business_name: profile?.business_name || "",
+    email: user?.email || "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [isTier1, setIsTier1] = useState(false);
+  
+  // Check if this is a ghost session
+  const isGhostSession = user?.isGhostAccount || JSON.parse(localStorage.getItem('impersonation_session') || '{}')?.isGhostLogin;
 
   useEffect(() => {
     if (user?.email) {
@@ -99,7 +103,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
     if (!form.username.trim()) { setError("Username is required"); return; }
     setSaving(true);
     try {
-      await base44.entities.UserProfile.update(profile.id, {
+      const updateData = {
         username: form.username.trim(),
         display_name: form.display_name.trim() || form.username.trim(),
         bio: form.bio.trim(),
@@ -108,7 +112,20 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
         favorite_game: form.favorite_game.trim(),
         favorite_hobby: form.favorite_hobby.trim(),
         business_name: form.business_name.trim(),
-      });
+      };
+      
+      // Ghost accounts can update their email
+      if (isGhostSession && form.email && form.email !== user?.email) {
+        updateData.user_email = form.email;
+      }
+      
+      await base44.entities.UserProfile.update(profile.id, updateData);
+      
+      // If email was changed for ghost account, also update the User entity
+      if (updateData.user_email) {
+        await base44.entities.User.update(profile.id, { email: form.email });
+      }
+      
       onSaved?.({ ...profile, ...form });
       onClose();
     } catch (e) {
@@ -141,6 +158,22 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
             </button>
           </div>
 
+          {/* Action Buttons at TOP */}
+          <div className="flex gap-3 mb-5">
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-400 font-semibold text-sm hover:text-white transition-colors">
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 py-2.5 rounded-xl font-black text-white text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}
+            >
+              <Check className="w-4 h-4" />
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+
           <div className="space-y-4">
             {/* Username */}
             <div>
@@ -170,18 +203,29 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
               </div>
             </div>
 
-            {/* Email — read-only display */}
+            {/* Email — editable for ghost accounts */}
             <div>
               <label className="text-gray-400 text-xs font-bold mb-1 block uppercase tracking-wide">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
-                  value={user?.email || ""}
-                  disabled
-                  className="w-full bg-gray-800/50 border border-gray-700/50 rounded-xl pl-10 pr-4 py-3 text-gray-500 text-sm cursor-not-allowed"
+                  type="email"
+                  value={form.email || ""}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  disabled={!isGhostSession}
+                  placeholder={isGhostSession ? "Enter new email" : "Email"}
+                  className={`w-full border rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-purple-500 ${
+                    isGhostSession 
+                      ? "bg-gray-900 border-gray-700 text-white placeholder-gray-600" 
+                      : "bg-gray-800/50 border-gray-700/50 text-gray-500 cursor-not-allowed"
+                  }`}
                 />
               </div>
-              <p className="text-gray-600 text-[10px] mt-1">Email is managed by your login provider</p>
+              {isGhostSession ? (
+                <p className="text-purple-400 text-[10px] mt-1">✨ Ghost accounts can update their linked email</p>
+              ) : (
+                <p className="text-gray-600 text-[10px] mt-1">Email is managed by your login provider</p>
+              )}
             </div>
 
             {/* Bio */}
@@ -270,22 +314,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
               </div>
             )}
 
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-
-            <div className="flex gap-3 pt-2">
-              <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 font-semibold text-sm hover:text-white transition-colors">
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1 py-3 rounded-xl font-black text-white text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}
-              >
-                <Check className="w-4 h-4" />
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
+            {error && <p className="text-red-400 text-sm text-center mt-4">{error}</p>}
           </div>
         </motion.div>
       </motion.div>
