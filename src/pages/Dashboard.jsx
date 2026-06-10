@@ -90,7 +90,7 @@ export default function Dashboard() {
                   </ul>
                 </div>` : "";
 
-              const businessSection = isBusiness ? `
+            const businessSection = isBusiness ? `
                 <div style="background:#052e16;border-radius:12px;padding:20px 24px;margin:20px 0;border-left:4px solid #4ade80;">
                   <div style="color:#4ade80;font-size:13px;font-weight:700;margin-bottom:8px;">🏪 BUSINESS SELLER PERKS</div>
                   <ul style="color:#d1d5db;font-size:13px;line-height:2;margin:0;padding-left:18px;">
@@ -101,7 +101,7 @@ export default function Dashboard() {
                   </ul>
                 </div>` : "";
 
-              const htmlBody = `<!DOCTYPE html>
+            const htmlBody = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#030712;font-family:'Segoe UI',Arial,sans-serif;">
@@ -208,10 +208,10 @@ export default function Dashboard() {
           }
         }
       }
-      
+
       setLoading(false);
     };
-    
+
     init();
   }, []);
 
