@@ -19,6 +19,7 @@ import AdvancedAnalytics from "./AdvancedAnalytics";
 import AdminVisitorAnalytics from "./AdminVisitorAnalytics";
 import FeedbackDashboard from "./FeedbackDashboard";
 import AdRevenueDashboard from "./AdRevenueDashboard";
+import ManagedAccountsPanel from "@/components/admin/ManagedAccountsPanel";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -89,6 +90,7 @@ export default function AdminDashboard({ user, profile }) {
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart2 },
     { id: "users", label: "Users", icon: Users },
+    { id: "created_accounts", label: "🎭 Created Accounts", icon: Users },
     { id: "listings", label: "Listings", icon: Store },
     { id: "orders", label: "Orders", icon: Package },
     { id: "verifications", label: `Verifications${pendingVerifications.length > 0 ? ` (${pendingVerifications.length})` : ""}`, icon: CheckCircle },
@@ -292,6 +294,9 @@ export default function AdminDashboard({ user, profile }) {
           </div>
         </div>
       )}
+
+      {/* Created Accounts */}
+      {tab === "created_accounts" && <ManagedAccountsPanel />}
 
       {/* Listings */}
       {tab === "listings" && (

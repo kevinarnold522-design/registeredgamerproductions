@@ -254,6 +254,15 @@
     "favorite_hobby": {
       "type": "string",
       "description": "User's favorite hobby"
+    },
+    "is_managed_account": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this is a system-generated managed account"
+    },
+    "managed_by_admin": {
+      "type": "string",
+      "description": "Email of the admin who created/manages this account"
     }
   },
   "required": [

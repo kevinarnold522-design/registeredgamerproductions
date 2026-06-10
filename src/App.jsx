@@ -41,6 +41,7 @@ import RoutingDashboard from "./pages/RoutingDashboard";
 import EarningsDashboard from "./pages/EarningsDashboard";
 import UploadContent from "./pages/UploadContent";
 import ContentFeedPage from "./pages/ContentFeedPage";
+import CreatedAccountsPage from "./pages/CreatedAccountsPage";
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
       <Route path="/about" element={<AboutUs />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/admin-editor" element={<AdminWebsiteEditor />} />
+      <Route path="/admin/created-accounts" element={<CreatedAccountsPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsDMCA />} />
