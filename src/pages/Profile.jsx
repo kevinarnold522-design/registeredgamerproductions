@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield } from "lucide-react";
+import { Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
@@ -18,6 +18,7 @@ import ListingSortControl, { sortListings } from "@/components/profile/ListingSo
 import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
 import ReelCreator from "@/components/shared/ReelCreator";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
+import EditProfileModal from "@/components/profile/EditProfileModal";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -28,6 +29,7 @@ export default function Profile() {
   const [showStudio, setShowStudio] = useState(false);
   const [showReelCreator, setShowReelCreator] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
 
   const params = new URLSearchParams(window.location.search);
@@ -145,6 +147,17 @@ export default function Profile() {
         )}
         {showReelCreator && (
           <ReelCreator user={user} profile={profile} onClose={() => setShowReelCreator(false)} onPosted={() => {}} />
+        )}
+        {showEditModal && (
+          <EditProfileModal
+            profile={profile}
+            user={user}
+            onClose={() => setShowEditModal(false)}
+            onSaved={(updatedProfile) => {
+              setProfile(updatedProfile);
+              setShowEditModal(false);
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -266,9 +279,12 @@ export default function Profile() {
                 </motion.button>
               )}
               {isOwnProfile && (
-                <Link to="/dashboard?tab=profile" className="px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors"
+                >
                   Edit Profile
-                </Link>
+                </button>
               )}
             </div>
             {/* Admin social links */}

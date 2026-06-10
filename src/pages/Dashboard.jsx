@@ -197,7 +197,7 @@ export default function Dashboard() {
               await base44.integrations.Core.SendEmail({
                 to: me.email,
                 subject: `🎮 Welcome to GAMER Productions, ${username}!`,
-                body: htmlBody,
+                body: htmlBody
               });
             } catch (e) {
               console.log("Email send skipped:", e.message);
