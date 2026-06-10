@@ -40,12 +40,6 @@ export const CATEGORIES = [
     subcategories: ["PC", "PlayStation", "Xbox", "Nintendo Switch", "Mobile", "How To / Guides"],
   },
   {
-    id: "gear",
-    label: "🖥️ Gaming Gear",
-    icon: "🖥️",
-    subcategories: ["Keyboards", "Mice", "Monitors", "Headsets", "Controllers", "Chairs", "Gaming PCs", "Laptops"],
-  },
-  {
     id: "modding",
     label: "🔧 Modding Community",
     icon: "🔧",
@@ -55,15 +49,31 @@ export const CATEGORIES = [
     ],
   },
   {
+    id: "premium_mods",
+    label: "💎 Premium Mods",
+    icon: "💎",
+    subcategories: [
+      "Premium Mods - WWE2K", "Premium Mods - GTA 5", "Premium Mods - GTA SA",
+      "Premium Mods - FIFA", "Premium Mods - PES", "Premium Mods - NBA2K",
+      "Premium Mods - Football Life", "Premium Mods - PPSSPP/PSP",
+      "Exclusive Scripts", "Paid Expansions", "VIP Content",
+    ],
+  },
+  {
     id: "store",
     label: "🏪 Store",
     icon: "🏪",
     subcategories: [
       "Game Accounts", "In-Game Items", "Skins", "Gift Cards",
-      "Premium Mods - WWE2K", "Premium Mods - GTA 5", "Premium Mods - GTA SA",
-      "Premium Mods - FIFA", "Premium Mods - PES", "Premium Mods - NBA2K",
-      "Premium Mods - Football Life", "Premium Mods - PPSSPP/PSP",
       "Accessories", "Top Tech Equipment",
+    ],
+  },
+  {
+    id: "paid_tools",
+    label: "🔧 Paid Tools",
+    icon: "🔧",
+    subcategories: [
+      "Premium Software", "Utilities", "Automation Tools", "Pro Utilities",
     ],
   },
   {
@@ -83,12 +93,6 @@ export const CATEGORIES = [
     label: "💼 Gaming Jobs",
     icon: "💼",
     subcategories: ["QA Testing", "Game Dev", "Community Manager", "Esports Coach", "Content Creator"],
-  },
-  {
-    id: "services",
-    label: "🛠️ Services",
-    icon: "🛠️",
-    subcategories: ["PC Repair", "Custom Builds", "Coaching", "Boosting", "Design Services"],
   },
 ];
 

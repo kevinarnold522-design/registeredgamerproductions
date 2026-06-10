@@ -26,6 +26,7 @@ import AdminApprovalPanel from "@/components/community/AdminApprovalPanel";
 import ListingOfWeek from "@/components/home/ListingOfWeek";
 import VerifiedBadgeBanner from "@/components/home/VerifiedBadgeBanner";
 import First10KBanner from "@/components/home/First10KBanner";
+import FirstLoginTutorial from "@/components/tutorial/FirstLoginTutorial";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
@@ -34,8 +35,28 @@ export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [profile, setProfile] = useState(null);
   const [showAdSign, setShowAdSign] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
   useScrollReveal();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const hasSeen = localStorage.getItem("has_seen_tutorial");
+      if (!hasSeen) {
+        setShowTutorial(true);
+      }
+    }
+  }, [isAuthenticated, user]);
+
+  // Show tutorial for new users after splash
+  useEffect(() => {
+    if (!showSplash && isAuthenticated && user) {
+      const hasSeenTutorial = localStorage.getItem("has_seen_tutorial");
+      if (!hasSeenTutorial) {
+        setShowTutorial(true);
+      }
+    }
+  }, [showSplash, isAuthenticated, user]);
 
   // Show "Sign in to block ads" sign for guests after 3 min (only after splash dismissed)
   useEffect(() => {
@@ -138,8 +159,10 @@ export default function Home() {
       {showSplash && <SplashScreen onDismiss={() => setShowSplash(false)} />}
       {!showSplash && (
         <>
+          {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
           <div className="relative z-10">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
+            {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
             {user && <AIAssistBanner user={user} />}
             <VideoHeroBanner />
             <HeroSection />

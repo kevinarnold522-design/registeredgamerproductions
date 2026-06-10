@@ -38,7 +38,9 @@
         "content",
         "jobs",
         "livestream",
-        "services"
+        "premium_mods",
+        "paid_tools",
+        "exclusive_content"
       ]
     },
     "subcategories": {

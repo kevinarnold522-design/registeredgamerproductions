@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Pencil, X, Check, Upload, Plus, Trash2 } from "lucide-react";
 import {
   IconController, IconMod, IconStream, IconTrophy, IconStore,
-  IconPlay, IconJobs, IconServices
+  IconPlay, IconJobs
 } from "@/components/icons/GameIcons";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
@@ -31,11 +31,11 @@ const defaultCommunity = {
 
 const defaultOtherCategories = [
   { id: "games",      icon: IconController, iconColor: "#a855f7", title: "Games",        sub: "Top deals from Steam, Epic · Android & iOS titles", color: "from-purple-950 to-purple-900", borderColor: "border-purple-500/50", glowColor: "rgba(139,92,246,0.6)", href: "/category?cat=games",       badge: "Steam · Epic · Mobile" },
-  { id: "store",        icon: IconStore,      iconColor: "#eab308", title: "🏪 Store",        sub: "Buy, Sell & Trade Gaming Products",   color: "from-yellow-950 to-yellow-900", borderColor: "border-yellow-500/50", glowColor: "rgba(234,179,8,0.6)",  href: "/category?cat=store",         badge: "All Users" },
+  { id: "premium_mods", icon: IconMod, iconColor: "#fbbf24", title: "💎 Premium Mods", sub: "Paid Mods, Scripts & Expansions — Exclusive Content", color: "from-amber-950 to-yellow-900", borderColor: "border-amber-500/50", glowColor: "rgba(251,191,36,0.6)", href: "/category?cat=premium_mods", badge: "Paid Only" },
   { id: "tournaments",  icon: IconTrophy,     iconColor: "#4ade80", title: "🏆 Tournaments",  sub: "MLBB, CS2, Valorant, FIFA, NBA2K & global events",   color: "from-green-950 to-green-900",   borderColor: "border-green-500/50",  glowColor: "rgba(74,222,128,0.6)", href: "/category?cat=tournaments",   badge: "Global" },
   { id: "content_streaming", icon: IconPlay, iconColor: "#60a5fa", title: "🎬 Content/Streaming", sub: "Videos, Live Streams, Clips & Reviews",    color: "from-blue-950 to-red-900",      borderColor: "border-blue-500/50",   glowColor: "rgba(59,130,246,0.6)", href: "/category?cat=content_streaming", badge: "Videos + LIVE" },
+  { id: "paid_tools", icon: IconStore, iconColor: "#f472b6", title: "🔧 Paid Tools", sub: "Premium Software, Utilities & Automation", color: "from-pink-950 to-pink-900", borderColor: "border-pink-500/50", glowColor: "rgba(244,114,182,0.6)", href: "/category?cat=paid_tools", badge: "Pro Tools" },
   { id: "jobs",       icon: IconJobs,       iconColor: "#f87171", title: "💼 Gaming Jobs",  sub: "QA, Dev, Coaching & Community",                      color: "from-rose-950 to-rose-900",     borderColor: "border-rose-500/50",   glowColor: "rgba(248,113,113,0.5)",href: "/category?cat=jobs",        badge: "Careers" },
-  { id: "services",   icon: IconServices,   iconColor: "#818cf8", title: "🛠️ Services",     sub: "PC Repair, Coaching, Design & More",                 color: "from-indigo-950 to-indigo-900", borderColor: "border-indigo-500/50", glowColor: "rgba(99,102,241,0.6)", href: "/category?cat=services",    badge: "Pro Help" },
 ];
 
 // Inline edit panel for a small category card
