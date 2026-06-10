@@ -217,7 +217,7 @@ export default function ManagedAccountsPanel() {
             Created Accounts
           </h1>
           <p className="text-gray-500 text-sm mt-1 flex items-center gap-1.5">
-            Live user accounts counted in system
+            Total: {accounts.length} managed account{accounts.length !== 1 ? 's' : ''}
             <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-700/50 text-green-400 text-[10px] font-bold">
               ✓ Live Users
             </span>

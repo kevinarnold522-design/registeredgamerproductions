@@ -97,17 +97,27 @@ export default function Profile() {
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
-    setProfile({ ...profile, avatar_url: file_url });
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
+      setProfile({ ...profile, avatar_url: file_url });
+      toast.success("Avatar updated");
+    } catch (error) {
+      toast.error("Failed to upload avatar");
+    }
   };
 
   const handleBannerUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
-    setProfile({ ...profile, banner_url: file_url });
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
+      setProfile({ ...profile, banner_url: file_url });
+      toast.success("Banner updated");
+    } catch (error) {
+      toast.error("Failed to upload banner");
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;
@@ -118,36 +128,15 @@ export default function Profile() {
     business: "text-green-400",
   };
 
-  const admin = isAdmin(user?.email);
-  const followers = profile?.followers_count || 0;
-
   // Check if in ghost session
   const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
   const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
   
+  const admin = !isGhostLogin && isAdmin(user?.email);
+  const followers = profile?.followers_count || 0;
+  
   return (
-    <div className={`min-h-screen bg-gray-950 ${isGhostLogin ? 'pt-16' : ''}`}>
-      {isGhostLogin && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-pink-900/80 to-purple-900/80 backdrop-blur-md border-b border-pink-700/50 px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-pink-400" />
-            <p className="text-white font-bold text-xs">
-              Logged in as <span className="text-pink-300">{impersonationData.targetUsername}</span> • All actions logged to this account
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              localStorage.removeItem('impersonation_session');
-              toast.success("Returned to admin account");
-              window.location.href = '/admin/created-accounts';
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Stop Managing
-          </button>
-        </div>
-      )}
+    <div className="min-h-screen bg-gray-950">
       {user && <AuthNavbar user={user} profile={profile} />}
       
       <AnimatePresence>
@@ -196,7 +185,19 @@ export default function Profile() {
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl font-black text-white">{profile?.business_name || profile?.username || user?.full_name}</h1>
                 {profile?.is_verified && <VerifiedCheckmark size="md" showLabel={true} />}
-                {admin && isOwnProfile && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold">⚡ ADMIN</span>}
+                {isGhostLogin && (
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('impersonation_session');
+                      toast.success("Returned to admin account");
+                      window.location.href = '/admin/created-accounts';
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors"
+                  >
+                    <LogOut className="w-3 h-3" /> Stop Managing
+                  </button>
+                )}
+                {admin && isOwnProfile && !isGhostLogin && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold">⚡ ADMIN</span>}
                 <FollowerRankBadge followers={followers} size="md" />
                 {profile?.honor_badge && <HonorBadge label={profile.honor_badge_label || "Founding Member"} size="sm" />}
               </div>

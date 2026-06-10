@@ -138,7 +138,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Trophy, label: "Tournaments", href: "/tournaments", color: "text-pink-400" },
     { icon: Store, label: "All Listings", href: "/dashboard?tab=listings", color: "text-blue-400" },
     { icon: Users, label: "Users", href: "/dashboard?tab=users", color: "text-yellow-300" },
-    { icon: Shield, label: "🎭 Created Accounts", href: "/admin/created-accounts", color: "text-pink-300", badge: "LIVE" },
+    { icon: Users, label: "Created Accounts", href: "/admin/created-accounts", color: "text-pink-300" },
     { icon: Settings, label: "Website Editor", href: "/admin-editor", color: "text-gray-400" },
     { icon: Share2, label: "Social Manager", href: "/social-manager", color: "text-pink-300" },
   ];
@@ -161,14 +161,17 @@ export default function AuthNavbar({ user, profile }) {
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard" },
   ];
 
-  const navLinks = admin ? adminLinks : isSeller ? sellerLinks : regularLinks;
+  // Ghost accounts use regular user or seller links based on their account type (not admin links)
+  const navLinks = isManagingAsGhost 
+    ? (ghostAccountData?.account_type === 'digital_creator' || ghostAccountData?.account_type === 'business' ? sellerLinks : regularLinks)
+    : (admin ? adminLinks : isSeller ? sellerLinks : regularLinks);
 
   const toolLinks = [
     { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
     { icon: Play, label: "Content Hub", href: "/content", color: "text-purple-400" },
     { icon: User, label: "My Channel", href: "/profile", color: "text-blue-400" },
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
-    ...(admin || isSeller ? [{ icon: Upload, label: "Add Listing", href: "/create-listing", color: "text-green-400" }] : []),
+    ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Add Listing", href: "/create-listing", color: "text-green-400" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
     { icon: MessageCircle, label: "Group Chats", href: "/messages" },
     { icon: Store, label: "Store", href: "/category?cat=store", color: "text-green-400" },
@@ -205,18 +208,14 @@ export default function AuthNavbar({ user, profile }) {
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <p className={`text-[10px] font-semibold truncate ${
                     isManagingAsGhost 
-                      ? 'text-pink-400' 
+                      ? (ghostAccountData?.account_type === 'digital_creator' ? 'text-purple-400' : ghostAccountData?.account_type === 'business' ? 'text-green-400' : 'text-blue-400')
                       : (admin && user?.email === "kevinarnold522@gmail.com" ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400")
                   }`}>
                     {isManagingAsGhost 
                       ? (ghostAccountData?.account_type || 'regular').replace('_', ' ')
                       : (admin && user?.email === "kevinarnold522@gmail.com" ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer")}
                   </p>
-                  {isManagingAsGhost && (
-                    <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-pink-900/50 border border-pink-700/50 text-pink-400 font-black">
-                      👻 GHOST
-                    </span>
-                  )}
+
                 </div>
               </div>
             )}
@@ -265,7 +264,7 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Nav links */}
         <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
-          {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{admin ? "Admin" : "Dashboard"}</p>}
+          {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
           {navLinks.map((link, i) => (
             <NavLink key={i} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
           ))}
