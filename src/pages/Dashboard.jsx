@@ -13,45 +13,70 @@ export default function Dashboard() {
 
   useEffect(() => {
     const init = async () => {
-      const me = await base44.auth.me();
-      setUser(me);
-      if (me) {
-        const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
-        if (profiles.length > 0) {
-          setProfile(profiles[0]);
-        } else {
-          // Check pending setup from registration
-          const pending = localStorage.getItem("pending_profile");
-          if (pending) {
-            const data = JSON.parse(pending);
-            const newProfile = await base44.entities.UserProfile.create({
-              ...data,
-              user_email: me.email,
-              joined_date: new Date().toISOString(),
-            });
-            setProfile(newProfile);
-            localStorage.removeItem("pending_profile");
-            // Send beautiful HTML welcome email
+      // Check for ghost session from URL params
+      const params = new URLSearchParams(window.location.search);
+      const ghostEmail = params.get('ghost_email');
+      
+      // Check for persistent ghost session
+      const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
+      const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
+      
+      let emailToLoad;
+      if (ghostEmail) {
+        emailToLoad = ghostEmail;
+      } else if (isGhostLogin) {
+        emailToLoad = impersonationData.targetEmail;
+      } else {
+        const me = await base44.auth.me();
+        emailToLoad = me?.email;
+        setUser(me);
+      }
+      
+      if (!emailToLoad) { setLoading(false); return; }
+      
+      const profiles = await base44.entities.UserProfile.filter({ user_email: emailToLoad });
+      if (profiles.length > 0) {
+        setProfile(profiles[0]);
+        // If ghost account, update user object with ghost data
+        if (ghostEmail || isGhostLogin) {
+          setUser({
+            email: emailToLoad,
+            full_name: profiles[0].username || impersonationData.targetUsername,
+          });
+        }
+      } else {
+        // Check pending setup from registration
+        const pending = localStorage.getItem("pending_profile");
+        if (pending) {
+          const data = JSON.parse(pending);
+          const newProfile = await base44.entities.UserProfile.create({
+            ...data,
+            user_email: emailToLoad,
+            joined_date: new Date().toISOString(),
+          });
+          setProfile(newProfile);
+          localStorage.removeItem("pending_profile");
+          // Send beautiful HTML welcome email
+          try {
+            // Load custom email settings
+            let emailSettings = {
+              email_header_title: "Welcome to GAMER Productions!",
+              email_header_subtitle: "The #1 Gaming Hub Community",
+              email_header_tagline: "Level Up. Connect. Dominate.",
+              email_banner_color_start: "#7c3aed",
+              email_banner_color_end: "#ec4899",
+            };
             try {
-              // Load custom email settings
-              let emailSettings = {
-                email_header_title: "Welcome to GAMER Productions!",
-                email_header_subtitle: "The #1 Gaming Hub Community",
-                email_header_tagline: "Level Up. Connect. Dominate.",
-                email_banner_color_start: "#7c3aed",
-                email_banner_color_end: "#ec4899",
-              };
-              try {
-                const settingsRows = await base44.entities.SiteSettings.filter({ key: "welcome_email" });
-                if (settingsRows.length > 0) emailSettings = { ...emailSettings, ...settingsRows[0] };
-              } catch {}
+              const settingsRows = await base44.entities.SiteSettings.filter({ key: "welcome_email" });
+              if (settingsRows.length > 0) emailSettings = { ...emailSettings, ...settingsRows[0] };
+            } catch {}
 
-              const username = data.username || me.full_name || "Gamer";
-              const isCreator = data.account_type === "digital_creator";
-              const isBusiness = data.account_type === "business";
-              const gradient = `linear-gradient(135deg, ${emailSettings.email_banner_color_start}, ${emailSettings.email_banner_color_end})`;
+            const username = data.username || me?.full_name || "Gamer";
+            const isCreator = data.account_type === "digital_creator";
+            const isBusiness = data.account_type === "business";
+            const gradient = `linear-gradient(135deg, ${emailSettings.email_banner_color_start}, ${emailSettings.email_banner_color_end})`;
 
-              const creatorSection = isCreator ? `
+            const creatorSection = isCreator ? `
                 <div style="background:#1e1b4b;border-radius:12px;padding:20px 24px;margin:20px 0;border-left:4px solid #a78bfa;">
                   <div style="color:#a78bfa;font-size:13px;font-weight:700;margin-bottom:8px;">🎬 DIGITAL CREATOR PERKS</div>
                   <ul style="color:#d1d5db;font-size:13px;line-height:2;margin:0;padding-left:18px;">
