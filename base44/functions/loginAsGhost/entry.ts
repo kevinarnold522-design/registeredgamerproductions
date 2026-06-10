@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
         }
 
         // Generate a login token for the target account
-        // This creates a session that allows the admin to login as the ghost account
+        // This creates a persistent session that allows the admin to login as the ghost account
         const loginToken = await base44.auth.generateImpersonationToken(target_email);
 
         return Response.json({ 
@@ -37,7 +37,8 @@ Deno.serve(async (req) => {
             target_email: target_email,
             username: targetAccount[0].username,
             display_name: targetAccount[0].display_name,
-            avatar_url: targetAccount[0].avatar_url
+            avatar_url: targetAccount[0].avatar_url,
+            redirect_url: '/profile' // Redirect to profile/channel page
         });
 
     } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Plus, Search, Shield, LogOut, ExternalLink, X } from "lucide-react";
+import { Users, Plus, Search, Shield, LogOut, ExternalLink, X, CheckCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -104,14 +104,15 @@ export default function ManagedAccountsPanel() {
           originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
           targetEmail: account.user_email,
           targetUsername: account.username,
+          isPersistent: true, // Persistent across refreshes
         };
         localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
         
         toast.success(`Logged in as ${account.username}`);
         
-        // Reload to apply new session
+        // Redirect to the ghost account's profile/channel page
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = '/profile';
         }, 1000);
       }
     } catch (error) {
@@ -201,6 +202,20 @@ export default function ManagedAccountsPanel() {
           <Plus className="w-4 h-4" />
           Create New Account
         </button>
+      </div>
+
+      {/* Info banner */}
+      <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-700/40">
+        <div className="flex items-start gap-3">
+          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-white font-bold text-sm">These Are Live User Accounts</p>
+            <p className="text-gray-400 text-xs mt-1">
+              All managed accounts are fully functional user accounts with authentication. They can post, comment, follow, and are counted in total user statistics.
+              Admins can "login as" these accounts to manage their activity directly.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="mb-6">
