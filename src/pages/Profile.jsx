@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Grid, Upload, Radio, Film, Sparkles, Store } from "lucide-react";
+import { Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
 import HonorBadge from "@/components/shared/HonorBadge";
@@ -36,9 +37,20 @@ export default function Profile() {
     const init = async () => {
       const me = await base44.auth.me();
       setUser(me);
-      const emailToLoad = targetEmail || me?.email;
+      
+      // Check for persistent ghost session
+      const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
+      const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
+      
+      // Use ghost account email if in ghost session
+      const emailToLoad = targetEmail || (isGhostLogin ? impersonationData.targetEmail : me?.email);
+      
       if (!emailToLoad) { setLoading(false); return; }
-      setIsOwnProfile(!targetEmail || targetEmail === me?.email);
+      
+      // In ghost session, always show ghost account data
+      const isOwnProfile = !targetEmail && (isGhostLogin || (!isGhostLogin && (!targetEmail || targetEmail === me?.email)));
+      setIsOwnProfile(isOwnProfile);
+      
       const [profiles, listingsData] = await Promise.all([
         base44.entities.UserProfile.filter({ user_email: emailToLoad }),
         base44.entities.Listing.filter({ seller_email: emailToLoad }),
@@ -77,8 +89,33 @@ export default function Profile() {
   const admin = isAdmin(user?.email);
   const followers = profile?.followers_count || 0;
 
+  // Check if in ghost session
+  const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
+  const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
+  
   return (
     <div className="min-h-screen bg-gray-950">
+      {isGhostLogin && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-pink-900/80 to-purple-900/80 backdrop-blur-md border-b border-pink-700/50 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-pink-400" />
+            <p className="text-white font-bold text-xs">
+              Logged in as <span className="text-pink-300">{impersonationData.targetUsername}</span> • All actions logged to this account
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem('impersonation_session');
+              toast.success("Returned to admin account");
+              window.location.href = '/admin/created-accounts';
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Stop Managing
+          </button>
+        </div>
+      )}
       {user && <AuthNavbar user={user} profile={profile} />}
       
       <AnimatePresence>

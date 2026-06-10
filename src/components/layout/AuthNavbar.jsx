@@ -104,11 +104,13 @@ export default function AuthNavbar({ user, profile }) {
   }, []);
 
   useEffect(() => {
-    if (user?.email) {
-      base44.entities.Cart.filter({ user_email: user.email }).then((r) => setCartCount(r.length)).catch(() => {});
-      base44.entities.Favorite.filter({ user_email: user.email }).then((r) => setFavCount(r.length)).catch(() => {});
+    // Use ghost account email if in ghost session
+    const emailToUse = isManagingAsGhost ? ghostAccountEmail : user?.email;
+    if (emailToUse) {
+      base44.entities.Cart.filter({ user_email: emailToUse }).then((r) => setCartCount(r.length)).catch(() => {});
+      base44.entities.Favorite.filter({ user_email: emailToUse }).then((r) => setFavCount(r.length)).catch(() => {});
     }
-  }, [user]);
+  }, [user, isManagingAsGhost, ghostAccountEmail]);
 
   const toggleCollapsed = () => {
     setCollapsed(v => {

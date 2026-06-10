@@ -150,7 +150,7 @@ export default function ManagedAccountsPanel() {
   const handleStopImpersonating = () => {
     localStorage.removeItem('impersonation_session');
     toast.success("Returned to admin account");
-    window.location.reload();
+    window.location.href = '/admin/created-accounts';
   };
 
   const filteredAccounts = accounts.filter(acc =>

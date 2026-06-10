@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
+  const [isGhostSession, setIsGhostSession] = useState(false);
 
   useEffect(() => {
     initAuth();
@@ -64,6 +65,24 @@ export const AuthProvider = ({ children }) => {
   const initAuth = async () => {
     setIsLoadingAuth(true);
     try {
+      // Check for persistent ghost session first
+      const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
+      
+      // If in persistent ghost session, use ghost account data
+      if (impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent) {
+        const ghostUser = {
+          email: impersonationData.targetEmail,
+          full_name: impersonationData.targetUsername,
+          isGhostAccount: true,
+          ghostData: impersonationData
+        };
+        setUser(ghostUser);
+        setIsAuthenticated(true);
+        setIsGhostSession(true);
+        setIsLoadingAuth(false);
+        return;
+      }
+      
       // Try Supabase session first if available
       if (supabase) {
         const { data: { session } } = await supabase.auth.getSession();
@@ -87,6 +106,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Clear ghost session if active
+      localStorage.removeItem('impersonation_session');
       localStorage.removeItem('base44_access_token');
       localStorage.removeItem('base44_token');
       if (supabase) await supabase.auth.signOut();
@@ -96,6 +117,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
+      setIsGhostSession(false);
       window.location.href = '/';
     }
   };
