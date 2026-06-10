@@ -296,27 +296,35 @@ export default function AuthNavbar({ user, profile }) {
               )}
             </>
           )}
-          <div className={`flex items-center gap-1 flex-wrap ${collapsed && !isMobile ? "flex-col" : ""}`}>
+          <div className={`flex items-center gap-2.5 w-full ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <LanguageSelector />
             <NotificationBell userEmail={user?.email} />
             <div className="nav-divider w-full my-0.5" />
             <button
               onClick={() => setFavOpen(true)}
-              className="relative flex items-center gap-2 px-2.5 py-2 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-purple-600/40 hover:bg-gray-800/70 transition-all text-[10px] font-medium"
+              className={`relative flex items-center ${collapsed && !isMobile ? "justify-center w-full" : "gap-2.5 w-full"} px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70`}
               title="Favourites"
             >
-              <Star className="w-3.5 h-3.5 text-yellow-400" />
-              {s && <span className="text-gray-300">Favs</span>}
-              {favCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-500 text-black text-[8px] flex items-center justify-center font-bold border-2 border-gray-950">{favCount}</span>}
+              <Star className="w-4 h-4 flex-shrink-0 text-yellow-400" />
+              {(s || (!collapsed && !isMobile)) && <span className="truncate">Favourites</span>}
+              {favCount > 0 && (
+                <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : "ml-auto"} w-4 h-4 rounded-full bg-yellow-500 text-white text-[9px] flex items-center justify-center font-bold`}>
+                  {favCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setCartOpen(true)}
-              className="relative flex items-center gap-2 px-2.5 py-2 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-purple-600/40 hover:bg-gray-800/70 transition-all text-[10px] font-medium"
+              className={`relative flex items-center ${collapsed && !isMobile ? "justify-center w-full" : "gap-2.5 w-full"} px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70`}
               title="Cart"
             >
-              <ShoppingCart className="w-3.5 h-3.5 text-green-400" />
-              {s && <span className="text-gray-300">Cart</span>}
-              {cartCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 text-black text-[8px] flex items-center justify-center font-bold border-2 border-gray-950">{cartCount}</span>}
+              <ShoppingCart className="w-4 h-4 flex-shrink-0 text-green-400" />
+              {(s || (!collapsed && !isMobile)) && <span className="truncate flex-1">Cart</span>}
+              {cartCount > 0 && (
+                <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : ""} w-4 h-4 rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center font-bold`}>
+                  {cartCount}
+                </span>
+              )}
             </button>
           </div>
           {s && (
