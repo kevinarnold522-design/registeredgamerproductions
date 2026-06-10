@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Plus, Eye, UserX, Shield, Sparkles } from "lucide-react";
+import { Users, Plus, Eye, UserX, Shield, Sparkles, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
+import { isAdmin } from "@/lib/constants";
 
 export default function GhostAccountsPanel() {
   const [ghosts, setGhosts] = useState([]);
@@ -13,6 +14,7 @@ export default function GhostAccountsPanel() {
     username: "",
     display_name: "",
     account_type: "regular",
+    avatar_url: "",
   });
   const [creating, setCreating] = useState(false);
 
@@ -22,65 +24,104 @@ export default function GhostAccountsPanel() {
 
   const loadGhosts = async () => {
     try {
-      const res = await base44.functions.invoke("adminGhostAccounts", { action: "list_ghosts" });
-      setGhosts(res.data.ghosts || []);
+      const res = await base44.functions.invoke("createManagedAccount", { action: "list" });
+      setGhosts(res.data.accounts || []);
     } catch (e) {
-      toast.error("Failed to load ghost accounts");
+      toast.error("Failed to load managed accounts");
     }
     setLoading(false);
   };
 
   const handleCreate = async () => {
-    if (!newGhost.email || !newGhost.username) {
-      toast.error("Email and username required");
+    if (!newGhost.username) {
+      toast.error("Username required");
       return;
     }
 
     setCreating(true);
     try {
-      const email = newGhost.email.includes("@") ? newGhost.email : `${newGhost.email}@ghost.gamerproductions.com`;
-      const res = await base44.functions.invoke("adminGhostAccounts", {
-        action: "create_ghost",
-        ghostData: {
-          ...newGhost,
-          email,
-          display_name: newGhost.display_name || newGhost.username,
-        },
+      const email = newGhost.email && newGhost.email.includes("@") 
+        ? newGhost.email 
+        : `${newGhost.username.toLowerCase().replace(/\s+/g, '_')}@gamerproductions.com`;
+      
+      const res = await base44.functions.invoke("createManagedAccount", {
+        action: "create",
+        email: email,
+        username: newGhost.username,
+        display_name: newGhost.display_name || newGhost.username,
+        account_type: newGhost.account_type,
+        avatar_url: newGhost.avatar_url,
       });
 
       if (res.data.success) {
-        toast.success("Ghost account created!");
-        setNewGhost({ email: "", username: "", display_name: "", account_type: "regular" });
+        toast.success("Account created! Redirecting to community page...");
+        setNewGhost({ email: "", username: "", display_name: "", account_type: "regular", avatar_url: "" });
         setShowCreate(false);
         loadGhosts();
+        
+        // Redirect to the gaming community page
+        setTimeout(() => {
+          window.location.href = "/gaming-community";
+        }, 1500);
       } else {
         toast.error(res.data.error || "Failed to create");
       }
     } catch (e) {
-      toast.error(e.message || "Failed to create ghost account");
+      toast.error(e.message || "Failed to create account");
     }
     setCreating(false);
   };
 
   const handleImpersonate = async (ghost) => {
     try {
-      const res = await base44.functions.invoke("adminGhostAccounts", {
+      const res = await base44.functions.invoke("createManagedAccount", {
         action: "impersonate",
-        targetEmail: ghost.user_email,
+        target_email: ghost.user_email,
       });
       
       if (res.data.success) {
-        // Open profile page as ghost
-        window.open(`/profile?email=${encodeURIComponent(ghost.user_email)}`, "_blank");
-        toast.success(`Now viewing as ${ghost.username}`);
+        // Store the impersonation session
+        localStorage.setItem("impersonating", JSON.stringify({
+          target_email: ghost.user_email,
+          username: ghost.username,
+          display_name: ghost.display_name,
+          avatar_url: ghost.avatar_url,
+          started_at: new Date().toISOString(),
+        }));
+        
+        toast.success(`Now managing as ${ghost.username}`);
+        
+        // Reload the page to apply the impersonation
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
       }
     } catch (e) {
-      toast.error("Failed to impersonate");
+      toast.error("Failed to switch account");
     }
   };
 
+  const handleStopImpersonating = async () => {
+    localStorage.removeItem("impersonating");
+    toast.success("Stopped managing account");
+    setTimeout(() => {
+      window.location.reload();
+    }, 800);
+  };
+
+  // Check if currently impersonating
+  const [impersonating, setImpersonating] = useState(null);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("impersonating");
+      if (stored) {
+        setImpersonating(JSON.parse(stored));
+      }
+    } catch {}
+  }, []);
+
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading ghost accounts...</div>;
+    return <div className="p-8 text-center text-gray-500">Loading accounts...</div>;
   }
 
   return (
@@ -88,11 +129,17 @@ export default function GhostAccountsPanel() {
       <div className="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5 text-purple-400" />
-          <h3 className="text-white font-bold text-sm">Ghost Accounts</h3>
+          <h3 className="text-white font-bold text-sm">Managed Accounts</h3>
         </div>
+        {impersonating && (
+          <button onClick={handleStopImpersonating}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors">
+            <UserX className="w-3.5 h-3.5" /> Stop Managing
+          </button>
+        )}
         <button onClick={() => setShowCreate(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-colors">
-          <Plus className="w-3.5 h-3.5" /> Create Ghost
+          <Plus className="w-3.5 h-3.5" /> Create Account
         </button>
       </div>
 
@@ -113,20 +160,20 @@ export default function GhostAccountsPanel() {
             >
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-5 h-5 text-purple-400" />
-                <h3 className="text-white font-bold">Create Ghost Account</h3>
+                <h3 className="text-white font-bold">Create Managed Account</h3>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-gray-400 text-xs font-semibold mb-1 block">Username</label>
+                  <label className="text-gray-400 text-xs font-semibold mb-1 block">Username *</label>
                   <input value={newGhost.username} onChange={e => setNewGhost(g => ({ ...g, username: e.target.value }))}
-                    placeholder="ghost_user_1"
+                    placeholder="shadow_user_1"
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
                 </div>
                 <div>
-                  <label className="text-gray-400 text-xs font-semibold mb-1 block">Email (optional, auto-generated)</label>
+                  <label className="text-gray-400 text-xs font-semibold mb-1 block">Email (auto-generated if empty)</label>
                   <input value={newGhost.email} onChange={e => setNewGhost(g => ({ ...g, email: e.target.value }))}
-                    placeholder="ghost1@ghost.gamerproductions.com"
+                    placeholder="shadow1@gamerproductions.com"
                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
                 </div>
                 <div>
@@ -149,7 +196,7 @@ export default function GhostAccountsPanel() {
               <div className="flex gap-2 mt-5">
                 <button onClick={handleCreate} disabled={creating || !newGhost.username}
                   className="flex-1 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold disabled:opacity-50 transition-colors">
-                  {creating ? "Creating..." : "Create"}
+                  {creating ? "Creating..." : "Create & Redirect"}
                 </button>
                 <button onClick={() => setShowCreate(false)}
                   className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white text-sm font-bold transition-colors">
@@ -161,11 +208,11 @@ export default function GhostAccountsPanel() {
         )}
       </AnimatePresence>
 
-      {/* Ghost List */}
+      {/* Account List */}
       <div className="divide-y divide-gray-800">
         {ghosts.length === 0 ? (
           <div className="p-6 text-center text-gray-500 text-sm">
-            No ghost accounts yet. Create one to test features!
+            No managed accounts yet. Create one to test features!
           </div>
         ) : (
           ghosts.map((ghost, i) => (
@@ -177,12 +224,25 @@ export default function GhostAccountsPanel() {
               <div className="flex-1 min-w-0">
                 <p className="text-white text-xs font-bold truncate">{ghost.username}</p>
                 <p className="text-gray-500 text-[10px] truncate">{ghost.user_email}</p>
-                <p className="text-gray-600 text-[9px] mt-0.5">{ghost.account_type}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-900/30 border border-purple-700/40 text-purple-300 font-semibold">
+                    {ghost.account_type}
+                  </span>
+                  {ghost.stats && (
+                    <span className="text-[9px] text-gray-600">
+                      {ghost.stats.listings} listings · {ghost.stats.posts} posts
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <button onClick={() => handleImpersonate(ghost)}
+              <a href={`/profile?email=${encodeURIComponent(ghost.user_email)}`} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold transition-colors">
-                <Eye className="w-3.5 h-3.5" /> View
+                <ExternalLink className="w-3.5 h-3.5" /> Profile
+              </a>
+              <button onClick={() => handleImpersonate(ghost)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-900/30 hover:bg-purple-900/50 text-purple-300 text-xs font-semibold transition-colors border border-purple-700/40">
+                <Eye className="w-3.5 h-3.5" /> Manage As
               </button>
             </div>
           ))
@@ -191,7 +251,8 @@ export default function GhostAccountsPanel() {
 
       <div className="px-5 py-3 bg-gray-950/50 border-t border-gray-800">
         <p className="text-gray-500 text-[10px]">
-          Ghost accounts are dummy users controlled by admin for testing and demonstration purposes.
+          Managed accounts are real user accounts controlled by admins for testing and community management.
+          They appear in total user counts and can post, follow, and interact like regular users.
         </p>
       </div>
     </div>

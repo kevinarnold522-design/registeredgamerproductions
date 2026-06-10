@@ -5,10 +5,11 @@ import { Sparkles, Flame, Droplets, PartyPopper, Hexagon, X } from "lucide-react
 const EFFECTS = [
   { id: "none", label: "None", icon: X, color: "#6b7280" },
   { id: "gambling_cards", label: "Gambling Cards", icon: Hexagon, color: "#a855f7" },
-  { id: "fire", label: "Fire", icon: Flame, color: "#ef4444" },
-  { id: "water", label: "Water", icon: Droplets, color: "#3b82f6" },
-  { id: "fireworks", label: "Fireworks", icon: PartyPopper, color: "#f59e0b" },
-  { id: "glass", label: "Glass Effect", icon: Sparkles, color: "#06b6d4" },
+  { id: "fire", label: "🔥 Fire", icon: Flame, color: "#ef4444" },
+  { id: "purple_fire", label: "💜 Purple Fire", icon: Flame, color: "#a855f7" },
+  { id: "water", label: "💧 Water", icon: Droplets, color: "#3b82f6" },
+  { id: "fireworks", label: "🎆 Fireworks", icon: PartyPopper, color: "#f59e0b" },
+  { id: "glass", label: "✨ Glass (iO26)", icon: Sparkles, color: "#06b6d4" },
 ];
 
 export function EffectSelector({ selectedEffect, onSelect, onClose }) {
@@ -102,10 +103,11 @@ export function SpecialEffectsRenderer({ effect, children }) {
       );
     }
 
+    // Regular fire effect
     if (effect === "fire") {
       return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-          {[...Array(20)].map((_, i) => (
+          {[...Array(25)].map((_, i) => (
             <motion.div
               key={i}
               initial={{ y: 100, opacity: 0, scale: 0.5 }}
@@ -118,14 +120,37 @@ export function SpecialEffectsRenderer({ effect, children }) {
               transition={{ 
                 duration: 1.5 + Math.random(), 
                 repeat: Infinity, 
-                delay: i * 0.15,
+                delay: i * 0.12,
                 ease: "easeOut"
               }}
               className="absolute w-4 h-12 bg-gradient-to-t from-orange-500 via-red-500 to-yellow-300 rounded-full blur-sm"
               style={{ 
-                left: `${5 + (i * 5)}%`,
+                left: `${5 + (i * 4)}%`,
                 bottom: 0,
                 boxShadow: "0 0 20px rgba(239,68,68,0.8)"
+              }}
+            />
+          ))}
+          {/* Edge flames */}
+          {[...Array(40)].map((_, i) => (
+            <motion.div
+              key={`edge-${i}`}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ 
+                opacity: [0, 0.8, 0],
+                scale: [0, 1.2, 0],
+              }}
+              transition={{ 
+                duration: 0.8 + Math.random() * 0.4, 
+                repeat: Infinity, 
+                delay: i * 0.08,
+              }}
+              className="absolute w-3 h-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500 blur-[2px]"
+              style={{
+                left: `${i * 2.5}%`,
+                top: i % 2 === 0 ? '2px' : 'auto',
+                bottom: i % 2 === 0 ? 'auto' : '2px',
+                boxShadow: "0 0 12px rgba(239,68,68,0.9)"
               }}
             />
           ))}
@@ -133,29 +158,111 @@ export function SpecialEffectsRenderer({ effect, children }) {
       );
     }
 
+    // Purple fire effect
+    if (effect === "purple_fire") {
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+          {[...Array(30)].map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: 100, opacity: 0, scale: 0.4 }}
+              animate={{ 
+                y: -60 - Math.random() * 120, 
+                opacity: [0, 1, 1, 0],
+                scale: [0.4, 1.8, 0.8],
+                x: (Math.random() - 0.5) * 60
+              }}
+              transition={{ 
+                duration: 1.8 + Math.random(), 
+                repeat: Infinity, 
+                delay: i * 0.1,
+                ease: "easeOut"
+              }}
+              className="absolute w-3 h-10 bg-gradient-to-t from-purple-600 via-pink-500 to-violet-400 rounded-full blur-md"
+              style={{ 
+                left: `${4 + (i * 3.5)}%`,
+                bottom: 0,
+                boxShadow: "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(236,72,153,0.6)"
+              }}
+            />
+          ))}
+          {/* Purple edge flames */}
+          {[...Array(35)].map((_, i) => (
+            <motion.div
+              key={`edge-${i}`}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ 
+                opacity: [0, 0.9, 0],
+                scale: [0, 1.3, 0],
+                rotate: Math.random() * 360
+              }}
+              transition={{ 
+                duration: 1 + Math.random() * 0.5, 
+                repeat: Infinity, 
+                delay: i * 0.1,
+              }}
+              className="absolute w-2.5 h-2.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 blur-[3px]"
+              style={{
+                left: `${i * 2.8}%`,
+                top: i % 2 === 0 ? '3px' : 'auto',
+                bottom: i % 2 === 0 ? 'auto' : '3px',
+                boxShadow: "0 0 16px rgba(168,85,247,1)"
+              }}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    // Enhanced water droplets
     if (effect === "water") {
       return (
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-          {[...Array(15)].map((_, i) => (
+          {[...Array(25)].map((_, i) => (
             <motion.div
               key={i}
-              initial={{ y: -50, opacity: 0, x: Math.random() * 100 }}
+              initial={{ y: -60, opacity: 0, x: Math.random() * 100 }}
               animate={{ 
-                y: 400, 
-                opacity: [0, 1, 1, 0],
-                x: `${10 + (i * 6)}%`
+                y: 450, 
+                opacity: [0, 0.8, 0.8, 0],
+                x: `${10 + (i * 4) + Math.sin(i) * 20}%`,
+                scaleY: [1, 1.5, 1],
               }}
               transition={{ 
-                duration: 2 + Math.random(), 
+                duration: 2.5 + Math.random(), 
                 repeat: Infinity, 
-                delay: i * 0.2,
+                delay: i * 0.15,
                 ease: "easeInOut"
               }}
-              className="absolute w-2 h-8 bg-gradient-to-b from-blue-400 to-cyan-300 rounded-full blur-sm"
+              className="absolute w-3 h-10 bg-gradient-to-b from-blue-400 via-cyan-300 to-transparent rounded-full blur-[1px]"
               style={{ 
-                left: `${5 + (i * 6)}%`,
+                left: `${3 + (i * 4)}%`,
                 top: 0,
-                boxShadow: "0 0 15px rgba(59,130,246,0.6)"
+                boxShadow: "0 0 20px rgba(59,130,246,0.7), inset 0 0 10px rgba(147,197,253,0.5)"
+              }}
+            />
+          ))}
+          {/* Water droplets on edges */}
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={`drop-${i}`}
+              initial={{ opacity: 0, scale: 0, y: 0 }}
+              animate={{ 
+                opacity: [0, 0.7, 0],
+                scale: [0, 1.2, 0.8],
+                y: 15
+              }}
+              transition={{ 
+                duration: 1.5 + Math.random(), 
+                repeat: Infinity, 
+                delay: i * 0.12,
+              }}
+              className="absolute w-2 h-2 rounded-full bg-blue-400/60 blur-[1px]"
+              style={{
+                left: `${5 + i * 5}%`,
+                top: i % 2 === 0 ? '4px' : 'auto',
+                bottom: i % 2 === 0 ? 'auto' : '4px',
+                boxShadow: "0 0 12px rgba(59,130,246,0.8)"
               }}
             />
           ))}
@@ -208,35 +315,63 @@ export function SpecialEffectsRenderer({ effect, children }) {
       );
     }
 
+    // Enhanced glass effect (iO26 style)
     if (effect === "glass") {
       return (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+        <div className="absolute inset-0 pointer-events-none overflow-visible rounded-2xl" style={{ zIndex: 1 }}>
+          {/* Base glass layer - very subtle to keep images visible */}
           <div 
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-              backdropFilter: "blur(10px)",
-              boxShadow: "inset 0 0 30px rgba(255,255,255,0.1), inset 0 0 60px rgba(6,182,212,0.2)"
+              background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)",
+              backdropFilter: "blur(8px) saturate(180%)",
+              boxShadow: "inset 0 0 40px rgba(255,255,255,0.08), inset 0 0 80px rgba(6,182,212,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)"
             }}
           />
-          {[...Array(5)].map((_, i) => (
+          
+          {/* Animated light streaks */}
+          {[...Array(6)].map((_, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0.3, x: -100 }}
+              initial={{ opacity: 0.2, x: -150, rotate: -15 }}
               animate={{ 
-                opacity: [0.3, 0.6, 0.3],
-                x: 300
+                opacity: [0.2, 0.5, 0.2],
+                x: 400,
               }}
               transition={{ 
-                duration: 3, 
+                duration: 4 + Math.random(), 
                 repeat: Infinity, 
-                delay: i * 0.6,
+                delay: i * 0.7,
                 ease: "easeInOut"
               }}
-              className="absolute h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent"
+              className="absolute h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent blur-[1px]"
               style={{ 
-                top: `${20 + i * 15}%`,
-                width: "200px"
+                top: `${15 + i * 12}%`,
+                width: "250px"
+              }}
+            />
+          ))}
+          
+          {/* Sparkle points */}
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={`sparkle-${i}`}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ 
+                opacity: [0, 0.8, 0],
+                scale: [0, 1.5, 0],
+              }}
+              transition={{ 
+                duration: 2 + Math.random(), 
+                repeat: Infinity, 
+                delay: i * 0.3,
+              }}
+              className="absolute w-1.5 h-1.5 rounded-full bg-white blur-[1px]"
+              style={{
+                left: `${10 + i * 12}%`,
+                top: `${20 + (i % 3) * 25}%`,
+                boxShadow: "0 0 12px rgba(255,255,255,0.8)"
               }}
             />
           ))}
@@ -248,7 +383,7 @@ export function SpecialEffectsRenderer({ effect, children }) {
   };
 
   return (
-    <div className="relative overflow-hidden" style={{ isolation: "isolate" }}>
+    <div className="relative overflow-visible" style={{ isolation: "isolate" }}>
       {children}
       {renderEffect()}
     </div>
