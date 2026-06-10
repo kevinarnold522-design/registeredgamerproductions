@@ -197,14 +197,13 @@ export default function Dashboard() {
 </body>
 </html>`;
 
-              await base44.integrations.Core.SendEmail({
-                to: me.email,
-                subject: `🎮 Welcome to GAMER Productions, ${username}!`,
-                body: htmlBody
-              });
-            } catch (e) {
-              console.log("Email send skipped:", e.message);
-            }
+            await base44.integrations.Core.SendEmail({
+              to: me.email,
+              subject: `🎮 Welcome to GAMER Productions, ${username}!`,
+              body: htmlBody
+            });
+          } catch (e) {
+            console.log("Email send skipped: " + e.message);
           }
         }
       }
