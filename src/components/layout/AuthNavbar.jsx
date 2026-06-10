@@ -115,7 +115,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Trophy, label: "Tournaments", href: "/tournaments", color: "text-pink-400" },
     { icon: Store, label: "All Listings", href: "/dashboard?tab=listings", color: "text-blue-400" },
     { icon: Users, label: "Users", href: "/dashboard?tab=users", color: "text-yellow-300" },
-    { icon: Users, label: "Created Accounts", href: "/admin/created-accounts", color: "text-purple-300" },
+    { icon: Shield, label: "🎭 Created Accounts", href: "/admin/created-accounts", color: "text-pink-300" },
     { icon: Settings, label: "Website Editor", href: "/admin-editor", color: "text-gray-400" },
     { icon: Share2, label: "Social Manager", href: "/social-manager", color: "text-pink-300" },
   ];
