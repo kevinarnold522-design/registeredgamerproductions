@@ -94,12 +94,21 @@ export default function AuthNavbar({ user, profile }) {
   // Check if managing as ghost account
   const [isManagingAsGhost, setIsManagingAsGhost] = useState(false);
   const [ghostAccountEmail, setGhostAccountEmail] = useState("");
+  const [ghostAccountData, setGhostAccountData] = useState(null);
   
   useEffect(() => {
     const impData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
-    if (impData.isImpersonating) {
+    if (impData.isImpersonating && impData.isGhostLogin && impData.isPersistent) {
       setIsManagingAsGhost(true);
       setGhostAccountEmail(impData.targetEmail);
+      // Fetch ghost account profile data
+      base44.entities.UserProfile.filter({ user_email: impData.targetEmail })
+        .then(profiles => {
+          if (profiles.length > 0) {
+            setGhostAccountData(profiles[0]);
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -178,8 +187,8 @@ export default function AuthNavbar({ user, profile }) {
           <Link to="/profile" className={`flex items-center gap-3 rounded-xl p-2 hover:bg-gray-800/60 transition-all ${collapsed && !isMobile ? "justify-center" : ""}`}>
             <div className="relative flex-shrink-0">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                {profile?.avatar_url
-                  ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
+                {(isManagingAsGhost && ghostAccountData?.avatar_url) || profile?.avatar_url
+                  ? <img src={(isManagingAsGhost ? ghostAccountData.avatar_url : profile.avatar_url) || profile?.avatar_url} className="w-full h-full object-cover" alt="" />
                   : <User className="w-5 h-5 text-white" />
                 }
               </div>
@@ -188,12 +197,20 @@ export default function AuthNavbar({ user, profile }) {
             {s && (
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-white font-black text-xs truncate">{profile?.username || user?.full_name || "Gamer"}</p>
-                  <GamerCheckmark isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showTooltip={false} />
+                  <p className="text-white font-black text-xs truncate">
+                    {isManagingAsGhost ? ghostAccountData?.username : (profile?.username || user?.full_name || "Gamer")}
+                  </p>
+                  <GamerCheckmark isVerified={isManagingAsGhost ? ghostAccountData?.is_verified : profile?.is_verified} userEmail={isManagingAsGhost ? ghostAccountEmail : user?.email} size="sm" showTooltip={false} />
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <p className={`text-[10px] font-semibold truncate ${admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400"}`}>
-                    {admin && user?.email === "kevinarnold522@gmail.com" ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer"}
+                  <p className={`text-[10px] font-semibold truncate ${
+                    isManagingAsGhost 
+                      ? 'text-pink-400' 
+                      : (admin && user?.email === "kevinarnold522@gmail.com" ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400")
+                  }`}>
+                    {isManagingAsGhost 
+                      ? (ghostAccountData?.account_type || 'regular').replace('_', ' ')
+                      : (admin && user?.email === "kevinarnold522@gmail.com" ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer")}
                   </p>
                   {isManagingAsGhost && (
                     <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-pink-900/50 border border-pink-700/50 text-pink-400 font-black">

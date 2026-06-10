@@ -35,22 +35,45 @@ export default function Profile() {
 
   useEffect(() => {
     const init = async () => {
-      const me = await base44.auth.me();
-      setUser(me);
-      
-      // Check for persistent ghost session
+      // Check for persistent ghost session FIRST
       const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
       const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
       
-      // Use ghost account email if in ghost session
-      const emailToLoad = targetEmail || (isGhostLogin ? impersonationData.targetEmail : me?.email);
+      // Get auth user (admin or ghost)
+      const me = await base44.auth.me().catch(() => null);
+      
+      // Determine which email to use
+      let emailToLoad;
+      let isOwnProfileValue;
+      
+      if (isGhostLogin) {
+        // Always use ghost account email when in persistent ghost session
+        emailToLoad = impersonationData.targetEmail;
+        isOwnProfileValue = true; // Treat as own profile for editing purposes
+        // Set user state to ghost account
+        setUser({
+          email: impersonationData.targetEmail,
+          full_name: impersonationData.targetUsername,
+          isGhostAccount: true,
+          ghostData: impersonationData
+        });
+      } else if (targetEmail) {
+        // Viewing someone else's profile
+        emailToLoad = targetEmail;
+        isOwnProfileValue = false;
+        setUser(me);
+      } else {
+        // Normal view of own profile
+        emailToLoad = me?.email;
+        isOwnProfileValue = true;
+        setUser(me);
+      }
       
       if (!emailToLoad) { setLoading(false); return; }
       
-      // In ghost session, always show ghost account data
-      const isOwnProfile = !targetEmail && (isGhostLogin || (!isGhostLogin && (!targetEmail || targetEmail === me?.email)));
-      setIsOwnProfile(isOwnProfile);
+      setIsOwnProfile(isOwnProfileValue);
       
+      // Fetch profile and listings for the determined email
       const [profiles, listingsData] = await Promise.all([
         base44.entities.UserProfile.filter({ user_email: emailToLoad }),
         base44.entities.Listing.filter({ seller_email: emailToLoad }),
@@ -94,7 +117,7 @@ export default function Profile() {
   const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
   
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className={`min-h-screen bg-gray-950 ${isGhostLogin ? 'pt-16' : ''}`}>
       {isGhostLogin && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-pink-900/80 to-purple-900/80 backdrop-blur-md border-b border-pink-700/50 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">

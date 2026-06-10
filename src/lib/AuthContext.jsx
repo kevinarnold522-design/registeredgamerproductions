@@ -70,11 +70,18 @@ export const AuthProvider = ({ children }) => {
       
       // If in persistent ghost session, use ghost account data
       if (impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent) {
+        // Fetch ghost account's actual profile data
+        const ghostProfile = await base44.entities.UserProfile.filter({ 
+          user_email: impersonationData.targetEmail 
+        }).catch(() => []);
+        
         const ghostUser = {
           email: impersonationData.targetEmail,
           full_name: impersonationData.targetUsername,
           isGhostAccount: true,
-          ghostData: impersonationData
+          ghostData: impersonationData,
+          // Use actual profile data if available
+          ...(ghostProfile.length > 0 ? ghostProfile[0] : {})
         };
         setUser(ghostUser);
         setIsAuthenticated(true);
@@ -106,12 +113,23 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Clear ghost session if active
+      // Check if this is a ghost session logout
+      const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
+      const isGhostLogout = impersonationData.isImpersonating && impersonationData.isGhostLogin;
+      
+      // Clear ghost session
       localStorage.removeItem('impersonation_session');
       localStorage.removeItem('base44_access_token');
       localStorage.removeItem('base44_token');
-      if (supabase) await supabase.auth.signOut();
-      else await base44.auth.logout('/');
+      
+      if (isGhostLogout) {
+        // If logging out from ghost account, just clear everything and go home
+        if (supabase) await supabase.auth.signOut();
+      } else {
+        // Normal admin logout
+        if (supabase) await supabase.auth.signOut();
+        else await base44.auth.logout('/');
+      }
     } catch (e) {
       console.error("Logout cleanup failed", e);
     } finally {
