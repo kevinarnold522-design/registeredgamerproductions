@@ -10,7 +10,7 @@ import BusinessModelSection from "@/components/home/BusinessModelSection";
 import MovingDashboard from "@/components/home/MovingDashboard";
 import LiveStreamSection from "@/components/home/LiveStreamSection";
 import HowWeHelpSection from "@/components/home/HowWeHelpSection";
-import ServicesSection from "@/components/home/ServicesSection";
+import PaidModsSection from "@/components/home/PaidModsSection";
 import ModdingSection from "@/components/home/ModdingSection";
 import MonetizationBadge from "@/components/home/MonetizationBadge";
 import VideosSection from "@/components/home/VideosSection";
@@ -190,7 +190,7 @@ export default function Home() {
             {/* How We Help */}
             <HowWeHelpSection />
 
-            <ServicesSection />
+            <PaidModsSection />
             <ModdingSection />
             <MonetizationBadge />
             <FeaturedGames />
