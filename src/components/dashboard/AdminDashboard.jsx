@@ -296,7 +296,11 @@ export default function AdminDashboard({ user, profile }) {
       )}
 
       {/* Created Accounts */}
-      {tab === "created_accounts" && <ManagedAccountsPanel />}
+      {tab === "created_accounts" && (
+        <div className="relative">
+          <ManagedAccountsPanel />
+        </div>
+      )}
 
       {/* Listings */}
       {tab === "listings" && (

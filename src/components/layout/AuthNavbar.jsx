@@ -90,6 +90,18 @@ export default function AuthNavbar({ user, profile }) {
   const admin = isAdmin(user?.email);
   const accountType = profile?.account_type || "regular";
   const isSeller = accountType === "digital_creator" || accountType === "business";
+  
+  // Check if managing as ghost account
+  const [isManagingAsGhost, setIsManagingAsGhost] = useState(false);
+  const [ghostAccountEmail, setGhostAccountEmail] = useState("");
+  
+  useEffect(() => {
+    const impData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
+    if (impData.isImpersonating) {
+      setIsManagingAsGhost(true);
+      setGhostAccountEmail(impData.targetEmail);
+    }
+  }, []);
 
   useEffect(() => {
     if (user?.email) {
@@ -177,9 +189,16 @@ export default function AuthNavbar({ user, profile }) {
                   <p className="text-white font-black text-xs truncate">{profile?.username || user?.full_name || "Gamer"}</p>
                   <GamerCheckmark isVerified={profile?.is_verified} userEmail={user?.email} size="sm" showTooltip={false} />
                 </div>
-                <p className={`text-[10px] font-semibold truncate ${admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400"}`}>
-                  {admin && user?.email === "kevinarnold522@gmail.com" ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer"}
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <p className={`text-[10px] font-semibold truncate ${admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400"}`}>
+                    {admin && user?.email === "kevinarnold522@gmail.com" ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer"}
+                  </p>
+                  {isManagingAsGhost && (
+                    <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-pink-900/50 border border-pink-700/50 text-pink-400 font-black">
+                      👻 GHOST
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </Link>

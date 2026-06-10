@@ -67,7 +67,17 @@ export default function Channel() {
   // Check if viewing someone else's channel via ?email=
   const urlParams = new URLSearchParams(window.location.search);
   const viewEmail = urlParams.get("email");
+  const isNewAccount = urlParams.get("new_account") === "1";
   const [targetEmail, setTargetEmail] = useState(null);
+  const [showNewAccountBanner, setShowNewAccountBanner] = useState(isNewAccount);
+
+  // Auto-hide banner after 5 seconds
+  React.useEffect(() => {
+    if (showNewAccountBanner) {
+      const timer = setTimeout(() => setShowNewAccountBanner(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showNewAccountBanner]);
 
   useEffect(() => {
     const init = async () => {
@@ -124,6 +134,29 @@ export default function Channel() {
     <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, minHeight: "100vh" }}>
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-16">
+
+        {/* New Account Banner */}
+        <AnimatePresence>
+          {showNewAccountBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-2xl shadow-green-900/50 border border-green-400/50 flex items-center gap-3"
+            >
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <Check className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-black text-sm">✨ New Ghost Account Created!</p>
+                <p className="text-[10px] text-green-100">You're now managing as {profile?.username || "this user"}</p>
+              </div>
+              <button onClick={() => setShowNewAccountBanner(false)} className="ml-2 text-white/80 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Banner */}
         <div className="relative h-48 md:h-64 bg-gradient-to-r from-purple-900/60 to-pink-900/40 overflow-hidden">

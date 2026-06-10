@@ -56,10 +56,32 @@ export default function ManagedAccountsPanel() {
         setFormData({ email: "", username: "", display_name: "", account_type: "regular" });
         loadAccounts();
         
-        // Auto-redirect to the new account's channel page
-        setTimeout(() => {
-          navigate(`/channel?user=${encodeURIComponent(formData.email)}`);
-        }, 1000);
+        // Auto-impersonate and redirect to the new account's channel page
+        setTimeout(async () => {
+          try {
+            // Perform impersonation
+            const impResponse = await base44.functions.invoke('createManagedAccount', {
+              action: 'impersonate',
+              target_email: formData.email,
+            });
+            
+            if (impResponse.data.success) {
+              const impersonationData = {
+                isImpersonating: true,
+                originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
+                targetEmail: formData.email,
+                targetUsername: formData.username,
+              };
+              localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
+              
+              // Redirect to channel page with new account flag
+              window.location.href = `/channel?email=${encodeURIComponent(formData.email)}&new_account=1`;
+            }
+          } catch (error) {
+            // If impersonation fails, still redirect to channel
+            window.location.href = `/channel?email=${encodeURIComponent(formData.email)}&new_account=1`;
+          }
+        }, 1500);
       }
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to create account");
