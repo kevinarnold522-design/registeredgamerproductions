@@ -27,18 +27,16 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Account not found or not a managed account' }, { status: 404 });
         }
 
-        // Generate a login token for the target account
-        // This creates a persistent session that allows the admin to login as the ghost account
-        const loginToken = await base44.auth.generateImpersonationToken(target_email);
-
+        // Return ghost account info for frontend session management
+        // Base44 doesn't support true impersonation, so we use frontend-only session
         return Response.json({ 
             success: true, 
-            login_token: loginToken,
             target_email: target_email,
             username: targetAccount[0].username,
-            display_name: targetAccount[0].display_name,
-            avatar_url: targetAccount[0].avatar_url,
-            redirect_url: '/profile' // Redirect to profile/channel page
+            display_name: targetAccount[0].display_name || targetAccount[0].username,
+            avatar_url: targetAccount[0].avatar_url || '',
+            account_type: targetAccount[0].account_type || 'regular',
+            redirect_url: `/profile?email=${encodeURIComponent(target_email)}&ghost_session=1`
         });
 
     } catch (error) {

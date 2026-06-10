@@ -184,7 +184,7 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* ── Profile at TOP ── */}
         <div className={`px-3 pt-4 pb-3 border-b border-purple-900/30 ${collapsed && !isMobile ? "flex flex-col items-center gap-2" : ""}`}>
-          <Link to="/profile" className={`flex items-center gap-3 rounded-xl p-2 hover:bg-gray-800/60 transition-all ${collapsed && !isMobile ? "justify-center" : ""}`}>
+          <Link to={isManagingAsGhost ? `/profile?email=${encodeURIComponent(ghostAccountEmail)}&ghost_session=1` : "/profile"} className={`flex items-center gap-3 rounded-xl p-2 hover:bg-gray-800/60 transition-all ${collapsed && !isMobile ? "justify-center" : ""}`}>
             <div className="relative flex-shrink-0">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                 {(isManagingAsGhost && ghostAccountData?.avatar_url) || profile?.avatar_url

@@ -35,35 +35,45 @@ export default function Profile() {
 
   useEffect(() => {
     const init = async () => {
-      // Check for persistent ghost session FIRST
+      // Check for persistent ghost session FIRST - this overrides everything
       const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
       const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
       
-      // Get auth user (admin or ghost)
-      const me = await base44.auth.me().catch(() => null);
+      if (isGhostLogin) {
+        // GHOST SESSION: Use ghost account data ONLY, completely isolated from admin
+        const ghostEmail = impersonationData.targetEmail;
+        
+        // Fetch ghost account's profile and listings
+        const [profiles, listingsData] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_email: ghostEmail }),
+          base44.entities.Listing.filter({ seller_email: ghostEmail }),
+        ]);
+        
+        if (profiles.length > 0) {
+          setProfile(profiles[0]);
+          setUser({
+            email: ghostEmail,
+            full_name: profiles[0].username || impersonationData.targetUsername,
+            isGhostAccount: true,
+            ghostData: impersonationData,
+          });
+        }
+        setListings(listingsData.filter(l => l.status === "active"));
+        setIsOwnProfile(true); // Ghost account can edit their own profile
+        setLoading(false);
+        return;
+      }
       
-      // Determine which email to use
+      // Normal flow (not ghost session)
+      const me = await base44.auth.me().catch(() => null);
       let emailToLoad;
       let isOwnProfileValue;
       
-      if (isGhostLogin) {
-        // Always use ghost account email when in persistent ghost session
-        emailToLoad = impersonationData.targetEmail;
-        isOwnProfileValue = true; // Treat as own profile for editing purposes
-        // Set user state to ghost account
-        setUser({
-          email: impersonationData.targetEmail,
-          full_name: impersonationData.targetUsername,
-          isGhostAccount: true,
-          ghostData: impersonationData
-        });
-      } else if (targetEmail) {
-        // Viewing someone else's profile
+      if (targetEmail) {
         emailToLoad = targetEmail;
         isOwnProfileValue = false;
         setUser(me);
       } else {
-        // Normal view of own profile
         emailToLoad = me?.email;
         isOwnProfileValue = true;
         setUser(me);
@@ -73,7 +83,6 @@ export default function Profile() {
       
       setIsOwnProfile(isOwnProfileValue);
       
-      // Fetch profile and listings for the determined email
       const [profiles, listingsData] = await Promise.all([
         base44.entities.UserProfile.filter({ user_email: emailToLoad }),
         base44.entities.Listing.filter({ seller_email: emailToLoad }),

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function ManagedAccountsPanel() {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -18,6 +19,13 @@ export default function ManagedAccountsPanel() {
     display_name: "",
     account_type: "regular",
   });
+
+  useEffect(() => {
+    // Get current admin user
+    base44.auth.me().then(user => {
+      if (user) setCurrentUser(user);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     loadAccounts();
@@ -97,23 +105,26 @@ export default function ManagedAccountsPanel() {
       });
 
       if (response.data.success) {
-        // Store impersonation data
+        // Store ghost session data - frontend only, no backend token
         const impersonationData = {
           isImpersonating: true,
           isGhostLogin: true,
-          originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
+          isPersistent: true,
+          originalUser: { email: currentUser?.email, full_name: currentUser?.full_name },
           targetEmail: account.user_email,
           targetUsername: account.username,
-          isPersistent: true, // Persistent across refreshes
+          targetDisplayName: response.data.display_name,
+          targetAvatar: response.data.avatar_url,
+          targetAccountType: response.data.account_type,
         };
         localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
         
-        toast.success(`Logged in as ${account.username}`);
+        toast.success(`Logged in as ${response.data.username}`);
         
-        // Redirect to the ghost account's profile/channel page
+        // Redirect to ghost account's profile page with proper URL params
         setTimeout(() => {
-          window.location.href = '/profile';
-        }, 1000);
+          window.location.href = response.data.redirect_url;
+        }, 500);
       }
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to login as ghost account");
@@ -153,6 +164,11 @@ export default function ManagedAccountsPanel() {
     window.location.href = '/admin/created-accounts';
   };
 
+  const handleEditGhostAccount = async (account) => {
+    // Navigate to profile edit page with ghost account email
+    window.location.href = `/dashboard?tab=profile&edit_ghost=${encodeURIComponent(account.user_email)}`;
+  };
+
   const filteredAccounts = accounts.filter(acc =>
     acc.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
     acc.user_email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -164,21 +180,33 @@ export default function ManagedAccountsPanel() {
   return (
     <div className="p-6">
       {isImpersonating && (
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-purple-900/50 to-pink-900/50 border border-purple-700/50 flex items-center justify-between">
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-pink-900/50 to-purple-900/50 border border-pink-700/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-purple-400" />
+            <Shield className="w-5 h-5 text-pink-400" />
             <div>
               <p className="text-white font-bold text-sm">Managing as: {impersonationData.targetUsername}</p>
-              <p className="text-gray-400 text-xs">All actions will be performed as this account</p>
+              <p className="text-gray-400 text-xs">Ghost session - all data isolated to this account</p>
             </div>
           </div>
-          <button
-            onClick={handleStopImpersonating}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Stop Managing
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const ghostEmail = impersonationData.targetEmail;
+                window.location.href = `/dashboard?tab=profile&edit_ghost=${encodeURIComponent(ghostEmail)}`;
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-colors"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Edit Account
+            </button>
+            <button
+              onClick={handleStopImpersonating}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign Out
+            </button>
+          </div>
         </div>
       )}
 
@@ -288,11 +316,11 @@ export default function ManagedAccountsPanel() {
                     <Shield className="w-3.5 h-3.5 text-white" />
                   </button>
                   <button
-                    onClick={() => handleImpersonate(account)}
-                    className="w-8 h-8 rounded-lg bg-purple-600 hover:bg-purple-500 flex items-center justify-center transition-colors"
-                    title="Manage this account"
+                    onClick={() => handleEditGhostAccount(account)}
+                    className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-colors"
+                    title="Edit account details"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 text-white" />
+                    <Users className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
               </div>
