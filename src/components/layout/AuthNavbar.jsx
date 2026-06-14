@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
-import { isAdmin } from "@/lib/constants";
 import { Link, useLocation } from "react-router-dom";
 import CartDropdown from "@/components/layout/CartDropdown";
 import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
@@ -72,6 +71,8 @@ export default function AuthNavbar({ user, profile }) {
   const [showTransition, setShowTransition] = useState(false);
   const location = useLocation();
 
+  const MASTER_EMAIL = "kevinarnold522@gmail.com";
+
   const colorCycles = [
     "from-purple-600 to-pink-600",
     "from-blue-500 to-cyan-500",
@@ -87,7 +88,10 @@ export default function AuthNavbar({ user, profile }) {
     setTimeout(() => setControllerAnimating(false), 600);
   };
 
-  const admin = isAdmin(user?.email);
+  // 🛡️ CRITICAL ADMIN HARD-GATE
+  const currentEmail = user?.email || "";
+  const admin = currentEmail.toLowerCase() === MASTER_EMAIL.toLowerCase();
+  
   const accountType = profile?.account_type || "regular";
   const isSeller = accountType === "digital_creator" || accountType === "business";
   
@@ -209,19 +213,18 @@ export default function AuthNavbar({ user, profile }) {
                   <p className={`text-[10px] font-semibold truncate ${
                     isManagingAsGhost 
                       ? (ghostAccountData?.account_type === 'digital_creator' ? 'text-purple-400' : ghostAccountData?.account_type === 'business' ? 'text-green-400' : 'text-blue-400')
-                      : (admin && user?.email === "kevinarnold522@gmail.com" ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400")
+                      : (admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400")
                   }`}>
                     {isManagingAsGhost 
                       ? (ghostAccountData?.account_type || 'regular').replace('_', ' ')
-                      : (admin && user?.email === "kevinarnold522@gmail.com" ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer")}
+                      : (admin ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer")}
                   </p>
-
                 </div>
               </div>
             )}
           </Link>
 
-          {admin && user?.email === "kevinarnold522@gmail.com" && s && (
+          {admin && s && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-900/30 border border-yellow-700/30 mt-1">
               <Crown className="w-3 h-3 text-yellow-400" />
               <span className="text-yellow-400 text-[10px] font-black">CEO & President · GAMER Productions</span>
@@ -353,72 +356,4 @@ export default function AuthNavbar({ user, profile }) {
       </motion.aside>
 
       {/* Mobile top bar */}
-      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-14 flex items-center px-4 gap-3">
-        <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
-          <Menu className="w-5 h-5" />
-        </button>
-        <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1) % 6); window.location.href = "/"; }}>
-          <motion.div
-            className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]}`}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.3 }}
-            style={{ transition: "background 0.3s ease" }}
-          >
-            <Gamepad2 className="w-4 h-4 text-white" />
-          </motion.div>
-          <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
-        </Link>
-        <div className="ml-auto flex items-center gap-2">
-          <NotificationBell userEmail={user?.email} />
-          <button onClick={() => setCartOpen(true)} className="relative">
-            <ShoppingCart className="w-5 h-5 text-gray-400" />
-            {cartCount > 0 && <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 text-black text-[8px] flex items-center justify-center font-black">{cartCount}</span>}
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 z-50 bg-black/70"
-              onClick={() => setMobileOpen(false)}
-            />
-            <motion.div
-              initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
-              transition={{ type: "tween", duration: 0.25 }}
-              className="lg:hidden fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 overflow-y-auto"
-            >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30">
-                <span className="font-black text-white text-sm">Menu</span>
-                <button onClick={() => setMobileOpen(false)} className="p-1 text-gray-400 hover:text-white">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              {sidebarInner(true)}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Cart & Favorites dropdowns */}
-      <CartDropdown isOpen={cartOpen} onClose={() => setCartOpen(false)} userEmail={user?.email} />
-      <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={user?.email} />
-
-      {/* Transition Modal */}
-      {showTransition && (
-        <AccountTypeTransitionModal
-          currentType={accountType}
-          user={user}
-          onClose={() => setShowTransition(false)}
-          onSuccess={(newType) => {
-            setShowTransition(false);
-            window.location.reload();
-          }}
-        />
-      )}
-    </>
-  );
-}
+      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-
