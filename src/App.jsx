@@ -68,13 +68,19 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Role-Based Access Wrapper with hardcoded Master Admin Email fallback
+  // 🛡️ ULTRA-STRICT IDENTITY GATE FOR PAGES
   const AdminRoute = ({ element }) => {
-    const isAdminRole = user && user.role === 'admin';
-    const isMasterEmail = user && user.email === 'kevinarnold522@gmail.com';
+    const MASTER_EMAIL = 'kevinarnold522@gmail.com';
+    
+    // Extracting user email and role safely from potential variation structures
+    const currentEmail = user?.email || user?.attributes?.email || user?.primaryEmail || "";
+    const currentRole = user?.role || "";
 
-    // If they don't have the admin role AND aren't using the master email, boot them!
-    if (!isAdminRole && !isMasterEmail) {
+    const isMasterAdmin = currentEmail.toLowerCase() === MASTER_EMAIL.toLowerCase();
+    const hasAdminRole = currentRole === 'admin';
+
+    // If they aren't your specific email AND don't have an admin flag, block access
+    if (!isMasterAdmin && !hasAdminRole) {
       return <Navigate to="/dashboard" replace />;
     }
     return element;
