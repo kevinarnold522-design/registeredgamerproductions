@@ -133,4 +133,17 @@ function App() {
           <Router>
             <ShootingStars />
             <div style={{ position: "relative", zIndex: 10 }}>
-              <SidebarLayout
+              <SidebarLayout>
+                <AuthenticatedApp />
+              </SidebarLayout>
+            </div>
+            <LanguagePrompt />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </AuthProvider>
+    </LanguageProvider>
+  )
+}
+
+export default App;
