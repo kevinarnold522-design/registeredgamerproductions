@@ -20,7 +20,7 @@ import AccountTypeTransitionModal from "@/components/account/AccountTypeTransiti
 export const SIDEBAR_WIDTH = 240;
 export const SIDEBAR_COLLAPSED_WIDTH = 56;
 
-// ── Stateless NavLink — defined outside to avoid remount on each render ──
+// ── Stateless NavLink ──
 function NavLink({ link, collapsed, isMobile, location }) {
   const show = !collapsed || isMobile;
   const isActive = link.href && (
@@ -95,7 +95,7 @@ export default function AuthNavbar({ user, profile }) {
   const accountType = profile?.account_type || "regular";
   const isSeller = accountType === "digital_creator" || accountType === "business";
   
-  // Check if managing as ghost account
+  // Ghost account management states
   const [isManagingAsGhost, setIsManagingAsGhost] = useState(false);
   const [ghostAccountEmail, setGhostAccountEmail] = useState("");
   const [ghostAccountData, setGhostAccountData] = useState(null);
@@ -105,7 +105,6 @@ export default function AuthNavbar({ user, profile }) {
     if (impData.isImpersonating && impData.isGhostLogin && impData.isPersistent) {
       setIsManagingAsGhost(true);
       setGhostAccountEmail(impData.targetEmail);
-      // Fetch ghost account profile data
       base44.entities.UserProfile.filter({ user_email: impData.targetEmail })
         .then(profiles => {
           if (profiles.length > 0) {
@@ -117,7 +116,6 @@ export default function AuthNavbar({ user, profile }) {
   }, []);
 
   useEffect(() => {
-    // Use ghost account email if in ghost session
     const emailToUse = isManagingAsGhost ? ghostAccountEmail : user?.email;
     if (emailToUse) {
       base44.entities.Cart.filter({ user_email: emailToUse }).then((r) => setCartCount(r.length)).catch(() => {});
@@ -132,7 +130,7 @@ export default function AuthNavbar({ user, profile }) {
     });
   };
 
-  // ── Link groups ──────────────────────────────────────────
+  // ── Links Setup ──────────────────────────────────────────
   const adminLinks = [
     { icon: Shield, label: "Admin Dashboard", href: "/dashboard", color: "text-yellow-400" },
     { icon: GitBranch, label: "Routing Dashboard", href: "/routing-dashboard", color: "text-cyan-400" },
@@ -165,10 +163,18 @@ export default function AuthNavbar({ user, profile }) {
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard" },
   ];
 
-  // Ghost accounts use regular user or seller links based on their account type (not admin links)
-  const navLinks = isManagingAsGhost 
-    ? (ghostAccountData?.account_type === 'digital_creator' || ghostAccountData?.account_type === 'business' ? sellerLinks : regularLinks)
-    : (admin ? adminLinks : isSeller ? sellerLinks : regularLinks);
+  // Secure Role Splitting: Admin navigation strictly matches true role status 
+  const getNavLinks = () => {
+    if (admin && !isManagingAsGhost) return adminLinks;
+    
+    const contextType = isManagingAsGhost ? ghostAccountData?.account_type : accountType;
+    if (contextType === 'digital_creator' || contextType === 'business') {
+      return sellerLinks;
+    }
+    return regularLinks;
+  };
+
+  const navLinks = getNavLinks();
 
   const toolLinks = [
     { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
@@ -182,20 +188,19 @@ export default function AuthNavbar({ user, profile }) {
   ];
 
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
-  const show = !collapsed;
 
   const sidebarInner = (isMobile = false) => {
     const s = !collapsed || isMobile;
     return (
       <div className="flex flex-col h-full">
 
-        {/* ── Profile at TOP ── */}
+        {/* Profile Header */}
         <div className={`px-3 pt-4 pb-3 border-b border-purple-900/30 ${collapsed && !isMobile ? "flex flex-col items-center gap-2" : ""}`}>
           <Link to={isManagingAsGhost ? `/profile?email=${encodeURIComponent(ghostAccountEmail)}&ghost_session=1` : "/profile"} className={`flex items-center gap-3 rounded-xl p-2 hover:bg-gray-800/60 transition-all ${collapsed && !isMobile ? "justify-center" : ""}`}>
             <div className="relative flex-shrink-0">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
                 {(isManagingAsGhost && ghostAccountData?.avatar_url) || profile?.avatar_url
-                  ? <img src={(isManagingAsGhost ? ghostAccountData.avatar_url : profile.avatar_url) || profile?.avatar_url} className="w-full h-full object-cover" alt="" />
+                  ? <img src={isManagingAsGhost ? ghostAccountData?.avatar_url : profile?.avatar_url} className="w-full h-full object-cover" alt="" />
                   : <User className="w-5 h-5 text-white" />
                 }
               </div>
@@ -224,7 +229,7 @@ export default function AuthNavbar({ user, profile }) {
             )}
           </Link>
 
-          {admin && s && (
+          {admin && !isManagingAsGhost && s && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-900/30 border border-yellow-700/30 mt-1">
               <Crown className="w-3 h-3 text-yellow-400" />
               <span className="text-yellow-400 text-[10px] font-black">CEO & President · GAMER Productions</span>
@@ -235,9 +240,7 @@ export default function AuthNavbar({ user, profile }) {
             <Link to="/" className="flex items-center gap-1.5 min-w-0" onClick={(e) => { e.preventDefault(); handleControllerClick(); window.location.href = "/"; }}>
               <motion.div
                 className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorCycles[controllerColorIdx]} cursor-pointer`}
-                animate={{
-                  scale: controllerAnimating ? [1, 1.15, 1] : 1,
-                }}
+                animate={{ scale: controllerAnimating ? [1, 1.15, 1] : 1 }}
                 transition={{ duration: 0.6 }}
                 style={{
                   boxShadow: controllerAnimating
@@ -265,7 +268,7 @@ export default function AuthNavbar({ user, profile }) {
           </div>
         )}
 
-        {/* Nav links */}
+        {/* Dynamic Sidebar Nav Tree */}
         <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
           {navLinks.map((link, i) => (
@@ -280,13 +283,12 @@ export default function AuthNavbar({ user, profile }) {
           ))}
         </div>
 
-        {/* Bottom */}
+        {/* Utilities Footer */}
         <div className={`border-t border-purple-900/30 p-2 space-y-1.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
-          {!admin && s && (
+          {!(admin && !isManagingAsGhost) && s && (
             <>
               <div className="mb-2" />
               <EarnNowButton />
-              {/* Transition Options */}
               {accountType === "regular" && (
                 <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold transition-all hover:opacity-90">
                   <Sparkles className="w-3.5 h-3.5" /> Become Digital Creator
@@ -356,4 +358,8 @@ export default function AuthNavbar({ user, profile }) {
       </motion.aside>
 
       {/* Mobile top bar */}
-      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-
+      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-14 flex items-center px-4 gap-3">
+        <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
+          <Menu className="w-5 h-5" />
+        </button>
+        <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1)
