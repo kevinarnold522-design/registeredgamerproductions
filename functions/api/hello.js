@@ -1,15 +1,14 @@
-export function onRequest(context) {
-  return new Response("Backend is working!", {
-    headers: { "Content-Type": "text/plain" },
-  });
-}
 export async function onRequest(context) {
-  // context.env contains your Supabase keys!
+  // 1. Access your environment variables
   const supabaseUrl = context.env.SUPABASE_URL;
   const supabaseKey = context.env.SUPABASE_ANON_KEY;
-  
-  // You can now use these to make secure requests to your database
-  return new Response(JSON.stringify({ message: "Supabase ready to connect!" }), {
+
+  // 2. Perform your logic
+  // For now, let's return a response confirming the environment is ready
+  return new Response(JSON.stringify({ 
+    status: "Backend is working!",
+    supabaseConfigured: !!supabaseUrl && !!supabaseKey // Returns true if keys are set
+  }), {
     headers: { "Content-Type": "application/json" },
   });
 }
