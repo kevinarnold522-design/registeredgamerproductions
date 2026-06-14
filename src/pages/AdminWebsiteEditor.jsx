@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { isAdmin } from "@/lib/constants";
+import { useAuth } from "@/lib/AuthContext";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import {
   Shield, Save, RefreshCw, Type, Palette, Link2, Globe, Eye,
-  ChevronRight, Check, X, Edit3, Plus, Trash2, Layout,
-  Zap, Settings, ArrowLeft
+  Check, Edit3, Plus, Trash2, Layout, ArrowLeft
 } from "lucide-react";
 
 const DEFAULT_COLORS = {
@@ -35,9 +33,11 @@ const EDITABLE_SECTIONS = [
 
 export default function AdminWebsiteEditor() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isLoadingAuth } = useAuth();
+  const MASTER_EMAIL = "kevinarnold522@gmail.com";
+
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState("content");
   const [content, setContent] = useState({});
   const [colors, setColors] = useState(DEFAULT_COLORS);
@@ -47,25 +47,54 @@ export default function AdminWebsiteEditor() {
   const [newLink, setNewLink] = useState({ label: "", href: "" });
 
   useEffect(() => {
-    const init = async () => {
+    // Only run data initialization if the auth engine has confirmed identity matches master email
+    const currentEmail = authUser?.email || authUser?.attributes?.email || authUser?.primaryEmail || "";
+    if (isLoadingAuth || !authUser || currentEmail.toLowerCase() !== MASTER_EMAIL.toLowerCase()) {
+      return;
+    }
+
+    const initData = async () => {
       try {
-        const me = await base44.auth.me();
-        if (!me || !isAdmin(me.email)) { navigate("/"); return; }
-        setUser(me);
         const [profiles, siteContentData] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_email: me.email }),
+          base44.entities.UserProfile.filter({ user_email: authUser.email }),
           base44.entities.SiteContent.list(),
         ]);
         if (profiles.length > 0) setProfile(profiles[0]);
-        // Map content keys
+        
         const map = {};
         siteContentData.forEach(c => { map[c.key] = { id: c.id, value: c.value, label: c.label }; });
         setContent(map);
-      } catch { navigate("/"); }
-      setLoading(false);
+      } catch (err) {
+        console.error("Failed to load layout datasets", err);
+      }
+      setLoadingData(false);
     };
-    init();
-  }, []);
+    initData();
+  }, [authUser, isLoadingAuth]);
+
+  // 1. While Auth layer checks credentials, show global layout loader
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // 2. 🚨 THE CORE HARD LOCK: If user doesn't exist or isn't Kevin, reject immediately
+  const verifiedEmail = authUser?.email || authUser?.attributes?.email || authUser?.primaryEmail || "";
+  if (!authUser || verifiedEmail.toLowerCase() !== MASTER_EMAIL.toLowerCase()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // 3. Keep showing loading sequence if admin check passed but data is still gathering
+  if (loadingData) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const handleSaveContent = async () => {
     setSaving(true);
@@ -93,8 +122,6 @@ export default function AdminWebsiteEditor() {
 
   const removeLink = (id) => setCustomLinks(l => l.filter(x => x.id !== id));
 
-  if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;
-
   const tabs = [
     { id: "content", label: "Text Content", icon: Type },
     { id: "colors", label: "Colors", icon: Palette },
@@ -104,7 +131,7 @@ export default function AdminWebsiteEditor() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      <AuthNavbar user={user} profile={profile} />
+      <AuthNavbar user={authUser} profile={profile} />
       <div className="pt-20 max-w-5xl mx-auto px-4 pb-16">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
