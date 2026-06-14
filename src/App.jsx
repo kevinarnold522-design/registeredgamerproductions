@@ -68,19 +68,16 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // 🛡️ ULTRA-STRICT IDENTITY GATE FOR PAGES
+  // 🛡️ EXCLUSIVE EMAIL-ONLY ROUTE GUARD
   const AdminRoute = ({ element }) => {
     const MASTER_EMAIL = 'kevinarnold522@gmail.com';
     
-    // Extracting user email and role safely from potential variation structures
+    // Safely pull the email value regardless of how Base44 nests it
     const currentEmail = user?.email || user?.attributes?.email || user?.primaryEmail || "";
-    const currentRole = user?.role || "";
-
     const isMasterAdmin = currentEmail.toLowerCase() === MASTER_EMAIL.toLowerCase();
-    const hasAdminRole = currentRole === 'admin';
 
-    // If they aren't your specific email AND don't have an admin flag, block access
-    if (!isMasterAdmin && !hasAdminRole) {
+    // If they aren't using your exact master email address, boot them instantly!
+    if (!isMasterAdmin) {
       return <Navigate to="/dashboard" replace />;
     }
     return element;
@@ -105,7 +102,7 @@ const AuthenticatedApp = () => {
       <Route path="/about" element={<AboutUs />} />
       <Route path="/analytics" element={<Analytics />} />
       
-      {/* 🔒 SECURED ADMINISTRATIVE SUITE */}
+      {/* 🔒 SECURED ADMINISTRATIVE SUITE - EXCLUSIVE TO KEVIN */}
       <Route path="/admin-editor" element={<AdminRoute element={<AdminWebsiteEditor />} />} />
       <Route path="/admin/created-accounts" element={<AdminRoute element={<CreatedAccountsPage />} />} />
       
