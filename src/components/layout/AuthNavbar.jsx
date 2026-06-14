@@ -357,9 +357,78 @@ export default function AuthNavbar({ user, profile }) {
         {sidebarInner(false)}
       </motion.aside>
 
-      {/* Mobile top bar */}
+      {/* Mobile Top Bar */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-14 flex items-center px-4 gap-3">
         <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />
         </button>
-        <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1)
+        <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1) % colorCycles.length); window.location.href = "/"; }}>
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]}`}>
+            <Gamepad2 className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
+        </Link>
+        <div className="ml-auto flex items-center gap-2">
+          <NotificationBell userEmail={user?.email} />
+          <button onClick={() => { setCartOpen(true); setFavOpen(false); }} className="relative p-1">
+            <ShoppingCart className="w-5 h-5 text-gray-400" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 text-white text-[8px] flex items-center justify-center font-black">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Sidebar Overlay Drawer Container */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            {/* Darkened Backdrop Overlay layer */}
+            <motion.div
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              className="lg:hidden fixed inset-0 z-50 bg-black/70"
+              onClick={() => setMobileOpen(false)}
+            />
+            {/* Left side fly-out menu tree panel */}
+            <motion.div
+              initial={{ x: -280 }} 
+              animate={{ x: 0 }} 
+              exit={{ x: -280 }}
+              transition={{ type: "tween", duration: 0.25 }}
+              className="lg:hidden fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 overflow-y-auto"
+            >
+              <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30">
+                <span className="font-black text-white text-sm">Navigation Menu</span>
+                <button onClick={() => setMobileOpen(false)} className="p-1 text-gray-400 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {sidebarInner(true)}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Global Shopping Drawer Interface components */}
+      <CartDropdown isOpen={cartOpen} onClose={() => setCartOpen(false)} userEmail={user?.email} />
+      <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={user?.email} />
+
+      {/* Creator/Business Subscription Account Transitions handling Modal */}
+      {showTransition && (
+        <AccountTypeTransitionModal
+          currentType={accountType}
+          user={user}
+          onClose={() => setShowTransition(false)}
+          onSuccess={() => {
+            setShowTransition(false);
+            window.location.reload();
+          }}
+        />
+      )}
+    </>
+  );
+}
