@@ -19,35 +19,44 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
       return;
     }
 
-    // 2. Identify the user
     const userId = user?.id || user?.email;
     if (!userId) {
-      toast.error("Account error: No user ID found.");
+      toast.error("User identification missing.");
       return;
     }
 
     setUpdating(true);
-    console.log("Submitting transition for:", userId);
+    console.log("Initiating API call for:", userId);
+
+    // 2. Set a 10-second timeout to prevent infinite loading
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Server took too long to respond.")), 10000)
+    );
 
     try {
-      // 3. The Update Call
-      const response = await base44.entities.UserProfile.update(userId, { 
-        account_type: targetType 
-      });
+      // 3. Race the API call against the timeout
+      const response = await Promise.race([
+        base44.entities.UserProfile.update(userId, { account_type: targetType }),
+        timeoutPromise
+      ]);
 
-      // 4. Handle success or error response
-      if (response?.error) throw new Error(response.error.message);
+      console.log("API Response received:", response);
 
-      toast.success(`Success! Now a ${targetLabel}`);
+      // Handle common API error structures
+      if (response?.error) {
+        throw new Error(response.error.message || "Update failed");
+      }
+
+      toast.success(`Successfully became a ${targetLabel}!`);
       onSuccess?.(targetType);
       
-      // Force refresh to update the UI
-      setTimeout(() => window.location.reload(), 500);
+      // Short delay so the user sees the success toast before refresh
+      setTimeout(() => window.location.reload(), 1000);
       onClose();
 
     } catch (err) {
-      console.error("Transition failed:", err);
-      toast.error("Failed: " + (err.message || "Server Error"));
+      console.error("Critical Failure:", err);
+      toast.error(err.message || "An unexpected error occurred.");
     } finally {
       setUpdating(false);
     }
@@ -63,8 +72,6 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9 }}
-          animate={{ scale: 1 }}
           onClick={(e) => e.stopPropagation()}
           className="bg-gray-950 border border-purple-500/30 rounded-2xl p-6 w-full max-w-md shadow-2xl"
         >
@@ -78,13 +85,15 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
 
           <div className="space-y-4">
             <input 
-              placeholder="What type of content/products?"
+              placeholder={isGamer ? "What content will you create?" : "What products will you sell?"}
               className="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white"
+              value={answers.what}
               onChange={(e) => setAnswers({...answers, what: e.target.value})}
             />
             <input 
-              placeholder="Which platforms?"
+              placeholder={isGamer ? "Which platforms?" : "Where do you sell from?"}
               className="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white"
+              value={answers.platform}
               onChange={(e) => setAnswers({...answers, platform: e.target.value})}
             />
           </div>
@@ -92,7 +101,7 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
           <button
             onClick={handleSubmit}
             disabled={updating}
-            className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-all"
+            className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg transition-all disabled:opacity-50"
           >
             {updating ? "Updating..." : "Confirm Transition"}
           </button>
