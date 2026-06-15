@@ -51,7 +51,7 @@ export default function CategoryPage() {
         <div className="flex justify-end pt-3">
           <button onClick={() => setShowRecommend(true)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-purple-700/50 text-purple-300 hover:bg-purple-900/20 transition-colors">
-            📁 Recommend Category
+            Recommend Category
           </button>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default function CategoryPage() {
         {sub ? (
           <SubcategoryLandingPage
             user={user} profile={profile} cat={cat} sub={sub}
-            parentCategoryName={categoryData?.label?.replace(/^[^ ]+ /, "") || cat}
+            parentCategoryName={categoryData?.label || cat}
           />
         ) : cat === "buy_sell" ? (
           <BuySellLandingPage user={user} profile={profile} sub={sub} />

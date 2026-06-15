@@ -156,8 +156,6 @@ export default function AuthNavbar({ user, profile }) {
   ];
 
   const regularLinks = [
-    { icon: Star, label: "Favourites", badge: favCount, action: () => { setFavOpen(true); setCartOpen(false); } },
-    { icon: ShoppingCart, label: "Cart", badge: cartCount, action: () => { setCartOpen(true); setFavOpen(false); } },
     { icon: ClipboardList, label: "Orders", href: "/dashboard?tab=orders" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard" },
@@ -175,6 +173,9 @@ export default function AuthNavbar({ user, profile }) {
   };
 
   const navLinks = getNavLinks();
+  const contextAccountType = isManagingAsGhost ? (ghostAccountData?.account_type || "regular") : accountType;
+  const userTypeLabel = admin && !isManagingAsGhost ? "CEO & President" : contextAccountType.replace("_", " ");
+  const userTypeColor = admin && !isManagingAsGhost ? "text-yellow-300 border-yellow-700/40 bg-yellow-900/20" : contextAccountType === "business" ? "text-green-300 border-green-700/40 bg-green-900/20" : contextAccountType === "digital_creator" ? "text-purple-300 border-purple-700/40 bg-purple-900/20" : "text-blue-300 border-blue-700/40 bg-blue-900/20";
 
   const toolLinks = [
     { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
@@ -193,6 +194,28 @@ export default function AuthNavbar({ user, profile }) {
     const s = !collapsed || isMobile;
     return (
       <div className="flex flex-col h-full">
+        <div className="px-3 pt-3 pb-3 border-b border-purple-900/30 space-y-2">
+          <div className="w-full h-2 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.85)]" />
+          {s && !(admin && !isManagingAsGhost) && (
+            <div className="space-y-2">
+              <EarnNowButton />
+              {accountType === "regular" && (
+                <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold transition-all hover:opacity-90">
+                  <Sparkles className="w-3.5 h-3.5" /> Become Digital Creator
+                </button>
+              )}
+              {accountType === "digital_creator" && (
+                <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold transition-all hover:opacity-90">
+                  <Store className="w-3.5 h-3.5" /> Become Business Owner
+                </button>
+              )}
+            </div>
+          )}
+          <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
+            <LanguageSelector />
+            <NotificationBell userEmail={user?.email} />
+          </div>
+        </div>
 
         {/* Profile Header */}
         <div className={`px-3 pt-4 pb-3 border-b border-purple-900/30 ${collapsed && !isMobile ? "flex flex-col items-center gap-2" : ""}`}>
@@ -233,6 +256,13 @@ export default function AuthNavbar({ user, profile }) {
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-900/30 border border-yellow-700/30 mt-1">
               <Crown className="w-3 h-3 text-yellow-400" />
               <span className="text-yellow-400 text-[10px] font-black">CEO & President · GAMER Productions</span>
+            </div>
+          )}
+
+          {s && (
+            <div className={`mt-2 px-3 py-2 rounded-xl border ${userTypeColor}`}>
+              <p className="text-[9px] uppercase tracking-widest font-black opacity-70">User Type</p>
+              <p className="text-xs font-black capitalize">{userTypeLabel}</p>
             </div>
           )}
 
@@ -285,28 +315,7 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Utilities Footer */}
         <div className={`border-t border-purple-900/30 p-2 space-y-1.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
-          {!(admin && !isManagingAsGhost) && s && (
-            <>
-              <div className="mb-2" />
-              <EarnNowButton />
-              {accountType === "regular" && (
-                <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold transition-all hover:opacity-90">
-                  <Sparkles className="w-3.5 h-3.5" /> Become Digital Creator
-                </button>
-              )}
-              {accountType === "digital_creator" && (
-                <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold transition-all hover:opacity-90">
-                  <Store className="w-3.5 h-3.5" /> Become Business Owner
-                </button>
-              )}
-            </>
-          )}
           <div className="flex flex-col gap-1 w-full">
-            <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
-              <LanguageSelector />
-              <NotificationBell userEmail={user?.email} />
-            </div>
-            <div className="nav-divider w-full my-0.5" />
             <button
               onClick={() => setFavOpen(true)}
               className={`relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70 ${collapsed && !isMobile ? "justify-center" : ""}`}
@@ -360,7 +369,8 @@ export default function AuthNavbar({ user, profile }) {
       </motion.aside>
 
       {/* Mobile Top Bar */}
-      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-14 flex items-center px-4 gap-3">
+      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
+        <div className="absolute bottom-0 left-4 right-4 h-2 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.85)]" />
         <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />
         </button>

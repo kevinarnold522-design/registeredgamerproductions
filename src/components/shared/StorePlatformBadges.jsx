@@ -20,7 +20,7 @@ export default function StorePlatformBadges({ platforms = [], links = {}, size =
             className={`inline-flex items-center rounded-lg font-bold border ${sizes[size]}`}
             style={{ background: `${store.color}33`, borderColor: `${store.color}66`, color: "#fff" }}
           >
-            <span>{store.emoji}</span>
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-white/15 px-1 text-[8px] font-black leading-none">{store.iconText}</span>
             <span className="truncate">{store.label}</span>
           </span>
         );

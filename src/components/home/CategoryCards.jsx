@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Pencil, X, Check, Upload, Plus, Trash2 } from "lucide-react";
 import {
   IconController, IconMod, IconStream, IconTrophy, IconStore,
-  IconPlay, IconJobs
+  IconPlay, IconJobs, IconCommunity
 } from "@/components/icons/GameIcons";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
@@ -21,7 +21,7 @@ const defaultModding = {
 };
 
 const defaultCommunity = {
-  icon: () => <span style={{ fontSize: 32 }}>🌐</span>, iconColor: "#a78bfa",
+  icon: IconCommunity, iconColor: "#a78bfa",
   title: "Gaming Community",
   sub: "50+ Franchise Communities · CoD, FIFA, Minecraft & more",
   color: "from-violet-950 to-purple-900",
@@ -30,12 +30,12 @@ const defaultCommunity = {
 };
 
 const defaultOtherCategories = [
-  { id: "games",      icon: IconController, iconColor: "#a855f7", title: "Games",        sub: "Top deals from Steam, Epic · Android & iOS titles", color: "from-purple-950 to-purple-900", borderColor: "border-purple-500/50", glowColor: "rgba(139,92,246,0.6)", href: "/category?cat=games",       badge: "Steam · Epic · Mobile" },
-  { id: "premium_mods", icon: IconMod, iconColor: "#fbbf24", title: "💎 Premium Mods", sub: "Paid Mods, Scripts & Expansions — Exclusive Content", color: "from-amber-950 to-yellow-900", borderColor: "border-amber-500/50", glowColor: "rgba(251,191,36,0.6)", href: "/category?cat=premium_mods", badge: "Paid Only" },
-  { id: "tournaments",  icon: IconTrophy,     iconColor: "#4ade80", title: "🏆 Tournaments",  sub: "MLBB, CS2, Valorant, FIFA, NBA2K & global events",   color: "from-green-950 to-green-900",   borderColor: "border-green-500/50",  glowColor: "rgba(74,222,128,0.6)", href: "/category?cat=tournaments",   badge: "Global" },
-  { id: "content_streaming", icon: IconPlay, iconColor: "#60a5fa", title: "🎬 Content/Streaming", sub: "Videos, Live Streams, Clips & Reviews",    color: "from-blue-950 to-red-900",      borderColor: "border-blue-500/50",   glowColor: "rgba(59,130,246,0.6)", href: "/category?cat=content_streaming", badge: "Videos + LIVE" },
-  { id: "paid_tools", icon: IconStore, iconColor: "#f472b6", title: "🔧 Paid Tools", sub: "Premium Software, Utilities & Automation", color: "from-pink-950 to-pink-900", borderColor: "border-pink-500/50", glowColor: "rgba(244,114,182,0.6)", href: "/category?cat=paid_tools", badge: "Pro Tools" },
-  { id: "jobs",       icon: IconJobs,       iconColor: "#f87171", title: "💼 Gaming Jobs",  sub: "QA, Dev, Coaching & Community",                      color: "from-rose-950 to-rose-900",     borderColor: "border-rose-500/50",   glowColor: "rgba(248,113,113,0.5)",href: "/category?cat=jobs",        badge: "Careers" },
+  { id: "games", icon: IconController, iconColor: "#a855f7", title: "Games", sub: "Top deals from Steam, Epic · Android & iOS titles", color: "from-purple-950 to-purple-900", borderColor: "border-purple-500/50", glowColor: "rgba(139,92,246,0.6)", href: "/category?cat=games", badge: "Steam · Epic · Mobile" },
+  { id: "premium_mods", icon: IconMod, iconColor: "#fbbf24", title: "Premium Mods", sub: "Paid Mods, Scripts & Expansions — Exclusive Content", color: "from-amber-950 to-yellow-900", borderColor: "border-amber-500/50", glowColor: "rgba(251,191,36,0.6)", href: "/category?cat=premium_mods", badge: "Paid Only" },
+  { id: "tournaments", icon: IconTrophy, iconColor: "#4ade80", title: "Tournaments", sub: "MLBB, CS2, Valorant, FIFA, NBA2K & global events", color: "from-green-950 to-green-900", borderColor: "border-green-500/50", glowColor: "rgba(74,222,128,0.6)", href: "/category?cat=tournaments", badge: "Global" },
+  { id: "content_streaming", icon: IconPlay, iconColor: "#60a5fa", title: "Content/Streaming", sub: "Videos, Live Streams, Clips & Reviews", color: "from-blue-950 to-red-900", borderColor: "border-blue-500/50", glowColor: "rgba(59,130,246,0.6)", href: "/category?cat=content_streaming", badge: "Videos + LIVE" },
+  { id: "paid_tools", icon: IconStore, iconColor: "#f472b6", title: "Tools", sub: "Premium Software, Utilities & Automation", color: "from-pink-950 to-pink-900", borderColor: "border-pink-500/50", glowColor: "rgba(244,114,182,0.6)", href: "/category?cat=paid_tools", badge: "Pro Tools" },
+  { id: "jobs", icon: IconJobs, iconColor: "#f87171", title: "Gaming Jobs", sub: "QA, Dev, Coaching & Community", color: "from-rose-950 to-rose-900", borderColor: "border-rose-500/50", glowColor: "rgba(248,113,113,0.5)",href: "/category?cat=jobs", badge: "Careers" },
 ];
 
 // Inline edit panel for a small category card
@@ -333,7 +333,9 @@ export default function CategoryCards() {
             style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent)" }}
             animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />
           <div className="relative z-10 h-full flex items-center px-8 md:px-16 gap-8">
-            <div className="w-20 h-20 rounded-2xl bg-purple-900/40 border-2 border-purple-500/50 flex items-center justify-center text-4xl">🌐</div>
+            <div className="w-20 h-20 rounded-2xl bg-purple-900/40 border-2 border-purple-500/50 flex items-center justify-center">
+              <IconCommunity size={44} color="#a78bfa" />
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-black uppercase tracking-wider">NEW</span>

@@ -6,9 +6,9 @@ import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
 
 const PAID_MOD_CATEGORIES = [
-  { id: "premium_mods", label: "💎 Premium Mods", color: "from-purple-600 to-pink-600" },
-  { id: "paid_tools", label: "🔧 Tools", color: "from-blue-600 to-cyan-600" },
-  { id: "exclusive_content", label: "👑 Exclusive Content", color: "from-yellow-600 to-orange-600" },
+  { id: "premium_mods", label: "Premium Mods", color: "from-purple-600 to-pink-600" },
+  { id: "paid_tools", label: "Tools", color: "from-blue-600 to-cyan-600" },
+  { id: "exclusive_content", label: "Exclusive Content", color: "from-yellow-600 to-orange-600" },
 ];
 
 const GAMES = [
@@ -76,7 +76,7 @@ export default function PaidModsSection() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-            💎 <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Paid Mods</span> & Premium Content
+            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Paid Mods</span> & Premium Content
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
             Premium quality mods, tools, and exclusive content for your favorite games
@@ -153,22 +153,22 @@ export default function PaidModsSection() {
               <span className="text-gray-500 text-xs">Active filters:</span>
               {filters.search && (
                 <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs">
-                  🔍 {filters.search}
+                  {filters.search}
                 </span>
               )}
               {filters.category && (
                 <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs">
-                  📂 {PAID_MOD_CATEGORIES.find(c => c.id === filters.category)?.label}
+                  {PAID_MOD_CATEGORIES.find(c => c.id === filters.category)?.label}
                 </span>
               )}
               {filters.game && (
                 <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs">
-                  🎮 {filters.game}
+                  {filters.game}
                 </span>
               )}
               {filters.priceRange && (
                 <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs">
-                  💰 {filters.priceRange === "free" ? "Free" : filters.priceRange === "low" ? "₱1-₱500" : filters.priceRange === "mid" ? "₱501-₱2,000" : "₱2,001+"}
+                  {filters.priceRange === "free" ? "Free" : filters.priceRange === "low" ? "₱1-₱500" : filters.priceRange === "mid" ? "₱501-₱2,000" : "₱2,001+"}
                 </span>
               )}
               <button
@@ -195,8 +195,8 @@ export default function PaidModsSection() {
               <Link to={`/category?cat=${cat.id}`}>
                 <div className={`h-32 rounded-2xl bg-gradient-to-br ${cat.color} p-0.5 group-hover:scale-105 transition-transform duration-300`}>
                   <div className="h-full bg-gray-950 rounded-[15px] p-4 flex flex-col items-center justify-center gap-2">
-                    <span className="text-3xl">{cat.label.split(" ")[0]}</span>
-                    <h3 className="text-white font-black text-lg">{cat.label.split(" ").slice(1).join(" ")}</h3>
+                    <Tag className="w-8 h-8 text-white/80" />
+                    <h3 className="text-white font-black text-lg">{cat.label}</h3>
                     <p className="text-gray-400 text-xs text-center">Premium quality content</p>
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export default function PaidModsSection() {
                         )}
                         {listing.is_premium && (
                           <span className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-yellow-500 text-black text-xs font-bold">
-                            ⭐ Premium
+                            Premium
                           </span>
                         )}
                       </div>

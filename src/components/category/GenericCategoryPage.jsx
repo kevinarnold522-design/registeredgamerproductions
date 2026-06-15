@@ -61,6 +61,22 @@ const CATEGORY_META = {
     grid: "linear-gradient(rgba(239,68,68,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(239,68,68,0.5) 1px, transparent 1px)",
     accent: "red",
   },
+  paid_tools: {
+    title: "Tools",
+    subtitle: "Premium gaming utilities, launchers, automation tools, and creator software.",
+    color: "#f472b6",
+    bg: "from-pink-950 to-gray-950",
+    grid: "linear-gradient(rgba(244,114,182,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(244,114,182,0.5) 1px, transparent 1px)",
+    accent: "pink",
+  },
+  content_streaming: {
+    title: "Content/Streaming",
+    subtitle: "Gaming videos, clips, reviews, tutorials, and live streaming content.",
+    color: "#60a5fa",
+    bg: "from-blue-950 to-gray-950",
+    grid: "linear-gradient(rgba(96,165,250,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(96,165,250,0.5) 1px, transparent 1px)",
+    accent: "blue",
+  },
 };
 
 export default function GenericCategoryPage({ user, profile, cat, sub, categoryData }) {
@@ -81,8 +97,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   useEffect(() => {
     base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 200).then(l => {
       let cleaned = l.filter(x => x.is_approved !== false);
-      // Premium Mods & Games: strip out any service-type listings
-      if (cat === "premium_mods" || cat === "games") {
+      // Marketplace discovery categories must never show service-type listings
+      if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
         cleaned = cleaned.filter(x => !isServiceListing(x));
       }
       // Games: exclude community-sourced / modding listings
@@ -101,7 +117,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const hasActiveFilters = sortBy !== "newest" || priceMin || priceMax || isFree || productType !== "all" || search;
 
   const filtered = listings.filter(l => {
-    const matchSub = activeSub === "all" || l.subcategory === activeSub;
+    const listingSubs = l.subcategories || (l.subcategory ? [l.subcategory] : []);
+    const matchSub = activeSub === "all" || listingSubs.includes(activeSub);
     const matchSearch = !search || l.title?.toLowerCase().includes(search.toLowerCase()) || l.description?.toLowerCase().includes(search.toLowerCase()) || l.seller_username?.toLowerCase().includes(search.toLowerCase());
     const matchFree = !isFree || l.price === 0 || l.is_free;
     const matchMin = priceMin === "" || (l.price || 0) >= parseFloat(priceMin);

@@ -166,6 +166,7 @@ export default function Home() {
             {user && <AIAssistBanner user={user} />}
             <VideoHeroBanner />
             <HeroSection />
+            <CategoryCards />
             <MarqueeTicker />
 
             {/* GET VERIFIED BADGE — prominent top banner */}
@@ -173,9 +174,6 @@ export default function Home() {
 
             {/* First 10K Free Verified Badge promotion */}
             <First10KBanner user={user} profile={profile} />
-
-            {/* Categories moved up — prominent position */}
-            <CategoryCards />
 
             {/* Live Moving Dashboard (marketplace listings) */}
             <MovingDashboard />

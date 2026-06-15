@@ -7,19 +7,18 @@ export const ADMIN_EMAILS = [
 export const isAdmin = (email) => ADMIN_EMAILS.includes(email?.toLowerCase());
 
 // Game distribution stores for Games category listings.
-// emoji used as a crisp, retina-safe brand glyph (no external SVG assets needed).
 export const GAMES_STORES = [
-  { id: "steam", label: "Steam", emoji: "🎮", color: "#1b2838" },
-  { id: "epic", label: "Epic Games", emoji: "🛒", color: "#2a2a2a" },
-  { id: "playstore", label: "Play Store", emoji: "▶️", color: "#34a853" },
-  { id: "appstore", label: "App Store", emoji: "🍎", color: "#0070c9" },
-  { id: "playstation", label: "PlayStation Store", emoji: "🕹️", color: "#003791" },
-  { id: "steamripped", label: "Steam Ripped", emoji: "📦", color: "#6b7280" },
-  { id: "nexusgames", label: "Nexus Games", emoji: "🌐", color: "#da8e35" },
-  { id: "xbox", label: "Xbox Store", emoji: "❎", color: "#107c10" },
-  { id: "nintendo", label: "Nintendo Switch Store", emoji: "🔴", color: "#e60012" },
-  { id: "gog", label: "GOG", emoji: "🟣", color: "#86328a" },
-  { id: "ubisoft", label: "Ubisoft Connect", emoji: "🔷", color: "#0070ff" },
+  { id: "steam", label: "Steam", iconText: "ST", color: "#1b2838" },
+  { id: "epic", label: "Epic Games", iconText: "EP", color: "#2a2a2a" },
+  { id: "playstore", label: "Play Store", iconText: "GP", color: "#34a853" },
+  { id: "appstore", label: "App Store", iconText: "AS", color: "#0070c9" },
+  { id: "playstation", label: "PlayStation Store", iconText: "PS", color: "#003791" },
+  { id: "steamripped", label: "Steam Ripped", iconText: "SR", color: "#6b7280" },
+  { id: "nexusgames", label: "Nexus Games", iconText: "NX", color: "#da8e35" },
+  { id: "xbox", label: "Xbox Store", iconText: "XB", color: "#107c10" },
+  { id: "nintendo", label: "Nintendo Switch Store", iconText: "NS", color: "#e60012" },
+  { id: "gog", label: "GOG", iconText: "GG", color: "#86328a" },
+  { id: "ubisoft", label: "Ubisoft Connect", iconText: "UB", color: "#0070ff" },
 ];
 
 // Keywords that mark a listing as a "service" — excluded from Premium Mods & Games.
@@ -60,14 +59,14 @@ export const MODERATOR_TYPES = {
 export const CATEGORIES = [
   {
     id: "games",
-    label: "🎮 Games",
-    icon: "🎮",
+    label: "Games",
+    icon: "games",
     subcategories: ["PC", "PlayStation", "Xbox", "Nintendo Switch", "Mobile", "How To / Guides"],
   },
   {
     id: "modding",
-    label: "🔧 Modding Community",
-    icon: "🔧",
+    label: "Modding Community",
+    icon: "modding",
     subcategories: [
       "WWE2K", "Football Life", "GTA 4", "GTA 5", "GTA SA",
       "Android", "PES", "FIFA", "NBA2K", "PPSSPP/PSP", "PS2", "PC",
@@ -75,8 +74,8 @@ export const CATEGORIES = [
   },
   {
     id: "premium_mods",
-    label: "💎 Premium Mods",
-    icon: "💎",
+    label: "Premium Mods",
+    icon: "premium_mods",
     subcategories: [
       "Premium Mods - WWE2K", "Premium Mods - GTA 5", "Premium Mods - GTA SA",
       "Premium Mods - FIFA", "Premium Mods - PES", "Premium Mods - NBA2K",
@@ -86,8 +85,8 @@ export const CATEGORIES = [
   },
   {
     id: "store",
-    label: "🏪 Store",
-    icon: "🏪",
+    label: "Store",
+    icon: "store",
     subcategories: [
       "Game Accounts", "In-Game Items", "Skins", "Gift Cards",
       "Accessories", "Top Tech Equipment",
@@ -95,28 +94,28 @@ export const CATEGORIES = [
   },
   {
     id: "paid_tools",
-    label: "🔧 Tools",
-    icon: "🔧",
+    label: "Tools",
+    icon: "tools",
     subcategories: [
       "Premium Software", "Utilities", "Automation Tools", "Pro Utilities",
     ],
   },
   {
     id: "tournaments",
-    label: "🏆 Tournaments",
-    icon: "🏆",
+    label: "Tournaments",
+    icon: "tournaments",
     subcategories: ["FPS", "Battle Royale", "MOBA", "Sports", "Fighting", "Mobile Gaming"],
   },
   {
     id: "content_streaming",
-    label: "🎬 Content/Streaming",
-    icon: "🎬",
+    label: "Content/Streaming",
+    icon: "content_streaming",
     subcategories: ["Gaming Videos", "Live Streams", "Tutorials", "Reviews", "Highlights", "Clips", "Gameplay Streams", "Esports Events"],
   },
   {
     id: "jobs",
-    label: "💼 Gaming Jobs",
-    icon: "💼",
+    label: "Gaming Jobs",
+    icon: "jobs",
     subcategories: ["QA Testing", "Game Dev", "Community Manager", "Esports Coach", "Content Creator"],
   },
 ];
