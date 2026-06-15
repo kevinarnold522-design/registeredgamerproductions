@@ -5,6 +5,12 @@ import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
 import ListingSellerBadge from "@/components/listings/ListingSellerBadge";
+import StickySearchBar from "@/components/shared/StickySearchBar";
+import Pagination from "@/components/shared/Pagination";
+import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
+import { isServiceListing } from "@/lib/constants";
+
+const PER_PAGE = 10;
 
 const CATEGORY_META = {
   modding: {

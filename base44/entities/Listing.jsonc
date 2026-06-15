@@ -85,6 +85,12 @@
         "type": "string"
       }
     },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "platforms": {
       "type": "array",
       "items": {
@@ -92,6 +98,30 @@
       },
       "description": "Selected platforms: PC, PS5, Android, etc.",
       "default": []
+    },
+    "store_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Games category distribution stores: steam, epic, playstore, appstore, playstation, steamripped, nexusgames, xbox, nintendo, gog, ubisoft",
+      "default": []
+    },
+    "store_platform_links": {
+      "type": "object",
+      "description": "Optional outbound URLs keyed by store id"
+    },
+    "ign_rating": {
+      "type": "number",
+      "description": "IGN-style score out of 10 for Games category listings"
+    },
+    "tool_target_game": {
+      "type": "string",
+      "description": "Free-text game this tool is for (Tools category)"
+    },
+    "preview_video_url": {
+      "type": "string",
+      "description": "Universal preview: YouTube link or uploaded video URL"
     },
     "game_name": {
       "type": "string"

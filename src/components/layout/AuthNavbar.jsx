@@ -301,17 +301,19 @@ export default function AuthNavbar({ user, profile }) {
               )}
             </>
           )}
-          <div className={`flex items-center gap-2.5 w-full ${collapsed && !isMobile ? "flex-col" : ""}`}>
-            <LanguageSelector />
-            <NotificationBell userEmail={user?.email} />
+          <div className="flex flex-col gap-1 w-full">
+            <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
+              <LanguageSelector />
+              <NotificationBell userEmail={user?.email} />
+            </div>
             <div className="nav-divider w-full my-0.5" />
             <button
               onClick={() => setFavOpen(true)}
-              className={`relative flex items-center ${collapsed && !isMobile ? "justify-center w-full" : "gap-2.5 w-full"} px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70`}
+              className={`relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70 ${collapsed && !isMobile ? "justify-center" : ""}`}
               title="Favourites"
             >
               <Star className="w-4 h-4 flex-shrink-0 text-yellow-400" />
-              {(s || (!collapsed && !isMobile)) && <span className="truncate">Favourites</span>}
+              {s && <span className="truncate flex-1 text-left">Favourites</span>}
               {favCount > 0 && (
                 <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : "ml-auto"} w-4 h-4 rounded-full bg-yellow-500 text-white text-[9px] flex items-center justify-center font-bold`}>
                   {favCount}
@@ -320,13 +322,13 @@ export default function AuthNavbar({ user, profile }) {
             </button>
             <button
               onClick={() => setCartOpen(true)}
-              className={`relative flex items-center ${collapsed && !isMobile ? "justify-center w-full" : "gap-2.5 w-full"} px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70`}
+              className={`relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70 ${collapsed && !isMobile ? "justify-center" : ""}`}
               title="Cart"
             >
               <ShoppingCart className="w-4 h-4 flex-shrink-0 text-green-400" />
-              {(s || (!collapsed && !isMobile)) && <span className="truncate flex-1">Cart</span>}
+              {s && <span className="truncate flex-1 text-left">Cart</span>}
               {cartCount > 0 && (
-                <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : ""} w-4 h-4 rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center font-bold`}>
+                <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : "ml-auto"} w-4 h-4 rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center font-bold`}>
                   {cartCount}
                 </span>
               )}

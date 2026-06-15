@@ -6,6 +6,31 @@ export const ADMIN_EMAILS = [
 
 export const isAdmin = (email) => ADMIN_EMAILS.includes(email?.toLowerCase());
 
+// Game distribution stores for Games category listings.
+// emoji used as a crisp, retina-safe brand glyph (no external SVG assets needed).
+export const GAMES_STORES = [
+  { id: "steam", label: "Steam", emoji: "🎮", color: "#1b2838" },
+  { id: "epic", label: "Epic Games", emoji: "🛒", color: "#2a2a2a" },
+  { id: "playstore", label: "Play Store", emoji: "▶️", color: "#34a853" },
+  { id: "appstore", label: "App Store", emoji: "🍎", color: "#0070c9" },
+  { id: "playstation", label: "PlayStation Store", emoji: "🕹️", color: "#003791" },
+  { id: "steamripped", label: "Steam Ripped", emoji: "📦", color: "#6b7280" },
+  { id: "nexusgames", label: "Nexus Games", emoji: "🌐", color: "#da8e35" },
+  { id: "xbox", label: "Xbox Store", emoji: "❎", color: "#107c10" },
+  { id: "nintendo", label: "Nintendo Switch Store", emoji: "🔴", color: "#e60012" },
+  { id: "gog", label: "GOG", emoji: "🟣", color: "#86328a" },
+  { id: "ubisoft", label: "Ubisoft Connect", emoji: "🔷", color: "#0070ff" },
+];
+
+// Keywords that mark a listing as a "service" — excluded from Premium Mods & Games.
+export const SERVICE_KEYWORDS = ["service", "services", "coaching", "modding assistance", "freelance", "boosting"];
+
+export const isServiceListing = (listing) => {
+  if (!listing) return false;
+  const hay = `${listing.title || ""} ${listing.description || ""} ${(listing.tags || []).join(" ")} ${listing.category || ""}`.toLowerCase();
+  return SERVICE_KEYWORDS.some(k => hay.includes(k));
+};
+
 // Two moderator types:
 // "account_moderator" — platform-wide, no ads, near-admin power, CAN delete content but admin must approve
 // "group_moderator"   — captain of their own gaming community group only, Captain badge, NO delete power
@@ -70,7 +95,7 @@ export const CATEGORIES = [
   },
   {
     id: "paid_tools",
-    label: "🔧 Paid Tools",
+    label: "🔧 Tools",
     icon: "🔧",
     subcategories: [
       "Premium Software", "Utilities", "Automation Tools", "Pro Utilities",

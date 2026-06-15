@@ -7,6 +7,12 @@ import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
 import CommentThread from "@/components/shared/CommentThread";
 import DownloadAdGate from "@/components/ads/DownloadAdGate";
+import SimilarListings from "@/components/shared/SimilarListings";
+import StickySearchBar from "@/components/shared/StickySearchBar";
+import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
+import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
+import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
+import { CATEGORIES } from "@/lib/constants";
 
 function GlowDownloadButton({ isFree, price, onClick }) {
   return (
@@ -304,6 +310,8 @@ export default function ListingPage() {
     <div className="min-h-screen bg-gray-950 text-white">
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
+      <StickySearchBar />
+
       {showAdOverlay && (
         <DownloadAdGate
           isGuest={!user}
@@ -357,6 +365,8 @@ export default function ListingPage() {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
               ) : listing.video_url ? (
                 <video src={listing.video_url} controls className="w-full h-full object-contain" />
+              ) : listing.preview_video_url ? (
+                <UniversalVideoPreview url={listing.preview_video_url} className="w-full h-full object-contain" />
               ) : listing.images?.[imgIdx] ? (
                 <img src={listing.images[imgIdx]} alt={listing.title} className="w-full h-full object-cover" />
               ) : (
@@ -419,8 +429,33 @@ export default function ListingPage() {
 
           {/* RIGHT: Details */}
           <div className="flex flex-col gap-4">
+            {/* Clickable Category > Subcategory breadcrumbs */}
+            <nav className="flex items-center gap-1.5 flex-wrap text-xs">
+              {(() => {
+                const cat = CATEGORIES.find(c => c.id === listing.category);
+                const sub = listing.modding_subcategory || listing.subcategories?.[0] || listing.digital_subcategory;
+                return (
+                  <>
+                    <a href={`/category?cat=${encodeURIComponent(listing.category)}`}
+                      className="text-purple-300 font-bold hover:text-purple-200 hover:underline cursor-pointer capitalize">
+                      {cat?.label || listing.category}
+                    </a>
+                    {sub && (
+                      <>
+                        <span className="text-gray-600">›</span>
+                        <a href={`/category?cat=${encodeURIComponent(listing.category)}&sub=${encodeURIComponent(sub)}`}
+                          className="text-cyan-300 font-bold hover:text-cyan-200 hover:underline cursor-pointer capitalize">
+                          {sub}
+                        </a>
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+            </nav>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-1 rounded-full bg-purple-900/40 border border-purple-700/40 text-purple-300 text-xs font-bold capitalize">{listing.category}</span>
+              {listing.ign_rating != null && <IgnRatingBadge rating={listing.ign_rating} size="md" />}
               {listing.digital_subcategory && <span className="px-2.5 py-1 rounded-full bg-orange-900/30 border border-orange-700/30 text-orange-300 text-xs font-bold capitalize">{listing.digital_subcategory}</span>}
               {listing.modding_subcategory && <span className="px-2.5 py-1 rounded-full bg-yellow-900/30 border border-yellow-700/30 text-yellow-300 text-xs font-bold">🔧 {listing.modding_subcategory}</span>}
               {listing.community_franchise_id && <span className="px-2.5 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/30 text-cyan-300 text-xs font-bold">🎮 {listing.community_franchise_id}</span>}
@@ -439,12 +474,20 @@ export default function ListingPage() {
               </span>
             </div>
 
-            {(listing.game_name || listing.platforms?.length > 0) && (
+            {(listing.game_name || listing.platforms?.length > 0 || listing.tool_target_game) && (
               <div className="flex gap-2 flex-wrap">
                 {listing.game_name && <span className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold">🎮 {listing.game_name}</span>}
+                {listing.tool_target_game && <span className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">🛠️ For: {listing.tool_target_game}</span>}
                 {(listing.platforms || []).map(p => (
                   <span key={p} className="px-2.5 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">{p}</span>
                 ))}
+              </div>
+            )}
+
+            {listing.store_platforms?.length > 0 && (
+              <div>
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Available on</p>
+                <StorePlatformBadges platforms={listing.store_platforms} links={listing.store_platform_links} size="md" />
               </div>
             )}
 
@@ -513,6 +556,9 @@ export default function ListingPage() {
             )}
           </div>
         </div>
+
+        {/* Similar Listings */}
+        <SimilarListings listing={listing} />
 
         {/* Comments */}
         <div className="mt-12">

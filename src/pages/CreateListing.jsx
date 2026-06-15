@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { isAdmin, CATEGORIES } from "@/lib/constants";
+import { isAdmin, CATEGORIES, GAMES_STORES } from "@/lib/constants";
 
 const DIGITAL_SUBCATEGORIES = [
   { id: "mods", label: "Mods / Modifications" },
@@ -93,6 +93,10 @@ export default function CreateListing() {
     cross_post_gaming: false,
     cross_post_modding: false,
     bulk_cross_post_ids: [],
+    ign_rating: "",
+    store_platforms: [],
+    tool_target_game: "",
+    preview_video_url: "",
   });
 
   useEffect(() => {
@@ -150,6 +154,11 @@ export default function CreateListing() {
             patreon_url: l.patreon_url || "",
             community_franchise_id: l.community_franchise_id || "",
             modding_subcategory: l.modding_subcategory || "",
+            ign_rating: l.ign_rating != null ? String(l.ign_rating) : "",
+            store_platforms: l.store_platforms || [],
+            tool_target_game: l.tool_target_game || "",
+            preview_video_url: l.preview_video_url || "",
+            bulk_cross_post_ids: [],
           });
           setImages(l.images || []);
           if (l.game_name) setGameSearch(l.game_name);
@@ -273,9 +282,20 @@ export default function CreateListing() {
       modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
       platform: undefined,
+      ign_rating: form.ign_rating !== "" ? parseFloat(form.ign_rating) : undefined,
+      store_platforms: form.category === "games" ? (form.store_platforms || []) : undefined,
+      tool_target_game: form.category === "paid_tools" ? (form.tool_target_game || undefined) : undefined,
+      preview_video_url: form.preview_video_url || undefined,
       is_approved: mod?.is_approved !== false,
       status: mod?.requiresReview ? "pending" : "active",
     };
+
+    // Games category: non-admin submissions require admin approval (go to pending queue).
+    const userIsAdmin = isAdmin(user.email);
+    if (form.category === "games" && !userIsAdmin && !editId) {
+      data.status = "pending";
+      data.is_approved = false;
+    }
     let savedListing;
     if (editId) {
       savedListing = await base44.entities.Listing.update(editId, data);
@@ -493,6 +513,15 @@ export default function CreateListing() {
               )}
               <input ref={videoFileRef} type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
             </div>
+
+            {/* Universal preview media — YouTube link OR uploaded video, any category */}
+            <div className="pt-2 border-t border-gray-800">
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">🎬 Product Preview Media (optional)</label>
+              <p className="text-gray-500 text-xs mb-2">Paste a YouTube link, or it uses the uploaded video above. Shows as a preview across the platform.</p>
+              <input value={form.preview_video_url} onChange={e => setForm({ ...form, preview_video_url: e.target.value })}
+                placeholder="https://youtube.com/watch?v=... (or leave blank)"
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+            </div>
           </div>
 
           {/* Download File / External Link */}
@@ -681,6 +710,48 @@ export default function CreateListing() {
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </div>
+
+            {/* GAMES category — IGN rating + store platforms */}
+            {form.category === "games" && (
+              <div className="bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 space-y-4">
+                <div>
+                  <label className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-1.5 block">⭐ IGN Rating (out of 10)</label>
+                  <input type="number" step="0.1" min="0" max="10" value={form.ign_rating}
+                    onChange={e => setForm({ ...form, ign_rating: e.target.value })}
+                    placeholder="e.g. 9.5"
+                    className="w-full bg-gray-800 border border-emerald-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 text-sm" />
+                  <p className="text-emerald-400/70 text-xs mt-1">Numbers only, one decimal (e.g. 9.5)</p>
+                </div>
+                <div>
+                  <label className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-2 block">🏬 Available On (select stores)</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {GAMES_STORES.map(st => {
+                      const selected = (form.store_platforms || []).includes(st.id);
+                      return (
+                        <button key={st.id} type="button"
+                          onClick={() => setForm(f => ({ ...f, store_platforms: selected ? f.store_platforms.filter(x => x !== st.id) : [...(f.store_platforms || []), st.id] }))}
+                          className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-all ${selected ? "bg-emerald-600 text-white border border-emerald-400" : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-emerald-500/50"}`}>
+                          <span>{st.emoji}</span><span className="truncate">{st.label}</span>{selected && " ✓"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {!isAdmin(user?.email) && !editId && (
+                  <p className="text-yellow-400/80 text-xs">ℹ️ Game submissions require admin approval before going live.</p>
+                )}
+              </div>
+            )}
+
+            {/* TOOLS category — manual target game */}
+            {form.category === "paid_tools" && (
+              <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-4">
+                <label className="text-blue-300 text-xs font-semibold uppercase tracking-wider mb-1.5 block">🛠️ What game is this tool for?</label>
+                <input value={form.tool_target_game} onChange={e => setForm({ ...form, tool_target_game: e.target.value })}
+                  placeholder="e.g. NBA 2K26, Football Life, GTA V, Valorant"
+                  className="w-full bg-gray-800 border border-blue-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
+              </div>
+            )}
 
             {/* Product-type specific subcategory */}
             {form.product_type === "digital" && (

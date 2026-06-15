@@ -13,51 +13,43 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
   const targetLabel = isGamer ? "Digital Creator" : "Business Owner";
 
   const handleSubmit = async () => {
+    // Prevent duplicate submissions
+    if (updating) return;
+
     // 1. Validation
     if (!answers.what.trim() || !answers.platform.trim()) {
       toast.error("Please fill in the required fields");
       return;
     }
 
-    const userId = user?.id || user?.email;
-    if (!userId) {
+    if (!user?.email) {
       toast.error("User identification missing.");
       return;
     }
 
     setUpdating(true);
-    console.log("Initiating API call for:", userId);
-
-    // 2. Set a 10-second timeout to prevent infinite loading
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Server took too long to respond.")), 10000)
-    );
 
     try {
-      // 3. Race the API call against the timeout
-      const response = await Promise.race([
-        base44.entities.UserProfile.update(userId, { account_type: targetType }),
-        timeoutPromise
-      ]);
+      // Find the correct UserProfile record by email (NOT by user.id — those differ)
+      const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });
+      let profileRecord = profiles[0];
 
-      console.log("API Response received:", response);
-
-      // Handle common API error structures
-      if (response?.error) {
-        throw new Error(response.error.message || "Update failed");
+      // Create a profile if one doesn't exist yet
+      if (!profileRecord) {
+        profileRecord = await base44.entities.UserProfile.create({
+          user_email: user.email,
+          username: (user.full_name || user.email.split("@")[0]).replace(/\s/g, "").toLowerCase(),
+          account_type: targetType,
+        });
+      } else {
+        await base44.entities.UserProfile.update(profileRecord.id, { account_type: targetType });
       }
 
       toast.success(`Successfully became a ${targetLabel}!`);
       onSuccess?.(targetType);
-      
-      // Short delay so the user sees the success toast before refresh
       setTimeout(() => window.location.reload(), 1000);
-      onClose();
-
     } catch (err) {
-      console.error("Critical Failure:", err);
       toast.error(err.message || "An unexpected error occurred.");
-    } finally {
       setUpdating(false);
     }
   };

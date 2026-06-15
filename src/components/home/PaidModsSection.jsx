@@ -3,10 +3,11 @@ import { motion } from "framer-motion";
 import { Search, Filter, Gamepad2, DollarSign, Tag, Layers } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
+import { isServiceListing } from "@/lib/constants";
 
 const PAID_MOD_CATEGORIES = [
   { id: "premium_mods", label: "💎 Premium Mods", color: "from-purple-600 to-pink-600" },
-  { id: "paid_tools", label: "🔧 Paid Tools", color: "from-blue-600 to-cyan-600" },
+  { id: "paid_tools", label: "🔧 Tools", color: "from-blue-600 to-cyan-600" },
   { id: "exclusive_content", label: "👑 Exclusive Content", color: "from-yellow-600 to-orange-600" },
 ];
 
@@ -35,7 +36,8 @@ export default function PaidModsSection() {
         // Filter for paid/premium listings in paid mod categories
         const paidMods = allListings.filter(l => 
           (l.is_premium || l.price > 0) && 
-          (l.category === "premium_mods" || l.category === "paid_tools" || l.category === "exclusive_content")
+          (l.category === "premium_mods" || l.category === "paid_tools" || l.category === "exclusive_content") &&
+          !isServiceListing(l)
         );
         setListings(paidMods.slice(0, 50));
       } catch (error) {
