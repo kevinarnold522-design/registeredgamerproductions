@@ -4,7 +4,7 @@ import {
   Gamepad2, ShoppingCart, ClipboardList, Store, BarChart2, Shield,
   Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy,
   Star, GitBranch, ChevronLeft, ChevronRight, Menu, X, DollarSign,
-  Settings, Share2, LogOut, Globe, Crown, Users, TrendingUp, Sparkles, Play
+  Settings, Share2, LogOut, Globe, Users, TrendingUp, Sparkles, Play
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
@@ -191,6 +191,11 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Store, label: "Store", href: "/category?cat=store", color: "text-green-400" },
   ];
 
+  const utilityLinks = [
+    { icon: Star, label: "Favourites", action: () => { setFavOpen(true); setCartOpen(false); }, badge: favCount, color: "text-yellow-400" },
+    { icon: ShoppingCart, label: "Cart", action: () => { setCartOpen(true); setFavOpen(false); }, badge: cartCount, color: "text-green-400" },
+  ];
+
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
   const sidebarInner = (isMobile = false) => {
@@ -240,24 +245,13 @@ export default function AuthNavbar({ user, profile }) {
                   </p>
                   <GamerCheckmark isVerified={isManagingAsGhost ? ghostAccountData?.is_verified : profile?.is_verified} userEmail={isManagingAsGhost ? ghostAccountEmail : user?.email} size="sm" showTooltip={false} />
                 </div>
-
+                <div className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-md border text-[9px] font-black capitalize ${userTypeColor}`}>
+                  {userTypeLabel}
+                </div>
               </div>
             )}
           </Link>
 
-          {admin && !isManagingAsGhost && s && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-900/30 border border-yellow-700/30 mt-1">
-              <Crown className="w-3 h-3 text-yellow-400" />
-              <span className="text-yellow-400 text-[10px] font-black">CEO & President · GAMER Productions</span>
-            </div>
-          )}
-
-          {s && (
-            <div className={`mt-2 px-3 py-2 rounded-xl border ${userTypeColor}`}>
-              <p className="text-[9px] uppercase tracking-widest font-black opacity-70">User Type</p>
-              <p className="text-xs font-black capitalize">{userTypeLabel}</p>
-            </div>
-          )}
 
           <div className={`flex items-center gap-2 mt-3 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <Link to="/" className="flex items-center gap-1.5 min-w-0" onClick={(e) => { e.preventDefault(); handleControllerClick(); window.location.href = "/"; }}>
@@ -292,7 +286,13 @@ export default function AuthNavbar({ user, profile }) {
         )}
 
         {/* Dynamic Sidebar Nav Tree */}
-        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5 gamer-sidebar-scroll">
+        <div className="flex-1 overflow-y-scroll overflow-x-hidden py-2 px-2 space-y-0.5 gamer-sidebar-scroll">
+          {utilityLinks.map((link, i) => (
+            <NavLink key={`utility-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
+          ))}
+
+          <div className="nav-divider mx-2 my-1.5" />
+
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
           {navLinks.map((link, i) => (
             <NavLink key={i} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
@@ -308,34 +308,6 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Utilities Footer */}
         <div className={`p-2 space-y-0.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
-          <div className="flex flex-col gap-0.5 w-full">
-            <button
-              onClick={() => setFavOpen(true)}
-              className={`relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70 ${collapsed && !isMobile ? "justify-center" : ""}`}
-              title="Favourites"
-            >
-              <Star className="w-4 h-4 flex-shrink-0 text-yellow-400" />
-              {s && <span className="truncate flex-1 text-left">Favourites</span>}
-              {favCount > 0 && (
-                <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : "ml-auto"} w-4 h-4 rounded-full bg-yellow-500 text-white text-[9px] flex items-center justify-center font-bold`}>
-                  {favCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setCartOpen(true)}
-              className={`relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70 ${collapsed && !isMobile ? "justify-center" : ""}`}
-              title="Cart"
-            >
-              <ShoppingCart className="w-4 h-4 flex-shrink-0 text-green-400" />
-              {s && <span className="truncate flex-1 text-left">Cart</span>}
-              {cartCount > 0 && (
-                <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : "ml-auto"} w-4 h-4 rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center font-bold`}>
-                  {cartCount}
-                </span>
-              )}
-            </button>
-          </div>
           {s && (
             <button
               onClick={() => base44.auth.logout("/")}
@@ -404,7 +376,7 @@ export default function AuthNavbar({ user, profile }) {
               animate={{ x: 0 }} 
               exit={{ x: -280 }}
               transition={{ type: "tween", duration: 0.25 }}
-              className="lg:hidden fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 overflow-y-auto"
+              className="lg:hidden fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 overflow-y-scroll overflow-x-hidden gamer-sidebar-scroll"
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30">
                 <span className="font-black text-white text-sm">Navigation Menu</span>
