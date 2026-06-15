@@ -10,6 +10,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import Pagination from "@/components/shared/Pagination";
 import { Link } from "react-router-dom";
+import { isServiceListing } from "@/lib/constants";
 
 const PER_PAGE = 10;
 
@@ -52,7 +53,7 @@ function VideoCard({ video, onClick, user }) {
         ) : video.video_url ? (
           <video src={video.video_url} className="w-full h-full object-cover" muted />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl">🎮</div>
+          <div className="w-full h-full flex items-center justify-center"><Play className="w-12 h-12 text-gray-700" /></div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -210,7 +211,7 @@ function VideoPlayerModal({ video, user, profile, onClose }) {
                   </button>
                   {shareOpen && (
                     <div className="absolute bottom-10 left-0 bg-gray-900 border border-gray-700 rounded-2xl p-2 z-10 flex flex-col gap-1.5 min-w-[150px] shadow-xl">
-                      {[["facebook","f Facebook"],["whatsapp","💬 WhatsApp"],["telegram","✈ Telegram"],["copy","📋 Copy Link"]].map(([k,l]) => (
+                      {[["facebook","Facebook"],["whatsapp","WhatsApp"],["telegram","Telegram"],["copy","Copy Link"]].map(([k,l]) => (
                         <button key={k} onClick={() => handleShare(k)}
                           className="text-left px-3 py-1.5 rounded-xl text-xs font-bold text-gray-300 hover:bg-gray-800 transition-colors">{l}</button>
                       ))}
@@ -371,7 +372,7 @@ function UploadModal({ user, profile, onClose, onSuccess }) {
         <button onClick={handleUpload} disabled={!file || !title.trim() || uploading}
           className="mt-4 w-full py-3 rounded-2xl font-black text-white text-sm transition-all disabled:opacity-40"
           style={{ background: uploading ? "#4b0082" : "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-          {uploading ? "Uploading & Publishing..." : "🚀 Publish Video"}
+          {uploading ? "Uploading & Publishing..." : "Publish Video"}
         </button>
       </motion.div>
     </motion.div>
@@ -450,7 +451,7 @@ export default function ContentFeedPage() {
   const loadVideos = async () => {
     setLoading(true);
     const v = await base44.entities.VideoPost.list("-created_date", 60);
-    setVideos(v.filter(x => x.status === "active" && x.is_approved !== false));
+    setVideos(v.filter(x => x.status === "active" && x.is_approved !== false && !isServiceListing(x)));
     setLoading(false);
   };
 
@@ -536,7 +537,7 @@ export default function ContentFeedPage() {
             {VIDEO_CATEGORIES.map(c => (
               <button key={c} onClick={() => setActiveCategory(c)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${activeCategory === c ? "bg-purple-600/20 border border-purple-500/50 text-purple-300" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
-                {c === "all" ? "🎬 All" : c}
+                {c === "all" ? "All" : c}
               </button>
             ))}
           </div>
@@ -554,9 +555,9 @@ export default function ContentFeedPage() {
           </div>
           <select value={sortBy} onChange={e => setSortBy(e.target.value)}
             className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-gray-300 text-sm focus:outline-none focus:border-purple-500">
-            <option value="newest">🕐 Newest</option>
-            <option value="popular">🔥 Most Viewed</option>
-            <option value="likes">❤️ Most Liked</option>
+            <option value="newest">Newest</option>
+            <option value="popular">Most Viewed</option>
+            <option value="likes">Most Liked</option>
           </select>
           <span className="text-gray-600 text-sm">{filtered.length} videos</span>
         </div>

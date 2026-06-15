@@ -69,6 +69,14 @@ const CATEGORY_META = {
     grid: "linear-gradient(rgba(244,114,182,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(244,114,182,0.5) 1px, transparent 1px)",
     accent: "pink",
   },
+  premium_mods: {
+    title: "Premium Mods Store",
+    subtitle: "Paid premium mods by game collection, subcategory, and creator storefront.",
+    color: "#f59e0b",
+    bg: "from-amber-950 to-gray-950",
+    grid: "linear-gradient(rgba(245,158,11,0.45) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,0.45) 1px, transparent 1px)",
+    accent: "amber",
+  },
   content_streaming: {
     title: "Content/Streaming",
     subtitle: "Gaming videos, clips, reviews, tutorials, and live streaming content.",
@@ -101,9 +109,13 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
         cleaned = cleaned.filter(x => !isServiceListing(x));
       }
-      // Games: exclude community-sourced / modding listings
+      // Games: only actual game listings — no community, modding, or service entries
       if (cat === "games") {
-        cleaned = cleaned.filter(x => !x.modding_subcategory);
+        cleaned = cleaned.filter(x => !x.modding_subcategory && !x.community_franchise_id && x.category === "games" && !isServiceListing(x));
+      }
+      // Premium Mods: only paid/premium digital mod products
+      if (cat === "premium_mods") {
+        cleaned = cleaned.filter(x => !isServiceListing(x) && x.product_type === "digital" && (x.is_premium || Number(x.price || 0) > 0));
       }
       setListings(cleaned);
       setLoading(false);
@@ -175,6 +187,28 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           <p className="max-w-xl mb-1 text-base" style={{ color: `${meta.color}99` }}>{meta.subtitle}</p>
         </div>
       </div>
+
+      {cat === "premium_mods" && (
+        <div className="max-w-7xl mx-auto px-4 pt-8">
+          <div className="rounded-3xl border border-amber-700/30 bg-gradient-to-br from-amber-950/40 to-gray-900 p-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+              <div>
+                <p className="text-amber-300 text-xs font-black uppercase tracking-widest">Premium mod collections</p>
+                <h2 className="text-white text-2xl font-black">Shop paid mods by game</h2>
+              </div>
+              <a href="/create-listing?cat=premium_mods" className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-bold hover:bg-amber-500/30">Sell a Premium Mod</a>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {["NBA 2K", "Football Life", "GTA", "Assetto Corsa", "Minecraft", "WWE 2K"].map(game => (
+                <button key={game} onClick={() => setSearch(game)} className="rounded-2xl bg-gray-950/70 border border-gray-800 px-3 py-4 text-left hover:border-amber-500/50 transition-colors">
+                  <p className="text-white text-sm font-black">{game}</p>
+                  <p className="text-gray-500 text-[11px] mt-1">Browse paid mods</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Subcategory cards grid */}
       {!sub && <SubcategoryCards cat={cat} categoryName={meta.title} userEmail={user?.email} />}

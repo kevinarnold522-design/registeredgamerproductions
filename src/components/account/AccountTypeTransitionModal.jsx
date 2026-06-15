@@ -16,12 +16,6 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
     // Prevent duplicate submissions
     if (updating) return;
 
-    // 1. Validation
-    if (!answers.what.trim() || !answers.platform.trim()) {
-      toast.error("Please fill in the required fields");
-      return;
-    }
-
     if (!user?.email) {
       toast.error("User identification missing.");
       return;
@@ -47,7 +41,6 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
 
       toast.success(`Successfully became a ${targetLabel}!`);
       onSuccess?.(targetType);
-      setTimeout(() => window.location.reload(), 1000);
     } catch (err) {
       toast.error(err.message || "An unexpected error occurred.");
       setUpdating(false);
@@ -77,13 +70,13 @@ export default function AccountTypeTransitionModal({ currentType, user, onClose,
 
           <div className="space-y-4">
             <input 
-              placeholder={isGamer ? "What content will you create?" : "What products will you sell?"}
+              placeholder={isGamer ? "What content will you create? (optional)" : "What products will you sell? (optional)"}
               className="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white"
               value={answers.what}
               onChange={(e) => setAnswers({...answers, what: e.target.value})}
             />
             <input 
-              placeholder={isGamer ? "Which platforms?" : "Where do you sell from?"}
+              placeholder={isGamer ? "Which platforms? (optional)" : "Where do you sell from? (optional)"}
               className="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white"
               value={answers.platform}
               onChange={(e) => setAnswers({...answers, platform: e.target.value})}

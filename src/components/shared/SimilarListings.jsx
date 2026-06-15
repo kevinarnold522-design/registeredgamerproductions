@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { Play } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { isServiceListing } from "@/lib/constants";
 
 // Shows at least 10 similar listings. Matches by subcategory/tags first,
 // then falls back to the broader parent category to fill remaining slots.
@@ -16,22 +18,34 @@ export default function SimilarListings({ listing }) {
       const out = [];
       const seen = new Set([listing.id]);
 
+      const listingTags = new Set([...(listing.tags || []), ...(listing.keywords || [])].map(t => String(t).toLowerCase()));
+      const serviceBlocked = ["premium_mods", "games", "paid_tools", "content_streaming"].includes(listing.category);
+      const score = (l) => {
+        let total = 0;
+        const subs = new Set([...(l.subcategories || []), l.digital_subcategory, l.physical_subcategory, l.modding_subcategory].filter(Boolean));
+        const currentSubs = [ ...(listing.subcategories || []), listing.digital_subcategory, listing.physical_subcategory, listing.modding_subcategory ].filter(Boolean);
+        if (currentSubs.some(s => subs.has(s))) total += 5;
+        for (const tag of [...(l.tags || []), ...(l.keywords || [])]) if (listingTags.has(String(tag).toLowerCase())) total += 2;
+        if (l.category === listing.category) total += 1;
+        return total;
+      };
       const push = (arr) => {
-        for (const l of arr) {
+        const sorted = [...arr]
+          .filter(l => !seen.has(l.id) && l.status === "active" && l.is_approved !== false && (!serviceBlocked || !isServiceListing(l)))
+          .sort((a, b) => score(b) - score(a) || new Date(b.created_date) - new Date(a.created_date));
+        for (const l of sorted) {
           if (out.length >= 10) break;
-          if (seen.has(l.id) || l.status === "removed") continue;
           seen.add(l.id);
           out.push(l);
         }
       };
 
       try {
-        // 1. Same modding subcategory / franchise (highest relevance)
-        if (listing.modding_subcategory) {
-          const a = await base44.entities.Listing.filter({ modding_subcategory: listing.modding_subcategory, status: "active" }, "-created_date", 30);
-          push(a);
+        const primarySub = listing.modding_subcategory || listing.digital_subcategory || listing.physical_subcategory || listing.subcategories?.[0];
+        if (primarySub) {
+          const a = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 80);
+          push(a.filter(x => [ ...(x.subcategories || []), x.digital_subcategory, x.physical_subcategory, x.modding_subcategory ].filter(Boolean).includes(primarySub)));
         }
-        // 2. Same category
         if (out.length < 10 && listing.category) {
           const b = await base44.entities.Listing.filter({ category: listing.category, status: "active" }, "-created_date", 40);
           push(b);
@@ -68,7 +82,7 @@ export default function SimilarListings({ listing }) {
     <div className="mt-12">
       <h2 className="text-xl font-black text-white mb-4">Similar Listings</h2>
       <div className="flex gap-3 overflow-x-auto pb-3 snap-x scroll-smooth" style={{ WebkitOverflowScrolling: "touch" }}>
-        {items.map((l) => {
+       {items.slice(0, 10).map((l) => {
           const free = !l.price || l.price === 0 || l.is_free;
           return (
             <a
@@ -78,8 +92,8 @@ export default function SimilarListings({ listing }) {
             >
               <div className="aspect-square bg-gray-800 flex items-center justify-center overflow-hidden">
                 {l.images?.[0]
-                  ? <img src={l.images[0]} alt={l.title} loading="lazy" className="w-full h-full object-cover" />
-                  : <span className="text-3xl">🎮</span>}
+                ? <img src={l.images[0]} alt={l.title} loading="lazy" className="w-full h-full object-cover" />
+                : <Play className="w-8 h-8 text-gray-700" />}
               </div>
               <div className="p-2">
                 <p className="text-white text-xs font-bold truncate">{l.title}</p>

@@ -69,6 +69,7 @@ export default function AuthNavbar({ user, profile }) {
   const [controllerColorIdx, setControllerColorIdx] = useState(0);
   const [controllerAnimating, setControllerAnimating] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
+  const [localAccountType, setLocalAccountType] = useState(null);
   const location = useLocation();
 
   const MASTER_EMAIL = "kevinarnold522@gmail.com";
@@ -92,7 +93,7 @@ export default function AuthNavbar({ user, profile }) {
   const currentEmail = user?.email || "";
   const admin = currentEmail.toLowerCase() === MASTER_EMAIL.toLowerCase();
   
-  const accountType = profile?.account_type || "regular";
+  const accountType = localAccountType || profile?.account_type || "regular";
   const isSeller = accountType === "digital_creator" || accountType === "business";
   
   // Ghost account management states
@@ -136,6 +137,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: GitBranch, label: "Routing Dashboard", href: "/routing-dashboard", color: "text-cyan-400" },
     { icon: BarChart2, label: "Analytics", href: "/analytics", color: "text-purple-400" },
     { icon: DollarSign, label: "Earnings", href: "/earnings", color: "text-green-400" },
+    { icon: CreditCard, label: "Payment", href: "/payment", color: "text-blue-300" },
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard", color: "text-orange-400" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments", color: "text-pink-400" },
     { icon: Store, label: "All Listings", href: "/dashboard?tab=listings", color: "text-blue-400" },
@@ -157,6 +159,7 @@ export default function AuthNavbar({ user, profile }) {
 
   const regularLinks = [
     { icon: ClipboardList, label: "Orders", href: "/dashboard?tab=orders" },
+    { icon: CreditCard, label: "Payment", href: "/payment" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard" },
   ];
@@ -314,8 +317,8 @@ export default function AuthNavbar({ user, profile }) {
         </div>
 
         {/* Utilities Footer */}
-        <div className={`border-t border-purple-900/30 p-2 space-y-1.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
-          <div className="flex flex-col gap-1 w-full">
+        <div className={`border-t border-purple-900/30 p-2 space-y-0.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
+          <div className="flex flex-col gap-0.5 w-full">
             <button
               onClick={() => setFavOpen(true)}
               className={`relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all text-gray-400 hover:text-white hover:bg-gray-800/70 ${collapsed && !isMobile ? "justify-center" : ""}`}
@@ -435,9 +438,9 @@ export default function AuthNavbar({ user, profile }) {
           currentType={accountType}
           user={user}
           onClose={() => setShowTransition(false)}
-          onSuccess={() => {
+          onSuccess={(newType) => {
+            setLocalAccountType(newType);
             setShowTransition(false);
-            window.location.reload();
           }}
         />
       )}
