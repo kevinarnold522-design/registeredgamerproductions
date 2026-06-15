@@ -1,0 +1,36 @@
+{
+  "revision_date": "2026-06-15",
+  "purpose": "Base44 backend function migration manifest for future Cloudflare Workers or Vercel Functions porting.",
+  "runtime_notes": {
+    "base44_current_runtime": "Deno backend functions",
+    "cloudflare_target": "Workers with fetch handlers",
+    "vercel_target": "Serverless/Edge functions",
+    "auth_note": "Replace createClientFromRequest(req) with the target backend's Base44 service/client adapter before deploy.",
+    "secrets_required": ["STRIPE_SECRET_KEY", "STRIPE_PUBLISHABLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"]
+  },
+  "functions": [
+    "adminGhostAccounts",
+    "api/hello",
+    "biweeklyReport",
+    "capturePaypalPayment",
+    "captureTier1Payment",
+    "completePayment",
+    "connectSellerPaypal",
+    "copyrightViolationAlert",
+    "createManagedAccount",
+    "createPaypalOrder",
+    "createTier1Order",
+    "getPaypalConfig",
+    "getSellerPaypalStatus",
+    "logLogin",
+    "loginAsGhost",
+    "moderateListing",
+    "notifyNewContent",
+    "notifyNewMember",
+    "salesNotification",
+    "sendDailyRewardEmail",
+    "sendOrderNotification",
+    "sendPaypalGuideEmail",
+    "verifyPaymentStatus"
+  ]
+}

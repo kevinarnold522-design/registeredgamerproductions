@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Radio, SlidersHorizontal, X } from "lucide-react";
+import { Search, Plus, Radio, SlidersHorizontal, X, Play } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
@@ -8,6 +8,8 @@ import ListingSellerBadge from "@/components/listings/ListingSellerBadge";
 import StickySearchBar from "@/components/shared/StickySearchBar";
 import Pagination from "@/components/shared/Pagination";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
+import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
+import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { isServiceListing } from "@/lib/constants";
 
 const PER_PAGE = 10;
@@ -337,14 +339,18 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               <motion.a href={`/listing?id=${l.id}`} key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
                 style={glowStyle}
                 className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer">
-                {l.images?.[0] && (
-                  <div className="h-36 overflow-hidden relative">
+                <div className="h-36 overflow-hidden relative bg-gray-800">
+                  {(l.preview_video_url || l.video_url || l.youtube_url) ? (
+                    <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
+                  ) : l.images?.[0] ? (
                     <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover" />
-                    {cat === "games" && l.ign_rating != null && (
-                      <div className="absolute top-2 right-2"><IgnRatingBadge rating={l.ign_rating} size="sm" /></div>
-                    )}
-                  </div>
-                )}
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-700"><Play className="w-10 h-10" /></div>
+                  )}
+                  {cat === "games" && l.ign_rating != null && (
+                    <div className="absolute top-2 right-2"><IgnRatingBadge rating={l.ign_rating} size="sm" /></div>
+                  )}
+                </div>
                 <div className="p-4">
                  <p className="text-white font-bold text-sm truncate">{l.title}</p>
                  <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
@@ -353,6 +359,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                    <ShareButton type="listing" id={l.id} title={l.title} compact />
                  </div>
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
+                 {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
+                 {cat === "games" && l.store_platforms?.length > 0 && <div className="mt-2"><StorePlatformBadges platforms={l.store_platforms} links={l.store_platform_links} size="sm" /></div>}
                  <ListingSellerBadge sellerEmail={l.seller_email} sellerUsername={l.seller_username} />
                  </div>
                  </motion.a>

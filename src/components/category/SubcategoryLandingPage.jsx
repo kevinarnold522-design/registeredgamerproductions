@@ -2,17 +2,23 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Plus, Tag, Search } from "lucide-react";
+import Pagination from "@/components/shared/Pagination";
+import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
+import { isServiceListing } from "@/lib/constants";
+
+const PER_PAGE = 10;
 
 export default function SubcategoryLandingPage({ user, profile, cat, sub, parentCategoryName }) {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const results = await base44.entities.Listing.filter({ category: cat, subcategory: sub, status: "active" });
-        setListings(results);
+        const results = await base44.entities.Listing.filter({ category: cat, status: "active" }, "-created_date", 200);
+        setListings(results.filter(l => l.is_approved !== false && (l.subcategory === sub || (l.subcategories || []).includes(sub)) && !isServiceListing(l)));
       } catch {}
       setLoading(false);
     };
@@ -21,7 +27,12 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
 
   const filtered = listings.filter(l =>
     !search || l.title?.toLowerCase().includes(search.toLowerCase())
-  );
+  ).sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const goToPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
+  useEffect(() => { setPage(1); }, [search, cat, sub]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 py-8 max-w-6xl mx-auto relative z-10">
@@ -82,8 +93,9 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
           )}
         </div>
       ) : (
+        <>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((listing, i) => {
+          {paged.map((listing, i) => {
             const anim = listing.card_animation || "fade";
             const initMap = {
               fade: { opacity: 0 },
@@ -118,7 +130,9 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
               style={glowStyle}
               className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors block cursor-pointer"
             >
-              {listing.images?.[0] ? (
+              {(listing.preview_video_url || listing.video_url || listing.youtube_url) ? (
+                <UniversalVideoPreview url={listing.preview_video_url || listing.video_url || listing.youtube_url} poster={listing.images?.[0]} className="w-full h-40 object-cover" />
+              ) : listing.images?.[0] ? (
                 <img src={listing.images[0]} alt={listing.title} className="w-full h-40 object-cover" />
               ) : (
                 <div className="w-full h-40 bg-gray-800 flex items-center justify-center">
@@ -141,6 +155,8 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
             );
           })}
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
+        </>
       )}
     </div>
   );

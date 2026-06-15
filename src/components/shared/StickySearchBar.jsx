@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Search } from "lucide-react";
 
 // Persistent search bar pinned to the top of listing/landing pages.
-// Sanitizes input and routes to /category with the query (search results live there).
+// Sanitizes input and routes to /search?q=...
 export default function StickySearchBar() {
   const [q, setQ] = useState("");
 
   const submit = () => {
     const clean = q.replace(/[<>]/g, "").trim();
     if (!clean) return;
-    window.location.href = `/category?cat=store&q=${encodeURIComponent(clean)}`;
+    window.location.href = `/search?q=${encodeURIComponent(clean)}`;
   };
 
   return (

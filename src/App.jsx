@@ -43,6 +43,7 @@ import EarningsDashboard from "./pages/EarningsDashboard";
 import UploadContent from "./pages/UploadContent";
 import ContentFeedPage from "./pages/ContentFeedPage";
 import CreatedAccountsPage from "./pages/CreatedAccountsPage";
+import SearchPage from "./pages/SearchPage.jsx";
 
 const AuthenticatedApp = () => {
   // Pulling 'user' mapping from Base44 state engine layout
@@ -121,6 +122,7 @@ const AuthenticatedApp = () => {
       <Route path="/earnings" element={<EarningsDashboard />} />
       <Route path="/upload-content" element={<UploadContent />} />
       <Route path="/content" element={<ContentFeedPage />} />
+      <Route path="/search" element={<SearchPage />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
