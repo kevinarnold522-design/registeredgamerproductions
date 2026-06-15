@@ -8,6 +8,7 @@ import StreakTracker from "@/components/rewards/StreakTracker";
 import YoutubeConnectHighlight from "@/components/social/YoutubeConnectHighlight";
 import MonetizationHighlights from "@/components/monetization/MonetizationHighlights";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
+import PaymentBillingSettings from "./PaymentBillingSettings";
 
 
 export default function BuyerDashboard({ user, profile }) {
@@ -16,6 +17,9 @@ export default function BuyerDashboard({ user, profile }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showTransition, setShowTransition] = useState(false);
+  const [localProfile, setLocalProfile] = useState(profile);
+
+  useEffect(() => { setLocalProfile(profile); }, [profile]);
 
   useEffect(() => {
     const load = async () => {
@@ -180,6 +184,10 @@ export default function BuyerDashboard({ user, profile }) {
 
       {tab === "links" && (
         <LinkShortenerDashboard user={user} />
+      )}
+
+      {tab === "settings" && (
+        <PaymentBillingSettings user={user} profile={localProfile} onProfileUpdate={setLocalProfile} />
       )}
 
         </div>

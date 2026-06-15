@@ -74,15 +74,28 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const [priceMax, setPriceMax] = useState("");
   const [isFree, setIsFree] = useState(false);
   const [productType, setProductType] = useState("all");
+  const [page, setPage] = useState(1);
   const meta = CATEGORY_META[cat] || CATEGORY_META.services;
   const canPost = user;
 
   useEffect(() => {
-    base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 60).then(l => {
-      setListings(l);
+    base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 200).then(l => {
+      let cleaned = l.filter(x => x.is_approved !== false);
+      // Premium Mods & Games: strip out any service-type listings
+      if (cat === "premium_mods" || cat === "games") {
+        cleaned = cleaned.filter(x => !isServiceListing(x));
+      }
+      // Games: exclude community-sourced / modding listings
+      if (cat === "games") {
+        cleaned = cleaned.filter(x => !x.modding_subcategory);
+      }
+      setListings(cleaned);
       setLoading(false);
     });
   }, [cat]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setPage(1); }, [activeSub, search, sortBy, priceMin, priceMax, isFree, productType]);
 
   const resetFilters = () => { setSortBy("newest"); setPriceMin(""); setPriceMax(""); setIsFree(false); setProductType("all"); setSearch(""); };
   const hasActiveFilters = sortBy !== "newest" || priceMin || priceMax || isFree || productType !== "all" || search;
@@ -102,6 +115,10 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
     if (sortBy === "oldest") return new Date(a.created_date) - new Date(b.created_date);
     return new Date(b.created_date) - new Date(a.created_date);
   });
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const goToPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   if (cat === "livestream") {
     return (
@@ -131,6 +148,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
   return (
     <div className="min-h-screen bg-gray-950">
+      <StickySearchBar />
       {/* Hero */}
       <div className="relative py-14 px-4" style={{ background: `linear-gradient(135deg, #060008, #030712)` }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: meta.grid, backgroundSize: "50px 50px" }} />
@@ -257,8 +275,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             <p className="text-sm">Be the first to add one!</p>
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((l, i) => {
+            {paged.map((l, i) => {
               const anim = l.card_animation || "slide_up";
               const initMap = { fade: { opacity: 0 }, slide_up: { opacity: 0, y: 30 }, slide_left: { opacity: 0, x: -30 }, zoom: { opacity: 0, scale: 0.85 }, flip: { opacity: 0, rotateY: 90 }, bounce: { opacity: 0, y: -20 }, glow: { opacity: 0 }, rotate: { opacity: 0, rotate: -10 }, none: {} };
               const animMap = { fade: { opacity: 1 }, slide_up: { opacity: 1, y: 0 }, slide_left: { opacity: 1, x: 0 }, zoom: { opacity: 1, scale: 1 }, flip: { opacity: 1, rotateY: 0 }, bounce: { opacity: 1, y: 0 }, glow: { opacity: 1 }, rotate: { opacity: 1, rotate: 0 }, none: {} };
@@ -268,8 +287,11 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                 style={glowStyle}
                 className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer">
                 {l.images?.[0] && (
-                  <div className="h-36 overflow-hidden">
+                  <div className="h-36 overflow-hidden relative">
                     <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover" />
+                    {cat === "games" && l.ign_rating != null && (
+                      <div className="absolute top-2 right-2"><IgnRatingBadge rating={l.ign_rating} size="sm" /></div>
+                    )}
                   </div>
                 )}
                 <div className="p-4">
@@ -286,6 +308,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  );
                  })}
                  </div>
+          <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
+          </>
         )}
       </div>
     </div>

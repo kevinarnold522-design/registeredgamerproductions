@@ -8,7 +8,10 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
+import Pagination from "@/components/shared/Pagination";
 import { Link } from "react-router-dom";
+
+const PER_PAGE = 10;
 
 // ── Video Card (YouTube-style) ────────────────────────────────────────────────
 function VideoCard({ video, onClick, user }) {
@@ -423,6 +426,9 @@ export default function ContentFeedPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [unread, setUnread] = useState(3);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => { setPage(1); }, [search, activeCategory, sortBy]);
 
   // Check for ?v= param on mount
   useEffect(() => {
@@ -458,6 +464,10 @@ export default function ContentFeedPage() {
     if (sortBy === "likes") return (b.likes || 0) - (a.likes || 0);
     return 0;
   });
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const goToPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -569,11 +579,14 @@ export default function ContentFeedPage() {
             )}
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filtered.map((v, i) => (
+            {paged.map((v, i) => (
               <VideoCard key={v.id} video={v} user={user} onClick={setActiveVideo} />
             ))}
           </div>
+          <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
+          </>
         )}
       </div>
 

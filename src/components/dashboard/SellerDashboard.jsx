@@ -14,6 +14,7 @@ import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import PaymentMethodsTab from "./PaymentMethodsTab";
 import PayPalConnect from "@/components/payments/PayPalConnect";
 import PaymentSettingsTab from "./PaymentSettingsTab";
+import PaymentBillingSettings from "./PaymentBillingSettings";
 import AdvancedAnalytics from "./AdvancedAnalytics";
 
 export default function SellerDashboard({ user, profile }) {
@@ -21,6 +22,9 @@ export default function SellerDashboard({ user, profile }) {
   const [listings, setListings] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [localProfile, setLocalProfile] = useState(profile);
+
+  useEffect(() => { setLocalProfile(profile); }, [profile]);
 
   useEffect(() => {
     const load = async () => {
@@ -297,9 +301,9 @@ export default function SellerDashboard({ user, profile }) {
         <VerificationTab profile={profile} accountType={profile?.account_type} />
       )}
 
-      {/* Payment Settings - New Unified Tab */}
+      {/* Payment Settings - Unified PayPal + Stripe */}
       {tab === "payouts" && (
-        <PaymentSettingsTab profile={profile} user={user} />
+        <PaymentBillingSettings user={user} profile={localProfile} onProfileUpdate={setLocalProfile} />
       )}
 
       </main>

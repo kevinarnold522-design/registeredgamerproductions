@@ -20,6 +20,8 @@ import AdminVisitorAnalytics from "./AdminVisitorAnalytics";
 import FeedbackDashboard from "./FeedbackDashboard";
 import AdRevenueDashboard from "./AdRevenueDashboard";
 import ManagedAccountsPanel from "@/components/admin/ManagedAccountsPanel";
+import AdminGamesPanel from "@/components/dashboard/AdminGamesPanel";
+import { Gamepad2 } from "lucide-react";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -105,6 +107,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "users", label: "Users", icon: Users },
     { id: "created_accounts", label: "🎭 Created Accounts", icon: Users },
     { id: "listings", label: "Listings", icon: Store },
+    { id: "games", label: "🎮 Games", icon: Gamepad2 },
     { id: "orders", label: "Orders", icon: Package },
     { id: "verifications", label: `Verifications${pendingVerifications.length > 0 ? ` (${pendingVerifications.length})` : ""}`, icon: CheckCircle },
     { id: "reviews", label: "Reviews", icon: MessageSquare },
@@ -357,6 +360,9 @@ export default function AdminDashboard({ user, profile }) {
           </div>
         </div>
       )}
+
+      {/* Games Management */}
+      {tab === "games" && <AdminGamesPanel />}
 
       {/* Analytics — combined */}
       {tab === "analytics" && (
