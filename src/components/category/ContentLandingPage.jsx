@@ -117,7 +117,7 @@ export default function ContentLandingPage({ user, profile }) {
         </div>
       </div>
 
-      <SubcategoryCards cat="content" categoryName="Content" />
+      <SubcategoryCards cat="content" categoryName="Content" user={user} userEmail={user?.email} userProfile={profile} />
 
       {/* Category filter */}
       <div className="bg-gray-950/95 backdrop-blur-sm border-b border-gray-800 sticky top-16 z-30">

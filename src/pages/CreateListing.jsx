@@ -46,6 +46,8 @@ export default function CreateListing() {
   const params = new URLSearchParams(window.location.search);
   const editId = params.get("edit");
   const defaultCat = params.get("cat") || "buy_sell";
+  const defaultSub = params.get("sub") || "";
+  const defaultGame = params.get("game") || defaultSub;
 
   const [gamingCommunities, setGamingCommunities] = useState([]);
   const [gameSearch, setGameSearch] = useState("");
@@ -68,13 +70,13 @@ export default function CreateListing() {
     title: "",
     description: "",
     price: "0",
-    product_type: "",
+    product_type: defaultCat === "premium_mods" ? "digital" : "",
     category: defaultCat,
-    subcategories: [],
+    subcategories: defaultSub ? [defaultSub] : [],
     digital_subcategory: "",
     physical_subcategory: "",
-    condition: "",
-    is_premium: false,
+    condition: defaultCat === "premium_mods" ? "digital" : "",
+    is_premium: defaultCat === "premium_mods",
     platforms: [],
     quantity: 1,
     location: "",
@@ -82,7 +84,7 @@ export default function CreateListing() {
     keywords: "",
     youtube_url: "",
     video_url: "",
-    game_name: "",
+    game_name: defaultGame,
     game_platform: "",
     paypal_email: "",
     external_link: "",
@@ -102,7 +104,7 @@ export default function CreateListing() {
     bulk_cross_post_ids: [],
     ign_rating: "",
     store_platforms: [],
-    tool_target_game: "",
+    tool_target_game: defaultCat === "premium_mods" ? defaultGame : "",
     preview_video_url: "",
   });
 
@@ -130,6 +132,7 @@ export default function CreateListing() {
       const merged = [...TOP_FRANCHISES.map(f => ({ id: f.id, name: f.name }))];
       communityNames.forEach(c => { if (!merged.find(m => m.id === c.id)) merged.push(c); });
       setGamingCommunities(merged);
+      if (!editId && defaultGame) setGameSearch(defaultGame);
       if (editId) {
         const l = await base44.entities.Listing.get(editId);
         if (l) {
@@ -301,7 +304,7 @@ export default function CreateListing() {
       platform: undefined,
       ign_rating: form.ign_rating !== "" ? parseFloat(form.ign_rating) : undefined,
       store_platforms: form.store_platforms || [],
-      tool_target_game: form.category === "paid_tools" ? (form.tool_target_game || undefined) : undefined,
+      tool_target_game: (form.category === "paid_tools" || form.category === "premium_mods") ? (form.tool_target_game || form.game_name || undefined) : undefined,
       preview_video_url: form.preview_video_url || undefined,
       is_approved: mod?.is_approved !== false,
       status: mod?.requiresReview ? "pending" : "active",
@@ -412,7 +415,7 @@ export default function CreateListing() {
           <a href="/dashboard?tab=listings" className="text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </a>
-          <h1 className="text-2xl font-black text-white">{editId ? "Edit Listing" : form.category === "games" ? "Add a Game" : "Post"}</h1>
+          <h1 className="text-2xl font-black text-white">{editId ? "Edit Listing" : form.category === "games" ? "Add a Game" : form.category === "premium_mods" ? "Sell a Premium Mod" : "Post"}</h1>
           <div className="ml-auto flex flex-col items-end gap-2">
             <p className="text-cyan-400/70 text-[10px] text-right max-w-xs leading-tight italic">Autopopulates the same taggings, SEO taggings, Gaming Community &amp; Modding Community as well as Gaming Platform if your posting similar contents</p>
             <div className="flex gap-2">
@@ -1102,7 +1105,7 @@ export default function CreateListing() {
           {!moderationResult && (
             <button type="submit" disabled={saving}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity disabled:opacity-50">
-              {saving ? "Checking content & saving..." : editId ? "Update Listing" : form.category === "games" ? "Add a Game" : "Post"}
+              {saving ? "Checking content & saving..." : editId ? "Update Listing" : form.category === "games" ? "Add a Game" : form.category === "premium_mods" ? "Sell a Premium Mod" : "Post"}
             </button>
           )}
         </form>

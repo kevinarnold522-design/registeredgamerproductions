@@ -188,7 +188,6 @@ export default function AuthNavbar({ user, profile }) {
     ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Post", href: "/create-listing", color: "text-green-400" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
     { icon: MessageCircle, label: "Group Chats", href: "/messages" },
-    { icon: Store, label: "Store", href: "/category?cat=store", color: "text-green-400" },
   ];
 
   const utilityLinks = [

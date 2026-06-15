@@ -119,10 +119,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       if (cat === "premium_mods") {
         cleaned = cleaned.filter(x => !isServiceListing(x) && x.product_type === "digital" && (x.is_premium || Number(x.price || 0) > 0));
       }
+      if (cat === "premium_mods" && activeSub !== "all") {
+        const normalizedSub = activeSub.toLowerCase().replace(/\s+/g, "");
+        cleaned = cleaned.filter(x => [x.tool_target_game, x.game_name, x.subcategory, ...(x.subcategories || [])].filter(Boolean).map(v => String(v).toLowerCase().replace(/\s+/g, "")).some(v => v === normalizedSub || (normalizedSub === "gta" && v.startsWith("gta"))));
+      }
       setListings(cleaned);
       setLoading(false);
     });
-  }, [cat]);
+  }, [cat, activeSub]);
 
   // Reset to page 1 whenever filters change
   useEffect(() => { setPage(1); }, [activeSub, search, sortBy, priceMin, priceMax, isFree, productType]);
@@ -193,27 +197,20 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       {cat === "premium_mods" && (
         <div className="max-w-7xl mx-auto px-4 pt-8">
           <div className="rounded-3xl border border-amber-700/30 bg-gradient-to-br from-amber-950/40 to-gray-900 p-5">
-            <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <p className="text-amber-300 text-xs font-black uppercase tracking-widest">Premium mod collections</p>
-                <h2 className="text-white text-2xl font-black">Shop paid mods by game</h2>
+                <h2 className="text-white text-2xl font-black">Sell a Premium Mod</h2>
+                <p className="text-gray-500 text-sm mt-1">Choose a game card below to browse its landing page and newsfeed.</p>
               </div>
-              <a href="/create-listing?cat=premium_mods" className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-bold hover:bg-amber-500/30">Sell a Premium Mod</a>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {["NBA 2K", "Football Life", "GTA", "Assetto Corsa", "Minecraft", "WWE 2K"].map(game => (
-                <button key={game} onClick={() => setSearch(game)} className="rounded-2xl bg-gray-950/70 border border-gray-800 px-3 py-4 text-left hover:border-amber-500/50 transition-colors">
-                  <p className="text-white text-sm font-black">{game}</p>
-                  <p className="text-gray-500 text-[11px] mt-1">Browse paid mods</p>
-                </button>
-              ))}
+              {canPost && <a href="/create-listing?cat=premium_mods" className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-bold hover:bg-amber-500/30">Sell a Premium Mod</a>}
             </div>
           </div>
         </div>
       )}
 
       {/* Subcategory cards grid */}
-      {!sub && <SubcategoryCards cat={cat} categoryName={meta.title} userEmail={user?.email} />}
+      {!sub && <SubcategoryCards cat={cat} categoryName={meta.title} userEmail={user?.email} user={user} userProfile={profile} />}
 
       {/* Subcategory tabs */}
       {categoryData?.subcategories?.length > 0 && !sub && (
@@ -250,7 +247,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             </button>
             {canPost && cat !== "tournaments" && (
               <a href={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
-                {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : "Post"}
+                {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
               </a>
             )}
             {cat === "tournaments" && (

@@ -18,7 +18,11 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
     const load = async () => {
       try {
         const results = await base44.entities.Listing.filter({ category: cat, status: "active" }, "-created_date", 200);
-        setListings(results.filter(l => l.is_approved !== false && (l.subcategory === sub || (l.subcategories || []).includes(sub)) && !isServiceListing(l)));
+        setListings(results.filter(l => {
+          const matchSub = l.subcategory === sub || (l.subcategories || []).includes(sub) || (cat === "premium_mods" && (l.tool_target_game === sub || l.game_name === sub));
+          const matchPremium = cat !== "premium_mods" || (l.product_type === "digital" && (l.is_premium || Number(l.price || 0) > 0));
+          return l.is_approved !== false && matchSub && matchPremium && !isServiceListing(l);
+        }));
       } catch {}
       setLoading(false);
     };
@@ -53,10 +57,10 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
         </div>
         {user && (
           <a
-            href={`/create-listing?cat=${cat}&sub=${sub}`}
+            href={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity"
           >
-            {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : "Post"}
+            {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
           </a>
         )}
       </div>
@@ -85,7 +89,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
           <p className="text-gray-600 text-sm">Be the first to post in this subcategory!</p>
           {user && (
             <a
-              href={`/create-listing?cat=${cat}&sub=${sub}`}
+              href={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
               className="mt-4 inline-block px-5 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm hover:opacity-90"
             >
               {cat === "games" ? "Add a Game" : "Post"}

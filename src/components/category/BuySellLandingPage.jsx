@@ -102,7 +102,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
         </div>
       </div>
 
-      <SubcategoryCards cat="buy_sell" categoryName="Buy & Sell" />
+      <SubcategoryCards cat="buy_sell" categoryName="Buy & Sell" user={user} userEmail={user?.email} userProfile={profile} />
 
       {/* Filters */}
       <div className="bg-gray-950/95 backdrop-blur-sm border-b border-gray-800 sticky top-16 z-30">

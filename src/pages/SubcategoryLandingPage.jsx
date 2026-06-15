@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
-import { isAdmin } from "@/lib/constants";
+import { isAdmin, isServiceListing } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import EnhancedListingCard from "@/components/community/EnhancedListingCard";
@@ -222,7 +222,7 @@ function AddCardModal({ onClose, onAdd }) {
 }
 
 export default function SubcategoryLandingPage() {
-  const { user } = useAuth();
+  const { user, isLoadingAuth } = useAuth();
   const [profile, setProfile] = useState(null);
   const params = new URLSearchParams(window.location.search);
   const cat = params.get("cat") || "";
@@ -261,6 +261,12 @@ export default function SubcategoryLandingPage() {
                    p.franchise_id?.toLowerCase().includes(sub.toLowerCase().replace(/\s+/g, "_")) ||
                    p.content?.toLowerCase().includes(sub.toLowerCase());
           }
+          // For premium mods: match the selected paid-mod game card
+          if (cat === "premium_mods") {
+            const normalizedSub = sub.toLowerCase().replace(/\s+/g, "");
+            const normalizedSection = String(p.section_id || "").toLowerCase().replace(/\s+/g, "");
+            return p.community_id === "premium_mods" && (normalizedSection === normalizedSub || p.franchise_id === `premium_mods_${sub}` || p.content?.toLowerCase().includes(sub.toLowerCase()));
+          }
           // For gaming communities: match franchise_id
           return p.franchise_id === sub;
         }).slice(0, 20);
@@ -268,9 +274,16 @@ export default function SubcategoryLandingPage() {
         
         // Load ALL active listings first, then filter client-side for modding
         const allListings = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200);
-        const listingsData = cat === "modding"
-          ? allListings.filter(l => l.modding_subcategory === sub || l.digital_subcategory === sub || l.game_name === sub || (l.tags || []).includes(sub))
-          : allListings.filter(l => l.community_franchise_id === sub);
+        const listingsData = cat === "premium_mods"
+          ? allListings.filter(l => {
+              const normalizedSub = sub.toLowerCase().replace(/\s+/g, "");
+              const gameFields = [l.tool_target_game, l.game_name, l.subcategory, ...(l.subcategories || [])].filter(Boolean).map(v => String(v).toLowerCase().replace(/\s+/g, ""));
+              const matchGame = gameFields.some(v => v === normalizedSub || (normalizedSub === "gta" && v.startsWith("gta")));
+              return l.category === "premium_mods" && l.is_approved !== false && !isServiceListing(l) && l.product_type === "digital" && (l.is_premium || Number(l.price || 0) > 0) && matchGame;
+            })
+          : cat === "modding"
+            ? allListings.filter(l => l.modding_subcategory === sub || l.digital_subcategory === sub || l.game_name === sub || (l.tags || []).includes(sub))
+            : allListings.filter(l => l.community_franchise_id === sub);
         setListings(listingsData.slice(0, 12));
       } catch (err) {
         console.error("Error loading subcategory data:", err);
@@ -310,7 +323,7 @@ export default function SubcategoryLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
+      {!isLoadingAuth && (user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />)}
 
       <div className="pt-20 px-4 max-w-7xl mx-auto pb-16">
         <button onClick={() => window.history.back()}
@@ -330,10 +343,10 @@ export default function SubcategoryLandingPage() {
               💡 Recommend Subcategory
             </button>
             {user && (
-              <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}`}
+              <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
                 style={{ background: "linear-gradient(135deg, #059669, #0d9488)" }}>
-                <Plus className="w-4 h-4" /> Add Listing
+                <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Add Listing"}
               </button>
             )}
             {admin && (
@@ -382,9 +395,9 @@ export default function SubcategoryLandingPage() {
               <p className="text-gray-400 font-semibold">No listings yet</p>
               <p className="text-gray-600 text-sm mt-1">Be the first to contribute!</p>
               {user && (
-                <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}`}
+                <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                   className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
-                  <Plus className="w-4 h-4" /> Add Listing
+                  <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Add Listing"}
                 </a>
               )}
             </div>

@@ -12,8 +12,16 @@ const PAID_MOD_CATEGORIES = [
 ];
 
 const GAMES = [
-  "WWE2K", "GTA 5", "GTA SA", "FIFA", "PES", "NBA2K", "Football Life", 
-  "PPSSPP", "PS2", "PC", "Android", "GTA 4"
+  "NBA 2K", "Football Life", "GTA", "Assetto Corsa", "Minecraft", "WWE 2K"
+];
+
+const PREMIUM_MOD_GAME_CARDS = [
+  { id: "NBA 2K", label: "NBA 2K", color: "from-orange-600 to-red-600" },
+  { id: "Football Life", label: "Football Life", color: "from-green-600 to-emerald-600" },
+  { id: "GTA", label: "GTA", color: "from-yellow-600 to-orange-600" },
+  { id: "Assetto Corsa", label: "Assetto Corsa", color: "from-red-600 to-pink-600" },
+  { id: "Minecraft", label: "Minecraft", color: "from-emerald-600 to-lime-600" },
+  { id: "WWE 2K", label: "WWE 2K", color: "from-purple-600 to-pink-600" },
 ];
 
 export default function PaidModsSection() {
@@ -54,7 +62,9 @@ export default function PaidModsSection() {
       listing.description?.toLowerCase().includes(filters.search.toLowerCase());
     
     const matchCategory = !filters.category || listing.category === filters.category;
-    const matchGame = !filters.game || listing.game_name === filters.game;
+    const normalizedGame = filters.game.toLowerCase().replace(/\s+/g, "");
+    const listingGames = [listing.game_name, listing.tool_target_game, listing.subcategory, ...(listing.subcategories || [])].filter(Boolean).map(v => String(v).toLowerCase().replace(/\s+/g, ""));
+    const matchGame = !filters.game || listingGames.some(v => v === normalizedGame || (normalizedGame === "gta" && v.startsWith("gta")));
     
     let matchPrice = true;
     if (filters.priceRange === "free") matchPrice = listing.price === 0 || listing.is_free;
@@ -181,28 +191,34 @@ export default function PaidModsSection() {
           )}
         </motion.div>
 
-        {/* Category Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {PAID_MOD_CATEGORIES.map((cat, i) => (
-            <motion.div
-              key={cat.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="relative group cursor-pointer"
-            >
-              <Link to={`/category?cat=${cat.id}`}>
-                <div className={`h-32 rounded-2xl bg-gradient-to-br ${cat.color} p-0.5 group-hover:scale-105 transition-transform duration-300`}>
-                  <div className="h-full bg-gray-950 rounded-[15px] p-4 flex flex-col items-center justify-center gap-2">
-                    <Tag className="w-8 h-8 text-white/80" />
-                    <h3 className="text-white font-black text-lg">{cat.label}</h3>
-                    <p className="text-gray-400 text-xs text-center">Premium quality content</p>
+        {/* Premium Mod Game Cards */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+            <h3 className="text-white font-black text-xl">Sell a Premium Mod</h3>
+            <Link to="/category?cat=premium_mods" className="text-amber-300 text-sm font-bold hover:text-amber-200">View all premium mods</Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {PREMIUM_MOD_GAME_CARDS.map((game, i) => (
+              <motion.div
+                key={game.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="relative group cursor-pointer"
+              >
+                <Link to={`/sub-landing?cat=premium_mods&sub=${encodeURIComponent(game.id)}`}>
+                  <div className={`h-32 rounded-2xl bg-gradient-to-br ${game.color} p-0.5 group-hover:scale-105 transition-transform duration-300`}>
+                    <div className="h-full bg-gray-950 rounded-[15px] p-4 flex flex-col items-center justify-center gap-2">
+                      <Tag className="w-8 h-8 text-white/80" />
+                      <h3 className="text-white font-black text-lg">{game.label}</h3>
+                      <p className="text-gray-400 text-xs text-center">Browse paid mods</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {/* Listings Grid */}

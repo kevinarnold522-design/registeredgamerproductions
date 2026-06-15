@@ -42,6 +42,14 @@ const SUBCATEGORY_CONFIG = {
     { id: "Nintendo Switch", emoji: "🔴", title: "Nintendo Switch",  desc: "Physical & digital Switch titles", color: "from-red-950 to-red-900",      border: "border-red-500/50",     glow: "rgba(239,68,68,0.6)",  badge: "Nintendo" },
     { id: "Mobile",          emoji: "📱", title: "Mobile Games",     desc: "Android & iOS top titles",         color: "from-teal-950 to-teal-900",    border: "border-teal-500/50",    glow: "rgba(20,184,166,0.6)", badge: "Mobile" },
   ],
+  premium_mods: [
+    { id: "NBA 2K", emoji: "🏀", title: "NBA 2K", desc: "Browse paid mods", color: "from-orange-950 to-orange-900", border: "border-orange-500/50", glow: "rgba(249,115,22,0.6)", badge: "Premium" },
+    { id: "Football Life", emoji: "⚽", title: "Football Life", desc: "Browse paid mods", color: "from-green-950 to-green-900", border: "border-green-500/50", glow: "rgba(74,222,128,0.6)", badge: "Premium" },
+    { id: "GTA", emoji: "🚗", title: "GTA", desc: "Browse paid mods", color: "from-yellow-950 to-yellow-900", border: "border-yellow-500/50", glow: "rgba(234,179,8,0.6)", badge: "Premium" },
+    { id: "Assetto Corsa", emoji: "🏎️", title: "Assetto Corsa", desc: "Browse paid mods", color: "from-red-950 to-red-900", border: "border-red-500/50", glow: "rgba(239,68,68,0.6)", badge: "Premium" },
+    { id: "Minecraft", emoji: "⛏️", title: "Minecraft", desc: "Browse paid mods", color: "from-emerald-950 to-emerald-900", border: "border-emerald-500/50", glow: "rgba(16,185,129,0.6)", badge: "Premium" },
+    { id: "WWE 2K", emoji: "🤼", title: "WWE 2K", desc: "Browse paid mods", color: "from-purple-950 to-purple-900", border: "border-purple-500/50", glow: "rgba(168,85,247,0.6)", badge: "Premium" },
+  ],
   buy_sell: [
     { id: "Game Accounts",          emoji: "🔑", title: "Game Accounts",          desc: "Ranked & smurf accounts",          color: "from-yellow-950 to-yellow-900", border: "border-yellow-500/50", glow: "rgba(234,179,8,0.6)",  badge: "Hot" },
     { id: "In-Game Items",          emoji: "💎", title: "In-Game Items",           desc: "Rare items, boosters & keys",       color: "from-cyan-950 to-cyan-900",    border: "border-cyan-500/50",   glow: "rgba(6,182,212,0.6)",  badge: "Trade" },
@@ -486,7 +494,7 @@ function CategoryFeed({ cat, user, userProfile }) {
         </div>
       ) : (
         <div className="px-3 py-2 border-b border-gray-800 flex-shrink-0 text-center">
-          <button onClick={() => base44.auth.redirectToLogin()} className="text-xs text-purple-400 font-bold hover:underline">Sign in to post →</button>
+        <button onClick={() => base44.auth.redirectToLogin()} className="text-xs text-purple-400 font-bold hover:underline">Sign in to post →</button>
         </div>
       )}
       <div className="flex-1 overflow-y-auto">
@@ -677,10 +685,12 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
               <p className="text-white text-sm font-black">{categoryName} Feed</p>
               <p className="text-gray-600 text-[10px]">Latest listings & posts · Click a card on the left to browse its landing page</p>
             </div>
-            <a href={`/create-listing?cat=${encodeURIComponent(cat)}`}
-              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
-              + Add Listing
-            </a>
+            {user && (
+              <a href={`/create-listing?cat=${encodeURIComponent(cat)}`}
+                className="text-xs font-bold px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
+                {cat === "premium_mods" ? "+ Sell Premium Mod" : "+ Add Listing"}
+              </a>
+            )}
           </div>
           <CategoryFeed cat={cat} user={user} userProfile={userProfile} />
         </div>
