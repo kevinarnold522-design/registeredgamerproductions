@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Plus, Tag, Search } from "lucide-react";
+import { Plus, Tag, Search, Send } from "lucide-react";
 import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { isServiceListing } from "@/lib/constants";
@@ -56,7 +56,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
             href={`/create-listing?cat=${cat}&sub=${sub}`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity"
           >
-            <Plus className="w-4 h-4" /> Add Listing
+            {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : "Post"}
           </a>
         )}
       </div>
@@ -88,7 +88,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
               href={`/create-listing?cat=${cat}&sub=${sub}`}
               className="mt-4 inline-block px-5 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm hover:opacity-90"
             >
-              Create Listing
+              {cat === "games" ? "Add a Game" : "Post"}
             </a>
           )}
         </div>
@@ -119,7 +119,9 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
               rotate: { opacity: 1, rotate: 0 },
               none: {},
             };
-            const glowStyle = anim === "glow" ? { boxShadow: "0 0 24px 4px rgba(139,92,246,0.5)" } : {};
+            const glowColors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
+            const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 24px 4px rgba(139,92,246,0.5)" } : {}), "--listing-glow-color": glowColors[listing.card_glow_color || "purple"] };
+            const glowClass = `listing-glow-frame ${listing.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${listing.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`;
             return (
             <motion.a
               href={`/listing?id=${listing.id}`}
@@ -128,7 +130,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
               animate={animMap[anim] || { opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, type: anim === "bounce" ? "spring" : "tween", stiffness: 200, bounce: 0.5 }}
               style={glowStyle}
-              className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors block cursor-pointer"
+              className={`bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors block cursor-pointer ${glowClass}`}
             >
               {(listing.preview_video_url || listing.video_url || listing.youtube_url) ? (
                 <UniversalVideoPreview url={listing.preview_video_url || listing.video_url || listing.youtube_url} poster={listing.images?.[0]} className="w-full h-40 object-cover" />

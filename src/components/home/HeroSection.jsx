@@ -1,24 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Gamepad2, Zap, Radio } from "lucide-react";
+import { Gamepad2, Zap, Radio, ShieldCheck, Lock, Globe2, CircleDollarSign, Clapperboard, Headphones, Wrench, ShoppingCart, Trophy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 
 function CreateListingHeroButton() {
-  const [show, setShow] = useState(false);
-  const [accountType, setAccountType] = useState(null);
-  useEffect(() => {
-    base44.auth.isAuthenticated().then(async (auth) => {
-      if (!auth) return;
-      const me = await base44.auth.me();
-      const { isAdmin } = await import("@/lib/constants");
-      if (isAdmin(me?.email)) { setShow(true); setAccountType("admin"); return; }
-      const profiles = await base44.entities.UserProfile.filter({ user_email: me?.email });
-      const type = profiles[0]?.account_type;
-      if (type === "digital_creator" || type === "business") { setShow(true); setAccountType(type); }
-    });
-  }, []);
-  if (!show) return null;
+  const { user } = useAuth();
+  if (!user) return null;
   return (
     <motion.a
       href="/create-listing"
@@ -26,17 +15,14 @@ function CreateListingHeroButton() {
       className="px-8 py-4 rounded-xl font-black text-base flex items-center justify-center gap-2 text-white"
       style={{ background: "linear-gradient(135deg, #059669, #10b981)", boxShadow: "0 0 20px rgba(16,185,129,0.4)" }}
     >
-      <span>🏪</span> Create Listing
+      <Gamepad2 className="w-5 h-5" /> Post
     </motion.a>
   );
 }
 
 function SignInHeroButton() {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    base44.auth.isAuthenticated().then(auth => setShow(!auth));
-  }, []);
-  if (!show) return null;
+  const { user, isLoadingAuth } = useAuth();
+  if (isLoadingAuth || user) return null;
   return (
     <motion.button
       onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")}
@@ -94,7 +80,7 @@ function LiveStats() {
           >
             {adminUserCount > 0 ? adminUserCount.toLocaleString() : "—"}
           </motion.div>
-          <div className="text-xs text-purple-300 uppercase tracking-wider mt-1 font-semibold">⚡ Registered Gamers</div>
+          <div className="text-xs text-purple-300 uppercase tracking-wider mt-1 font-semibold flex items-center justify-center gap-1"><Zap className="w-3 h-3" /> Registered Gamers</div>
         </motion.div>
       )}
 
@@ -123,18 +109,19 @@ function LiveStats() {
 }
 
 const quickLinks = [
-  { icon: "🎮", label: "Looking for Games?", sub: "PC, Console & Mobile", href: "/category?cat=games" },
-  { icon: "📡", label: "Live Streams", sub: "Watch & go live", href: "/category?cat=livestream" },
-  { icon: "🔥", label: "Hot Deals?", sub: "Best prices today", href: "/category?cat=buy_sell" },
-  { icon: "🏆", label: "Tournaments?", sub: "Join & compete", href: "/category?cat=tournaments" },
-  { icon: "🎧", label: "Looking for Audio?", sub: "Headsets & Speakers", href: "/category?cat=buy_sell" },
-  { icon: "🔧", label: "Get Mods?", sub: "GTA, FIFA, WWE & more", href: "/category?cat=modding" },
-  { icon: "🛒", label: "Buy & Sell?", sub: "Accounts & in-game items", href: "/category?cat=buy_sell" },
-  { icon: "🎬", label: "Content Creator?", sub: "Streaming gear & tips", href: "/register?type=digital_creator" },
+  { icon: Gamepad2, label: "Looking for Games?", sub: "PC, Console & Mobile", href: "/category?cat=games" },
+  { icon: Radio, label: "Live Streams", sub: "Watch & go live", href: "/category?cat=livestream" },
+  { icon: CircleDollarSign, label: "Hot Deals?", sub: "Best prices today", href: "/category?cat=buy_sell" },
+  { icon: Trophy, label: "Tournaments?", sub: "Join & compete", href: "/category?cat=tournaments" },
+  { icon: Headphones, label: "Looking for Audio?", sub: "Headsets & Speakers", href: "/category?cat=buy_sell" },
+  { icon: Wrench, label: "Get Mods?", sub: "GTA, FIFA, WWE & more", href: "/category?cat=modding" },
+  { icon: ShoppingCart, label: "Buy & Sell?", sub: "Accounts & in-game items", href: "/category?cat=buy_sell" },
+  { icon: Clapperboard, label: "Content Creator?", sub: "Streaming gear & tips", href: "/register?type=digital_creator" },
 ];
 
 export default function HeroSection() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16">
       {/* Background */}
@@ -155,7 +142,7 @@ export default function HeroSection() {
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
-        {/* GP Logo + Earn Now — merged top CTA */}
+        {/* GP Logo */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="flex flex-col items-center mb-4">
           <motion.img
             src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
@@ -165,18 +152,6 @@ export default function HeroSection() {
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             style={{ filter: "drop-shadow(0 0 14px rgba(168,85,247,0.8))" }}
           />
-          <a
-            href="/register"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-black text-sm text-white transition-all"
-            style={{
-              background: "linear-gradient(135deg, #f59e0b, #ef4444, #f59e0b)",
-              backgroundSize: "200% 200%",
-              animation: "fire-shift 2s ease infinite",
-              boxShadow: "0 0 24px rgba(245,158,11,0.5), 0 0 48px rgba(239,68,68,0.25)",
-            }}
-          >
-            💰 Earn Now — Join Free
-          </a>
         </motion.div>
 
         {/* Badge */}
@@ -237,11 +212,13 @@ export default function HeroSection() {
         {/* CTA Buttons */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
         className="flex flex-col sm:flex-row gap-3 justify-center mb-6 flex-wrap">
-        <motion.button onClick={() => navigate("/register")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-          className="px-10 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-          style={{ boxShadow: "0 0 30px rgba(139,92,246,0.5)" }}>
-          <Zap className="w-5 h-5" /> Sign Up Free — Join Now
-        </motion.button>
+        {!user && (
+          <motion.button onClick={() => navigate("/register")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
+            className="px-10 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            style={{ boxShadow: "0 0 30px rgba(139,92,246,0.5)" }}>
+            <Zap className="w-5 h-5" /> Join Now
+          </motion.button>
+        )}
         <SignInHeroButton />
         <motion.button onClick={() => navigate("/category?cat=livestream")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
             className="px-8 py-4 rounded-xl border-2 border-red-700/60 text-red-300 font-bold text-base hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
@@ -259,8 +236,14 @@ export default function HeroSection() {
         {/* Trust signals */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
           className="flex flex-wrap justify-center gap-4 mb-10 text-xs text-gray-500">
-          {["✅ Free to Join", "🔒 Secure Payments via PayPal & Stripe", "🌍 Available Worldwide", "💰 Earn from Content", "🎮 100% Gaming Focused"].map((t, i) => (
-            <span key={i} className="flex items-center gap-1 font-medium">{t}</span>
+          {[
+            { icon: ShieldCheck, text: "Free to Join" },
+            { icon: Lock, text: "Secure Payments via PayPal & Stripe" },
+            { icon: Globe2, text: "Available Worldwide" },
+            { icon: CircleDollarSign, text: "Earn from Content" },
+            { icon: Gamepad2, text: "100% Gaming Focused" },
+          ].map(({ icon: Icon, text }, i) => (
+            <span key={i} className="flex items-center gap-1 font-medium"><Icon className="w-3.5 h-3.5 text-purple-300" />{text}</span>
           ))}
           {/* Verified badge highlight */}
           <span className="flex items-center gap-1.5 font-medium px-3 py-1 rounded-full"
@@ -286,14 +269,17 @@ export default function HeroSection() {
         {/* Quick Links */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
           className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
-          {quickLinks.map((item, i) => (
-            <motion.button key={i} onClick={() => navigate(item.href)} whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
-              className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-purple-700/60 transition-all cursor-pointer group">
-              <span className="text-xl">{item.icon}</span>
-              <span className="text-white text-xs font-semibold text-center leading-tight group-hover:text-purple-300 transition-colors">{item.label}</span>
-              <span className="text-gray-500 text-xs text-center">{item.sub}</span>
-            </motion.button>
-          ))}
+          {quickLinks.filter(item => !user || !item.href.startsWith("/register")).map((item, i) => {
+            const Icon = item.icon;
+            return (
+              <motion.button key={i} onClick={() => navigate(item.href)} whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
+                className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-purple-700/60 transition-all cursor-pointer group">
+                <Icon className="w-6 h-6 text-purple-300" />
+                <span className="text-white text-xs font-semibold text-center leading-tight group-hover:text-purple-300 transition-colors">{item.label}</span>
+                <span className="text-gray-500 text-xs text-center">{item.sub}</span>
+              </motion.button>
+            );
+          })}
         </motion.div>
       </div>
     </section>

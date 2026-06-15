@@ -6,11 +6,23 @@ import { base44 } from "@/api/base44Client";
 export default function EarnNowButton() {
   const [authed, setAuthed] = useState(null);
 
+  const [accountType, setAccountType] = useState(null);
+
   useEffect(() => {
-    base44.auth.isAuthenticated().then(a => setAuthed(a));
+    base44.auth.isAuthenticated().then(async a => {
+      setAuthed(a);
+      if (a) {
+        const me = await base44.auth.me().catch(() => null);
+        if (me?.email) {
+          const profiles = await base44.entities.UserProfile.filter({ user_email: me.email }).catch(() => []);
+          setAccountType(profiles[0]?.account_type || "regular");
+        }
+      }
+    });
   }, []);
 
   if (authed === null) return null;
+  if (accountType === "digital_creator" || accountType === "business") return null;
 
   const href = authed ? "/" : "/register";
 

@@ -77,7 +77,7 @@ export default function SearchPage() {
               {paged.map(l => {
                 const cat = CATEGORIES.find(c => c.id === l.category);
                 return (
-                  <a key={l.id} href={`/listing?id=${l.id}`} className="rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-colors">
+                  <a key={l.id} href={`/listing?id=${l.id}`} style={{ "--listing-glow-color": { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" }[l.card_glow_color || "purple"] }} className={`rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-colors listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`}>
                     <div className="h-36 bg-gray-800 relative overflow-hidden">
                       {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                         <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />

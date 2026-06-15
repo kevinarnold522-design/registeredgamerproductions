@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Radio, SlidersHorizontal, X, Play } from "lucide-react";
+import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
@@ -250,7 +250,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             </button>
             {canPost && cat !== "tournaments" && (
               <a href={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
-                <Plus className="w-4 h-4" /> Add Listing
+                {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : "Post"}
               </a>
             )}
             {cat === "tournaments" && (
@@ -334,11 +334,13 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               const anim = l.card_animation || "slide_up";
               const initMap = { fade: { opacity: 0 }, slide_up: { opacity: 0, y: 30 }, slide_left: { opacity: 0, x: -30 }, zoom: { opacity: 0, scale: 0.85 }, flip: { opacity: 0, rotateY: 90 }, bounce: { opacity: 0, y: -20 }, glow: { opacity: 0 }, rotate: { opacity: 0, rotate: -10 }, none: {} };
               const animMap = { fade: { opacity: 1 }, slide_up: { opacity: 1, y: 0 }, slide_left: { opacity: 1, x: 0 }, zoom: { opacity: 1, scale: 1 }, flip: { opacity: 1, rotateY: 0 }, bounce: { opacity: 1, y: 0 }, glow: { opacity: 1 }, rotate: { opacity: 1, rotate: 0 }, none: {} };
-              const glowStyle = anim === "glow" ? { boxShadow: "0 0 20px 3px rgba(139,92,246,0.4)" } : {};
+              const glowColors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
+              const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 20px 3px rgba(139,92,246,0.4)" } : {}), "--listing-glow-color": glowColors[l.card_glow_color || "purple"] };
+              const glowClass = `listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`;
               return (
               <motion.a href={`/listing?id=${l.id}`} key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
                 style={glowStyle}
-                className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer">
+                className={`bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer ${glowClass}`}>
                 <div className="h-36 overflow-hidden relative bg-gray-800">
                   {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                     <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />

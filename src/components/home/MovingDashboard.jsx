@@ -13,6 +13,14 @@ const CP = {
   darkBg: "#050008",
 };
 
+function listingGlow(item) {
+  const colors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
+  return {
+    className: `listing-glow-frame ${item?.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${item?.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`,
+    style: { "--listing-glow-color": colors[item?.card_glow_color || "purple"] }
+  };
+}
+
 function ScrollRow({ children, speed = 30, reverse = false }) {
   return (
     <div className="relative overflow-hidden">
@@ -35,23 +43,7 @@ function ScrollRow({ children, speed = 30, reverse = false }) {
 }
 
 function FireBurst() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.5 }}
-      whileHover={{ opacity: 1, scale: 1 }}
-      className="absolute inset-0 pointer-events-none z-20 flex items-end justify-center pb-1 overflow-hidden"
-    >
-      {["🔥","🔥","🔥"].map((f, i) => (
-        <motion.span
-          key={i}
-          animate={{ y: [0, -18, 0], opacity: [0.7, 1, 0.7], scale: [1, 1.3, 1] }}
-          transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
-          className="text-base"
-          style={{ marginLeft: i === 1 ? 0 : i === 0 ? -6 : 6 }}
-        >{f}</motion.span>
-      ))}
-    </motion.div>
-  );
+  return null;
 }
 
 function CardActions({ item, liked, likeCount, onLike, user, profile }) {
@@ -107,13 +99,15 @@ function ModCard({ mod, user, profile }) {
     base44.entities.Listing.update(mod.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
   };
 
+  const glow = listingGlow(mod);
   return (
     <motion.a
       href={`/listing?id=${mod.id}`}
       whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(245,197,24,0.4), 0 0 80px rgba(245,197,24,0.1)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative w-52 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block"
+      className={`relative w-52 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block ${glow.className}`}
       style={{
+        ...glow.style,
         background: "rgba(18,8,0,0.55)",
         border: "1px solid rgba(245,197,24,0.35)",
         backdropFilter: "blur(18px)",
@@ -126,7 +120,7 @@ function ModCard({ mod, user, profile }) {
           <img src={mod.images[0]} alt={mod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="flex items-center justify-center h-full" style={{ background: "linear-gradient(135deg, #1a0a00, #0a0500)" }}>
-            <span className="text-4xl">🔧</span>
+            <Package className="w-10 h-10 text-amber-300" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
@@ -163,13 +157,15 @@ function ProductCard({ product, user, profile }) {
     base44.entities.Listing.update(product.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
   };
 
+  const glow = listingGlow(product);
   return (
     <motion.a
       href={`/listing?id=${product.id}`}
       whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(0,212,255,0.35), 0 0 80px rgba(0,212,255,0.08)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative w-48 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block"
+      className={`relative w-48 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block ${glow.className}`}
       style={{
+        ...glow.style,
         background: "rgba(0,18,8,0.55)",
         border: "1px solid rgba(0,212,255,0.3)",
         backdropFilter: "blur(18px)",
@@ -181,7 +177,7 @@ function ProductCard({ product, user, profile }) {
         {product.images?.[0] ? (
           <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
-          <div className="flex items-center justify-center h-full text-4xl" style={{ background: "linear-gradient(135deg, #001a0a, #000d05)" }}>🛒</div>
+          <div className="flex items-center justify-center h-full" style={{ background: "linear-gradient(135deg, #001a0a, #000d05)" }}><Package className="w-9 h-9 text-green-300" /></div>
         )}
         <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: CP.cyan }} />
         <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: CP.pink }} />
@@ -202,78 +198,9 @@ function ProductCard({ product, user, profile }) {
 }
 
 // Static PC/Mobile game deals
-const PC_DEALS = [
-  { title: "Cyberpunk 2077", price: "$29.99", off: "-50%", store: "STEAM", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=160&fit=crop" },
-  { title: "Elden Ring", price: "$39.99", off: "-33%", store: "STEAM", img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=160&fit=crop" },
-  { title: "GTA V", price: "$14.99", off: "-50%", store: "STEAM", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=300&h=160&fit=crop" },
-  { title: "Fortnite", price: "FREE", off: "FREE", store: "EPIC", img: "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=300&h=160&fit=crop" },
-  { title: "Baldur's Gate 3", price: "$59.99", off: "HOT", store: "STEAM", img: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=160&fit=crop" },
-  { title: "Witcher 3", price: "$9.99", off: "-75%", store: "STEAM", img: "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=300&h=160&fit=crop" },
-];
+const PC_DEALS = [];
 
-const MOBILE_DEALS = [
-  { title: "Mobile Legends", platform: "Android/iOS", genre: "MOBA", img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=160&fit=crop" },
-  { title: "PUBG Mobile", platform: "Android/iOS", genre: "BR", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=300&h=160&fit=crop" },
-  { title: "Genshin Impact", platform: "Android/iOS", genre: "RPG", img: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=300&h=160&fit=crop" },
-  { title: "Free Fire", platform: "Android", genre: "BR", img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=160&fit=crop" },
-  { title: "COD Mobile", platform: "Android/iOS", genre: "FPS", img: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=300&h=160&fit=crop" },
-  { title: "Minecraft PE", platform: "Android/iOS", genre: "Sandbox", img: "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=300&h=160&fit=crop" },
-];
-
-function PCDealCard({ game }) {
-  const isFree = game.price === "FREE";
-  const isEpic = game.store === "EPIC";
-  return (
-    <motion.a href="/category?cat=games"
-      whileHover={{ scale: 1.06, y: -6, boxShadow: isEpic ? "0 0 36px rgba(168,85,247,0.45)" : "0 0 36px rgba(0,212,255,0.4)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative w-44 flex-shrink-0 rounded-2xl overflow-hidden group block cursor-pointer"
-      style={{
-        background: "rgba(5,0,16,0.55)",
-        border: `1px solid ${isEpic ? "rgba(168,85,247,0.4)" : "rgba(0,212,255,0.3)"}`,
-        backdropFilter: "blur(18px)",
-      }}>
-      <FireBurst />
-      <div className="relative h-24 overflow-hidden">
-        <img src={game.img} alt={game.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
-        <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-black"
-          style={{ background: isFree ? "#16a34a" : `${CP.yellow}cc`, color: isFree ? "white" : "black" }}>{game.off}</div>
-        <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold"
-          style={{ background: isEpic ? "#7c3aed" : "#1d4ed8", color: "white" }}>{game.store}</div>
-      </div>
-      <div className="p-2.5">
-        <p className="text-white font-bold text-xs truncate">{game.title}</p>
-        <p className="font-black text-xs mt-0.5" style={{ color: isFree ? "#4ade80" : CP.yellow }}>{game.price}</p>
-      </div>
-    </motion.a>
-  );
-}
-
-function MobileDealCard({ game }) {
-  return (
-    <motion.a href="/category?cat=games&sub=mobile"
-      whileHover={{ scale: 1.06, y: -6, boxShadow: "0 0 36px rgba(255,45,120,0.4)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative w-40 flex-shrink-0 rounded-2xl overflow-hidden group block"
-      style={{
-        background: "rgba(0,5,13,0.55)",
-        border: "1px solid rgba(255,45,120,0.3)",
-        backdropFilter: "blur(18px)",
-      }}>
-      <FireBurst />
-      <div className="relative h-24 overflow-hidden">
-        <img src={game.img} alt={game.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent" />
-        <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ background: `${CP.pink}40`, border: `1px solid ${CP.pink}60`, color: CP.pink }}>{game.genre}</div>
-      </div>
-      <div className="p-2.5">
-        <p className="text-white font-bold text-xs truncate">{game.title}</p>
-        <p className="text-[9px] mt-0.5" style={{ color: `${CP.pink}99` }}>{game.platform}</p>
-      </div>
-    </motion.a>
-  );
-}
+const MOBILE_DEALS = [];
 
 // Section label component
 function SectionLabel({ icon: Icon, label, color, pulse }) {
@@ -289,6 +216,8 @@ function SectionLabel({ icon: Icon, label, color, pulse }) {
 export default function MovingDashboard() {
   const [mods, setMods] = useState([]);
   const [products, setProducts] = useState([]);
+  const [pcGames, setPcGames] = useState([]);
+  const [mobileGames, setMobileGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -310,11 +239,15 @@ export default function MovingDashboard() {
       // Deduplicate by id
       const seen = new Set();
       const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
-      const allMods = unique.filter(l => l.category === "modding");
+      const realActive = unique.filter(l => l.is_approved !== false);
+      const allMods = realActive.filter(l => l.category === "modding");
+      const allGames = realActive.filter(l => l.category === "games");
+      setPcGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("pc") || String(p).toLowerCase().includes("steam"))).slice(0, 16));
+      setMobileGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("android") || String(p).toLowerCase().includes("mobile") || String(p).toLowerCase().includes("ios"))).slice(0, 16));
       setFreeMods(allMods.filter(m => !m.price || m.price === 0 || m.is_free).slice(0, 16));
       setPaidMods(allMods.filter(m => m.price > 0 && !m.is_free).slice(0, 16));
       setMods(allMods.slice(0, 16));
-      setProducts(unique.filter(l => l.category !== "modding" && l.category !== "content").slice(0, 16));
+      setProducts(realActive.filter(l => l.category !== "modding" && l.category !== "content").slice(0, 16));
       setLoading(false);
     };
     load();
@@ -356,7 +289,7 @@ export default function MovingDashboard() {
             </span>
           </h2>
           <p className="text-xs tracking-widest uppercase mb-1" style={{ color: `${CP.cyan}60` }}>
-            REAL-TIME · CONTENT · MODS · MARKETPLACE · PC & MOBILE DEALS
+            REAL-TIME · CONTENT · MODS · MARKETPLACE · PC & MOBILE LISTINGS
           </p>
 
           {/* Cyberpunk divider */}
@@ -368,26 +301,30 @@ export default function MovingDashboard() {
         </motion.div>
       </div>
 
-      {/* PC Game Deals */}
-      <div className="mb-8">
-        <SectionLabel icon={Monitor} label="PC GAME DEALS — Steam & Epic" color={CP.cyan} />
-        <ScrollRow speed={38}>
-          {PC_DEALS.map((g, i) => <PCDealCard key={i} game={g} />)}
-        </ScrollRow>
-      </div>
+      {/* Real PC game listings */}
+      {pcGames.length > 0 && (
+        <div className="mb-8">
+          <SectionLabel icon={Monitor} label="PC GAME LISTINGS" color={CP.cyan} />
+          <ScrollRow speed={38}>
+            {pcGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} />)}
+          </ScrollRow>
+        </div>
+      )}
 
-      {/* Mobile Games */}
-      <div className="mb-8">
-        <SectionLabel icon={Smartphone} label="TOP MOBILE GAMES — Android & iOS" color={CP.pink} />
-        <ScrollRow speed={42} reverse>
-          {MOBILE_DEALS.map((g, i) => <MobileDealCard key={i} game={g} />)}
-        </ScrollRow>
-      </div>
+      {/* Real mobile game listings */}
+      {mobileGames.length > 0 && (
+        <div className="mb-8">
+          <SectionLabel icon={Smartphone} label="MOBILE GAME LISTINGS" color={CP.pink} />
+          <ScrollRow speed={42} reverse>
+            {mobileGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} />)}
+          </ScrollRow>
+        </div>
+      )}
 
       {/* Paid/Premium Mods */}
       {paidMods.length > 0 && (
         <div className="mb-8">
-          <SectionLabel icon={Package} label="💎 PREMIUM MODS — Paid" color={CP.yellow} />
+          <SectionLabel icon={Package} label="PREMIUM MODS — Paid" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
             {paidMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
           </ScrollRow>
@@ -397,7 +334,7 @@ export default function MovingDashboard() {
       {/* Free Mods */}
       {freeMods.length > 0 && (
         <div className="mb-8">
-          <SectionLabel icon={Package} label="🆓 FREE MODS — Community" color="#4ade80" />
+          <SectionLabel icon={Package} label="FREE MODS — Community" color="#4ade80" />
           <ScrollRow speed={38}>
             {freeMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
           </ScrollRow>

@@ -185,7 +185,7 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Play, label: "Content Hub", href: "/content", color: "text-purple-400" },
     { icon: User, label: "My Channel", href: "/profile", color: "text-blue-400" },
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
-    ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Add Listing", href: "/create-listing", color: "text-green-400" }] : []),
+    ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Post", href: "/create-listing", color: "text-green-400" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
     { icon: MessageCircle, label: "Group Chats", href: "/messages" },
     { icon: Store, label: "Store", href: "/category?cat=store", color: "text-green-400" },
@@ -198,7 +198,7 @@ export default function AuthNavbar({ user, profile }) {
     return (
       <div className="flex flex-col h-full">
         <div className="px-3 pt-3 pb-3 border-b border-purple-900/30 space-y-2">
-          <div className="w-full h-2 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.85)]" />
+
           {s && !(admin && !isManagingAsGhost) && (
             <div className="space-y-2">
               <EarnNowButton />
@@ -240,17 +240,7 @@ export default function AuthNavbar({ user, profile }) {
                   </p>
                   <GamerCheckmark isVerified={isManagingAsGhost ? ghostAccountData?.is_verified : profile?.is_verified} userEmail={isManagingAsGhost ? ghostAccountEmail : user?.email} size="sm" showTooltip={false} />
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <p className={`text-[10px] font-semibold truncate ${
-                    isManagingAsGhost 
-                      ? (ghostAccountData?.account_type === 'digital_creator' ? 'text-purple-400' : ghostAccountData?.account_type === 'business' ? 'text-green-400' : 'text-blue-400')
-                      : (admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400")
-                  }`}>
-                    {isManagingAsGhost 
-                      ? (ghostAccountData?.account_type || 'regular').replace('_', ' ')
-                      : (admin ? "CEO & President" : isSeller ? accountType.replace("_", " ") : "Gamer")}
-                  </p>
-                </div>
+
               </div>
             )}
           </Link>
@@ -302,7 +292,7 @@ export default function AuthNavbar({ user, profile }) {
         )}
 
         {/* Dynamic Sidebar Nav Tree */}
-        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
+        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5 gamer-sidebar-scroll">
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
           {navLinks.map((link, i) => (
             <NavLink key={i} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
@@ -317,7 +307,7 @@ export default function AuthNavbar({ user, profile }) {
         </div>
 
         {/* Utilities Footer */}
-        <div className={`border-t border-purple-900/30 p-2 space-y-0.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
+        <div className={`p-2 space-y-0.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
           <div className="flex flex-col gap-0.5 w-full">
             <button
               onClick={() => setFavOpen(true)}
@@ -373,7 +363,7 @@ export default function AuthNavbar({ user, profile }) {
 
       {/* Mobile Top Bar */}
       <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
-        <div className="absolute bottom-0 left-4 right-4 h-2 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.85)]" />
+
         <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />
         </button>

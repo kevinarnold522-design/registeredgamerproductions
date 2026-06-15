@@ -34,8 +34,10 @@
         "games",
         "modding",
         "buy_sell",
+        "store",
         "tournaments",
         "content",
+        "content_streaming",
         "jobs",
         "livestream",
         "premium_mods",
@@ -228,6 +230,35 @@
         "none"
       ],
       "default": "fade"
+    },
+    "card_glow_style": {
+      "type": "string",
+      "enum": [
+        "radiant",
+        "lines",
+        "solid"
+      ],
+      "default": "radiant"
+    },
+    "card_glow_color": {
+      "type": "string",
+      "enum": [
+        "red",
+        "purple",
+        "blue",
+        "green",
+        "gold",
+        "multi"
+      ],
+      "default": "purple"
+    },
+    "card_glow_speed": {
+      "type": "string",
+      "enum": [
+        "slow",
+        "fast"
+      ],
+      "default": "slow"
     },
     "kofi_url": {
       "type": "string"

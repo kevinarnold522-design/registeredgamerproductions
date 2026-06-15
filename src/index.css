@@ -141,6 +141,41 @@ button:not(.no-glow):hover,
   box-shadow: none !important;
 }
 
+.gamer-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.95) rgba(255,255,255,0.08);
+}
+.gamer-sidebar-scroll::-webkit-scrollbar { width: 8px; }
+.gamer-sidebar-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.08); border-radius: 999px; }
+.gamer-sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.95); border-radius: 999px; box-shadow: 0 0 14px rgba(255,255,255,0.85); }
+
+@keyframes listing-glow-slow { 0%,100%{opacity:.55} 50%{opacity:1} }
+@keyframes listing-glow-fast { 0%,100%{opacity:.45} 50%{opacity:1} }
+.listing-glow-frame { position: relative; }
+.listing-glow-frame::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid var(--listing-glow-color, rgba(168,85,247,.75));
+  box-shadow: 0 0 18px var(--listing-glow-color, rgba(168,85,247,.55)), inset 0 0 16px color-mix(in srgb, var(--listing-glow-color, rgba(168,85,247,.55)) 45%, transparent);
+  animation: listing-glow-slow 2.8s ease-in-out infinite;
+}
+.listing-glow-fast::before { animation: listing-glow-fast 1.1s ease-in-out infinite; }
+.listing-glow-radiant::before { border-color: rgba(168,85,247,.8); box-shadow: 0 0 20px rgba(168,85,247,.7), 0 0 34px rgba(236,72,153,.45), inset 0 0 18px rgba(6,182,212,.25); }
+.listing-glow-lines::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 8px;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--listing-glow-color, rgba(168,85,247,.9)), transparent);
+  box-shadow: 0 0 14px var(--listing-glow-color, rgba(168,85,247,.7));
+}
+
 
 /* ── Scroll-reveal transition for all whileInView items ── */
 [data-scroll-reveal] {

@@ -28,7 +28,7 @@ const accountTypes = [
     label: "Digital Creator",
     desc: "Upload gameplay, mods, tutorials, streams, walkthroughs & missions. Earn $1/1K views + link shortener bonuses.",
     color: "border-purple-500/40 hover:border-purple-400/70 bg-purple-900/10",
-    tags: ["🎮 Gameplay","🔧 Mods","📡 Streams","🗺️ Walkthroughs","🏆 Missions","✂️ Highlights"],
+    tags: ["Gameplay", "Mods", "Streams", "Walkthroughs", "Missions", "Highlights"],
   },
   {
     id: "business",
@@ -89,7 +89,7 @@ export default function Navbar() {
             : "bg-transparent"
         }`}
       >
-        <div className="absolute bottom-0 left-4 right-4 h-2 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.85)]" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -160,7 +160,7 @@ export default function Navbar() {
                   boxShadow: "0 0 20px rgba(238,9,121,0.5), 0 0 40px rgba(255,106,0,0.3)",
                 }}
               >
-                🔥 Get Started
+Get Started
               </button>
               <style>{`@keyframes fire-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }`}</style>
               <button
@@ -204,7 +204,7 @@ export default function Navbar() {
               className="text-center px-4 py-2 rounded-lg text-white font-semibold"
               style={{ background: "linear-gradient(135deg, #ff6a00, #ee0979)" }}
             >
-              🔥 Get Started
+Get Started
             </button>
           </div>
         )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Monitor } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export default function TopGamingGear() {
@@ -33,7 +34,7 @@ export default function TopGamingGear() {
           Top Gaming <span className="bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">Hardware</span>
         </h2>
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12">
-          <div className="text-5xl mb-4">🖥️</div>
+          <Monitor className="w-12 h-12 text-pink-400 mx-auto mb-4" />
           <p className="text-gray-400 font-semibold">No gear listings yet</p>
           <p className="text-gray-600 text-sm mt-1">Be the first to list gaming gear!</p>
           <a href="/register" className="inline-flex mt-4 px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
@@ -61,7 +62,7 @@ export default function TopGamingGear() {
           {listings.map((listing, i) => (
             <motion.div key={listing.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-pink-700/50 transition-colors">
+              className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-pink-700/50 transition-colors listing-glow-frame listing-glow-lines" style={{ "--listing-glow-color": "rgba(236,72,153,.85)" }}>
               <div className="relative h-44">
                 {listing.images?.[0] ? (
                   <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />

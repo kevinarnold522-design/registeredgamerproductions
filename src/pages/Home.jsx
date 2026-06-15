@@ -213,7 +213,7 @@ export default function Home() {
           className="fixed bottom-20 right-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-xl border border-purple-700/60 text-xs font-bold text-purple-200 pointer-events-auto"
           style={{ background: "rgba(20,10,40,0.92)", backdropFilter: "blur(8px)", boxShadow: "0 0 18px rgba(124,58,237,0.4)" }}
         >
-          🔒 <a href="/register" className="text-purple-300 hover:text-white underline transition-colors">Sign in to block ads</a>
+          <span className="inline-flex w-4 h-4 rounded-full bg-purple-600 items-center justify-center text-[10px]">GP</span> <a href="/register" className="text-purple-300 hover:text-white underline transition-colors">Sign in to block ads</a>
         </div>
       )}
     </div>

@@ -45,7 +45,7 @@ export default function CreateListing() {
 
   const params = new URLSearchParams(window.location.search);
   const editId = params.get("edit");
-  const defaultCat = params.get("cat") || "games";
+  const defaultCat = params.get("cat") || "buy_sell";
 
   const [gamingCommunities, setGamingCommunities] = useState([]);
   const [gameSearch, setGameSearch] = useState("");
@@ -89,6 +89,9 @@ export default function CreateListing() {
     download_url: "",
     download_host: "",
     card_animation: "fade",
+    card_glow_style: "radiant",
+    card_glow_color: "purple",
+    card_glow_speed: "slow",
     kofi_url: "",
     buymeacoffee_url: "",
     patreon_url: "",
@@ -162,6 +165,9 @@ export default function CreateListing() {
             store_platforms: l.store_platforms || [],
             tool_target_game: l.tool_target_game || "",
             preview_video_url: l.preview_video_url || "",
+            card_glow_style: l.card_glow_style || "radiant",
+            card_glow_color: l.card_glow_color || "purple",
+            card_glow_speed: l.card_glow_speed || "slow",
             bulk_cross_post_ids: [],
           });
           setImages(l.images || []);
@@ -228,6 +234,9 @@ export default function CreateListing() {
         game_platform: form.game_platform,
         tags: form.tags,
         card_animation: form.card_animation,
+        card_glow_style: form.card_glow_style,
+        card_glow_color: form.card_glow_color,
+        card_glow_speed: form.card_glow_speed,
         community_franchise_id: form.community_franchise_id,
         modding_subcategory: form.modding_subcategory,
         kofi_url: form.kofi_url,
@@ -283,6 +292,9 @@ export default function CreateListing() {
       seller_username: profile?.username || user.full_name,
       seller_paypal_email: form.paypal_email || undefined,
       external_link: form.external_link || undefined,
+      card_glow_style: form.card_glow_style,
+      card_glow_color: form.card_glow_color,
+      card_glow_speed: form.card_glow_speed,
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
       modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
@@ -400,7 +412,7 @@ export default function CreateListing() {
           <a href="/dashboard?tab=listings" className="text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </a>
-          <h1 className="text-2xl font-black text-white">{editId ? "Edit Listing" : "Create New Listing"}</h1>
+          <h1 className="text-2xl font-black text-white">{editId ? "Edit Listing" : form.category === "games" ? "Add a Game" : "Post"}</h1>
           <div className="ml-auto flex flex-col items-end gap-2">
             <p className="text-cyan-400/70 text-[10px] text-right max-w-xs leading-tight italic">Autopopulates the same taggings, SEO taggings, Gaming Community &amp; Modding Community as well as Gaming Platform if your posting similar contents</p>
             <div className="flex gap-2">
@@ -989,9 +1001,9 @@ export default function CreateListing() {
           {/* Card Animation Style */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
             <h3 className="text-white font-bold flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-300" /> Card Animation Style
+              <Sparkles className="w-4 h-4 text-purple-300" /> Card Animation & Glow Style
             </h3>
-            <p className="text-gray-500 text-xs">Choose how your listing card animates when viewers see it</p>
+            <p className="text-gray-500 text-xs">Choose how your listing card animates and what glow lines it uses across the platform</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 { id: "fade", label: "Fade In", desc: "Smooth opacity fade" },
@@ -1015,6 +1027,53 @@ export default function CreateListing() {
                   <span className="text-gray-500 text-[10px]">{anim.desc}</span>
                 </button>
               ))}
+            </div>
+
+            <div className="border-t border-gray-800 pt-4 space-y-4">
+              <div>
+                <p className="text-white text-sm font-bold mb-2">Glow Design</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "radiant", label: "Radiant" },
+                    { id: "lines", label: "Bar Lines" },
+                    { id: "solid", label: "Solid Glow" },
+                  ].map(style => (
+                    <button key={style.id} type="button" onClick={() => setForm(f => ({ ...f, card_glow_style: style.id }))}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold border ${form.card_glow_style === style.id ? "bg-purple-900/40 border-purple-500 text-purple-200" : "bg-gray-800 border-gray-700 text-gray-400"}`}>
+                      {style.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-white text-sm font-bold mb-2">Glow Color</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "red", label: "Red", className: "bg-red-500" },
+                    { id: "purple", label: "Purple", className: "bg-purple-500" },
+                    { id: "blue", label: "Blue", className: "bg-blue-500" },
+                    { id: "green", label: "Green", className: "bg-green-500" },
+                    { id: "gold", label: "Gold", className: "bg-yellow-400" },
+                    { id: "multi", label: "Multi", className: "bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400" },
+                  ].map(color => (
+                    <button key={color.id} type="button" onClick={() => setForm(f => ({ ...f, card_glow_color: color.id }))}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border ${form.card_glow_color === color.id ? "bg-gray-700 border-white/50 text-white" : "bg-gray-800 border-gray-700 text-gray-400"}`}>
+                      <span className={`w-3 h-3 rounded-full ${color.className}`} /> {color.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-white text-sm font-bold mb-2">Glow Speed</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {["slow", "fast"].map(speed => (
+                    <button key={speed} type="button" onClick={() => setForm(f => ({ ...f, card_glow_speed: speed }))}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold border capitalize ${form.card_glow_speed === speed ? "bg-purple-900/40 border-purple-500 text-purple-200" : "bg-gray-800 border-gray-700 text-gray-400"}`}>
+                      {speed}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1043,7 +1102,7 @@ export default function CreateListing() {
           {!moderationResult && (
             <button type="submit" disabled={saving}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity disabled:opacity-50">
-              {saving ? "Checking content & saving..." : editId ? "Update Listing" : "Publish Listing"}
+              {saving ? "Checking content & saving..." : editId ? "Update Listing" : form.category === "games" ? "Add a Game" : "Post"}
             </button>
           )}
         </form>
