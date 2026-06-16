@@ -133,15 +133,15 @@ export default function Channel() {
     const file = e.target.files[0];
     if (!file || !profile?.id) return;
     const { file_url } = await uploadFileToR2(file, "channel-covers");
-    const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
-    setProfile(updated);
+    const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: file_url });
+    setProfile(res.data.profile);
     e.target.value = "";
   };
 
   const handleRemoveCover = async () => {
     if (!profile?.id) return;
-    const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: "" });
-    setProfile(updated);
+    const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: "" });
+    setProfile(res.data.profile);
   };
 
   if (loading) return (

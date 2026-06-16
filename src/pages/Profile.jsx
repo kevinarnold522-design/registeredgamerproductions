@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
@@ -101,6 +101,7 @@ export default function Profile() {
   const [showTransition, setShowTransition] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
+  const navigate = useNavigate();
 
   const params = new URLSearchParams(window.location.search);
   const targetEmail = params.get("email");
@@ -201,8 +202,8 @@ export default function Profile() {
     if (!file) return;
     try {
       const file_url = await uploadToR2(file, "profile-banners");
-      const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
-      setProfile(updated);
+      const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: file_url });
+      setProfile(res.data.profile);
       e.target.value = "";
       toast.success("Cover photo updated");
     } catch (error) {
@@ -212,8 +213,8 @@ export default function Profile() {
 
   const handleRemoveBanner = async () => {
     if (!profile?.id) return;
-    const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: "" });
-    setProfile(updated);
+    const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: "" });
+    setProfile(res.data.profile);
     toast.success("Cover photo removed");
   };
 
@@ -316,7 +317,7 @@ export default function Profile() {
                     onClick={() => {
                       localStorage.removeItem('impersonation_session');
                       toast.success("Returned to admin account");
-                      window.location.href = '/admin/created-accounts';
+                      navigate('/admin/created-accounts', { replace: true });
                     }}
                     className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors"
                   >

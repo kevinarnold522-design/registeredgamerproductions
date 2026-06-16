@@ -127,17 +127,15 @@ export default function CreateListing() {
     const init = async () => {
       const me = await base44.auth.me();
       if (!me) { base44.auth.redirectToLogin("/create-listing"); return; }
-      setUser(me);
-      const [profiles, communities] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_email: me.email }),
-        base44.entities.GamingCommunity.list(),
-      ]);
+      const ghostSession = (() => {
+        try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
+      })();
+      const ghostEmail = ghostSession.isImpersonating && ghostSession.isGhostLogin ? ghostSession.targetEmail : null;
+      const activeUser = ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
+      setUser(activeUser);
+      const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
       if (profiles.length > 0) setProfile(profiles[0]);
-      // Merge TOP_FRANCHISES names with DB communities
-      const communityNames = communities.map(c => ({ id: c.franchise_id, name: c.name }));
-      const merged = [...TOP_FRANCHISES.map(f => ({ id: f.id, name: f.name }))];
-      communityNames.forEach(c => { if (!merged.find(m => m.id === c.id)) merged.push(c); });
-      setGamingCommunities(merged);
+      setGamingCommunities(TOP_FRANCHISES.map(f => ({ id: f.id, name: f.name })));
       if (!editId && defaultGame) setGameSearch(defaultGame);
       if (editId) {
         const l = await base44.entities.Listing.get(editId);

@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import NotificationBell from "@/components/notifications/NotificationBell";
 import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
@@ -67,6 +67,7 @@ export default function AuthNavbar({ user, profile }) {
   const [showTransition, setShowTransition] = useState(false);
   const [localAccountType, setLocalAccountType] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const MASTER_EMAIL = "kevinarnold522@gmail.com";
 
@@ -133,7 +134,7 @@ export default function AuthNavbar({ user, profile }) {
       setIsManagingAsGhost(false);
       setGhostAccountEmail("");
       setGhostAccountData(null);
-      window.location.href = "/admin/created-accounts";
+      navigate("/admin/created-accounts", { replace: true });
       return;
     }
     base44.auth.logout("/");
