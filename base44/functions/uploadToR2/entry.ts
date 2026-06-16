@@ -12,12 +12,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing file data' }, { status: 400 });
     }
 
-    const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
-    const accessKeyId = Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY_ID');
-    const secretAccessKey = Deno.env.get('CLOUDFLARE_R2_SECRET_ACCESS_KEY');
-    const bucket = Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME');
+    const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')?.trim();
+    let accessKeyId = Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY_ID')?.trim();
+    let secretAccessKey = Deno.env.get('CLOUDFLARE_R2_SECRET_ACCESS_KEY')?.trim();
+    const bucket = Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME')?.trim();
     if (!accountId || !accessKeyId || !secretAccessKey || !bucket) {
       return Response.json({ error: 'Cloudflare R2 is not configured' }, { status: 500 });
+    }
+
+    if (accessKeyId.length !== 32 && secretAccessKey.length === 32) {
+      const originalAccessKeyId = accessKeyId;
+      accessKeyId = secretAccessKey;
+      secretAccessKey = originalAccessKeyId;
     }
 
     const base64 = String(dataUrl).includes(',') ? String(dataUrl).split(',')[1] : String(dataUrl);
@@ -25,6 +31,10 @@ Deno.serve(async (req) => {
     const safeName = String(fileName).replace(/[^a-zA-Z0-9._-]/g, '-');
     const safeFolder = String(folder).replace(/[^a-zA-Z0-9/_-]/g, '-');
     const key = `${safeFolder}/${user.id || user.email}/${Date.now()}-${safeName}`;
+
+    if (accessKeyId.length !== 32) {
+      return Response.json({ error: `The R2 Access Key ID must be exactly 32 characters. The saved value is ${accessKeyId.length} characters, which means a URL, API token, or Secret Access Key was pasted instead.` }, { status: 500 });
+    }
 
     const client = new S3Client({
       region: 'auto',
