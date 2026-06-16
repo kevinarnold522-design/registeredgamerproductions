@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
-import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical, Eye, Filter, CheckSquare, Square } from "lucide-react";
+import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical, Eye, Filter, CheckSquare, Square, Gamepad2, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
@@ -374,18 +374,16 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
         <motion.div className="relative text-3xl"
           animate={hovered ? { scale: 1.15, rotate: [0, -6, 6, 0] } : { scale: 1, rotate: 0 }}
           transition={{ duration: 0.3 }}>
-          {displayItem.customLogo
-            ? <img src={displayItem.customLogo} className="w-8 h-8 rounded-xl object-cover" alt="" />
-            : displayItem.emoji}
+          <Gamepad2 className="w-8 h-8 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
         </motion.div>
         <div className="relative">
           <p className="text-white font-black text-xs leading-tight">{displayItem.title}</p>
           <p className="text-white/40 text-[9px] mt-0.5 leading-tight line-clamp-1">{displayItem.desc}</p>
         </div>
         <div className="relative flex items-center justify-between mt-1">
-          <span className="text-white/30 text-[9px] font-bold">→ Browse</span>
-          <button onClick={e => { e.preventDefault(); e.stopPropagation(); const url = encodeURIComponent(href); window.open(`https://wa.me/?text=${encodeURIComponent(`${displayItem.title} on GAMER.PRODUCTIONS 🎮`)}%20${url}`, "_blank"); }}
-            className="w-4 h-4 rounded bg-green-700/70 flex items-center justify-center text-[8px] text-white" title="Share">💬</button>
+          <span className="text-white/30 text-[9px] font-bold">Browse</span>
+          <button onClick={e => { e.preventDefault(); e.stopPropagation(); const url = encodeURIComponent(href); window.open(`https://wa.me/?text=${encodeURIComponent(`${displayItem.title} on GAMER.PRODUCTIONS`)}%20${url}`, "_blank"); }}
+            className="w-4 h-4 rounded bg-green-700/70 flex items-center justify-center text-white" title="Share"><Send className="w-2.5 h-2.5" /></button>
         </div>
         <motion.div className="absolute inset-x-0 bottom-0 h-px"
           style={{ background: `linear-gradient(90deg, transparent, ${displayItem.glow}, transparent)` }}
@@ -397,7 +395,7 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
 
 function AddSubcategoryModal({ cat, onClose, onAdded }) {
   const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("🎮");
+  const [emoji, setEmoji] = useState("");
   const [desc, setDesc] = useState("");
   const handleAdd = () => {
     if (!name.trim()) return;
@@ -427,11 +425,6 @@ function AddSubcategoryModal({ cat, onClose, onAdded }) {
               className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
           </div>
           <div>
-            <label className="text-gray-400 text-xs font-bold mb-1 block">Emoji Icon</label>
-            <input value={emoji} onChange={e => setEmoji(e.target.value)} placeholder="🎮"
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
-          </div>
-          <div>
             <label className="text-gray-400 text-xs font-bold mb-1 block">Description</label>
             <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Short description..."
               className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
@@ -444,6 +437,44 @@ function AddSubcategoryModal({ cat, onClose, onAdded }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function VisibleListingRow({ item, userProfile }) {
+  const rowRef = useRef(null);
+  const countedRef = useRef(false);
+
+  useEffect(() => {
+    if (!rowRef.current || !item?.id) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || countedRef.current) return;
+      countedRef.current = true;
+      const key = `subcat_view_seen_${item.id}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+      base44.entities.Listing.update(item.id, { views: (item.views || 0) + 1 }).catch(() => {});
+    }, { threshold: 0.55 });
+    observer.observe(rowRef.current);
+    return () => observer.disconnect();
+  }, [item?.id]);
+
+  return (
+    <a ref={rowRef} key={item.id} href={`/listing?id=${item.id}`}
+      className="flex gap-3 px-3 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
+      <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+        {item.images?.[0]
+          ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
+          : <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-purple-300" /></div>}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
+        <p className="text-gray-500 text-[10px]">by @{item.seller_username} · Listing</p>
+        <div className="flex items-center justify-between gap-2 mt-0.5">
+          <p className="font-black text-xs text-purple-300">{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+          <span className="flex items-center gap-1 text-[10px] text-cyan-300 font-bold"><Eye className="w-3 h-3" />{(item.views || 0).toLocaleString()}</span>
+        </div>
+      </div>
+    </a>
   );
 }
 
@@ -527,27 +558,12 @@ function CategoryFeed({ cat, user, userProfile }) {
       <div className="flex-1 overflow-y-auto">
         {merged.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-3xl mb-2">🎮</p>
+            <Gamepad2 className="w-8 h-8 mx-auto mb-2 text-purple-400" />
             <p className="text-gray-600 text-sm">No listings or posts yet</p>
           </div>
         ) : merged.map(({ type, item }) => (
           type === "listing" ? (
-            <a key={item.id} href={`/listing?id=${item.id}`}
-              className="flex gap-3 px-3 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
-              <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
-                {item.images?.[0]
-                  ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
-                <p className="text-gray-500 text-[10px]">by @{item.seller_username} · 📦 Listing</p>
-                <div className="flex items-center justify-between gap-2 mt-0.5">
-                  <p className="font-black text-xs text-purple-300">{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
-                  <span className="flex items-center gap-1 text-[10px] text-cyan-300 font-bold"><Eye className="w-3 h-3" />{(item.views || 0).toLocaleString()}</span>
-                </div>
-              </div>
-            </a>
+            <VisibleListingRow key={item.id} item={item} userProfile={userProfile} />
           ) : (
             <div key={item.id} className="px-3 py-3 border-b border-gray-800/60">
               <div className="flex items-center gap-2 mb-1">
@@ -723,7 +739,7 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
                     <button type="button" onClick={() => toggleSubcatVisible(item.id)} className="flex-shrink-0">
                       {isVisible(item.id) ? <CheckSquare className="w-4 h-4 text-cyan-400" /> : <Square className="w-4 h-4 text-gray-600 group-hover/lbl:text-gray-400" />}
                     </button>
-                    <span className={`text-xs font-semibold transition-colors truncate ${isVisible(item.id) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{item.emoji} {item.title}</span>
+                    <span className={`text-xs font-semibold transition-colors truncate ${isVisible(item.id) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{item.title}</span>
                   </label>
                 ))}
               </div>
@@ -789,7 +805,7 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
             {user && (
               <a href={`/create-listing?cat=${encodeURIComponent(cat)}`}
                 className="text-xs font-bold px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
-                {cat === "premium_mods" ? "＋ Sell Premium Mod" : "📝 Post"}
+                {cat === "premium_mods" ? "Sell Premium Mod" : "Post"}
               </a>
             )}
           </div>

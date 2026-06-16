@@ -4,13 +4,14 @@ import {
   ClipboardList, Store, BarChart2, Shield,
   Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy,
   GitBranch, ChevronLeft, ChevronRight, Menu, X, DollarSign,
-  Settings, Share2, LogOut, Globe, Users, TrendingUp, Sparkles, Play
+  Settings, Share2, LogOut, Globe, Users, TrendingUp, Sparkles, Play, Heart, Gamepad2, Puzzle
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
 import { Link, useLocation } from "react-router-dom";
 
 import NotificationBell from "@/components/notifications/NotificationBell";
+import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 
@@ -59,6 +60,8 @@ export default function AuthNavbar({ user, profile }) {
     try { return localStorage.getItem("sidebar_collapsed") === "true"; } catch { return false; }
   });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [favOpen, setFavOpen] = useState(false);
+  const [favCount, setFavCount] = useState(0);
   const [controllerColorIdx, setControllerColorIdx] = useState(0);
   const [controllerAnimating, setControllerAnimating] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
@@ -110,6 +113,12 @@ export default function AuthNavbar({ user, profile }) {
   }, []);
 
   const activeUserEmail = isManagingAsGhost ? ghostAccountEmail : user?.email;
+
+  useEffect(() => {
+    if (activeUserEmail) {
+      base44.entities.Favorite.filter({ user_email: activeUserEmail }).then((r) => setFavCount(r.length)).catch(() => {});
+    }
+  }, [activeUserEmail]);
 
   const toggleCollapsed = () => {
     setCollapsed(v => {
@@ -164,17 +173,19 @@ export default function AuthNavbar({ user, profile }) {
 
   const navLinks = getNavLinks();
   const contextAccountType = isManagingAsGhost ? (ghostAccountData?.account_type || "regular") : accountType;
-  const userTypeLabel = admin && !isManagingAsGhost ? "CEO & President" : contextAccountType.replace("_", " ");
+  const userTypeLabel = admin && !isManagingAsGhost ? "CEO & President" : contextAccountType === "regular" ? "Gamer" : contextAccountType.replace("_", " ");
   const userTypeColor = admin && !isManagingAsGhost ? "text-yellow-300 border-yellow-700/40 bg-yellow-900/20" : contextAccountType === "business" ? "text-green-300 border-green-700/40 bg-green-900/20" : contextAccountType === "digital_creator" ? "text-purple-300 border-purple-700/40 bg-purple-900/20" : "text-blue-300 border-blue-700/40 bg-blue-900/20";
 
   const toolLinks = [
     { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
+    { icon: Puzzle, label: "Modding Community", href: "/category?cat=modding", color: "text-orange-400" },
+    { icon: Gamepad2, label: "Games", href: "/category?cat=games", color: "text-purple-400" },
+    { icon: Play, label: "Content Category", href: "/category?cat=content_streaming", color: "text-blue-400" },
     { icon: Play, label: "Content Hub", href: "/content", color: "text-purple-400" },
     { icon: User, label: "My Channel", href: "/profile", color: "text-blue-400" },
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
     ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Post", href: "/create-listing", color: "text-green-400" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
-    { icon: MessageCircle, label: "Group Chats", href: "/messages" },
   ];
 
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
@@ -197,7 +208,7 @@ export default function AuthNavbar({ user, profile }) {
                 transition: "box-shadow 0.4s ease, background 0.3s ease",
               }}
             >
-              <span className={controllerAnimating ? "controller-color-cycle" : ""}>🎮</span>
+              <Gamepad2 className={`w-5 h-5 text-white ${controllerAnimating ? "controller-color-cycle" : ""}`} />
             </motion.div>
             {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
           </Link>
@@ -225,6 +236,13 @@ export default function AuthNavbar({ user, profile }) {
           <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <LanguageSelector />
             <NotificationBell userEmail={activeUserEmail} />
+            <button onClick={() => setFavOpen(true)} className="relative w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-yellow-300 flex items-center justify-center hover:border-yellow-600/50" title="Favourites">
+              <Heart className="w-4 h-4" />
+              {favCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-bold">{favCount}</span>}
+            </button>
+            <Link to="/messages" className="w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-green-300 flex items-center justify-center hover:border-green-600/50" title="Messages & Group Chats">
+              <MessageCircle className="w-4 h-4" />
+            </Link>
           </div>
         </div>
 
@@ -322,6 +340,13 @@ export default function AuthNavbar({ user, profile }) {
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <NotificationBell userEmail={activeUserEmail} />
+          <button onClick={() => setFavOpen(true)} className="relative p-1 text-yellow-300" title="Favourites">
+            <Heart className="w-5 h-5" />
+            {favCount > 0 && <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-purple-500 text-white text-[8px] flex items-center justify-center font-black">{favCount}</span>}
+          </button>
+          <Link to="/messages" className="p-1 text-green-300" title="Messages & Group Chats">
+            <MessageCircle className="w-5 h-5" />
+          </Link>
         </div>
       </nav>
 
@@ -356,6 +381,8 @@ export default function AuthNavbar({ user, profile }) {
           </>
         )}
       </AnimatePresence>
+
+      <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={activeUserEmail} />
 
       {/* Creator/Business Subscription Account Transitions handling Modal */}
       {showTransition && (

@@ -30,11 +30,11 @@ export default function EarnNowButton() {
     <div className="flex flex-col items-center gap-1">
       <motion.span
         aria-label="Gamer Productions"
-        className="w-7 h-7 flex items-center justify-center text-xl"
+        className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center"
         animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         style={{ filter: "drop-shadow(0 0 8px rgba(168,85,247,0.8))" }}
-      >🎮</motion.span>
+      ><Zap className="w-4 h-4 text-white" /></motion.span>
     <motion.a
       href={href}
       initial={{ opacity: 0, y: -8 }}
@@ -58,7 +58,7 @@ export default function EarnNowButton() {
         }}
       />
       <Zap className="w-3.5 h-3.5 relative z-10" />
-      <span className="relative z-10">💰 Earn Now</span>
+      <span className="relative z-10">Earn Now</span>
       <style>{`
         @keyframes earnBtnShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
         @keyframes earnGlow { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }

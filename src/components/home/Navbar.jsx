@@ -8,8 +8,10 @@ import EarnNowButton from "@/components/shared/EarnNowButton";
 
 const navLinks = [
   { label: "Categories", href: "#categories" },
+  { label: "Games", href: "/category?cat=games" },
+  { label: "Modding", href: "/category?cat=modding" },
+  { label: "Content", href: "/category?cat=content_streaming" },
   { label: "Go Live", href: "/studio", live: true },
-  { label: "Mods", href: "/category?cat=modding" },
   { label: "Tournaments", href: "/category?cat=tournaments" },
   { label: "Marketplace", href: "/category?cat=buy_sell" },
 ];
@@ -18,7 +20,7 @@ const accountTypes = [
   {
     id: "regular",
     icon: <User className="w-5 h-5 text-blue-400" />,
-    label: "Regular Gamer",
+    label: "Gamer",
     desc: "Browse, buy & share videos",
     color: "border-blue-500/40 hover:border-blue-400/70 bg-blue-900/10",
   },
@@ -108,7 +110,7 @@ export default function Navbar() {
                   transition: "box-shadow 0.4s ease",
                 }}
               >
-                <span className={`text-lg ${controllerCycling ? "controller-color-cycle" : ""}`}>🎮</span>
+                <Gamepad2 className={`w-5 h-5 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
               </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-sm">Gamer</span>
@@ -247,7 +249,7 @@ Get Started
                   animate={{ scale: [1, 1.06, 1], rotate: [0, -4, 4, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   style={{ filter: "drop-shadow(0 0 18px rgba(168,85,247,0.7))" }}
-                >🎮</motion.span>
+                ><Gamepad2 className="w-12 h-12 text-white" /></motion.span>
                 <span className="text-2xl font-black text-white tracking-tight">Welcome to <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Gamer.Productions</span></span>
                 <span className="text-gray-500 text-xs mt-1">The #1 Gaming Hub Community</span>
               </div>

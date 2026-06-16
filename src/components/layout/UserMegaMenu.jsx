@@ -18,7 +18,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
   const typeInfo = ACCOUNT_TYPES.find((t) => t.id === accountType);
   const isSeller = accountType === "digital_creator" || accountType === "business";
 
-  const accountLabel = admin ? "CEO & President" : typeInfo?.label || "User";
+  const accountLabel = admin ? "CEO & President" : accountType === "regular" ? "Gamer" : typeInfo?.label || "User";
   const accountColor = admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400";
 
   const [showAdBomb, setShowAdBomb] = useState(false);
@@ -46,27 +46,27 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
             style={{ background: "rgba(0,0,0,0.97)" }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="text-center mb-6">
-              <p className="text-white font-black text-2xl mb-2">Wait! Before you go... 👋</p>
+              <p className="text-white font-black text-2xl mb-2">Wait! Before you go...</p>
               <p className="text-gray-400 text-sm">Signing you out in a moment...</p>
             </div>
             <div className="grid grid-cols-2 gap-4 max-w-lg w-full px-4">
               <div className="bg-purple-900/40 border border-purple-700/50 rounded-2xl p-4 text-center">
-                <p className="text-4xl mb-2">🎮</p>
+                <Shield className="w-8 h-8 mx-auto mb-2 text-purple-300" />
                 <p className="text-white font-bold text-sm">Upgrade to Tier 1</p>
                 <p className="text-purple-300 text-xs mt-1">$1/year — Ad-free + Post in communities!</p>
               </div>
               <div className="bg-pink-900/40 border border-pink-700/50 rounded-2xl p-4 text-center">
-                <p className="text-4xl mb-2">💰</p>
+                <BarChart2 className="w-8 h-8 mx-auto mb-2 text-pink-300" />
                 <p className="text-white font-bold text-sm">$10 USD Reward!</p>
                 <p className="text-pink-300 text-xs mt-1">Log in 365 days straight to earn real money!</p>
               </div>
               <div className="bg-blue-900/40 border border-blue-700/50 rounded-2xl p-4 text-center">
-                <p className="text-4xl mb-2">📘</p>
+                <Share2 className="w-8 h-8 mx-auto mb-2 text-blue-300" />
                 <p className="text-white font-bold text-sm">Follow our Facebook</p>
                 <a href="https://www.facebook.com/share/1D9ey9w8Rw/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-blue-300 text-xs mt-1 block hover:text-blue-200">Gamer.Productions →</a>
               </div>
               <div className="bg-red-900/40 border border-red-700/50 rounded-2xl p-4 text-center">
-                <p className="text-4xl mb-2">▶️</p>
+                <Play className="w-8 h-8 mx-auto mb-2 text-red-300" />
                 <p className="text-white font-bold text-sm">Subscribe YouTube</p>
                 <a href="https://youtube.com/@registeredgamerproductions?si=WfWn2yT15uvp5LnF" target="_blank" rel="noopener noreferrer" className="text-red-300 text-xs mt-1 block hover:text-red-200">@registeredgamerproductions →</a>
               </div>
@@ -81,7 +81,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
         className="flex items-center gap-2 pl-1 pr-3 py-1.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-700/50 transition-colors"
       >
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm overflow-hidden">
-          {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
+          {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-white" />}
         </div>
         <div className="hidden sm:block text-left">
           <div className="flex items-center gap-1">
@@ -110,7 +110,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
               <div className="p-4 border-b border-gray-800 bg-gradient-to-r from-purple-900/30 to-pink-900/20 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl overflow-hidden">
-                    {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
+                    {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-white" />}
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
