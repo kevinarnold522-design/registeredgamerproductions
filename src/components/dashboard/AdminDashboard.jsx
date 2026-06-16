@@ -243,7 +243,7 @@ export default function AdminDashboard({ user, profile }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-800/50">
                 <tr>
-                  {["Username", "Email", "Type", "Payment", "Verified Badge", "Revenue", "Joined", "Edit"].map(h => (
+                  {["Username", "Email", "Type", "Payment", "Verified Badge", "No Ads", "Revenue", "Joined", "Edit"].map(h => (
                    <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
                   ))}
                 </tr>
