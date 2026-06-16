@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Plus, Tag, Search, Send } from "lucide-react";
+import { Eye, Plus, Tag, Search, Send } from "lucide-react";
 import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { isServiceListing } from "@/lib/constants";
@@ -124,8 +124,8 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
               none: {},
             };
             const glowColors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
-            const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 24px 4px rgba(139,92,246,0.5)" } : {}), "--listing-glow-color": glowColors[listing.card_glow_color || "purple"] };
-            const glowClass = `listing-glow-frame ${listing.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${listing.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`;
+            const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 24px 4px rgba(139,92,246,0.5)" } : {}), "--listing-glow-color": listing.card_glow_color === "custom" ? (listing.card_glow_hex || "#a855f7") : glowColors[listing.card_glow_color || "purple"] };
+            const glowClass = `listing-glow-frame ${listing.card_glow_style === "radiant" ? "listing-glow-radiant" : listing.card_glow_style === "solid" ? "listing-glow-solid" : "listing-glow-lines"} ${listing.card_glow_speed === "fast" ? "listing-glow-fast" : listing.card_glow_speed === "cycle" ? "listing-glow-cycle" : ""}`;
             return (
             <motion.a
               href={`/listing?id=${listing.id}`}
@@ -146,7 +146,10 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
                 </div>
               )}
               <div className="p-4">
-                <p className="text-white font-bold truncate">{listing.title}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-white font-bold truncate">{listing.title}</p>
+                  <span className="flex items-center gap-1 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(listing.views || 0).toLocaleString()}</span>
+                </div>
                 <p className="text-gray-500 text-xs mt-1 truncate">{listing.seller_username || listing.seller_email}</p>
                 <div className="flex items-center justify-between mt-3">
                   <p className="text-purple-400 font-black">

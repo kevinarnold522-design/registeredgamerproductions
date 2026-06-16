@@ -305,9 +305,10 @@ export default function ListingPage() {
   const ytId = listing.youtube_video_id || (listing.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
   const isFree = !listing.price || listing.price === 0 || listing.is_free;
   const hasDownload = listing.download_url || listing.external_link;
+  const listingTheme = listing.listing_theme_color || "#030712";
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen text-white" style={{ background: `linear-gradient(135deg, ${listingTheme}, #030712 55%, #050510)` }}>
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <StickySearchBar />
@@ -319,7 +320,7 @@ export default function ListingPage() {
         />
       )}
 
-      <div className="pt-20 max-w-5xl mx-auto px-4 pb-16">
+      <div className="pt-20 max-w-7xl mx-auto px-4 pb-16">
         {/* Back + Edit */}
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
@@ -554,11 +555,10 @@ export default function ListingPage() {
                 </div>
               </div>
             )}
+
+            <SimilarListings listing={listing} compact />
           </div>
         </div>
-
-        {/* Similar Listings */}
-        <SimilarListings listing={listing} />
 
         {/* Comments */}
         <div className="mt-12">

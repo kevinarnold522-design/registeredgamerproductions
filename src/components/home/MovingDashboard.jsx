@@ -16,8 +16,8 @@ const CP = {
 function listingGlow(item) {
   const colors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
   return {
-    className: `listing-glow-frame ${item?.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${item?.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`,
-    style: { "--listing-glow-color": colors[item?.card_glow_color || "purple"] }
+    className: `listing-glow-frame ${item?.card_glow_style === "radiant" ? "listing-glow-radiant" : item?.card_glow_style === "solid" ? "listing-glow-solid" : "listing-glow-lines"} ${item?.card_glow_speed === "fast" ? "listing-glow-fast" : item?.card_glow_speed === "cycle" ? "listing-glow-cycle" : ""}`,
+    style: { "--listing-glow-color": item?.card_glow_color === "custom" ? (item?.card_glow_hex || "#a855f7") : colors[item?.card_glow_color || "purple"] }
   };
 }
 

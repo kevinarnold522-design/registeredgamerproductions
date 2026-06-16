@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send } from "lucide-react";
+import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send, Eye } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
@@ -332,8 +332,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               const initMap = { fade: { opacity: 0 }, slide_up: { opacity: 0, y: 30 }, slide_left: { opacity: 0, x: -30 }, zoom: { opacity: 0, scale: 0.85 }, flip: { opacity: 0, rotateY: 90 }, bounce: { opacity: 0, y: -20 }, glow: { opacity: 0 }, rotate: { opacity: 0, rotate: -10 }, none: {} };
               const animMap = { fade: { opacity: 1 }, slide_up: { opacity: 1, y: 0 }, slide_left: { opacity: 1, x: 0 }, zoom: { opacity: 1, scale: 1 }, flip: { opacity: 1, rotateY: 0 }, bounce: { opacity: 1, y: 0 }, glow: { opacity: 1 }, rotate: { opacity: 1, rotate: 0 }, none: {} };
               const glowColors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
-              const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 20px 3px rgba(139,92,246,0.4)" } : {}), "--listing-glow-color": glowColors[l.card_glow_color || "purple"] };
-              const glowClass = `listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`;
+              const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 20px 3px rgba(139,92,246,0.4)" } : {}), "--listing-glow-color": l.card_glow_color === "custom" ? (l.card_glow_hex || "#a855f7") : glowColors[l.card_glow_color || "purple"] };
+              const glowClass = `listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : l.card_glow_style === "solid" ? "listing-glow-solid" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : l.card_glow_speed === "cycle" ? "listing-glow-cycle" : ""}`;
               return (
               <motion.a href={`/listing?id=${l.id}`} key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
                 style={glowStyle}
@@ -351,7 +351,10 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                   )}
                 </div>
                 <div className="p-4">
-                 <p className="text-white font-bold text-sm truncate">{l.title}</p>
+                 <div className="flex items-center justify-between gap-2">
+                   <p className="text-white font-bold text-sm truncate">{l.title}</p>
+                   <span className="flex items-center gap-1 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
+                 </div>
                  <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
                  <div className="flex items-center justify-between mt-2">
                    <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>

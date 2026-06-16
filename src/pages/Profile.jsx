@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users } from "lucide-react";
+import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
@@ -191,6 +191,12 @@ export default function Profile() {
     }
   };
 
+  const handleThemeChange = async (themeColor) => {
+    if (!profile?.id) return;
+    await base44.entities.UserProfile.update(profile.id, { profile_theme_color: themeColor });
+    setProfile({ ...profile, profile_theme_color: themeColor });
+  };
+
   if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;
 
   const accountColors = {
@@ -207,7 +213,7 @@ export default function Profile() {
   const followers = profile?.followers_count || 0;
   
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${profile?.profile_theme_color || "#030712"}, #030712 55%, #050510)` }}>
       {user && <AuthNavbar user={user} profile={profile} />}
       
       <AnimatePresence>
@@ -232,7 +238,7 @@ export default function Profile() {
 
       <div className={user ? "pt-16" : ""}>
         {/* Banner */}
-        <div className="relative h-48 md:h-64 bg-gradient-to-r from-purple-900 via-pink-900 to-gray-900 overflow-hidden">
+        <div className="relative h-48 md:h-64 overflow-hidden" style={{ background: `linear-gradient(90deg, ${profile?.profile_theme_color || "#581c87"}, #831843, #111827)` }}>
           {profile?.banner_url ? (
             <img src={profile.banner_url} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -240,10 +246,17 @@ export default function Profile() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 to-transparent" />
           {isOwnProfile && (
-            <label className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-gray-900/80 border border-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm">
-              <Upload className="w-4 h-4 text-gray-300" />
-              <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
-            </label>
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-900/80 border border-gray-700 backdrop-blur-sm">
+                {["#581c87", "#0f172a", "#7f1d1d", "#064e3b", "#78350f", "#1e3a8a"].map(c => (
+                  <button key={c} onClick={() => handleThemeChange(c)} className="w-6 h-6 rounded-lg border border-white/20" style={{ background: c }} title="Set profile theme" />
+                ))}
+              </div>
+              <label className="w-10 h-10 rounded-xl bg-gray-900/80 border border-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm">
+                <Upload className="w-4 h-4 text-gray-300" />
+                <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+              </label>
+            </div>
           )}
         </div>
 
@@ -458,6 +471,7 @@ export default function Profile() {
                         <p className="text-purple-400 text-xs font-black">{l.price === 0 ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
                       </div>
                     </div>
+                    <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] bg-black/70 text-cyan-300 font-bold px-1.5 py-0.5 rounded-md"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
                     {l.is_premium && <span className="absolute top-1.5 right-1.5 text-xs bg-yellow-500/90 text-black font-bold px-1.5 py-0.5 rounded-md">⭐</span>}
                   </motion.a>
                 ))}

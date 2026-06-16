@@ -30,11 +30,22 @@
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Multiple profile pictures \u2014 auto-transition on public profile"
+      }
     },
     "banner_url": {
       "type": "string"
+    },
+    "profile_theme_color": {
+      "type": "string",
+      "default": "#030712"
+    },
+    "profile_theme_style": {
+      "type": "string",
+      "enum": [
+        "default",
+        "custom"
+      ],
+      "default": "default"
     },
     "location": {
       "type": "string"
@@ -66,8 +77,7 @@
         "account_moderator",
         "group_moderator"
       ],
-      "default": "none",
-      "description": "account_moderator = platform-wide no-ads near-admin. group_moderator = captain of their own gaming community group."
+      "default": "none"
     },
     "followers_count": {
       "type": "number",
@@ -240,29 +250,23 @@
     },
     "pending_delete_request": {
       "type": "boolean",
-      "default": false,
-      "description": "Account moderator requested deletion \u2014 awaiting admin final approval"
+      "default": false
     },
     "favorite_sports_team": {
-      "type": "string",
-      "description": "User's favorite sports team (any sport)"
+      "type": "string"
     },
     "favorite_game": {
-      "type": "string",
-      "description": "User's favorite game"
+      "type": "string"
     },
     "favorite_hobby": {
-      "type": "string",
-      "description": "User's favorite hobby"
+      "type": "string"
     },
     "is_managed_account": {
       "type": "boolean",
-      "default": false,
-      "description": "True if this is a system-generated managed account"
+      "default": false
     },
     "managed_by_admin": {
-      "type": "string",
-      "description": "Email of the admin who created/manages this account"
+      "type": "string"
     }
   },
   "required": [

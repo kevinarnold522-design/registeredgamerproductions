@@ -194,8 +194,7 @@
         "mega",
         "sharemods",
         ""
-      ],
-      "description": "Selected download host provider"
+      ]
     },
     "external_link": {
       "type": "string"
@@ -248,17 +247,27 @@
         "blue",
         "green",
         "gold",
-        "multi"
+        "multi",
+        "custom"
       ],
       "default": "purple"
+    },
+    "card_glow_hex": {
+      "type": "string",
+      "default": "#a855f7"
     },
     "card_glow_speed": {
       "type": "string",
       "enum": [
         "slow",
-        "fast"
+        "fast",
+        "cycle"
       ],
       "default": "slow"
+    },
+    "listing_theme_color": {
+      "type": "string",
+      "default": "#030712"
     },
     "kofi_url": {
       "type": "string"

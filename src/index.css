@@ -177,6 +177,10 @@ button:not(.no-glow):hover,
   background: linear-gradient(90deg, transparent, var(--listing-glow-color, rgba(168,85,247,.9)), transparent);
   box-shadow: 0 0 14px var(--listing-glow-color, rgba(168,85,247,.7));
 }
+.listing-glow-solid::before { background: color-mix(in srgb, var(--listing-glow-color, rgba(168,85,247,.55)) 10%, transparent); }
+@keyframes listing-glow-cycle { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
+.listing-glow-cycle::before,
+.listing-glow-cycle::after { animation: listing-glow-fast 1.1s ease-in-out infinite, listing-glow-cycle 2.4s linear infinite; }
 
 
 /* ── Scroll-reveal transition for all whileInView items ── */

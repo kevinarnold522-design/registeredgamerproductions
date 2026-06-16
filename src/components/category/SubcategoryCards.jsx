@@ -565,8 +565,9 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
   const containerRef = useRef(null);
 
   const onDragStart = useCallback((e) => {
+    const point = e.touches?.[0] || e;
     dragging.current = true;
-    startX.current = e.clientX;
+    startX.current = point.clientX;
     startW.current = sidebarWidth;
     document.body.style.userSelect = "none";
   }, [sidebarWidth]);
@@ -574,7 +575,8 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
   useEffect(() => {
     const onMove = (e) => {
       if (!dragging.current) return;
-      const delta = e.clientX - startX.current;
+      const point = e.touches?.[0] || e;
+      const delta = point.clientX - startX.current;
       const newW = Math.max(140, Math.min(340, startW.current + delta));
       setSidebarWidth(newW);
     };
@@ -584,7 +586,9 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+    window.addEventListener("touchmove", onMove, { passive: true });
+    window.addEventListener("touchend", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onUp); };
   }, []);
 
   const canAdmin = isAdmin(userEmail);
@@ -642,11 +646,11 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
       </motion.div>
 
       {/* Two-column layout with draggable divider */}
-      <div ref={containerRef} className="flex gap-0 min-h-[700px]">
+      <div ref={containerRef} className="flex flex-col md:flex-row gap-3 md:gap-0 min-h-[700px]">
         {/* LEFT: scrollable subcards column */}
         <div
-          className="flex-shrink-0 flex flex-col gap-2 overflow-y-auto pr-2"
-          style={{ width: sidebarWidth, maxHeight: 700 }}
+          className="flex-shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto pr-2"
+          style={{ width: window.innerWidth < 768 ? "100%" : sidebarWidth, maxHeight: window.innerWidth < 768 ? 260 : 700 }}
         >
           {filteredItems.length === 0 && (
             <div className="text-center py-8 text-gray-600 text-xs">No matches</div>
@@ -673,7 +677,8 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
         {/* Drag handle */}
         <div
           onMouseDown={onDragStart}
-          className="flex-shrink-0 w-3 flex items-center justify-center cursor-col-resize group mx-1"
+          onTouchStart={onDragStart}
+          className="hidden md:flex flex-shrink-0 w-3 items-center justify-center cursor-col-resize group mx-1"
           title="Drag to resize"
         >
           <div className="w-1 h-16 rounded-full bg-gray-700 group-hover:bg-purple-500 transition-colors flex items-center justify-center">
@@ -682,7 +687,7 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
         </div>
 
         {/* RIGHT: listings/posts feed for this category */}
-        <div className="flex-1 min-w-0 h-[700px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex flex-col">
+        <div className="flex-1 min-w-0 h-[520px] md:h-[700px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex flex-col">
           <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0 flex items-center justify-between">
             <div>
               <p className="text-white text-sm font-black">{categoryName} Feed</p>

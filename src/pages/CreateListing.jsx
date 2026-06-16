@@ -93,7 +93,9 @@ export default function CreateListing() {
     card_animation: "fade",
     card_glow_style: "radiant",
     card_glow_color: "purple",
+    card_glow_hex: "#a855f7",
     card_glow_speed: "slow",
+    listing_theme_color: "#030712",
     kofi_url: "",
     buymeacoffee_url: "",
     patreon_url: "",
@@ -170,7 +172,9 @@ export default function CreateListing() {
             preview_video_url: l.preview_video_url || "",
             card_glow_style: l.card_glow_style || "radiant",
             card_glow_color: l.card_glow_color || "purple",
+            card_glow_hex: l.card_glow_hex || "#a855f7",
             card_glow_speed: l.card_glow_speed || "slow",
+            listing_theme_color: l.listing_theme_color || "#030712",
             bulk_cross_post_ids: [],
           });
           setImages(l.images || []);
@@ -239,7 +243,9 @@ export default function CreateListing() {
         card_animation: form.card_animation,
         card_glow_style: form.card_glow_style,
         card_glow_color: form.card_glow_color,
+        card_glow_hex: form.card_glow_hex,
         card_glow_speed: form.card_glow_speed,
+        listing_theme_color: form.listing_theme_color,
         community_franchise_id: form.community_franchise_id,
         modding_subcategory: form.modding_subcategory,
         kofi_url: form.kofi_url,
@@ -297,7 +303,9 @@ export default function CreateListing() {
       external_link: form.external_link || undefined,
       card_glow_style: form.card_glow_style,
       card_glow_color: form.card_glow_color,
+      card_glow_hex: form.card_glow_hex,
       card_glow_speed: form.card_glow_speed,
+      listing_theme_color: form.listing_theme_color,
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
       modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
@@ -309,6 +317,11 @@ export default function CreateListing() {
       is_approved: mod?.is_approved !== false,
       status: mod?.requiresReview ? "pending" : "active",
     };
+
+    if (form.category === "games") {
+      data.community_franchise_id = undefined;
+      data.bulk_cross_post_ids = [];
+    }
 
     // Games category: non-admin submissions require admin approval (go to pending queue).
     const userIsAdmin = isAdmin(user.email);
@@ -733,7 +746,7 @@ export default function CreateListing() {
             <h3 className="text-white font-bold mb-2">Category & Placement</h3>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Main Category *</label>
-              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
+              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, community_franchise_id: e.target.value === "games" ? "" : form.community_franchise_id, bulk_cross_post_ids: e.target.value === "games" ? [] : form.bulk_cross_post_ids })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
@@ -1067,15 +1080,25 @@ export default function CreateListing() {
                 </div>
               </div>
               <div>
+                <p className="text-white text-sm font-bold mb-2">Custom Glow Color</p>
+                <input type="color" value={form.card_glow_hex} onChange={e => setForm(f => ({ ...f, card_glow_hex: e.target.value, card_glow_color: "custom" }))}
+                  className="w-full h-10 rounded-xl bg-gray-800 border border-gray-700 p-1" />
+              </div>
+              <div>
                 <p className="text-white text-sm font-bold mb-2">Glow Speed</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {["slow", "fast"].map(speed => (
+                <div className="grid grid-cols-3 gap-2">
+                  {["slow", "fast", "cycle"].map(speed => (
                     <button key={speed} type="button" onClick={() => setForm(f => ({ ...f, card_glow_speed: speed }))}
                       className={`px-3 py-2 rounded-xl text-xs font-bold border capitalize ${form.card_glow_speed === speed ? "bg-purple-900/40 border-purple-500 text-purple-200" : "bg-gray-800 border-gray-700 text-gray-400"}`}>
                       {speed}
                     </button>
                   ))}
                 </div>
+              </div>
+              <div>
+                <p className="text-white text-sm font-bold mb-2">Listing Page Background Theme</p>
+                <input type="color" value={form.listing_theme_color} onChange={e => setForm(f => ({ ...f, listing_theme_color: e.target.value }))}
+                  className="w-full h-10 rounded-xl bg-gray-800 border border-gray-700 p-1" />
               </div>
             </div>
           </div>
