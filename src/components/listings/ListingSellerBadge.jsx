@@ -25,7 +25,7 @@ export default function ListingSellerBadge({ sellerEmail, sellerUsername }) {
 
   return (
     <a
-      href={`/channel?user=${encodeURIComponent(sellerEmail)}`}
+      href={`/channel?email=${encodeURIComponent(sellerEmail)}`}
       onClick={e => e.stopPropagation()}
       className="flex items-center gap-1.5 mt-2 group"
     >

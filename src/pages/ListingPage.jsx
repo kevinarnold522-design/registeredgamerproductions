@@ -351,7 +351,7 @@ export default function ListingPage() {
 
         {/* SELLER — top */}
         {seller && (
-          <a href={`/channel?user=${listing.seller_email}`}
+          <a href={`/channel?email=${encodeURIComponent(listing.seller_email)}`}
             className="flex items-center gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-500/40 transition-colors mb-5">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
               {seller.avatar_url
