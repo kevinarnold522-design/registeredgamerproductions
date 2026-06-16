@@ -46,7 +46,7 @@ export default function Home() {
         setShowTutorial(true);
       }
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.email]);
 
   // Show tutorial for new users after splash
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function Home() {
         setShowTutorial(true);
       }
     }
-  }, [showSplash, isAuthenticated, user]);
+  }, [showSplash, isAuthenticated, user?.email]);
 
   // Show "Sign in to block ads" sign for guests after 3 min (only after splash dismissed)
   useEffect(() => {
@@ -152,7 +152,7 @@ export default function Home() {
       } catch {}
     };
     loadProfile();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.email]);
 
   return (
     <div className="min-h-screen text-white relative z-10">
@@ -176,7 +176,7 @@ export default function Home() {
             <First10KBanner user={user} profile={profile} />
 
             {/* Live Moving Dashboard (marketplace listings) */}
-            <MovingDashboard />
+            <MovingDashboard currentUser={user} currentProfile={profile} />
 
             {/* Listing of the Week — right after marketplace listings */}
             <ListingOfWeek />
@@ -189,7 +189,7 @@ export default function Home() {
             <HowWeHelpSection />
 
             <PaidModsSection />
-            <ModdingSection />
+            <ModdingSection currentUser={user} currentProfile={profile} />
             <MonetizationBadge />
             <FeaturedGames />
             <CommunitySection />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Download, Star, SlidersHorizontal, X, Filter, CheckSquare, Square, EyeOff, Eye, GripVertical } from "lucide-react";
+import { getActiveListings } from "@/lib/homeDataCache";
 import ModReviewModal from "@/components/shared/ModReviewModal";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
@@ -20,7 +21,7 @@ const DEFAULT_FILTERS = {
   sortBy: "newest",
 };
 
-export default function ModdingSection() {
+export default function ModdingSection({ currentUser, currentProfile }) {
   const [mods, setMods] = useState([]);
   const [totalDownloads, setTotalDownloads] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
@@ -65,20 +66,15 @@ export default function ModdingSection() {
   const isVisible = (id) => !visibleGroups || visibleGroups.has(id);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(auth => {
-      if (auth) {
-        base44.auth.me().then(me => {
-          setUser(me);
-          if (me) base44.entities.UserProfile.filter({ user_email: me.email }).then(p => p.length > 0 && setProfile(p[0]));
-        });
-      }
-    });
-  }, []);
+    if (currentUser) setUser(currentUser);
+    if (currentProfile) setProfile(currentProfile);
+  }, [currentUser, currentProfile]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await base44.entities.Listing.filter({ category: "modding", status: "active" }, "-created_date", 40);
+        const allListings = await getActiveListings();
+        const data = allListings.filter(item => item.category === "modding").slice(0, 40);
         setMods(data);
         const total = data.reduce((sum, m) => sum + (m.views || 0), 0);
         setTotalDownloads(total);

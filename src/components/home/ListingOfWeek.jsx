@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Download, Eye, Heart, Star, Crown, Sparkles, Rocket } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { getActiveListings, getCachedUserProfile } from "@/lib/homeDataCache";
 
 export default function ListingOfWeek() {
   const [listing, setListing] = useState(null);
@@ -12,7 +12,7 @@ export default function ListingOfWeek() {
     const load = async () => {
       try {
         // Get listings from past 7 days, score by downloads + views + likes
-        const all = await base44.entities.Listing.filter({ status: "active" }, "-views", 50);
+        const all = await getActiveListings();
         const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
         const recent = all.filter(l => new Date(l.created_date).getTime() > oneWeekAgo);
         const pool = recent.length >= 3 ? recent : all;
@@ -26,8 +26,8 @@ export default function ListingOfWeek() {
         if (scored[0]) {
           setListing(scored[0]);
           if (scored[0].seller_email) {
-            const profiles = await base44.entities.UserProfile.filter({ user_email: scored[0].seller_email });
-            if (profiles[0]) setSeller(profiles[0]);
+            const sellerProfile = await getCachedUserProfile(scored[0].seller_email);
+            if (sellerProfile) setSeller(sellerProfile);
           }
         }
       } catch {}

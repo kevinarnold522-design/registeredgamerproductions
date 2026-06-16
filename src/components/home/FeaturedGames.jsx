@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { getActiveListings } from "@/lib/homeDataCache";
 import { Heart, ShoppingCart } from "lucide-react";
 
 export default function FeaturedGames() {
@@ -10,8 +10,8 @@ export default function FeaturedGames() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await base44.entities.Listing.filter({ category: "games", status: "active" }, "-created_date", 6);
-        setListings(data);
+        const data = await getActiveListings();
+        setListings(data.filter(item => item.category === "games").slice(0, 6));
       } catch {}
       setLoading(false);
     };

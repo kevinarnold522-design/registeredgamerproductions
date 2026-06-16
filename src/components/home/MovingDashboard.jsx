@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
 const CP = {
@@ -176,7 +177,7 @@ function SectionLabel({ icon: Icon, label, color, pulse }) {
   );
 }
 
-export default function MovingDashboard() {
+export default function MovingDashboard({ currentUser, currentProfile }) {
   const [mods, setMods] = useState([]);
   const [products, setProducts] = useState([]);
   const [pcGames, setPcGames] = useState([]);
@@ -189,16 +190,13 @@ export default function MovingDashboard() {
   const [paidMods, setPaidMods] = useState([]);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(auth => {
-      if (auth) {
-        base44.auth.me().then(me => {
-          setUser(me);
-          if (me) base44.entities.UserProfile.filter({ user_email: me.email }).then(p => p.length > 0 && setProfile(p[0]));
-        });
-      }
-    });
+    if (currentUser) setUser(currentUser);
+    if (currentProfile) setProfile(currentProfile);
+  }, [currentUser, currentProfile]);
+
+  useEffect(() => {
     const load = async () => {
-      const listings = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 80);
+      const listings = await getActiveListings();
       // Deduplicate by id
       const seen = new Set();
       const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });

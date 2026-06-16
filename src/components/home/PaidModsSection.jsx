@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, Filter, Gamepad2, DollarSign, Tag, Layers } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { getActiveListings } from "@/lib/homeDataCache";
 import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
 
@@ -37,10 +37,7 @@ export default function PaidModsSection() {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const allListings = await base44.entities.Listing.filter({ 
-          status: "active",
-          is_approved: true
-        });
+        const allListings = await getActiveListings();
         // Filter for paid/premium listings in paid mod categories
         const paidMods = allListings.filter(l => 
           (l.is_premium || l.price > 0) && 

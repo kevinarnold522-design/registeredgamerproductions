@@ -41,9 +41,13 @@ export const AuthProvider = ({ children }) => {
     setUser(formattedUser);
     setIsAuthenticated(true);
     
-    // Log login to database
+    // Log login once per browser session to avoid repeated auth refresh calls
     try {
-      await base44.functions.invoke('logLogin', {});
+      const key = `login_logged_${formattedUser.email}`;
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, "1");
+        await base44.functions.invoke('logLogin', {});
+      }
     } catch (e) {
       console.error("Failed to log login", e);
     }
