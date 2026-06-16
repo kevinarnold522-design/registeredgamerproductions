@@ -167,7 +167,13 @@ export default function Profile() {
     init();
   }, [targetEmail]);
 
-  const uploadToR2 = (file, folder) => new Promise((resolve, reject) => {
+  const uploadToR2 = async (file, folder) => {
+    if ((file.type || "").startsWith("image/")) {
+      const res = await base44.integrations.Core.UploadFile({ file });
+      return res.file_url;
+    }
+
+    return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -182,7 +188,8 @@ export default function Profile() {
     };
     reader.onerror = reject;
     reader.readAsDataURL(file);
-  });
+    });
+  };
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];

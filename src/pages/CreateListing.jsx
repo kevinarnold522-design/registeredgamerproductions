@@ -188,11 +188,16 @@ export default function CreateListing() {
     init();
   }, []);
 
-  const uploadToR2 = (file, folder) => new Promise((resolve, reject) => {
+  const uploadToR2 = async (file, folder) => {
     if (file.size > MAX_UPLOAD_BYTES) {
-      reject(new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`));
-      return;
+      throw new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`);
     }
+    if ((file.type || "").startsWith("image/")) {
+      const res = await base44.integrations.Core.UploadFile({ file });
+      return res.file_url;
+    }
+
+    return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -207,7 +212,8 @@ export default function CreateListing() {
     };
     reader.onerror = reject;
     reader.readAsDataURL(file);
-  });
+    });
+  };
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);

@@ -33,6 +33,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'File upload limit is 25MB' }, { status: 413 });
     }
     const safeName = String(fileName).replace(/[^a-zA-Z0-9._-]/g, '-');
+
+    if (String(contentType).startsWith('image/')) {
+      const imageFile = new File([binary], safeName, { type: contentType });
+      const uploaded = await base44.asServiceRole.integrations.Core.UploadFile({ file: imageFile });
+      return Response.json({ key: uploaded.file_url, file_url: uploaded.file_url });
+    }
+
     const safeFolder = String(folder).replace(/[^a-zA-Z0-9/_-]/g, '-');
     const key = `${safeFolder}/${user.id || user.email}/${Date.now()}-${safeName}`;
 

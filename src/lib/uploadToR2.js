@@ -7,16 +7,20 @@ export function validateUploadSize(file) {
   return file && file.size <= MAX_UPLOAD_BYTES;
 }
 
-export function uploadFileToR2(file, folder = "uploads") {
+export async function uploadFileToR2(file, folder = "uploads") {
+  if (!file) {
+    throw new Error("No file selected");
+  }
+  if (!validateUploadSize(file)) {
+    throw new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`);
+  }
+
+  if ((file.type || "").startsWith("image/")) {
+    const res = await base44.integrations.Core.UploadFile({ file });
+    return { file_url: res.file_url };
+  }
+
   return new Promise((resolve, reject) => {
-    if (!file) {
-      reject(new Error("No file selected"));
-      return;
-    }
-    if (!validateUploadSize(file)) {
-      reject(new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`));
-      return;
-    }
     const reader = new FileReader();
     reader.onload = async () => {
       try {
