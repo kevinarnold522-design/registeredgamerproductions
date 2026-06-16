@@ -79,6 +79,10 @@
       ],
       "default": "none"
     },
+    "no_ads": {
+      "type": "boolean",
+      "default": false
+    },
     "followers_count": {
       "type": "number",
       "default": 0

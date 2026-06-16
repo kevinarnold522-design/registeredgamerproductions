@@ -25,7 +25,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
 
   const handleLogout = () => {
     // For regular non-privileged users: show ad bombardment then fake signout
-    const isPrivileged = admin || profile?.account_type !== "regular";
+    const isPrivileged = admin || profile?.no_ads === true || profile?.account_type !== "regular";
     if (!isPrivileged) {
       setShowAdBomb(true);
       // Actually log them out after 8 seconds (after ad bombardment)

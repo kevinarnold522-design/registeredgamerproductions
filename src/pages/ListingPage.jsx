@@ -203,7 +203,7 @@ export default function ListingPage() {
   const handleDownload = () => {
     const url = listing.download_url || listing.external_link;
     if (!url) return;
-    const isExempt = user && (isAdmin(user.email) || profile?.moderator_type === "account_moderator");
+    const isExempt = user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator");
     if (isExempt) {
       // Increment download count for exempt users too
       base44.entities.Listing.get(listing.id).then(fresh => {
@@ -478,9 +478,10 @@ export default function ListingPage() {
               </span>
             </div>
 
-            {(listing.game_name || listing.platforms?.length > 0 || listing.tool_target_game) && (
+            {(listing.game_name || listing.game_platform || listing.platforms?.length > 0 || listing.tool_target_game) && (
               <div className="flex gap-2 flex-wrap">
                 {listing.game_name && <span className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold">🎮 {listing.game_name}</span>}
+                {listing.game_platform && <span className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">Platform: {listing.game_platform}</span>}
                 {listing.tool_target_game && <span className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">🛠️ For: {listing.tool_target_game}</span>}
                 {(listing.platforms || []).map(p => (
                   <span key={p} className="px-2.5 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">{p}</span>

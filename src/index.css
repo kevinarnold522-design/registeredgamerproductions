@@ -151,6 +151,8 @@ button:not(.no-glow):hover,
 .gamer-sidebar-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.14); border-radius: 999px; }
 .gamer-sidebar-scroll::-webkit-scrollbar-thumb { background: #ffffff; border-radius: 999px; border: 2px solid rgba(5,5,16,0.9); box-shadow: 0 0 16px rgba(255,255,255,0.95); }
 .gamer-sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #ffffff; }
+.gamer-sidebar-scroll-always { overflow-y: scroll !important; }
+.gamer-sidebar-scroll-always::-webkit-scrollbar-thumb { min-height: 44px; }
 
 @keyframes listing-glow-slow { 0%,100%{opacity:.55} 50%{opacity:1} }
 @keyframes listing-glow-fast { 0%,100%{opacity:.45} 50%{opacity:1} }

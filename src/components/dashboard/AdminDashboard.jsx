@@ -91,6 +91,11 @@ export default function AdminDashboard({ user, profile }) {
     setAllUsers(prev => prev.map(u => u.id === profileId ? { ...u, is_verified: !currentValue } : u));
   };
 
+  const toggleNoAds = async (profileId, currentValue) => {
+    await base44.entities.UserProfile.update(profileId, { no_ads: !currentValue });
+    setAllUsers(prev => prev.map(u => u.id === profileId ? { ...u, no_ads: !currentValue } : u));
+  };
+
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({});
 
@@ -294,6 +299,15 @@ export default function AdminDashboard({ user, profile }) {
                         ) : (
                           <><span>+</span> Grant Badge</>
                         )}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => toggleNoAds(u.id, u.no_ads)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${u.no_ads ? "bg-green-900/40 border-green-600/50 text-green-300" : "bg-gray-800 border-gray-700 text-gray-400 hover:border-green-600/50 hover:text-green-300"}`}
+                        title="Permanently control whether this account sees ads"
+                      >
+                        {u.no_ads ? "Ad-free" : "Shows ads"}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-yellow-400 font-bold">₱{(u.total_revenue || 0).toLocaleString()}</td>

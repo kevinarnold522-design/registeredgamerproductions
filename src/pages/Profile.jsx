@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users } from "lucide-react";
+import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
@@ -203,10 +203,17 @@ export default function Profile() {
       const file_url = await uploadToR2(file, "profile-banners");
       await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
       setProfile({ ...profile, banner_url: file_url });
-      toast.success("Banner updated");
+      toast.success("Cover photo updated");
     } catch (error) {
-      toast.error("Failed to upload banner");
+      toast.error("Failed to upload cover photo");
     }
+  };
+
+  const handleRemoveBanner = async () => {
+    if (!profile?.id) return;
+    await base44.entities.UserProfile.update(profile.id, { banner_url: "" });
+    setProfile({ ...profile, banner_url: "" });
+    toast.success("Cover photo removed");
   };
 
   const handleThemeChange = async (themeColor) => {
@@ -258,7 +265,7 @@ export default function Profile() {
         {/* Banner */}
         <div className="relative h-48 md:h-64 overflow-hidden" style={{ background: `linear-gradient(90deg, ${profile?.profile_theme_color || "#581c87"}, #831843, #111827)` }}>
           {profile?.banner_url ? (
-            <img src={profile.banner_url} alt="" className="w-full h-full object-cover" />
+            <img src={profile.banner_url} alt="Profile cover" className="absolute inset-0 w-full h-full object-cover object-center" />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-r from-purple-900/60 to-pink-900/40" />
           )}
@@ -270,7 +277,12 @@ export default function Profile() {
                   <button key={c} onClick={() => handleThemeChange(c)} className="w-6 h-6 rounded-lg border border-white/20" style={{ background: c }} title="Set profile theme" />
                 ))}
               </div>
-              <label className="w-10 h-10 rounded-xl bg-gray-900/80 border border-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm">
+              {profile?.banner_url && (
+                <button onClick={handleRemoveBanner} className="w-10 h-10 rounded-xl bg-red-950/80 border border-red-700 flex items-center justify-center hover:bg-red-900 transition-colors backdrop-blur-sm" title="Remove cover photo">
+                  <X className="w-4 h-4 text-red-200" />
+                </button>
+              )}
+              <label className="w-10 h-10 rounded-xl bg-gray-900/80 border border-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm" title="Upload cover photo">
                 <Upload className="w-4 h-4 text-gray-300" />
                 <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
               </label>

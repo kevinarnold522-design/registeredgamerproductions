@@ -700,6 +700,18 @@ export default function CreateListing() {
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
             </div>
 
+            {form.category === "games" && (
+              <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-4">
+                <label className="text-blue-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <Gamepad2 className="w-3 h-3" /> Game Platform Text
+                </label>
+                <p className="text-gray-500 text-xs mb-2">Manually add platform notes shown on the game listing, like PC, PS5, Android, or Steam.</p>
+                <input value={form.game_platform} onChange={e => setForm({ ...form, game_platform: e.target.value })}
+                  placeholder="e.g. PC / Steam / PS5 / Android"
+                  className="w-full bg-gray-800 border border-blue-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
+              </div>
+            )}
+
             {/* Game Title — searchable dropdown from GamingCommunities */}
             <div ref={gameDropdownRef} className="relative">
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Title</label>

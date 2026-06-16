@@ -26,7 +26,7 @@ function NavLink({ link, collapsed, isMobile, location }) {
     location.pathname === link.href?.split("?")[0]
   );
   const cls = [
-    "relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all",
+    "relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all border-b border-gray-800/70 last:border-b-0",
     isActive
       ? "bg-purple-900/50 text-purple-200 border border-purple-700/50"
       : "text-gray-400 hover:text-white hover:bg-gray-800/70",
@@ -276,7 +276,7 @@ export default function AuthNavbar({ user, profile }) {
         </div>
 
         {/* Dynamic Sidebar Nav Tree */}
-        <div className="flex-1 overflow-y-scroll overflow-x-hidden py-2 px-2 space-y-0.5 gamer-sidebar-scroll">
+        <div className="flex-1 overflow-y-scroll overflow-x-hidden py-2 px-2 space-y-0.5 gamer-sidebar-scroll gamer-sidebar-scroll-always">
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
           {navLinks.map((link, i) => (
             <NavLink key={`${link.label}-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />

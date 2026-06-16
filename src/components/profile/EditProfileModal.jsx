@@ -228,7 +228,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
               <input
                 type={field === 'email' ? 'email' : 'text'}
                 value={form[field] || ""}
-                onChange={e => setForm(f => ({ ...f, [field]: field === 'username' ? e.target.value.toLowerCase().replace(/\s/g, "") : e.target.value }))}
+                onChange={e => setForm(f => ({ ...f, [field]: field === 'username' ? e.target.value.replace(/\s/g, "") : e.target.value }))}
                 disabled={!isEditing}
                 placeholder={placeholder}
                 className={`w-full border rounded-xl px-3 py-2.5 text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 transition-all ${
