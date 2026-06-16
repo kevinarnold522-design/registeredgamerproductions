@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Eye, Download, Flag, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import { formatListingPrice } from "@/lib/currency";
 
 export default function EnhancedListingCard({ listing, user, profile, subcategory }) {
   const cardRef = useRef(null);
@@ -109,7 +110,7 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
           
           <div className="flex items-center justify-between mt-3">
             <span className={`font-black text-sm ${listing.price === 0 || listing.is_free ? "text-green-400" : "text-yellow-400"}`}>
-              {listing.price === 0 || listing.is_free ? "FREE" : `₱${listing.price?.toLocaleString()}`}
+              {listing.price === 0 || listing.is_free ? "FREE" : formatListingPrice(listing.price, listing.currency)}
             </span>
           </div>
         </a>

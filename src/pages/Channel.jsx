@@ -15,6 +15,7 @@ import { isAdmin } from "@/lib/constants";
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import UserPointsBadge from "@/components/profile/UserPointsBadge";
 import BrandLogo from "@/components/shared/BrandLogo";
+import { formatListingPrice } from "@/lib/currency";
 
 const CONTENT_SUBCATEGORIES = [
   "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream", "other"
@@ -499,7 +500,7 @@ export default function Channel() {
                     <div className="p-3">
                       <p className="text-white font-bold text-sm truncate">{l.title}</p>
                       <p className="text-gray-500 text-[11px] truncate">by @{l.seller_username || l.seller_email?.split("@")[0] || "gamer"}</p>
-                      <p className="text-purple-400 text-xs font-black mt-0.5">{!l.price || l.is_free ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
+                      <p className="text-purple-400 text-xs font-black mt-0.5">{!l.price || l.is_free ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
                     </div>
                   </motion.a>
                 ))}

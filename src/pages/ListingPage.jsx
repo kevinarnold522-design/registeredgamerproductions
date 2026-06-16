@@ -15,8 +15,9 @@ import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { CATEGORIES } from "@/lib/constants";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
+import { formatListingPrice } from "@/lib/currency";
 
-function GlowDownloadButton({ isFree, price, onClick }) {
+function GlowDownloadButton({ isFree, price, currency, onClick }) {
   return (
     <motion.button
       onClick={onClick}
@@ -56,7 +57,7 @@ function GlowDownloadButton({ isFree, price, onClick }) {
       />
       <Download className="w-5 h-5 relative z-10" />
       <span className="relative z-10">
-        {isFree ? "Download" : `Buy for ₱${price?.toLocaleString()}`}
+        {isFree ? "Download" : `Buy for ${formatListingPrice(price, currency)}`}
       </span>
     </motion.button>
   );
@@ -475,7 +476,7 @@ export default function ListingPage() {
             <h1 className="text-2xl font-black text-white leading-tight">{listing.title}</h1>
 
             <div className="flex items-center gap-4">
-              {!isFree && <span className="text-3xl font-black text-purple-300">₱{listing.price?.toLocaleString()}</span>}
+              {!isFree && <span className="text-3xl font-black text-purple-300">{formatListingPrice(listing.price, listing.currency)}</span>}
               <span className="text-gray-500 text-sm flex items-center gap-1">
                 <Eye className="w-3.5 h-3.5" /> {(listing.views || 0).toLocaleString()} views
               </span>
@@ -544,7 +545,7 @@ export default function ListingPage() {
             })()}
 
             <div className="flex flex-col gap-3">
-              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} onClick={handleDownload} />}
+              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} />}
               <div className="flex gap-2 flex-wrap">
                 {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="kofi" label="Ko-fi" className="w-4 h-4" /> Ko-fi</a>}
                 {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="buymeacoffee" label="Buy Me a Coffee" className="w-4 h-4" /> BuyMeACoffee</a>}
