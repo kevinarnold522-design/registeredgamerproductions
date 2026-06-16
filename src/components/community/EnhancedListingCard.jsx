@@ -1,13 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Share2, Eye, Download, Flag } from "lucide-react";
+import { Heart, MessageCircle, Share2, Eye, Download, Flag, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
 export default function EnhancedListingCard({ listing, user, profile, subcategory }) {
+  const cardRef = useRef(null);
+  const countedRef = useRef(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes || 0);
   const [downloadCount, setDownloadCount] = useState(listing.downloads || 0);
+  const [viewCount, setViewCount] = useState(listing.views || 0);
+
+  useEffect(() => {
+    if (!cardRef.current || !listing?.id) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || countedRef.current) return;
+      countedRef.current = true;
+      const key = `listing_seen_${listing.id}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+      const nextViews = (listing.views || 0) + 1;
+      setViewCount(nextViews);
+      base44.entities.Listing.update(listing.id, { views: nextViews }).catch(() => {});
+    }, { threshold: 0.55 });
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [listing?.id]);
 
   const handleLike = async (e) => {
     e.preventDefault();
@@ -62,22 +81,23 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      ref={cardRef}
       className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group"
     >
       {/* Image */}
       <a href={`/listing?id=${listing.id}`} className="block relative h-48">
         {listing.images?.[0] ? (
-          <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={listing.images[0]} alt={listing.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-800">🎮</div>
+          <div className="w-full h-full flex items-center justify-center bg-gray-800"><Package className="w-10 h-10 text-purple-300" /></div>
         )}
         {listing.is_premium && (
-          <span className="absolute top-3 left-3 text-xs font-bold bg-yellow-500/90 text-black px-2 py-0.5 rounded-full">⭐ Premium</span>
+          <span className="absolute top-3 left-3 text-xs font-bold bg-yellow-500/90 text-black px-2 py-0.5 rounded-full">Premium</span>
         )}
         {(listing.price === 0 || listing.is_free) && (
           <span className="absolute top-3 right-3 text-xs font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         )}
-        <span className="absolute bottom-3 right-3 flex items-center gap-1 text-xs bg-black/70 text-cyan-300 font-bold px-2 py-1 rounded-full"><Eye className="w-3 h-3" />{(listing.views || 0).toLocaleString()}</span>
+        <span className="absolute bottom-3 right-3 flex items-center gap-1 text-xs bg-black/70 text-cyan-300 font-bold px-2 py-1 rounded-full"><Eye className="w-3 h-3" />{viewCount.toLocaleString()}</span>
       </a>
 
       {/* Content */}

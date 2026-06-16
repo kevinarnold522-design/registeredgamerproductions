@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bell } from "lucide-react";
+import { Bell, ShoppingCart, DollarSign, Download, MessageCircle, Info } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,8 +10,8 @@ export default function NotificationBell({ userEmail }) {
 
   useEffect(() => {
     if (!userEmail) return;
-    base44.entities.Notification.filter({ user_email: userEmail })
-      .then(n => setNotifications(n.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 20)));
+    base44.entities.Notification.filter({ user_email: userEmail }, "-created_date", 20)
+      .then(n => setNotifications(n));
   }, [userEmail]);
 
   useEffect(() => {
@@ -28,15 +28,21 @@ export default function NotificationBell({ userEmail }) {
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   };
 
-  const typeIcon = { order: "🛒", sale: "💰", download: "📥", message: "💬", system: "🔔" };
+  const typeIcon = {
+    order: <ShoppingCart className="w-4 h-4 text-blue-300" />,
+    sale: <DollarSign className="w-4 h-4 text-blue-300" />,
+    download: <Download className="w-4 h-4 text-blue-300" />,
+    message: <MessageCircle className="w-4 h-4 text-blue-300" />,
+    system: <Info className="w-4 h-4 text-blue-300" />,
+  };
 
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-700/50 transition-colors"
-      >
-        <Bell className="w-4 h-4 text-gray-400" />
+        className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-blue-950/30 border border-blue-800/50 hover:border-blue-500/70 transition-colors"
+        >
+        <Bell className="w-4 h-4 text-blue-300" />
         {unread > 0 && (
           <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-pink-600 text-white text-[9px] flex items-center justify-center font-bold">
             {unread > 9 ? "9+" : unread}
@@ -78,7 +84,7 @@ export default function NotificationBell({ userEmail }) {
                         if (n.link) window.location.href = n.link;
                       }}
                     >
-                      <span className="text-lg mt-0.5">{typeIcon[n.type] || "🔔"}</span>
+                      <span className="mt-0.5">{typeIcon[n.type] || <Bell className="w-4 h-4 text-blue-300" />}</span>
                       <div className="flex-1 min-w-0">
                         <p className={`text-sm font-bold leading-tight ${n.is_read ? "text-gray-300" : "text-white"}`}>{n.title}</p>
                         <p className="text-gray-400 text-xs mt-0.5 leading-relaxed">{n.message}</p>

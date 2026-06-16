@@ -236,13 +236,13 @@ export default function AuthNavbar({ user, profile }) {
           <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <LanguageSelector />
             <NotificationBell userEmail={activeUserEmail} />
+            <Link to="/messages" className="w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-green-300 flex items-center justify-center hover:border-green-600/50" title="Messages & Group Chats">
+              <MessageCircle className="w-4 h-4" />
+            </Link>
             <button onClick={() => setFavOpen(true)} className="relative w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-yellow-300 flex items-center justify-center hover:border-yellow-600/50" title="Favourites">
               <Heart className="w-4 h-4" />
               {favCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-bold">{favCount}</span>}
             </button>
-            <Link to="/messages" className="w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-green-300 flex items-center justify-center hover:border-green-600/50" title="Messages & Group Chats">
-              <MessageCircle className="w-4 h-4" />
-            </Link>
           </div>
         </div>
 
@@ -334,19 +334,19 @@ export default function AuthNavbar({ user, profile }) {
                 : "0 0 10px rgba(168,85,247,0.4)",
             }}
           >
-            <span className={controllerAnimating ? "controller-color-cycle" : ""}>🎮</span>
+            <Gamepad2 className={`w-5 h-5 text-white ${controllerAnimating ? "controller-color-cycle" : ""}`} />
           </motion.div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <NotificationBell userEmail={activeUserEmail} />
+          <Link to="/messages" className="p-1 text-green-300" title="Messages & Group Chats">
+            <MessageCircle className="w-5 h-5" />
+          </Link>
           <button onClick={() => setFavOpen(true)} className="relative p-1 text-yellow-300" title="Favourites">
             <Heart className="w-5 h-5" />
             {favCount > 0 && <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-purple-500 text-white text-[8px] flex items-center justify-center font-black">{favCount}</span>}
           </button>
-          <Link to="/messages" className="p-1 text-green-300" title="Messages & Group Chats">
-            <MessageCircle className="w-5 h-5" />
-          </Link>
         </div>
       </nav>
 

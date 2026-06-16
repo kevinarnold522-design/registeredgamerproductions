@@ -33,6 +33,9 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const MAX_UPLOAD_LABEL = "25MB";
+
 export default function CreateListing() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -188,6 +191,10 @@ export default function CreateListing() {
   }, []);
 
   const uploadToR2 = (file, folder) => new Promise((resolve, reject) => {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      reject(new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = async () => {
       try {
@@ -206,6 +213,12 @@ export default function CreateListing() {
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
+    const oversized = files.find(file => file.size > MAX_UPLOAD_BYTES);
+    if (oversized) {
+      alert(`Each file must be ${MAX_UPLOAD_LABEL} or smaller.`);
+      e.target.value = "";
+      return;
+    }
     setUploadingImages(true);
     for (const file of files) {
       const file_url = await uploadToR2(file, "listing-images");
@@ -217,6 +230,11 @@ export default function CreateListing() {
   const handleVideoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      alert(`Video uploads must be ${MAX_UPLOAD_LABEL} or smaller.`);
+      e.target.value = "";
+      return;
+    }
     setUploadingImages(true);
     const file_url = await uploadToR2(file, "listing-videos");
     setForm(f => ({ ...f, video_url: file_url }));
@@ -226,6 +244,11 @@ export default function CreateListing() {
   const handleDownloadFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      alert(`Download files must be ${MAX_UPLOAD_LABEL} or smaller.`);
+      e.target.value = "";
+      return;
+    }
     setUploadingImages(true);
     const file_url = await uploadToR2(file, "listing-downloads");
     setForm(f => ({ ...f, download_url: file_url }));
@@ -508,6 +531,7 @@ export default function CreateListing() {
             <h3 className="text-white font-bold mb-4 flex items-center gap-2">
               <Upload className="w-4 h-4 text-purple-400" /> Photos & Images
             </h3>
+            <p className="text-gray-500 text-xs mb-3">Maximum upload size: {MAX_UPLOAD_LABEL} per file.</p>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
               {images.map((img, i) => (
                 <div key={i} className="relative aspect-square">
@@ -552,7 +576,7 @@ export default function CreateListing() {
 
             {/* Upload video file */}
             <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Upload Video File (optional)</label>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Upload Video File (optional, max {MAX_UPLOAD_LABEL})</label>
               {form.video_url ? (
                 <div className="flex items-center gap-3">
                   <video src={form.video_url} controls className="w-48 rounded-xl" />
@@ -589,6 +613,7 @@ export default function CreateListing() {
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1">
                 <Upload className="w-3 h-3 text-purple-400" /> Upload File from Device
               </label>
+              <p className="text-gray-500 text-xs mb-2">Maximum file size: {MAX_UPLOAD_LABEL}.</p>
               {form.download_url ? (
                 <div className="flex items-center gap-3 bg-green-900/20 border border-green-700/40 rounded-xl p-3">
                 <span className="text-green-400 text-sm flex items-center gap-1.5"><CheckCircle className="w-4 h-4" /> File uploaded</span>

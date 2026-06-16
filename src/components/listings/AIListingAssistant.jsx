@@ -2,6 +2,9 @@ import React, { useRef, useState } from "react";
 import { Bot, Upload, Sparkles, X, Image as ImageIcon } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const MAX_UPLOAD_LABEL = "25MB";
+
 export default function AIListingAssistant({ form, setForm, images, setImages }) {
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState([]);
@@ -13,6 +16,11 @@ export default function AIListingAssistant({ form, setForm, images, setImages })
     setBusy(true);
     const uploaded = [];
     for (const file of files) {
+      if (file.size > MAX_UPLOAD_BYTES) {
+        alert(`AI image uploads must be ${MAX_UPLOAD_LABEL} or smaller.`);
+        setBusy(false);
+        return;
+      }
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       uploaded.push(file_url);
     }
@@ -60,7 +68,7 @@ export default function AIListingAssistant({ form, setForm, images, setImages })
         <Bot className="w-5 h-5 text-purple-300" />
         <div>
           <p className="text-white text-sm font-black">AI Listing Assistant</p>
-          <p className="text-gray-500 text-xs">Upload images and describe the item — AI fills the listing details for you.</p>
+          <p className="text-gray-500 text-xs">Upload images up to {MAX_UPLOAD_LABEL} and describe the item — AI fills the listing details for you.</p>
         </div>
       </div>
       <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={4}
@@ -70,7 +78,15 @@ export default function AIListingAssistant({ form, setForm, images, setImages })
         <button type="button" onClick={() => inputRef.current?.click()} className="flex items-center gap-2 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs font-bold text-gray-300 hover:border-purple-500">
           <Upload className="w-4 h-4" /> Add AI Images
         </button>
-        <input ref={inputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => setFiles(Array.from(e.target.files || []))} />
+        <input ref={inputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => {
+          const selected = Array.from(e.target.files || []);
+          if (selected.some(file => file.size > MAX_UPLOAD_BYTES)) {
+            alert(`Each AI image must be ${MAX_UPLOAD_LABEL} or smaller.`);
+            e.target.value = "";
+            return;
+          }
+          setFiles(selected);
+        }} />
         {files.map((file, i) => <span key={i} className="inline-flex items-center gap-1 rounded-lg bg-gray-800 px-2 py-1 text-[10px] text-gray-300"><ImageIcon className="w-3 h-3" />{file.name}<button type="button" onClick={() => setFiles(fs => fs.filter((_, idx) => idx !== i))}><X className="w-3 h-3" /></button></span>)}
         <button type="button" disabled={busy || (!prompt.trim() && files.length === 0)} onClick={generate} className="ml-auto flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-xs font-black text-white disabled:opacity-50">
           <Sparkles className="w-4 h-4" /> {busy ? "AI is building..." : "Build Listing"}

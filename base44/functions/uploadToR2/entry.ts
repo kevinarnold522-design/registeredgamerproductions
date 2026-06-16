@@ -28,6 +28,10 @@ Deno.serve(async (req) => {
 
     const base64 = String(dataUrl).includes(',') ? String(dataUrl).split(',')[1] : String(dataUrl);
     const binary = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+    const maxBytes = 25 * 1024 * 1024;
+    if (binary.byteLength > maxBytes) {
+      return Response.json({ error: 'File upload limit is 25MB' }, { status: 413 });
+    }
     const safeName = String(fileName).replace(/[^a-zA-Z0-9._-]/g, '-');
     const safeFolder = String(folder).replace(/[^a-zA-Z0-9/_-]/g, '-');
     const key = `${safeFolder}/${user.id || user.email}/${Date.now()}-${safeName}`;

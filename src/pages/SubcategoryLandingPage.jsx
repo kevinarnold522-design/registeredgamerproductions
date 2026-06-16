@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, Send, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, Send, ChevronLeft, ChevronRight, Gamepad2, Lightbulb, Newspaper } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin, isServiceListing } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import EnhancedListingCard from "@/components/community/EnhancedListingCard";
+
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const MAX_UPLOAD_LABEL = "25MB";
 
 // Storage key for cards in a subcategory landing page
 const getStorageKey = (parentCat, subId) => `subcat_landing_${parentCat}_${subId}`;
@@ -22,6 +25,10 @@ function CardEditOverlay({ card, onClose, onSave }) {
 
   const handleUpload = async (file, type) => {
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      alert(`File upload limit is ${MAX_UPLOAD_LABEL}.`);
+      return;
+    }
     setUploading(type);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     if (type === "logo") setLogoUrl(file_url);
@@ -41,7 +48,7 @@ function CardEditOverlay({ card, onClose, onSave }) {
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500" />
       </div>
       <div>
-        <p className="text-gray-500 text-[10px] mb-1">Profile Picture</p>
+        <p className="text-gray-500 text-[10px] mb-1">Profile Picture (max {MAX_UPLOAD_LABEL})</p>
         <div className="flex gap-1.5 mb-1">
           <input value={logoUrl} onChange={e => setLogoUrl(e.target.value)}
             placeholder="Paste URL..."
@@ -56,7 +63,7 @@ function CardEditOverlay({ card, onClose, onSave }) {
         {logoUrl && <img src={logoUrl} className="w-12 h-12 rounded-xl object-cover" alt="" />}
       </div>
       <div>
-        <p className="text-gray-500 text-[10px] mb-1">Cover Image</p>
+        <p className="text-gray-500 text-[10px] mb-1">Cover Image (max {MAX_UPLOAD_LABEL})</p>
         <div className="flex gap-1.5 mb-1">
           <input value={coverUrl} onChange={e => setCoverUrl(e.target.value)}
             placeholder="Paste URL..."
@@ -123,7 +130,7 @@ function LandingCard({ card, canAdmin, onEdit, onDelete, onClick }) {
         <div className="relative flex items-start gap-3">
           {card.logo
             ? <img src={card.logo} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" alt="" />
-            : <div className="w-10 h-10 rounded-xl bg-purple-900/60 flex items-center justify-center text-xl flex-shrink-0">🎮</div>
+            : <div className="w-10 h-10 rounded-xl bg-purple-900/60 flex items-center justify-center flex-shrink-0"><Gamepad2 className="w-5 h-5 text-purple-200" /></div>
           }
           <div>
             <p className="text-white font-black text-sm leading-tight">{card.name}</p>
@@ -136,7 +143,7 @@ function LandingCard({ card, canAdmin, onEdit, onDelete, onClick }) {
             onClick={e => {
               e.stopPropagation();
               const url = encodeURIComponent(window.location.href);
-              const text = encodeURIComponent(`Check out ${card.name} on GAMER.PRODUCTIONS 🎮`);
+              const text = encodeURIComponent(`Check out ${card.name} on GAMER.PRODUCTIONS`);
               window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
             }}
             style={{ opacity: hovered ? 1 : 0, transition: "opacity 0.2s" }}
@@ -161,6 +168,10 @@ function AddCardModal({ onClose, onAdd }) {
 
   const handleUpload = async (file, type) => {
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      alert(`File upload limit is ${MAX_UPLOAD_LABEL}.`);
+      return;
+    }
     setUploading(type);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     if (type === "logo") setLogo(file_url);
@@ -182,7 +193,7 @@ function AddCardModal({ onClose, onAdd }) {
               className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
           </div>
           <div>
-            <label className="text-gray-400 text-xs font-bold mb-1 block">Profile Picture</label>
+            <label className="text-gray-400 text-xs font-bold mb-1 block">Profile Picture (max {MAX_UPLOAD_LABEL})</label>
             <div className="flex gap-2 mb-1">
               <input value={logo} onChange={e => setLogo(e.target.value)} placeholder="Paste URL or upload..."
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
@@ -196,7 +207,7 @@ function AddCardModal({ onClose, onAdd }) {
             {logo && <img src={logo} className="w-12 h-12 rounded-xl object-cover" alt="" />}
           </div>
           <div>
-            <label className="text-gray-400 text-xs font-bold mb-1 block">Cover Image</label>
+            <label className="text-gray-400 text-xs font-bold mb-1 block">Cover Image (max {MAX_UPLOAD_LABEL})</label>
             <div className="flex gap-2 mb-1">
               <input value={cover} onChange={e => setCover(e.target.value)} placeholder="Paste URL or upload..."
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
@@ -254,7 +265,7 @@ export default function SubcategoryLandingPage() {
       setLoading(true);
       try {
         // Load ALL posts and filter client-side for better matching
-        const allPosts = await base44.entities.CommunityPost.filter({ status: "active" });
+        const allPosts = await base44.entities.CommunityPost.filter({ status: "active" }, "-created_date", 80);
         const postsData = allPosts.filter(p => {
           // For modding: match section_id OR franchise_id containing the subcategory name
           if (cat === "modding") {
@@ -274,7 +285,7 @@ export default function SubcategoryLandingPage() {
         setPosts(postsData);
         
         // Load ALL active listings first, then filter client-side for modding
-        const allListings = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200);
+        const allListings = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 80);
         const listingsData = cat === "premium_mods"
           ? allListings.filter(l => {
               const normalizedSub = sub.toLowerCase().replace(/\s+/g, "");
@@ -347,13 +358,13 @@ export default function SubcategoryLandingPage() {
           <div className="flex gap-2 flex-wrap">
             <button onClick={() => setShowRecommend(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-cyan-300 border border-cyan-700/40 bg-cyan-900/20 hover:bg-cyan-900/40 transition-all">
-              💡 Recommend Subcategory
+              <Lightbulb className="w-4 h-4" /> Recommend Subcategory
             </button>
             {user && (
               <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
                 style={{ background: "linear-gradient(135deg, #059669, #0d9488)" }}>
-                <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "📝 Post"}
+                <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
               </button>
             )}
             {admin && (
@@ -368,7 +379,7 @@ export default function SubcategoryLandingPage() {
 
         {cards.length === 0 && !admin && (
           <div className="text-center py-24">
-            <p className="text-4xl mb-3">🎮</p>
+            <Gamepad2 className="w-10 h-10 mx-auto mb-3 text-purple-400" />
             <p className="text-gray-400 font-semibold">No cards yet</p>
             <p className="text-gray-600 text-sm mt-1">Admin will add cards here soon</p>
           </div>
@@ -376,7 +387,7 @@ export default function SubcategoryLandingPage() {
 
         {cards.length === 0 && admin && (
           <div className="text-center py-24 border-2 border-dashed border-purple-700/30 rounded-3xl">
-            <p className="text-4xl mb-3">➕</p>
+            <Plus className="w-10 h-10 mx-auto mb-3 text-purple-400" />
             <p className="text-gray-400 font-semibold">No cards yet — add the first one</p>
             <button onClick={() => setShowAdd(true)}
               className="mt-4 px-6 py-2.5 rounded-xl text-sm font-black text-white"
@@ -389,7 +400,8 @@ export default function SubcategoryLandingPage() {
         {/* Newsfeed Section - shows listings only for this subcategory */}
         <div className="mb-12">
           <h2 className="text-xl font-black text-white mb-4 flex items-center gap-2">
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">📰 {decodeURIComponent(sub)} Newsfeed</span>
+            <Newspaper className="w-5 h-5 text-purple-300" />
+            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{decodeURIComponent(sub)} Newsfeed</span>
           </h2>
           
           {loading ? (
@@ -398,13 +410,13 @@ export default function SubcategoryLandingPage() {
             </div>
           ) : listings.length === 0 ? (
             <div className="text-center py-16 rounded-2xl bg-gray-900 border border-gray-800">
-              <p className="text-4xl mb-3">🎮</p>
+              <Gamepad2 className="w-10 h-10 mx-auto mb-3 text-purple-400" />
               <p className="text-gray-400 font-semibold">No listings yet</p>
               <p className="text-gray-600 text-sm mt-1">Be the first to contribute!</p>
               {user && (
                 <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                   className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
-                  <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "📝 Post"}
+                  <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
                 </a>
               )}
             </div>
@@ -460,12 +472,12 @@ export default function SubcategoryLandingPage() {
               onClick={e => e.stopPropagation()}
               className="bg-gray-950 border border-cyan-700/40 rounded-2xl p-6 w-full max-w-sm">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-black">💡 Recommend Subcategory</h3>
+                <h3 className="text-white font-black flex items-center gap-2"><Lightbulb className="w-4 h-4 text-cyan-300" /> Recommend Subcategory</h3>
                 <button onClick={() => setShowRecommend(false)}><X className="w-4 h-4 text-gray-400" /></button>
               </div>
               {recommendSent ? (
                 <div className="text-center py-6">
-                  <p className="text-green-400 font-black text-lg">✅ Sent!</p>
+                  <p className="text-green-400 font-black text-lg">Sent!</p>
                   <p className="text-gray-400 text-sm mt-1">Admin will review your suggestion.</p>
                 </div>
               ) : (

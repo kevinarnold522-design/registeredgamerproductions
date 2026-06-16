@@ -106,7 +106,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const canPost = user;
 
   useEffect(() => {
-    base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 200).then(l => {
+    base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 80).then(l => {
       let cleaned = l.filter(x => x.is_approved !== false);
       // Marketplace discovery categories must never show service-type listings
       if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
@@ -343,7 +343,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                   {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                     <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
                   ) : l.images?.[0] ? (
-                    <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover" />
+                    <img src={l.images[0]} alt={l.title} loading="lazy" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-700"><Play className="w-10 h-10" /></div>
                   )}
