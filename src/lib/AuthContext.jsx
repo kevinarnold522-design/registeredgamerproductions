@@ -98,8 +98,11 @@ export const AuthProvider = ({ children }) => {
           return;
         }
       }
-      // Fallback to Base44 auth
-      const currentUser = await base44.auth.me().catch(() => null);
+      // Fallback to Base44 auth, but don't let public pages get stuck waiting forever
+      const currentUser = await Promise.race([
+        base44.auth.me().catch(() => null),
+        new Promise(resolve => setTimeout(() => resolve(null), 3500)),
+      ]);
       if (currentUser) {
         setUser(currentUser);
         setIsAuthenticated(true);

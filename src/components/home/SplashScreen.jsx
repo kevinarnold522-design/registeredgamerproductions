@@ -5,9 +5,13 @@ export default function SplashScreen({ onDismiss }) {
   const [tapped, setTapped] = React.useState(false);
   
   useEffect(() => {
+    const autoDismiss = setTimeout(() => onDismiss(), 2500);
     const handleClick = () => onDismiss();
     window.addEventListener("click", handleClick);
-    return () => window.removeEventListener("click", handleClick);
+    return () => {
+      clearTimeout(autoDismiss);
+      window.removeEventListener("click", handleClick);
+    };
   }, [onDismiss]);
 
   return (
@@ -57,7 +61,7 @@ export default function SplashScreen({ onDismiss }) {
             filter: tapped ? "drop-shadow(0 0 24px rgba(168,85,247,0.8))" : "none",
             cursor: "pointer"
           }}
-          onClick={(e) => { e.stopPropagation(); setTapped(true); }}
+          onClick={(e) => { e.stopPropagation(); setTapped(true); setTimeout(() => onDismiss(), 450); }}
         />
         <div className="text-xs tracking-[0.4em] text-purple-400 uppercase mb-3">Welcome to</div>
         <div className="flex items-baseline justify-center gap-1 mb-2">
