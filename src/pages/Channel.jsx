@@ -83,8 +83,12 @@ export default function Channel() {
   useEffect(() => {
     const init = async () => {
       const me = await base44.auth.me();
-      setUser(me);
-      const email = viewEmail || me?.email;
+      const ghostSession = (() => {
+        try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
+      })();
+      const ghostEmail = ghostSession.isImpersonating && ghostSession.isGhostLogin ? ghostSession.targetEmail : null;
+      const email = viewEmail || ghostEmail || me?.email;
+      setUser(ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me);
       setTargetEmail(email);
       if (email) {
         const [profiles, myVideos, myPosts] = await Promise.all([
@@ -123,6 +127,21 @@ export default function Channel() {
     setSavedSocial(true);
     setEditingSocial(false);
     setTimeout(() => setSavedSocial(false), 3000);
+  };
+
+  const handleCoverUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !profile?.id) return;
+    const { file_url } = await uploadFileToR2(file, "channel-covers");
+    const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
+    setProfile(updated);
+    e.target.value = "";
+  };
+
+  const handleRemoveCover = async () => {
+    if (!profile?.id) return;
+    const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: "" });
+    setProfile(updated);
   };
 
   if (loading) return (
@@ -176,16 +195,17 @@ export default function Channel() {
             style={{ backgroundImage: "linear-gradient(rgba(139,92,246,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
           {/* Cover photo upload button */}
           {isOwner && (
-            <label className="absolute top-3 right-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900/80 border border-gray-700 text-gray-200 text-xs font-semibold cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm">
-              <Upload className="w-4 h-4" /> Change Cover
-              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                const file = e.target.files[0];
-                if (!file || !profile?.id) return;
-                const { file_url } = await uploadFileToR2(file, "channel-covers");
-                const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
-                setProfile(updated);
-              }} />
-            </label>
+            <div className="absolute top-3 right-3 flex items-center gap-2">
+              {profile?.banner_url && (
+                <button onClick={handleRemoveCover} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-red-950/80 border border-red-700 text-red-100 text-xs font-semibold hover:bg-red-900 transition-colors backdrop-blur-sm" title="Remove cover photo">
+                  <X className="w-4 h-4" /> Remove Cover
+                </button>
+              )}
+              <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-900/80 border border-gray-700 text-gray-200 text-xs font-semibold cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm">
+                <Upload className="w-4 h-4" /> Change Cover
+                <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+              </label>
+            </div>
           )}
         </div>
 

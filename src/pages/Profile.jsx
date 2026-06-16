@@ -201,8 +201,9 @@ export default function Profile() {
     if (!file) return;
     try {
       const file_url = await uploadToR2(file, "profile-banners");
-      await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
-      setProfile({ ...profile, banner_url: file_url });
+      const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
+      setProfile(updated);
+      e.target.value = "";
       toast.success("Cover photo updated");
     } catch (error) {
       toast.error("Failed to upload cover photo");
@@ -211,8 +212,8 @@ export default function Profile() {
 
   const handleRemoveBanner = async () => {
     if (!profile?.id) return;
-    await base44.entities.UserProfile.update(profile.id, { banner_url: "" });
-    setProfile({ ...profile, banner_url: "" });
+    const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: "" });
+    setProfile(updated);
     toast.success("Cover photo removed");
   };
 
