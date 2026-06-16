@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Check, Edit2, User, Mail, Globe, Store } from "lucide-react";
+import { X, Check, Edit2, User, Mail, Globe, Store, Trophy, Gamepad2, Palette } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+
+const FAVORITE_GAME_OPTIONS = [
+  { name: "NBA 2K" },
+  { name: "GTA V" },
+  { name: "Valorant" },
+];
+
+const FAVORITE_TEAM_OPTIONS = [
+  { name: "Los Angeles Lakers" },
+  { name: "Manchester United" },
+  { name: "Golden State Warriors" },
+];
 
 const COUNTRIES = [
   { name: "Afghanistan", flag: "🇦🇫" }, { name: "Albania", flag: "🇦🇱" }, { name: "Algeria", flag: "🇩🇿" },
@@ -207,7 +219,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
               >
                 <option value="">Select...</option>
                 {options.map(opt => (
-                  <option key={opt.name} value={opt.name}>{opt.flag} {opt.name}</option>
+                  <option key={opt.name} value={opt.name}>{opt.flag ? `${opt.flag} ` : ""}{opt.name}</option>
                 ))}
               </select>
             ) : isTextarea ? (
@@ -322,10 +334,10 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
                   ))}
                 </div>
               </div>
-              <p className="text-purple-400 text-xs font-bold mb-3 uppercase tracking-wide">🎯 Favorites</p>
-              {renderField("Favorite Sports Team", "favorite_sports_team", null, "e.g. Manchester United")}
-              {renderField("Favorite Game", "favorite_game", null, "e.g. FIFA 25, Valorant")}
-              {renderField("Favorite Hobby", "favorite_hobby", null, "e.g. Photography, Cooking")}
+              <p className="text-purple-400 text-xs font-bold mb-3 uppercase tracking-wide flex items-center gap-1"><Palette className="w-3 h-3" /> Favorites</p>
+              {renderField("Favorite Sports Team", "favorite_sports_team", Trophy, "Select your team", false, true, FAVORITE_TEAM_OPTIONS)}
+              {renderField("Favorite Game", "favorite_game", Gamepad2, "Select your game", false, true, FAVORITE_GAME_OPTIONS)}
+              {renderField("Favorite Hobby", "favorite_hobby", Palette, "e.g. Photography, Cooking")}
             </div>
 
             {isTier1 && (profile?.account_type === "digital_creator" || profile?.account_type === "business") && (

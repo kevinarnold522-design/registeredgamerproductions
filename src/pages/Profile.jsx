@@ -361,21 +361,24 @@ export default function Profile() {
                 </p>
               )}
               {(profile?.favorite_sports_team || profile?.favorite_game || profile?.favorite_hobby) && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-2xl">
                   {profile?.favorite_sports_team && (
-                    <span className="px-2 py-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">
-                      <Trophy className="w-3 h-3 inline mr-1" /> {profile.favorite_sports_team}
-                    </span>
+                    <div className="px-3 py-2 rounded-xl bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">
+                      <span className="flex items-center gap-1.5 text-blue-200 font-black uppercase tracking-wide text-[10px]"><Trophy className="w-3 h-3" /> Favorite Team</span>
+                      <p className="mt-1 text-blue-100">{profile.favorite_sports_team}</p>
+                    </div>
                   )}
                   {profile?.favorite_game && (
-                    <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">
-                      <Gamepad2 className="w-3 h-3 inline mr-1" /> {profile.favorite_game}
-                    </span>
+                    <div className="px-3 py-2 rounded-xl bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">
+                      <span className="flex items-center gap-1.5 text-purple-200 font-black uppercase tracking-wide text-[10px]"><Gamepad2 className="w-3 h-3" /> Favorite Game</span>
+                      <p className="mt-1 text-purple-100">{profile.favorite_game}</p>
+                    </div>
                   )}
                   {profile?.favorite_hobby && (
-                    <span className="px-2 py-1 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-semibold">
-                      <Palette className="w-3 h-3 inline mr-1" /> {profile.favorite_hobby}
-                    </span>
+                    <div className="px-3 py-2 rounded-xl bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-semibold">
+                      <span className="flex items-center gap-1.5 text-pink-200 font-black uppercase tracking-wide text-[10px]"><Palette className="w-3 h-3" /> Hobby</span>
+                      <p className="mt-1 text-pink-100">{profile.favorite_hobby}</p>
+                    </div>
                   )}
                 </div>
               )}
