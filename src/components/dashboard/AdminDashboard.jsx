@@ -249,6 +249,7 @@ export default function AdminDashboard({ user, profile }) {
         <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
           <div className="p-4 border-b border-gray-800">
             <h3 className="text-white font-bold">All Users ({allUsers.length})</h3>
+            <p className="text-gray-500 text-xs mt-1">Passwords are encrypted by the login provider and cannot be viewed by admins.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

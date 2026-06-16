@@ -175,6 +175,10 @@
       "type": "number",
       "default": 0
     },
+    "shares": {
+      "type": "number",
+      "default": 0
+    },
     "stock": {
       "type": "number",
       "default": 1

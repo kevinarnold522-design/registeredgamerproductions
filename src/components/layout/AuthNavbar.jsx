@@ -252,7 +252,7 @@ export default function AuthNavbar({ user, profile }) {
             <Link to="/messages" className="w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-green-300 flex items-center justify-center hover:border-green-600/50" title="Messages & Group Chats">
               <MessageCircle className="w-4 h-4" />
             </Link>
-            <button onClick={() => setFavOpen(true)} className="relative w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-yellow-300 flex items-center justify-center hover:border-yellow-600/50" title="Favourites">
+            <button onClick={() => setFavOpen(true)} className="relative w-8 h-8 rounded-xl bg-gray-900 border border-gray-800 text-yellow-300 flex items-center justify-center hover:border-yellow-600/50" title="Reacts & Favourites">
               <Heart className="w-4 h-4" />
               {favCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-bold">{favCount}</span>}
             </button>
@@ -356,7 +356,7 @@ export default function AuthNavbar({ user, profile }) {
           <Link to="/messages" className="p-1 text-green-300" title="Messages & Group Chats">
             <MessageCircle className="w-5 h-5" />
           </Link>
-          <button onClick={() => setFavOpen(true)} className="relative p-1 text-yellow-300" title="Favourites">
+          <button onClick={() => setFavOpen(true)} className="relative p-1 text-yellow-300" title="Reacts & Favourites">
             <Heart className="w-5 h-5" />
             {favCount > 0 && <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-purple-500 text-white text-[8px] flex items-center justify-center font-black">{favCount}</span>}
           </button>

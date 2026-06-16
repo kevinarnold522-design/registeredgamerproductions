@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Share2, X, Copy, Check, Facebook, Instagram, MessageCircle } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const BASE_URL = "https://gamerproductions.vercel.app";
 
@@ -80,17 +81,25 @@ export default function ShareButton({ type, id, title, compact = false }) {
   const shareUrl = buildShareUrl(type, id);
   const shareText = title ? `Check this out on GAMER Productions: ${title}` : "Check this out on GAMER Productions!";
 
-  const handleCopy = () => {
+  const trackShare = async () => {
+    if (type !== "listing" || !id) return;
+    const listing = await base44.entities.Listing.get(id);
+    await base44.entities.Listing.update(id, { shares: (Number(listing?.shares) || 0) + 1 });
+  };
+
+  const handleCopy = async () => {
     navigator.clipboard.writeText(shareUrl);
+    await trackShare();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handlePlatform = (platform) => {
+  const handlePlatform = async (platform) => {
     if (platform.action === "copy") {
       handleCopy();
       return;
     }
+    await trackShare();
     const url = platform.getUrl(shareUrl, shareText);
     window.open(url, "_blank", "noopener,noreferrer,width=600,height=500");
   };

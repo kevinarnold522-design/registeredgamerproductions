@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2 } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -17,6 +17,7 @@ import { CATEGORIES } from "@/lib/constants";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 import { formatListingPrice } from "@/lib/currency";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
+import { formatCount } from "@/lib/formatCounts";
 
 function GlowDownloadButton({ isFree, price, currency, onClick }) {
   return (
@@ -255,6 +256,9 @@ export default function ListingPage() {
 
   const handleShare = async () => {
     const url = window.location.href;
+    const newShares = (Number(listing.shares) || 0) + 1;
+    await base44.entities.Listing.update(listing.id, { shares: newShares });
+    setListing(prev => prev ? { ...prev, shares: newShares } : prev);
     try { if (navigator.share) { await navigator.share({ title: listing.title, url }); return; } } catch {}
     try { await navigator.clipboard.writeText(url); } catch {
       const el = document.createElement("textarea"); el.value = url;
@@ -402,10 +406,14 @@ export default function ListingPage() {
               )}
               <AnimatePresence>
                 {heartAnim && (
-                  <motion.div initial={{ scale: 0, opacity: 1 }} animate={{ scale: 2.5, opacity: 0 }} exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  <motion.div initial={{ scale: 0, opacity: 1, rotate: -8 }} animate={{ scale: 3.2, opacity: 0, rotate: 8 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 1, ease: "easeOut" }}
                     className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <Heart className="w-24 h-24 text-purple-400 fill-purple-400" style={{ filter: "drop-shadow(0 0 20px rgba(168,85,247,0.9))" }} />
+                    <div className="relative">
+                      <Heart className="w-28 h-28 text-pink-400 fill-pink-500" style={{ filter: "drop-shadow(0 0 26px rgba(236,72,153,0.95)) drop-shadow(0 0 42px rgba(124,58,237,0.9))" }} />
+                      <Sparkles className="absolute -top-4 -right-4 w-10 h-10 text-cyan-300" style={{ filter: "drop-shadow(0 0 18px rgba(103,232,249,0.9))" }} />
+                      <Sparkles className="absolute -bottom-3 -left-5 w-8 h-8 text-purple-200" style={{ filter: "drop-shadow(0 0 18px rgba(216,180,254,0.9))" }} />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -424,14 +432,14 @@ export default function ListingPage() {
               <button onClick={handleLike}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all font-semibold text-sm ${liked ? "bg-purple-900/40 border-purple-500 text-purple-300" : "bg-gray-900 border-gray-700 text-gray-400 hover:border-purple-500/50"}`}>
                 <Heart className={`w-4 h-4 transition-all ${liked ? "fill-purple-400 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" : ""}`} />
-                {likeCount}
+                {formatCount(likeCount)}
               </button>
               <button onClick={handleShare}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all text-sm font-semibold ${copied ? "border-green-500 bg-green-900/30 text-green-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:border-blue-500/50 hover:text-blue-300"}`}>
-                <Share2 className="w-4 h-4" /> {copied ? "Copied!" : "Share"}
+                <Share2 className="w-4 h-4" /> {copied ? "Copied!" : `Share ${formatCount(listing.shares || 0)}`}
               </button>
-              <div className="flex items-center gap-1.5 text-gray-600 text-sm ml-auto">
-                <Eye className="w-4 h-4" /> {(listing.views || 0).toLocaleString()}
+              <div className="flex items-center gap-1.5 text-gray-500 text-sm ml-auto">
+                <Eye className="w-4 h-4" /> {formatCount(listing.views || 0)}
               </div>
             </div>
 
@@ -493,10 +501,13 @@ export default function ListingPage() {
             <div className="flex items-center gap-4">
               {!isFree && <span className="text-3xl font-black text-purple-300">{formatListingPrice(listing.price, listing.currency)}</span>}
               <span className="text-gray-500 text-sm flex items-center gap-1">
-                <Eye className="w-3.5 h-3.5" /> {(listing.views || 0).toLocaleString()} views
+                <Eye className="w-3.5 h-3.5" /> {formatCount(listing.views || 0)} views
               </span>
               <span className="text-gray-500 text-sm flex items-center gap-1">
-                <Download className="w-3.5 h-3.5" /> {(listing.downloads || 0).toLocaleString()} downloads
+                <Download className="w-3.5 h-3.5" /> {formatCount(listing.downloads || 0)} downloads
+              </span>
+              <span className="text-gray-500 text-sm flex items-center gap-1">
+                <Share2 className="w-3.5 h-3.5" /> {formatCount(listing.shares || 0)} shares
               </span>
             </div>
 
@@ -591,7 +602,7 @@ export default function ListingPage() {
           <div className="flex items-center gap-2 mb-6">
             <MessageCircle className="w-5 h-5 text-purple-400" />
             <h2 className="text-xl font-black text-white">Comments</h2>
-            <span className="px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-300 text-xs font-bold">{comments.length}</span>
+            <span className="px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-300 text-xs font-bold">{formatCount(comments.length)}</span>
           </div>
           <CommentThread
             key={commentKey}

@@ -1,11 +1,32 @@
 import { supabase } from '@/lib/supabaseClient';
 
+const GAMERPRODUCTIONS_TABLE = 'Gamerproductuons table';
+
 /**
  * Supabase Data Service
- * Centralizes all database operations
- * NOTE: supabase may be null if env vars are not set — all methods are guarded.
+ * Centralizes all database operations.
+ * Uses VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY when available.
  */
 export const supabaseApi = {
+  async getGamerProductionsRows() {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from(GAMERPRODUCTIONS_TABLE)
+      .select('*');
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createGamerProductionsRow(row) {
+    if (!supabase) return null;
+    const { data, error } = await supabase
+      .from(GAMERPRODUCTIONS_TABLE)
+      .insert([row])
+      .select();
+    if (error) throw error;
+    return data;
+  },
+
   async getVideos() {
     if (!supabase) return [];
     const { data, error } = await supabase
