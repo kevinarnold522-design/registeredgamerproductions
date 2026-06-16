@@ -10,6 +10,7 @@ import SidebarLayout from '@/components/layout/SidebarLayout';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import LanguagePrompt from '@/components/layout/LanguagePrompt';
+import InAppBrowserLinkFix from '@/components/layout/InAppBrowserLinkFix';
 // Add page imports here
 import GamingCommunity from "./pages/GamingCommunity";
 import Home from "./pages/Home";
@@ -145,6 +146,7 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
+            <InAppBrowserLinkFix />
             <ShootingStars />
             <div style={{ position: "relative", zIndex: 10 }}>
               <SidebarLayout>
