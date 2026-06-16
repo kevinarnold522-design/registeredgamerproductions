@@ -108,7 +108,7 @@ export default function AdminDashboard({ user, profile }) {
   };
 
   const totalModDownloads = allListings
-    .filter(l => l.category === "modding")
+    .filter(l => l.category === "modding" || l.category === "premium_mods")
     .reduce((s, l) => s + (Number(l.downloads) || 0), 0);
 
   const tabs = [

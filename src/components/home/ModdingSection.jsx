@@ -74,7 +74,7 @@ export default function ModdingSection({ currentUser, currentProfile }) {
     const load = async () => {
       try {
         const allListings = await getActiveListings();
-        const data = allListings.filter(item => item.category === "modding").slice(0, 40);
+        const data = allListings.filter(item => item.category === "modding" || item.category === "premium_mods").slice(0, 40);
         setMods(data);
         const total = data.reduce((sum, m) => sum + (m.views || 0), 0);
         setTotalDownloads(total);

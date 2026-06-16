@@ -25,7 +25,7 @@ export default function CategoryPage() {
     base44.entities.UserProfile.filter({ user_email: user.email }).then(profiles => {
       if (profiles.length > 0) setProfile(profiles[0]);
     });
-  }, [user]);
+  }, [user?.email]);
 
   const [showRecommend, setShowRecommend] = React.useState(false);
 

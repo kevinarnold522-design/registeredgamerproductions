@@ -201,7 +201,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
       const seen = new Set();
       const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
       const realActive = unique.filter(l => l.is_approved !== false);
-      const allMods = realActive.filter(l => l.category === "modding");
+      const allMods = realActive.filter(l => l.category === "modding" || l.category === "premium_mods");
       const allGames = realActive.filter(l => l.category === "games");
       setPcGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("pc") || String(p).toLowerCase().includes("steam"))).slice(0, 16));
       setMobileGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("android") || String(p).toLowerCase().includes("mobile") || String(p).toLowerCase().includes("ios"))).slice(0, 16));

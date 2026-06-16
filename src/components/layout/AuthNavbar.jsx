@@ -103,13 +103,13 @@ export default function AuthNavbar({ user, profile }) {
     if (impData.isImpersonating && impData.isGhostLogin && impData.isPersistent) {
       setIsManagingAsGhost(true);
       setGhostAccountEmail(impData.targetEmail);
-      base44.entities.UserProfile.filter({ user_email: impData.targetEmail })
-        .then(profiles => {
-          if (profiles.length > 0) {
-            setGhostAccountData(profiles[0]);
-          }
-        })
-        .catch(() => {});
+      setGhostAccountData({
+        user_email: impData.targetEmail,
+        username: impData.targetUsername,
+        display_name: impData.targetDisplayName,
+        avatar_url: impData.targetAvatar,
+        account_type: impData.targetAccountType || "regular",
+      });
     }
   }, []);
 

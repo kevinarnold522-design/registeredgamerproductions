@@ -106,7 +106,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const canPost = user;
 
   useEffect(() => {
-    base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 80).then(l => {
+    const listingsPromise = cat === "modding"
+      ? Promise.all([
+          base44.entities.Listing.filter({ status: "active", category: "modding" }, "-created_date", 80),
+          base44.entities.Listing.filter({ status: "active", category: "premium_mods" }, "-created_date", 80),
+        ]).then(([mods, premiumMods]) => [...mods, ...premiumMods])
+      : base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 80);
+
+    listingsPromise.then(l => {
       let cleaned = l.filter(x => x.is_approved !== false);
       // Marketplace discovery categories must never show service-type listings
       if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {

@@ -21,7 +21,7 @@ export default function GamingNewsfeed() {
         base44.entities.Listing.filter({ status: "active" }, "-created_date", 120),
       ]);
       const activePosts = posts.filter(p => p.status === "active");
-      const communityListings = listings.filter(l => l.is_approved !== false && (l.community_franchise_id || l.category === "games" || l.modding_subcategory));
+      const communityListings = listings.filter(l => l.is_approved !== false && (l.community_franchise_id || l.category === "games" || l.category === "modding" || l.category === "premium_mods" || l.modding_subcategory));
       const merged = [
         ...activePosts.map(item => ({ type: "post", item, date: item.created_date })),
         ...communityListings.map(item => ({ type: "listing", item, date: item.created_date })),
