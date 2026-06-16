@@ -332,6 +332,7 @@ export default function CreateListing() {
 
     const ytId = extractYouTubeId(form.youtube_url);
     const priceVal = parseFloat(form.price) || 0;
+    const sellerName = profile?.username || profile?.display_name || user.email?.split("@")[0] || "Gamer";
     const data = {
       ...form,
       price: priceVal,
@@ -343,7 +344,7 @@ export default function CreateListing() {
       images,
       youtube_video_id: ytId || undefined,
       seller_email: user.email,
-      seller_username: profile?.username || user.full_name,
+      seller_username: sellerName,
       seller_paypal_email: form.paypal_email || undefined,
       external_link: form.external_link || undefined,
       card_glow_style: form.card_glow_style,
@@ -389,7 +390,7 @@ export default function CreateListing() {
         community_id: communityId,
         franchise_id: data.community_franchise_id,
         author_email: user.email,
-        author_username: profile?.username || user.full_name || "Gamer",
+        author_username: sellerName,
         author_avatar: profile?.avatar_url || "",
         content: `New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
         status: "active",
@@ -403,7 +404,7 @@ export default function CreateListing() {
         community_id: "modding",
         franchise_id: "modding_" + data.modding_subcategory.toLowerCase().replace(/\s+/g, "_"),
         author_email: user.email,
-        author_username: profile?.username || user.full_name || "Gamer",
+        author_username: sellerName,
         author_avatar: profile?.avatar_url || "",
         content: `New mod: **${data.title}** [${data.modding_subcategory}] — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
         status: "active",
@@ -417,7 +418,7 @@ export default function CreateListing() {
         community_id: "buy_sell",
         franchise_id: "store",
         author_email: user.email,
-        author_username: profile?.username || user.full_name || "Gamer",
+        author_username: sellerName,
         author_avatar: profile?.avatar_url || "",
         content: `New store listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
         status: "active",
@@ -434,7 +435,7 @@ export default function CreateListing() {
             community_id: communityId,
             franchise_id: franchiseId,
             author_email: user.email,
-            author_username: profile?.username || user.full_name || "Gamer",
+            author_username: sellerName,
             author_avatar: profile?.avatar_url || "",
             content: `New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
             status: "active",

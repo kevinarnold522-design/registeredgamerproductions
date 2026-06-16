@@ -94,9 +94,14 @@ export default function ListingPage() {
     const init = async () => {
       try {
         const me = await base44.auth.me();
-        setUser(me);
-        if (me) {
-          const profiles = await base44.entities.UserProfile.filter({ user_email: me.email });
+        const ghostSession = (() => {
+          try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
+        })();
+        const ghostEmail = ghostSession.isImpersonating && ghostSession.isGhostLogin ? ghostSession.targetEmail : null;
+        const activeUser = ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
+        setUser(activeUser);
+        if (activeUser) {
+          const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
           if (profiles[0]) setProfile(profiles[0]);
         }
       } catch {}
