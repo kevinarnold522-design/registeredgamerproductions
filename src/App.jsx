@@ -47,6 +47,7 @@ import SearchPage from "./pages/SearchPage.jsx";
 import UsersLanding from "./pages/UsersLanding";
 import ListingsLanding from "./pages/ListingsLanding";
 import OrdersLanding from "./pages/OrdersLanding";
+import GamingNewsfeed from "./pages/GamingNewsfeed";
 
 const AuthenticatedApp = () => {
   // Pulling 'user' mapping from Base44 state engine layout
@@ -114,6 +115,7 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsDMCA />} />
       <Route path="/gaming-community" element={<GamingCommunity />} />
+      <Route path="/gaming-newsfeed" element={<GamingNewsfeed />} />
       <Route path="/community-section" element={<CommunitySectionPage />} />
       <Route path="/community/:id" element={<CommunityLandingPage />} />
       <Route path="/social-manager" element={<SocialMediaManager />} />

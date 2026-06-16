@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Gamepad2, ShoppingCart, ClipboardList, Store, BarChart2, Shield,
+  ClipboardList, Store, BarChart2, Shield,
   Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy,
-  Star, GitBranch, ChevronLeft, ChevronRight, Menu, X, DollarSign,
+  GitBranch, ChevronLeft, ChevronRight, Menu, X, DollarSign,
   Settings, Share2, LogOut, Globe, Users, TrendingUp, Sparkles, Play
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
 import { Link, useLocation } from "react-router-dom";
-import CartDropdown from "@/components/layout/CartDropdown";
-import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
-import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
+
 import NotificationBell from "@/components/notifications/NotificationBell";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
@@ -57,10 +55,6 @@ function NavLink({ link, collapsed, isMobile, location }) {
 }
 
 export default function AuthNavbar({ user, profile }) {
-  const [cartOpen, setCartOpen] = useState(false);
-  const [favOpen, setFavOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [favCount, setFavCount] = useState(0);
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem("sidebar_collapsed") === "true"; } catch { return false; }
   });
@@ -116,13 +110,6 @@ export default function AuthNavbar({ user, profile }) {
   }, []);
 
   const activeUserEmail = isManagingAsGhost ? ghostAccountEmail : user?.email;
-
-  useEffect(() => {
-    if (activeUserEmail) {
-      base44.entities.Cart.filter({ user_email: activeUserEmail }).then((r) => setCartCount(r.length)).catch(() => {});
-      base44.entities.Favorite.filter({ user_email: activeUserEmail }).then((r) => setFavCount(r.length)).catch(() => {});
-    }
-  }, [activeUserEmail]);
 
   const toggleCollapsed = () => {
     setCollapsed(v => {
@@ -189,21 +176,6 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
     { icon: MessageCircle, label: "Group Chats", href: "/messages" },
   ];
-
-  const utilityLinks = [
-    { icon: Star, label: "Favourites", action: () => { setFavOpen(true); setCartOpen(false); }, badge: favCount, color: "text-yellow-400" },
-    { icon: ShoppingCart, label: "Cart", action: () => { setCartOpen(true); setFavOpen(false); }, badge: cartCount, color: "text-green-400" },
-  ];
-
-  const navLinksWithUtilities = (() => {
-    const analyticsIndex = navLinks.findIndex(link => link.label === "Analytics");
-    if (analyticsIndex === -1) return [...utilityLinks, ...navLinks];
-    return [
-      ...navLinks.slice(0, analyticsIndex),
-      ...utilityLinks,
-      ...navLinks.slice(analyticsIndex),
-    ];
-  })();
 
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
@@ -285,17 +257,10 @@ export default function AuthNavbar({ user, profile }) {
 
         </div>
 
-        {/* Search */}
-        {s && (
-          <div className="px-3 py-2 border-b border-purple-900/20">
-            <GlobalSearchBar compact />
-          </div>
-        )}
-
         {/* Dynamic Sidebar Nav Tree */}
         <div className="flex-1 overflow-y-scroll overflow-x-hidden py-2 px-2 space-y-0.5 gamer-sidebar-scroll">
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
-          {navLinksWithUtilities.map((link, i) => (
+          {navLinks.map((link, i) => (
             <NavLink key={`${link.label}-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
           ))}
 
@@ -357,22 +322,6 @@ export default function AuthNavbar({ user, profile }) {
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <NotificationBell userEmail={activeUserEmail} />
-          <button onClick={() => { setFavOpen(true); setCartOpen(false); }} className="relative p-1">
-            <Star className="w-5 h-5 text-gray-400" />
-            {favCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-purple-500 text-white text-[8px] flex items-center justify-center font-black">
-                {favCount}
-              </span>
-            )}
-          </button>
-          <button onClick={() => { setCartOpen(true); setFavOpen(false); }} className="relative p-1">
-            <ShoppingCart className="w-5 h-5 text-gray-400" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 text-white text-[8px] flex items-center justify-center font-black">
-                {cartCount}
-              </span>
-            )}
-          </button>
         </div>
       </nav>
 
@@ -407,10 +356,6 @@ export default function AuthNavbar({ user, profile }) {
           </>
         )}
       </AnimatePresence>
-
-      {/* Global Shopping Drawer Interface components */}
-      <CartDropdown isOpen={cartOpen} onClose={() => setCartOpen(false)} userEmail={activeUserEmail} />
-      <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={activeUserEmail} />
 
       {/* Creator/Business Subscription Account Transitions handling Modal */}
       {showTransition && (

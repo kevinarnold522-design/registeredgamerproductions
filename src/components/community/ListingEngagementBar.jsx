@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Eye, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import RepostButton from "@/components/shared/RepostButton";
@@ -7,6 +7,12 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes || 0);
   const [saved, setSaved] = useState(false);
+  const [commentCount, setCommentCount] = useState(listing.comments_count || 0);
+
+  useEffect(() => {
+    if (!listing?.id) return;
+    base44.entities.PostComment.filter({ post_id: listing.id }).then(comments => setCommentCount(comments.filter(c => c.status !== "removed").length)).catch(() => {});
+  }, [listing?.id]);
 
   const handleLike = async (e) => {
     e.preventDefault(); e.stopPropagation();
@@ -60,6 +66,7 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
       <a href={`/listing?id=${listing.id}#comments`} onClick={e => e.stopPropagation()}
         className={`flex items-center gap-0.5 ${textSize} text-gray-500 hover:text-purple-400 transition-colors`}>
         <MessageCircle className={iconSize} />
+        <span>{commentCount}</span>
       </a>
 
       {/* Share */}

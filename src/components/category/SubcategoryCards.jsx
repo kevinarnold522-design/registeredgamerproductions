@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
-import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical, Eye } from "lucide-react";
+import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical, Eye, Filter, CheckSquare, Square } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
@@ -584,6 +584,14 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
   });
   const [showAdd, setShowAdd] = useState(false);
   const [search, setSearch] = useState("");
+  const [showGroupFilter, setShowGroupFilter] = useState(false);
+  const [groupFilterSearch, setGroupFilterSearch] = useState("");
+  const [visibleSubcats, setVisibleSubcats] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(`subcat_visible_${cat}`) || "null");
+      return saved ? new Set(saved) : null;
+    } catch { return null; }
+  });
   // Resizable sidebar width (px)
   const [sidebarWidth, setSidebarWidth] = useState(200);
   const [mobileFeedOpen, setMobileFeedOpen] = useState(false);
@@ -634,8 +642,24 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
   const handleRequestDelete = () => alert("✅ Deletion request sent to admin for review.");
   const handleAdded = (newItem) => setItems(prev => [...prev, newItem]);
 
+  const isVisible = (id) => !visibleSubcats || visibleSubcats.has(id);
+  const toggleSubcatVisible = (id) => {
+    setVisibleSubcats(prev => {
+      const base = prev || new Set(items.map(item => item.id));
+      const next = new Set(base);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      localStorage.setItem(`subcat_visible_${cat}`, JSON.stringify([...next]));
+      return next;
+    });
+  };
+  const selectAllSubcats = () => { setVisibleSubcats(null); localStorage.removeItem(`subcat_visible_${cat}`); };
+  const unselectAllSubcats = () => {
+    setVisibleSubcats(new Set());
+    localStorage.setItem(`subcat_visible_${cat}`, JSON.stringify([]));
+  };
+
   const filteredItems = items.filter(item =>
-    !search || item.title.toLowerCase().includes(search.toLowerCase()) || item.desc?.toLowerCase().includes(search.toLowerCase())
+    isVisible(item.id) && (!search || item.title.toLowerCase().includes(search.toLowerCase()) || item.desc?.toLowerCase().includes(search.toLowerCase()))
   );
 
   if (!items.length && !canAdmin) return null;
@@ -662,6 +686,10 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
                 className="bg-gray-900 border border-gray-700 rounded-xl pl-9 pr-3 py-2 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-purple-500 w-44"
               />
             </div>
+            <button onClick={() => setShowGroupFilter(v => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${showGroupFilter ? "border-cyan-500/60 bg-cyan-900/20 text-cyan-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
+              <Filter className="w-3.5 h-3.5" /> Filter Groups {visibleSubcats && <span className="w-2 h-2 rounded-full bg-cyan-400" />}
+            </button>
             {(canAdmin || isAccountMod) && (
               <button onClick={() => setShowAdd(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black text-white"
@@ -672,6 +700,37 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
           </div>
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {showGroupFilter && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-4">
+            <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <p className="text-white font-bold text-sm">Select {categoryName} Groups</p>
+                <div className="flex gap-2">
+                  <button onClick={selectAllSubcats} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1"><CheckSquare className="w-3 h-3" /> Select All</button>
+                  <button onClick={unselectAllSubcats} className="text-xs text-gray-500 hover:text-red-400 font-semibold flex items-center gap-1"><Square className="w-3 h-3" /> Unselect All</button>
+                </div>
+              </div>
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                <input value={groupFilterSearch} onChange={e => setGroupFilterSearch(e.target.value)} placeholder="Search groups..."
+                  className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-gray-800 border border-gray-700 text-white text-xs placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-60 overflow-y-auto">
+                {items.filter(item => !groupFilterSearch || item.title.toLowerCase().includes(groupFilterSearch.toLowerCase())).map(item => (
+                  <label key={item.id} className="flex items-center gap-2 cursor-pointer group/lbl">
+                    <button type="button" onClick={() => toggleSubcatVisible(item.id)} className="flex-shrink-0">
+                      {isVisible(item.id) ? <CheckSquare className="w-4 h-4 text-cyan-400" /> : <Square className="w-4 h-4 text-gray-600 group-hover/lbl:text-gray-400" />}
+                    </button>
+                    <span className={`text-xs font-semibold transition-colors truncate ${isVisible(item.id) ? "text-white" : "text-gray-600 group-hover/lbl:text-gray-400"}`}>{item.emoji} {item.title}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="md:hidden mb-3">
         <button onClick={() => setMobileFeedOpen(true)} className="w-full py-3 rounded-2xl bg-purple-900/40 border border-purple-700/40 text-purple-200 text-sm font-black">

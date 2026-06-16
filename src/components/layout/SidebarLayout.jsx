@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import FloatingSearch from "@/components/layout/FloatingSearch";
 
 // Offsets page content to the right to account for the left sidebar (desktop only)
 export default function SidebarLayout({ children }) {
@@ -22,6 +23,7 @@ export default function SidebarLayout({ children }) {
     <>
       {/* Desktop: push content right of sidebar */}
       <style>{`
+        :root { --sidebar-offset: ${sidebarW}px; }
         @media (min-width: 1024px) {
           .sidebar-page-offset { margin-left: ${sidebarW}px; transition: margin-left 0.2s; }
         }
@@ -29,6 +31,7 @@ export default function SidebarLayout({ children }) {
           .sidebar-page-offset { margin-left: 0; padding-top: 56px; }
         }
       `}</style>
+      <FloatingSearch />
       <div className="sidebar-page-offset">
         {children}
       </div>

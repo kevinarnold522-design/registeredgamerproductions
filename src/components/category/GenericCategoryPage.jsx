@@ -10,6 +10,7 @@ import Pagination from "@/components/shared/Pagination";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
+import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import { isServiceListing } from "@/lib/constants";
 
 const PER_PAGE = 10;
@@ -357,9 +358,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  </div>
                  <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
                  <div className="flex items-center justify-between mt-2">
-                   <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
-                   <ShareButton type="listing" id={l.id} title={l.title} compact />
+                  <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
                  </div>
+                 <div className="mt-2"><ListingEngagementBar listing={l} user={user} profile={profile} compact /></div>
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
                  {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
                  {cat === "games" && l.store_platforms?.length > 0 && <div className="mt-2"><StorePlatformBadges platforms={l.store_platforms} links={l.store_platform_links} size="sm" /></div>}

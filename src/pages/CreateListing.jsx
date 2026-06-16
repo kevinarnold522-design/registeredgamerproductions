@@ -24,6 +24,7 @@ const PHYSICAL_SUBCATEGORIES = [
   { id: "other", label: "Other Physical" },
 ];
 import AuthNavbar from "@/components/layout/AuthNavbar";
+import AIListingAssistant from "@/components/listings/AIListingAssistant";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 
 function extractYouTubeId(url) {
@@ -498,6 +499,8 @@ export default function CreateListing() {
             </div>
           </div>
         )}
+
+        <AIListingAssistant form={form} setForm={setForm} images={images} setImages={setImages} />
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Images */}

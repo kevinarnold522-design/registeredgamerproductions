@@ -134,21 +134,6 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Search Bar */}
-            <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-300 ${searchFocused ? "bg-gray-800 border border-purple-600/60 w-56" : "bg-gray-900/60 border border-gray-800 w-40"}`}>
-              <Search className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                placeholder="Search..."
-                className="bg-transparent text-white text-xs placeholder-gray-600 outline-none flex-1 min-w-0"
-                onKeyDown={e => e.key === "Enter" && searchQuery && navigate(`/?search=${encodeURIComponent(searchQuery)}`)}
-              />
-            </div>
-
             {/* Right */}
             <div className="flex items-center gap-2">
               {!authenticated && <EarnNowButton />}

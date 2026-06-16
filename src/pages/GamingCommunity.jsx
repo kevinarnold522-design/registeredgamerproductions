@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Filter, CheckSquare, Square } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Filter, CheckSquare, Square, Newspaper } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -394,23 +394,9 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
       )}
 
       <div className="relative p-4 flex gap-3 items-start">
-        <div className="w-14 h-14 rounded-xl flex-shrink-0" style={{ border: `1px solid ${franchise.accent}55` }}>
-          {(community?.logo_urls?.length > 0 || logoSrc) ? (
-            <MultiAvatarDisplay
-              images={community?.logo_urls?.length > 0 ? community.logo_urls : [logoSrc]}
-              size={56}
-              rounded="rounded-xl"
-              interval={3500}
-              showDots={(community?.logo_urls?.length || 0) > 1}
-              fallback={<span className="text-3xl">{franchise.emoji}</span>}
-            />
-          ) : (
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl"
-              style={{ background: `${franchise.accent}22` }}>
-              {franchise.emoji}
-            </div>
-          )}
-        </div>
+      <div className="w-14 h-14 rounded-xl flex-shrink-0 flex items-center justify-center text-3xl" style={{ border: `1px solid ${franchise.accent}55`, background: `${franchise.accent}22` }}>
+        {franchise.emoji}
+      </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-1">
@@ -747,6 +733,10 @@ export default function GamingCommunity() {
             {search && <span className="ml-1 text-purple-400">matching "{search}"</span>}
           </p>
           <div className="flex gap-2 flex-wrap">
+            <a href="/gaming-newsfeed"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-purple-600/50 bg-purple-900/30 text-purple-200 hover:bg-purple-900/50 transition-all">
+              <Newspaper className="w-3.5 h-3.5" /> Newsfeed
+            </a>
             <button onClick={() => setShowGroupFilter(v => !v)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${showGroupFilter ? "border-cyan-500/60 bg-cyan-900/20 text-cyan-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
               <Filter className="w-3.5 h-3.5" /> Filter Groups {visibleCommunities && <span className="w-2 h-2 rounded-full bg-cyan-400 ml-1" />}

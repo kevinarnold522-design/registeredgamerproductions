@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Share2, Eye, Download, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
 export default function EnhancedListingCard({ listing, user, profile, subcategory }) {
   const [liked, setLiked] = useState(false);
@@ -93,42 +94,8 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
           </div>
         </a>
 
-        {/* Engagement Bar */}
-        <div className="mt-4 pt-3 border-t border-gray-800 flex items-center justify-between flex-wrap gap-2">
-          {/* Views */}
-          <span className="flex items-center gap-1 text-gray-500 text-[10px]">
-            <Eye className="w-3 h-3" />
-            <span>{(listing.views || 0).toLocaleString()}</span>
-          </span>
-
-          {/* Downloads */}
-          <button onClick={handleDownload} className="flex items-center gap-1 text-[10px] transition-colors"
-            style={{ color: "#3b82f6" }}>
-            <Download className="w-3 h-3" />
-            <span>{downloadCount}</span>
-          </button>
-
-          {/* Hearts */}
-          <button onClick={handleLike} className="flex items-center gap-1 text-[10px] transition-colors"
-            style={{ color: liked ? "#ec4899" : "rgba(156,163,175,0.7)" }}>
-            <Heart className="w-3 h-3" style={{ fill: liked ? "#ec4899" : "none" }} />
-            <span>{likeCount}</span>
-          </button>
-
-          {/* Comments */}
-          <a href={`/listing?id=${listing.id}#comments`} className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-purple-400 transition-colors">
-            <MessageCircle className="w-3 h-3" />
-          </a>
-
-          {/* Share */}
-          <button onClick={handleShare} className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-blue-400 transition-colors" title="Share">
-            <Share2 className="w-3 h-3" />
-          </button>
-
-          {/* Report */}
-          <button onClick={handleReport} className="flex items-center gap-1 text-[10px] text-gray-600 hover:text-red-400 transition-colors" title="Report">
-            <Flag className="w-3 h-3" />
-          </button>
+        <div className="mt-4 pt-3 border-t border-gray-800">
+          <ListingEngagementBar listing={listing} user={user} profile={profile} compact />
         </div>
       </div>
     </motion.div>
