@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Video, Image, Link, Tag, ChevronDown, Wand2, Sparkles, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { Link as RouterLink } from "react-router-dom";
 
 const POPULAR_GAMES = [
@@ -34,7 +35,7 @@ export default function CreatePostModal({ isOpen, onClose, user, profile, onCrea
     setUploading(true);
     const urls = [];
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "video-post-images");
       urls.push(file_url);
     }
     setImages(prev => [...prev, ...urls]);

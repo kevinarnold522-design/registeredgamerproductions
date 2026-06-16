@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Search, Pencil, Plus, X, Check, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Filter, CheckSquare, Square, Newspaper } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { useAuth } from "@/lib/AuthContext";
@@ -263,7 +264,7 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-logos");
     setEditLogo(file_url);
     setUploading(false);
   };
@@ -273,7 +274,7 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
     const file = e.target.files[0];
     if (!file) return;
     setUploadingCover(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-covers");
     setEditCoverUrls(prev => [...prev, file_url]);
     setUploadingCover(false);
   };

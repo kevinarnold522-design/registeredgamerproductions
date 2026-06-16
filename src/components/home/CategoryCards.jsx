@@ -7,6 +7,7 @@ import {
   IconPlay, IconJobs, IconCommunity
 } from "@/components/icons/GameIcons";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { isAdmin } from "@/lib/constants";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -48,7 +49,7 @@ function SmallCardEditOverlay({ cat, onClose, onSave }) {
   const handleUpload = async (file) => {
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "category-card-images");
     setLogoUrl(file_url);
     setUploading(false);
   };
@@ -170,7 +171,7 @@ function AddCategoryModal({ onClose, onAdd }) {
   const handleUpload = async (file) => {
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "category-card-images");
     setLogo(file_url);
     setUploading(false);
   };

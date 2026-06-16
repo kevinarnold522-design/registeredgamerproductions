@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { X, Trophy, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 
 const PLATFORMS = ["PC", "PlayStation 4", "PlayStation 5", "Xbox One", "Xbox Series X/S", "Nintendo Switch", "Mobile (Android)", "Mobile (iOS)", "Cross-Platform"];
 const BRACKET_TYPES = [
@@ -29,7 +30,7 @@ export default function CreateTournamentModal({ user, profile, franchiseId, onCl
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "tournament-covers");
     set("cover_url", file_url);
     setUploading(false);
   };

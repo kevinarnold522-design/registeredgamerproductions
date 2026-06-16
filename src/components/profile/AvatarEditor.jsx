@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Camera, Trash2, Upload, Smile, Plus, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { AnimatePresence, motion } from "framer-motion";
 import AvatarPickerModal from "@/components/community/AvatarPickerModal";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
@@ -29,7 +30,7 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
     if (!file) return;
     setUploading(true);
     setShowMenu(false);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "profile-avatars");
     // Add to avatar_urls array
     const newUrls = [file_url, ...allAvatars.filter(u => u !== file_url)].slice(0, 6);
     await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url, avatar_urls: newUrls });

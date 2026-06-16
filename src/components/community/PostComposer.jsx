@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { Image, Video, Music, Sparkles, Send, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { EffectSelector, SpecialEffectsRenderer } from "@/components/community/PostSpecialEffects";
 
 export default function PostComposer({ user, profile, franchise, community, isJoined, admin, isModerator, onPostCreated, accentColor }) {
@@ -20,7 +21,7 @@ export default function PostComposer({ user, profile, franchise, community, isJo
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "community-images");
       setImages(prev => [...prev, file_url]);
     }
   };
@@ -28,7 +29,7 @@ export default function PostComposer({ user, profile, franchise, community, isJo
   const handleVideoUpload = async (e) => {
     const files = Array.from(e.target.files || []);
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "community-videos");
       setVideos(prev => [...prev, file_url]);
     }
   };
@@ -36,7 +37,7 @@ export default function PostComposer({ user, profile, franchise, community, isJo
   const handleMusicUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setUploadingMusic(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-audio");
     setMusicUrl(file_url);
     setMusicTitle(file.name.replace(/\.[^.]+$/, ""));
     setUploadingMusic(false);

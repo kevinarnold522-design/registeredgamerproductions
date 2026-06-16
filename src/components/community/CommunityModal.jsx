@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Users, Shield, Plus, Camera, Check, Lock, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import CommunityPostCard from "./CommunityPostCard";
@@ -132,7 +133,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
     const file = e.target.files[0];
     if (!file) return;
     setUploadingLogo(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-logos");
     setEditLogoUrl(file_url);
     setUploadingLogo(false);
   };
@@ -141,7 +142,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
     const file = e.target.files[0];
     if (!file) return;
     setUploadingCover(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-covers");
     setEditCoverUrl(file_url);
     setUploadingCover(false);
   };

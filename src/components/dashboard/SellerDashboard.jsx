@@ -6,6 +6,7 @@ import MonetizationHighlights from "@/components/monetization/MonetizationHighli
 import StreakTracker from "@/components/rewards/StreakTracker";
 import SellerTrafficInsights from "@/components/dashboard/SellerTrafficInsights";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import CreatorVideoTools from "./CreatorVideoTools";
 import CreatorAnalyticsTab from "./CreatorAnalyticsTab";
 import SalesDashboard from "./SalesDashboard";
@@ -326,7 +327,7 @@ function VerificationTab({ profile, accountType }) {
     setUploading(true);
     const urls = [];
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "verification-docs");
       urls.push(file_url);
     }
     setDocs(prev => [...prev, ...urls]);

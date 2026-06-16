@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Youtube, Tag, Image as ImageIcon, Share2, Zap, CheckCircle, Globe, Users, Gamepad2, Wrench } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 
 const COMMUNITIES = [
   { id: "gaming", label: "🎮 Gaming Community" },
@@ -49,7 +50,7 @@ const CreatorVideoTools = ({ user, profile }) => {
     if (!file) return;
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "creator-post-images");
       setImageUrl(file_url);
     } catch {}
     setUploading(false);

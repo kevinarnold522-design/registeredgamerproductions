@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Eye, Search, Upload, Radio, Wand2, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { Link as RouterLink } from "react-router-dom";
 import SubcategoryCards from "./SubcategoryCards";
 
@@ -247,7 +248,7 @@ export default function ContentLandingPage({ user, profile }) {
                         if (!videoTitle.trim()) return;
                         setUploadingVideo(true);
                         try {
-                          const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
+                          const { file_url } = await uploadFileToR2(selectedVideoFile, "content-videos");
                           await base44.entities.VideoPost.create({
                             creator_email: user.email,
                             creator_username: profile?.username || user.full_name,

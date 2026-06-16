@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Lock, Upload, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 
 // Free animated emoji avatars (CSS animated via keyframes)
 export const FREE_AVATARS = [
@@ -94,7 +95,7 @@ export default function AvatarPickerModal({ user, profile, onClose, onSelect }) 
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "profile-avatars");
     setUploadedUrl(file_url);
     setSelected(file_url);
     setUploading(false);

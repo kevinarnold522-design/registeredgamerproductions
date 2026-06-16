@@ -6,6 +6,7 @@ import {
   Mic, Palette, Type, Star, RefreshCw, Copy, Video
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 
 const AI_STUDIO_TABS = [
   { id: "create", label: "✨ AI Create Video", desc: "Generate a video from images + text" },
@@ -105,7 +106,7 @@ function AICreateVideoTab({ user, profile, onVideoCreated }) {
     setUploading(true);
     const urls = [];
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "ai-video-images");
       urls.push(file_url);
     }
     setImages(prev => [...prev, ...urls]);
@@ -482,7 +483,7 @@ function UploadScanTab({ user, profile, onVideoCreated }) {
   const handleUploadAndScan = async () => {
     if (!videoFile || !title.trim()) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: videoFile });
+    const { file_url } = await uploadFileToR2(videoFile, "ai-video-uploads");
     setUploadedUrl(file_url);
     setUploading(false);
 

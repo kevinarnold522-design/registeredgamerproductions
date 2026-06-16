@@ -1,9 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Bot, Upload, Sparkles, X, Image as ImageIcon } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
-const MAX_UPLOAD_LABEL = "25MB";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
 
 export default function AIListingAssistant({ form, setForm, images, setImages }) {
   const [prompt, setPrompt] = useState("");
@@ -21,7 +19,7 @@ export default function AIListingAssistant({ form, setForm, images, setImages })
         setBusy(false);
         return;
       }
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "ai-listing-images");
       uploaded.push(file_url);
     }
     const result = await base44.integrations.Core.InvokeLLM({

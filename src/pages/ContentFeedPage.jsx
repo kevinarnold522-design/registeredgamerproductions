@@ -5,6 +5,7 @@ import {
   ChevronLeft, ChevronRight, Send, Repeat2, Bookmark, Radio, Wand2, Plus
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { useAuth } from "@/lib/AuthContext";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -297,7 +298,7 @@ function UploadModal({ user, profile, onClose, onSuccess }) {
   const handleUpload = async () => {
     if (!file || !title.trim() || !user) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "content-feed-videos");
     await base44.entities.VideoPost.create({
       creator_email: user.email,
       creator_username: profile?.username || user.full_name || "Gamer",

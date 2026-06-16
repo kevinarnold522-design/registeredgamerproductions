@@ -7,9 +7,7 @@ import { isAdmin, isServiceListing } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import EnhancedListingCard from "@/components/community/EnhancedListingCard";
-
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
-const MAX_UPLOAD_LABEL = "25MB";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
 
 // Storage key for cards in a subcategory landing page
 const getStorageKey = (parentCat, subId) => `subcat_landing_${parentCat}_${subId}`;
@@ -30,7 +28,7 @@ function CardEditOverlay({ card, onClose, onSave }) {
       return;
     }
     setUploading(type);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, type === "logo" ? "subcategory-logos" : "subcategory-covers");
     if (type === "logo") setLogoUrl(file_url);
     else setCoverUrl(file_url);
     setUploading(null);
@@ -48,7 +46,7 @@ function CardEditOverlay({ card, onClose, onSave }) {
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500" />
       </div>
       <div>
-        <p className="text-gray-500 text-[10px] mb-1">Profile Picture (max {MAX_UPLOAD_LABEL})</p>
+        <p className="text-gray-500 text-[10px] mb-1">Profile Picture (max 25MB)</p>
         <div className="flex gap-1.5 mb-1">
           <input value={logoUrl} onChange={e => setLogoUrl(e.target.value)}
             placeholder="Paste URL..."
@@ -63,7 +61,7 @@ function CardEditOverlay({ card, onClose, onSave }) {
         {logoUrl && <img src={logoUrl} className="w-12 h-12 rounded-xl object-cover" alt="" />}
       </div>
       <div>
-        <p className="text-gray-500 text-[10px] mb-1">Cover Image (max {MAX_UPLOAD_LABEL})</p>
+        <p className="text-gray-500 text-[10px] mb-1">Cover Image (max 25MB)</p>
         <div className="flex gap-1.5 mb-1">
           <input value={coverUrl} onChange={e => setCoverUrl(e.target.value)}
             placeholder="Paste URL..."
@@ -173,7 +171,7 @@ function AddCardModal({ onClose, onAdd }) {
       return;
     }
     setUploading(type);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, type === "logo" ? "subcategory-logos" : "subcategory-covers");
     if (type === "logo") setLogo(file_url);
     else setCover(file_url);
     setUploading(null);
@@ -193,7 +191,7 @@ function AddCardModal({ onClose, onAdd }) {
               className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500" />
           </div>
           <div>
-            <label className="text-gray-400 text-xs font-bold mb-1 block">Profile Picture (max {MAX_UPLOAD_LABEL})</label>
+            <label className="text-gray-400 text-xs font-bold mb-1 block">Profile Picture (max 25MB)</label>
             <div className="flex gap-2 mb-1">
               <input value={logo} onChange={e => setLogo(e.target.value)} placeholder="Paste URL or upload..."
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500" />
@@ -207,7 +205,7 @@ function AddCardModal({ onClose, onAdd }) {
             {logo && <img src={logo} className="w-12 h-12 rounded-xl object-cover" alt="" />}
           </div>
           <div>
-            <label className="text-gray-400 text-xs font-bold mb-1 block">Cover Image (max {MAX_UPLOAD_LABEL})</label>
+            <label className="text-gray-400 text-xs font-bold mb-1 block">Cover Image (max 25MB)</label>
             <div className="flex gap-2 mb-1">
               <input value={cover} onChange={e => setCover(e.target.value)} placeholder="Paste URL or upload..."
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />

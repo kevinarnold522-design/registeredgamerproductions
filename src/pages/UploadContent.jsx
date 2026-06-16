@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Upload, X, Plus, ArrowLeft, Link as LinkIcon, Youtube, Globe } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { isAdmin } from "@/lib/constants";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -42,7 +43,7 @@ export default function UploadContent() {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "content-videos");
     setForm(f => ({ ...f, video_url: file_url }));
     setUploading(false);
   };

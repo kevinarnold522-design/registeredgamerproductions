@@ -6,6 +6,7 @@ import {
   MessageCircle, Share2, Image as ImageIcon, X, Send, Gamepad2
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import PostCard from "@/components/channel/PostCard";
 import ChannelThemePicker, { THEMES } from "@/components/channel/ChannelThemePicker";
@@ -176,7 +177,7 @@ export default function Channel() {
               <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                 const file = e.target.files[0];
                 if (!file || !profile?.id) return;
-                const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                const { file_url } = await uploadFileToR2(file, "channel-post-images");
                 await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
                 setProfile(prev => ({ ...prev, banner_url: file_url }));
               }} />
@@ -202,7 +203,7 @@ export default function Channel() {
                   <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                     const file = e.target.files[0];
                     if (!file || !profile?.id) return;
-                    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                    const { file_url } = await uploadFileToR2(file, "channel-avatars");
                     await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
                     setProfile(prev => ({ ...prev, avatar_url: file_url }));
                   }} />
@@ -605,7 +606,7 @@ export default function Channel() {
                         if (!videoTitle.trim()) return;
                         setUploadingVideo(true);
                         try {
-                          const { file_url } = await base44.integrations.Core.UploadFile({ file: selectedVideoFile });
+                          const { file_url } = await uploadFileToR2(selectedVideoFile, "channel-videos");
                           await base44.entities.VideoPost.create({
                             creator_email: user.email,
                             creator_username: profile?.username || user.full_name,
@@ -701,7 +702,7 @@ export default function Channel() {
                     const files = Array.from(e.target.files);
                     setUploadingPost(true);
                     for (const file of files) {
-                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      const { file_url } = await uploadFileToR2(file, "channel-post-images");
                       setPostImages(prev => [...prev, file_url]);
                     }
                     setUploadingPost(false);

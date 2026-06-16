@@ -7,6 +7,7 @@ import PostNotifications from "@/components/community/PostNotifications";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -186,7 +187,7 @@ export default function CommunityLandingPage() {
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setUploadingLogo(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-logos");
     setEditLogoUrl(file_url);
     setEditLogoUrls(prev => prev.includes(file_url) ? prev : [...prev, file_url]);
     setUploadingLogo(false);
@@ -194,19 +195,19 @@ export default function CommunityLandingPage() {
 
   const handleBulkImageUpload = async (idx, e) => {
     const file = e.target.files[0]; if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-post-images");
     updateBulkPost(idx, 'images', [...(bulkPosts[idx].images || []), file_url]);
   };
 
   const handleBulkVideoUpload = async (idx, e) => {
     const file = e.target.files[0]; if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-post-videos");
     updateBulkPost(idx, 'videos', [...(bulkPosts[idx].videos || []), file_url]);
   };
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0]; if (!file) return;
     setUploadingCover(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await uploadFileToR2(file, "community-covers");
     setEditCoverUrl(file_url);
     setEditCoverUrls(prev => prev.includes(file_url) ? prev : [...prev, file_url]);
     setUploadingCover(false);

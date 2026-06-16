@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Plus, Music, Play, Film, ChevronRight, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 
 const MUSIC_TRACKS = [
   { id: "none", label: "No Music", url: null },
@@ -32,7 +33,7 @@ export default function ReelCreator({ user, profile, onClose, onPosted }) {
     }
     setUploading(true);
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await uploadFileToR2(file, "reel-images");
       setImages(prev => [...prev, file_url]);
     }
     setUploading(false);
