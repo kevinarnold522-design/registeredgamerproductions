@@ -195,15 +195,48 @@ export default function AuthNavbar({ user, profile }) {
     { icon: ShoppingCart, label: "Cart", action: () => { setCartOpen(true); setFavOpen(false); }, badge: cartCount, color: "text-green-400" },
   ];
 
+  const navLinksWithUtilities = (() => {
+    const analyticsIndex = navLinks.findIndex(link => link.label === "Analytics");
+    if (analyticsIndex === -1) return [...utilityLinks, ...navLinks];
+    return [
+      ...navLinks.slice(0, analyticsIndex),
+      ...utilityLinks,
+      ...navLinks.slice(analyticsIndex),
+    ];
+  })();
+
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
   const sidebarInner = (isMobile = false) => {
     const s = !collapsed || isMobile;
     return (
       <div className="flex flex-col h-full">
-        <div className="px-3 pt-3 pb-3 border-b border-purple-900/30 space-y-2">
+      <div className="px-3 pt-3 pb-3 border-b border-purple-900/30 space-y-2">
+        <div className={`flex items-center gap-2 ${collapsed && !isMobile ? "flex-col" : ""}`}>
+          <Link to="/" className="flex items-center gap-1.5 min-w-0" onClick={(e) => { e.preventDefault(); handleControllerClick(); setTimeout(() => { window.location.href = "/"; }, 180); }}>
+            <motion.div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorCycles[controllerColorIdx]} cursor-pointer text-lg`}
+              animate={{ rotate: [0, -2, 2, 0], scale: controllerAnimating ? [1, 1.15, 1] : 1 }}
+              transition={{ duration: controllerAnimating ? 0.6 : 2, repeat: controllerAnimating ? 0 : Infinity, repeatDelay: 5 }}
+              style={{
+                boxShadow: controllerAnimating
+                  ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6)"
+                  : "0 0 10px rgba(168,85,247,0.4)",
+                transition: "box-shadow 0.4s ease, background 0.3s ease",
+              }}
+            >
+              <span className={controllerAnimating ? "controller-color-cycle" : ""}>🎮</span>
+            </motion.div>
+            {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
+          </Link>
+          {!isMobile && (
+            <button onClick={toggleCollapsed} className="ml-auto p-1 rounded-lg text-gray-600 hover:text-white hover:bg-gray-800 transition-all flex-shrink-0">
+              {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+            </button>
+          )}
+        </div>
 
-          {s && !(admin && !isManagingAsGhost) && (
+        {s && !(admin && !isManagingAsGhost) && (
             <div className="space-y-2">
               {accountType === "regular" && (
                 <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold transition-all hover:opacity-90">
@@ -250,30 +283,6 @@ export default function AuthNavbar({ user, profile }) {
             )}
           </Link>
 
-
-          <div className={`flex items-center gap-2 mt-3 ${collapsed && !isMobile ? "flex-col" : ""}`}>
-            <Link to="/" className="flex items-center gap-1.5 min-w-0" onClick={(e) => { e.preventDefault(); handleControllerClick(); window.location.href = "/"; }}>
-              <motion.div
-                className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorCycles[controllerColorIdx]} cursor-pointer text-base`}
-                animate={{ scale: controllerAnimating ? [1, 1.15, 1] : 1 }}
-                transition={{ duration: 0.6 }}
-                style={{
-                  boxShadow: controllerAnimating
-                    ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6)"
-                    : "0 0 10px rgba(168,85,247,0.4)",
-                  transition: "box-shadow 0.4s ease, background 0.3s ease",
-                }}
-              >
-                🎮
-              </motion.div>
-              {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
-            </Link>
-            {!isMobile && (
-              <button onClick={toggleCollapsed} className="ml-auto p-1 rounded-lg text-gray-600 hover:text-white hover:bg-gray-800 transition-all flex-shrink-0">
-                {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-              </button>
-            )}
-          </div>
         </div>
 
         {/* Search */}
@@ -285,15 +294,9 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Dynamic Sidebar Nav Tree */}
         <div className="flex-1 overflow-y-scroll overflow-x-hidden py-2 px-2 space-y-0.5 gamer-sidebar-scroll">
-          {utilityLinks.map((link, i) => (
-            <NavLink key={`utility-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
-          ))}
-
-          <div className="nav-divider mx-2 my-1.5" />
-
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
-          {navLinks.map((link, i) => (
-            <NavLink key={i} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
+          {navLinksWithUtilities.map((link, i) => (
+            <NavLink key={`${link.label}-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
           ))}
 
           <div className="nav-divider mx-2 my-1.5" />
@@ -337,10 +340,19 @@ export default function AuthNavbar({ user, profile }) {
         <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />
         </button>
-        <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1) % colorCycles.length); window.location.href = "/"; }}>
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]} text-base`}>
-            🎮
-          </div>
+        <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); handleControllerClick(); setTimeout(() => { window.location.href = "/"; }, 180); }}>
+          <motion.div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]} text-lg`}
+            animate={{ rotate: [0, -2, 2, 0], scale: controllerAnimating ? [1, 1.15, 1] : 1 }}
+            transition={{ duration: controllerAnimating ? 0.6 : 2, repeat: controllerAnimating ? 0 : Infinity, repeatDelay: 5 }}
+            style={{
+              boxShadow: controllerAnimating
+                ? "0 0 24px rgba(168,85,247,0.9), 0 0 48px rgba(124,58,237,0.6)"
+                : "0 0 10px rgba(168,85,247,0.4)",
+            }}
+          >
+            <span className={controllerAnimating ? "controller-color-cycle" : ""}>🎮</span>
+          </motion.div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
