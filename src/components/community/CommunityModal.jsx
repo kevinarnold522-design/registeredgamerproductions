@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Users, Shield, Plus, Camera, Check, Lock, LayoutGrid, Upload } from "lucide-react";
+import { X, Send, Users, Shield, Plus, Camera, Check, Lock, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
@@ -482,7 +482,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                   <a href="/create-listing"
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-white"
                     style={{ background: "#2563eb" }}>
-                    <LayoutGrid className="w-3.5 h-3.5" /> Add Listing
+                    <Send className="w-3.5 h-3.5" /> Post
                   </a>
                   {/* Tier 1: request section */}
                   {isTier1 && !canManage && isJoined && user && (

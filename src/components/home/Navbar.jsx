@@ -47,6 +47,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [controllerCycling, setControllerCycling] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   const colorCycles = [
@@ -67,6 +68,7 @@ export default function Navbar() {
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
+    base44.auth.isAuthenticated().then(setAuthenticated).catch(() => setAuthenticated(false));
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -149,8 +151,8 @@ export default function Navbar() {
 
             {/* Right */}
             <div className="flex items-center gap-2">
-              <EarnNowButton />
-              <button
+              {!authenticated && <EarnNowButton />}
+              {!authenticated && <button
                 onClick={() => setShowSignUpModal(true)}
                 className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-sm font-black transition-all shadow-lg radiant-glow"
                 style={{
@@ -161,7 +163,7 @@ export default function Navbar() {
                 }}
               >
 Get Started
-              </button>
+              </button>}
               <style>{`@keyframes fire-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }`}</style>
               <button
                 onClick={() => setShowLoginModal(true)}
@@ -199,13 +201,13 @@ Get Started
             >
               Log In
             </button>
-            <button
+            {!authenticated && <button
               onClick={() => { setMenuOpen(false); setShowSignUpModal(true); }}
               className="text-center px-4 py-2 rounded-lg text-white font-semibold"
               style={{ background: "linear-gradient(135deg, #ff6a00, #ee0979)" }}
             >
 Get Started
-            </button>
+            </button>}
           </div>
         )}
       </motion.nav>
@@ -243,14 +245,13 @@ Get Started
 
               {/* GP Logo welcome signage */}
               <div className="flex flex-col items-center my-4">
-                <motion.img
-                  src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
-                  alt="Gamer Productions"
-                  className="w-20 h-20 object-contain mb-2"
+                <motion.span
+                  aria-label="Gamer Productions"
+                  className="w-20 h-20 mb-2 flex items-center justify-center text-6xl"
                   animate={{ scale: [1, 1.06, 1], rotate: [0, -4, 4, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   style={{ filter: "drop-shadow(0 0 18px rgba(168,85,247,0.7))" }}
-                />
+                >🎮</motion.span>
                 <span className="text-2xl font-black text-white tracking-tight">Welcome to <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Gamer.Productions</span></span>
                 <span className="text-gray-500 text-xs mt-1">The #1 Gaming Hub Community</span>
               </div>

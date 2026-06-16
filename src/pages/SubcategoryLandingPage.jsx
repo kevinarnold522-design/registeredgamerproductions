@@ -346,7 +346,7 @@ export default function SubcategoryLandingPage() {
               <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
                 style={{ background: "linear-gradient(135deg, #059669, #0d9488)" }}>
-                <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Add Listing"}
+                <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
               </button>
             )}
             {admin && (
@@ -397,7 +397,7 @@ export default function SubcategoryLandingPage() {
               {user && (
                 <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                   className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
-                  <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Add Listing"}
+                  <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
                 </a>
               )}
             </div>

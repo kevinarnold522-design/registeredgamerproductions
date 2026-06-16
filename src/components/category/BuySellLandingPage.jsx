@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SubcategoryCards from "./SubcategoryCards";
 import { motion } from "framer-motion";
-import { Search, ShoppingCart, Plus } from "lucide-react";
+import { Search, ShoppingCart, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { CATEGORIES, isAdmin } from "@/lib/constants";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
@@ -131,7 +131,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
           </div>
           {canPost && (
             <a href="/create-listing?cat=buy_sell" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap">
-              <Plus className="w-4 h-4" /> Add Listing
+              <Send className="w-4 h-4" /> Post
             </a>
           )}
         </div>
@@ -145,7 +145,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
             <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-700" />
             <p className="text-gray-400 font-bold">No listings in this category yet</p>
             <p className="text-gray-600 text-sm mt-1">Be the first to list something!</p>
-            {canPost && <a href="/create-listing?cat=buy_sell" className="mt-4 inline-block px-6 py-3 rounded-xl bg-yellow-600 text-white font-bold text-sm">Add Listing</a>}
+            {canPost && <a href="/create-listing?cat=buy_sell" className="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-600 text-white font-bold text-sm"><Send className="w-4 h-4" /> Post</a>}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

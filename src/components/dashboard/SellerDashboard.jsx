@@ -201,16 +201,16 @@ export default function SellerDashboard({ user, profile }) {
           <div className="flex justify-between mb-4">
             <h3 className="text-white font-bold text-lg">My Listings ({listings.length})</h3>
             <a href="/create-listing" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 transition-colors">
-              <Plus className="w-4 h-4" /> Add Listing
+              <Plus className="w-4 h-4" /> Post
             </a>
           </div>
           {listings.length === 0 ? (
             <div className="text-center py-16 bg-gray-900 rounded-2xl border border-gray-800">
               <Store className="w-12 h-12 text-gray-700 mx-auto mb-3" />
               <p className="text-gray-400 font-semibold mb-2">No listings yet</p>
-              <p className="text-gray-600 text-sm mb-4">Create your first listing to start selling</p>
+              <p className="text-gray-600 text-sm mb-4">Post your first item to start selling</p>
               <a href="/create-listing" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
-                Create First Listing
+                Post
               </a>
             </div>
           ) : (

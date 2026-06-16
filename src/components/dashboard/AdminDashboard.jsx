@@ -324,7 +324,7 @@ export default function AdminDashboard({ user, profile }) {
         <div className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
           <div className="p-4 border-b border-gray-800 flex justify-between items-center">
             <h3 className="text-white font-bold">All Listings ({allListings.length})</h3>
-            <a href="/create-listing" className="px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-600/40 text-purple-300 text-xs font-semibold hover:bg-purple-600/30 transition-colors">+ Add Listing</a>
+            <a href="/create-listing" className="px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-600/40 text-purple-300 text-xs font-semibold hover:bg-purple-600/30 transition-colors">+ Post</a>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

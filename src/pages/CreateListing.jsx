@@ -656,7 +656,7 @@ export default function CreateListing() {
                 <div className="absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-y-auto">
                   {gamingCommunities.filter(c => c.name.toLowerCase().includes(gameSearch.toLowerCase())).slice(0, 20).map(c => (
                     <button key={c.id} type="button"
-                      onClick={() => { setGameSearch(c.name); setForm(f => ({ ...f, game_name: c.name, community_franchise_id: c.id })); setShowGameDropdown(false); }}
+                      onClick={() => { setGameSearch(c.name); setForm(f => ({ ...f, game_name: c.name, community_franchise_id: f.category === "games" ? "" : c.id })); setShowGameDropdown(false); }}
                       className="w-full text-left px-4 py-2.5 text-white text-sm hover:bg-purple-900/40 transition-colors border-b border-gray-800/50 last:border-0">
                       {c.name}
                     </button>
@@ -799,8 +799,8 @@ export default function CreateListing() {
               </div>
             )}
 
-            {/* Gaming Community — MANDATORY for all listings */}
-            <div className="bg-cyan-900/20 border border-cyan-500/60 rounded-xl p-4">
+            {/* Gaming Community — mandatory except standalone Games posts */}
+            {form.category !== "games" && <div className="bg-cyan-900/20 border border-cyan-500/60 rounded-xl p-4">
               <label className="text-cyan-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
                 <Gamepad2 className="w-3 h-3 text-cyan-300" /> Gaming Community <span className="text-red-400 ml-1">*</span>
               </label>
@@ -814,10 +814,10 @@ export default function CreateListing() {
               {form.community_franchise_id && (
                 <p className="text-cyan-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Will be shared with {TOP_FRANCHISES.find(f => f.id === form.community_franchise_id)?.name}</p>
               )}
-            </div>
+            </div>}
 
             {/* Bulk Cross-Posting - Multiple Gaming Communities */}
-            <div className="bg-purple-900/20 border border-purple-500/60 rounded-xl p-4">
+            {form.category !== "games" && <div className="bg-purple-900/20 border border-purple-500/60 rounded-xl p-4">
               <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
                 <Megaphone className="w-3 h-3 text-purple-300" /> Bulk Cross-Posting (Optional)
               </label>
@@ -842,7 +842,7 @@ export default function CreateListing() {
               {form.bulk_cross_post_ids.length > 0 && (
                 <p className="text-purple-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Will cross-post to {form.bulk_cross_post_ids.length} communities</p>
               )}
-            </div>
+            </div>}
 
             {/* Modding Community Subcategory — optional */}
             <div className="bg-orange-900/20 border border-orange-700/40 rounded-xl p-4">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Hash, Users, Package, MessageSquare } from "lucide-react";
+import { ArrowLeft, Hash, Users, Package, MessageSquare, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
@@ -192,7 +192,7 @@ export default function CommunitySectionPage() {
                 <Link to={`/create-listing?community=${franchiseId}`}
                   className="inline-block mt-3 px-4 py-2 rounded-xl text-xs font-black text-white"
                   style={{ background: accentColor }}>
-                  + Add Listing
+                  <Send className="w-3.5 h-3.5 inline mr-1" /> Post
                 </Link>
               </div>
             ) : (

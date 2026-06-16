@@ -244,7 +244,7 @@ export default function AuthNavbar({ user, profile }) {
                   </p>
                   <GamerCheckmark isVerified={isManagingAsGhost ? ghostAccountData?.is_verified : profile?.is_verified} userEmail={isManagingAsGhost ? ghostAccountEmail : user?.email} size="sm" showTooltip={false} />
                 </div>
-                <div className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-md border text-[9px] font-black capitalize ${userTypeColor}`}>
+                <div className={`mt-1 inline-flex items-center border border-input px-2 py-0.5 text-xs rounded font-black capitalize ${userTypeColor}`}>
                   {userTypeLabel}
                 </div>
               </div>

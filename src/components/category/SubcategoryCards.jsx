@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/lib/AuthContext";
 import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
@@ -431,6 +432,8 @@ function AddSubcategoryModal({ cat, onClose, onAdded }) {
 
 // Feed of listings + community posts for the entire category
 function CategoryFeed({ cat, user, userProfile }) {
+  const { user: authUser, isLoadingAuth } = useAuth();
+  const effectiveUser = user || authUser;
   const [listings, setListings] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -453,13 +456,13 @@ function CategoryFeed({ cat, user, userProfile }) {
   }, [cat]);
 
   const handlePost = async () => {
-    if (!newPost.trim() || !user) return;
+    if (!newPost.trim() || !effectiveUser) return;
     setPosting(true);
     const p = await base44.entities.CommunityPost.create({
       community_id: cat,
       franchise_id: cat,
-      author_email: user.email,
-      author_username: userProfile?.username || user.full_name || "Gamer",
+      author_email: effectiveUser.email,
+      author_username: userProfile?.username || effectiveUser.full_name || "Gamer",
       author_avatar: userProfile?.avatar_url || "",
       content: newPost,
       likes: 0,
@@ -481,7 +484,7 @@ function CategoryFeed({ cat, user, userProfile }) {
   return (
     <>
       {/* Post input */}
-      {user ? (
+      {isLoadingAuth ? null : effectiveUser ? (
         <div className="px-3 py-2.5 border-b border-gray-800 flex gap-2 flex-shrink-0">
           <input value={newPost} onChange={e => setNewPost(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && handlePost()}
@@ -494,7 +497,7 @@ function CategoryFeed({ cat, user, userProfile }) {
         </div>
       ) : (
         <div className="px-3 py-2 border-b border-gray-800 flex-shrink-0 text-center">
-        <button onClick={() => base44.auth.redirectToLogin()} className="text-xs text-purple-400 font-bold hover:underline">Sign in to post →</button>
+        <button onClick={() => base44.auth.redirectToLogin()} className="text-xs text-purple-400 font-bold hover:underline">Log in to post →</button>
         </div>
       )}
       <div className="flex-1 overflow-y-auto">
@@ -688,7 +691,7 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
             {user && (
               <a href={`/create-listing?cat=${encodeURIComponent(cat)}`}
                 className="text-xs font-bold px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
-                {cat === "premium_mods" ? "+ Sell Premium Mod" : "+ Add Listing"}
+                {cat === "premium_mods" ? "+ Sell Premium Mod" : "+ Post"}
               </a>
             )}
           </div>

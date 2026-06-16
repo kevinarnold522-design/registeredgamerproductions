@@ -22,20 +22,19 @@ export default function EarnNowButton() {
   }, []);
 
   if (authed === null) return null;
-  if (accountType === "digital_creator" || accountType === "business") return null;
+  if (authed || accountType === "digital_creator" || accountType === "business") return null;
 
-  const href = authed ? "/" : "/register";
+  const href = "/register";
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <motion.img
-        src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
-        alt="GP"
-        className="w-7 h-7 object-contain"
+      <motion.span
+        aria-label="Gamer Productions"
+        className="w-7 h-7 flex items-center justify-center text-xl"
         animate={{ scale: [1, 1.1, 1], rotate: [0, -5, 5, 0] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         style={{ filter: "drop-shadow(0 0 8px rgba(168,85,247,0.8))" }}
-      />
+      >🎮</motion.span>
     <motion.a
       href={href}
       initial={{ opacity: 0, y: -8 }}

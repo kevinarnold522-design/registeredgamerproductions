@@ -199,9 +199,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           <div className="rounded-3xl border border-amber-700/30 bg-gradient-to-br from-amber-950/40 to-gray-900 p-5">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <p className="text-amber-300 text-xs font-black uppercase tracking-widest">Premium mod collections</p>
-                <h2 className="text-white text-2xl font-black">Sell a Premium Mod</h2>
-                <p className="text-gray-500 text-sm mt-1">Choose a game card below to browse its landing page and newsfeed.</p>
+                <p className="text-amber-300 text-xs font-black uppercase tracking-widest">PREMIUM MOD COLLECTIONS</p>
+                <h2 className="text-white text-2xl font-black">Shop paid mods by game</h2>
+                <p className="text-gray-500 text-sm mt-1">Choose a game card below to browse its landing page, newsfeed, and custom cards.</p>
               </div>
               {canPost && <a href="/create-listing?cat=premium_mods" className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-bold hover:bg-amber-500/30">Sell a Premium Mod</a>}
             </div>
