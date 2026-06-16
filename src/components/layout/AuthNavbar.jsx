@@ -127,6 +127,18 @@ export default function AuthNavbar({ user, profile }) {
     });
   };
 
+  const handleLogout = () => {
+    if (isManagingAsGhost) {
+      localStorage.removeItem("impersonation_session");
+      setIsManagingAsGhost(false);
+      setGhostAccountEmail("");
+      setGhostAccountData(null);
+      window.location.href = "/admin/created-accounts";
+      return;
+    }
+    base44.auth.logout("/");
+  };
+
   // ── Links Setup ──────────────────────────────────────────
   const adminLinks = [
     { icon: Shield, label: "Admin Dashboard", href: "/dashboard", color: "text-yellow-400" },
@@ -294,10 +306,10 @@ export default function AuthNavbar({ user, profile }) {
         <div className={`p-2 space-y-0.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
           {s && (
             <button
-              onClick={() => base44.auth.logout("/")}
+              onClick={handleLogout}
               className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-red-400 hover:bg-red-900/20 text-xs font-semibold transition-all"
             >
-              <LogOut className="w-3.5 h-3.5" /> Log Out
+              <LogOut className="w-3.5 h-3.5" /> {isManagingAsGhost ? "Back to Admin" : "Log Out"}
             </button>
           )}
         </div>

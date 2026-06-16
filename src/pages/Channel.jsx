@@ -103,7 +103,11 @@ export default function Channel() {
     init();
   }, []);
 
-  const isOwner = !viewEmail || (user && viewEmail === user.email);
+  const ghostSession = (() => {
+    try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
+  })();
+  const isGhostOwner = ghostSession.isImpersonating && ghostSession.isGhostLogin && ghostSession.targetEmail === targetEmail;
+  const isOwner = !viewEmail || (user && viewEmail === user.email) || isGhostOwner;
   const currentThemeObj = THEMES.find(t => t.id === channelTheme) || THEMES[0];
   const handleThemeChange = (themeId) => {
     setChannelTheme(themeId);
@@ -177,9 +181,9 @@ export default function Channel() {
               <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                 const file = e.target.files[0];
                 if (!file || !profile?.id) return;
-                const { file_url } = await uploadFileToR2(file, "channel-post-images");
-                await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
-                setProfile(prev => ({ ...prev, banner_url: file_url }));
+                const { file_url } = await uploadFileToR2(file, "channel-covers");
+                const updated = await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
+                setProfile(updated);
               }} />
             </label>
           )}
