@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2 } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -91,6 +91,7 @@ export default function ListingPage() {
   const [showRecommendModal, setShowRecommendModal] = useState(false);
   const [recommendText, setRecommendText] = useState("");
   const [recommendSent, setRecommendSent] = useState(false);
+  const [deleteRequested, setDeleteRequested] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -293,6 +294,29 @@ export default function ListingPage() {
     setTimeout(() => { setShowRecommendModal(false); setRecommendSent(false); setRecommendText(""); }, 2000);
   };
 
+  const handleDeleteListing = async () => {
+    if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
+    const ownsListing = listing?.seller_email === user.email;
+    if (ownsListing || isAdmin(user.email)) {
+      if (!window.confirm("Delete this listing?")) return;
+      await base44.entities.Listing.update(listing.id, { status: "removed" });
+      window.location.href = ownsListing ? "/my-listings" : "/all-listings";
+      return;
+    }
+    const reason = window.prompt("Why should this listing be reviewed for deletion?");
+    if (!reason?.trim()) return;
+    await base44.entities.ListingDeleteRequest.create({
+      listing_id: listing.id,
+      listing_title: listing.title,
+      listing_owner_email: listing.seller_email,
+      requested_by_email: user.email,
+      requested_by_username: profile?.username || user.full_name || "User",
+      reason: reason.trim(),
+      status: "pending",
+    });
+    setDeleteRequested(true);
+  };
+
   const adminUser = user && isAdmin(user.email);
   const isOwner = user && listing && user.email === listing.seller_email;
   const canEdit = adminUser || isOwner;
@@ -342,6 +366,13 @@ export default function ListingPage() {
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-500/50 text-purple-300 text-sm font-bold hover:bg-purple-900/60 transition-all">
                 <Pencil className="w-4 h-4" /> Edit Listing
               </a>
+            )}
+            {user && (
+              <button onClick={handleDeleteListing} disabled={deleteRequested}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all ${canEdit ? "bg-red-950/50 border-red-700/50 text-red-300 hover:bg-red-900/60" : "bg-gray-900 border-gray-700 text-gray-300 hover:border-red-600/50"}`}>
+                {canEdit ? <Trash2 className="w-4 h-4" /> : <Flag className="w-4 h-4" />}
+                {canEdit ? "Delete Listing" : deleteRequested ? "Delete Request Sent" : "Request Delete"}
+              </button>
             )}
             <button onClick={() => setShowRecommendModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all">
