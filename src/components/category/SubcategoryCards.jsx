@@ -118,10 +118,27 @@ function SubcardEditOverlay({ item, cat, onClose, onSaved }) {
   const logoRef = useRef(null);
   const coverRef = useRef(null);
 
+  const uploadToR2 = (file, folder) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await base44.functions.invoke("uploadToR2", {
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
+          dataUrl: reader.result,
+          folder,
+        });
+        resolve(res.data.file_url);
+      } catch (error) { reject(error); }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
   const handleUpload = async (file, type) => {
     if (!file) return;
     setUploading(type);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const file_url = await uploadToR2(file, type === "logo" ? "subcategory-logos" : "subcategory-covers");
     if (type === "logo") setLogoUrl(file_url);
     else setCoverUrl(file_url);
     setUploading(null);

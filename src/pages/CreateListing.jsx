@@ -186,11 +186,28 @@ export default function CreateListing() {
     init();
   }, []);
 
+  const uploadToR2 = (file, folder) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await base44.functions.invoke("uploadToR2", {
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
+          dataUrl: reader.result,
+          folder,
+        });
+        resolve(res.data.file_url);
+      } catch (error) { reject(error); }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     setUploadingImages(true);
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const file_url = await uploadToR2(file, "listing-images");
       setImages(prev => [...prev, file_url]);
     }
     setUploadingImages(false);
@@ -200,7 +217,7 @@ export default function CreateListing() {
     const file = e.target.files[0];
     if (!file) return;
     setUploadingImages(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const file_url = await uploadToR2(file, "listing-videos");
     setForm(f => ({ ...f, video_url: file_url }));
     setUploadingImages(false);
   };
@@ -209,7 +226,7 @@ export default function CreateListing() {
     const file = e.target.files[0];
     if (!file) return;
     setUploadingImages(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const file_url = await uploadToR2(file, "listing-downloads");
     setForm(f => ({ ...f, download_url: file_url }));
     setUploadingImages(false);
   };

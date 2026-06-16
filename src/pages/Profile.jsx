@@ -165,11 +165,28 @@ export default function Profile() {
     init();
   }, [targetEmail]);
 
+  const uploadToR2 = (file, folder) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await base44.functions.invoke("uploadToR2", {
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
+          dataUrl: reader.result,
+          folder,
+        });
+        resolve(res.data.file_url);
+      } catch (error) { reject(error); }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const file_url = await uploadToR2(file, "profile-avatars");
       await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
       setProfile({ ...profile, avatar_url: file_url });
       toast.success("Avatar updated");
@@ -182,7 +199,7 @@ export default function Profile() {
     const file = e.target.files[0];
     if (!file) return;
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const file_url = await uploadToR2(file, "profile-banners");
       await base44.entities.UserProfile.update(profile.id, { banner_url: file_url });
       setProfile({ ...profile, banner_url: file_url });
       toast.success("Banner updated");
