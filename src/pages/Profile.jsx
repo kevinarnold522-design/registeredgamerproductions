@@ -19,6 +19,7 @@ import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
 import ReelCreator from "@/components/shared/ReelCreator";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 import EditProfileModal from "@/components/profile/EditProfileModal";
+import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 
 const COUNTRIES = [
   { name: "Afghanistan", flag: "🇦🇫" }, { name: "Albania", flag: "🇦🇱" }, { name: "Algeria", flag: "🇩🇿" },
@@ -476,7 +477,8 @@ export default function Profile() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.05 }}
-                    className="group relative aspect-square bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-500 transition-colors"
+                    className={`group relative aspect-square bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-500 transition-colors ${getListingGlowClass(l)}`}
+                    style={getListingGlowStyle(l)}
                   >
                     {l.images?.[0] ? (
                       <img src={l.images[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />

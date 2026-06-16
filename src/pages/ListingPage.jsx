@@ -13,6 +13,7 @@ import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { CATEGORIES } from "@/lib/constants";
+import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 
 function GlowDownloadButton({ isFree, price, onClick }) {
   return (
@@ -306,6 +307,8 @@ export default function ListingPage() {
   const isFree = !listing.price || listing.price === 0 || listing.is_free;
   const hasDownload = listing.download_url || listing.external_link;
   const listingTheme = listing.listing_theme_color || "#030712";
+  const glowStyle = getListingGlowStyle(listing);
+  const glowClass = getListingGlowClass(listing);
 
   return (
     <div className="min-h-screen text-white" style={{ background: `linear-gradient(135deg, ${listingTheme}, #030712 55%, #050510)` }}>
@@ -360,7 +363,7 @@ export default function ListingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT: Media */}
           <div>
-            <div className="relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center mb-3">
+            <div className={`relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center mb-3 ${glowClass}`} style={glowStyle}>
               {ytId ? (
                 <iframe src={`https://www.youtube.com/embed/${ytId}`} title={listing.title} className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
@@ -429,7 +432,7 @@ export default function ListingPage() {
           </div>
 
           {/* RIGHT: Details */}
-          <div className="flex flex-col gap-4">
+          <div className={`flex flex-col gap-4 rounded-2xl p-3 ${glowClass}`} style={glowStyle}>
             {/* Clickable Category > Subcategory breadcrumbs */}
             <nav className="flex items-center gap-1.5 flex-wrap text-xs">
               {(() => {

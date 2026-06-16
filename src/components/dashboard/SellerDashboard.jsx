@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, DollarSign, Youtube, LogOut, Flame } from "lucide-react";
+import { Store, BarChart2, Package, CreditCard, Plus, CheckCircle, Upload, DollarSign, Youtube, LogOut, Flame, Eye, Download } from "lucide-react";
 import YoutubeConnectHighlight from "@/components/social/YoutubeConnectHighlight";
 import MonetizationHighlights from "@/components/monetization/MonetizationHighlights";
 import StreakTracker from "@/components/rewards/StreakTracker";
@@ -16,6 +16,7 @@ import PayPalConnect from "@/components/payments/PayPalConnect";
 import PaymentSettingsTab from "./PaymentSettingsTab";
 import PaymentBillingSettings from "./PaymentBillingSettings";
 import AdvancedAnalytics from "./AdvancedAnalytics";
+import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 
 export default function SellerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -47,6 +48,8 @@ export default function SellerDashboard({ user, profile }) {
   const totalRevenue = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.seller_payout || 0), 0);
   const totalSales = orders.filter(o => o.payment_status === "paid").length;
   const activeListings = listings.filter(l => l.status === "active").length;
+  const totalViews = listings.reduce((s, l) => s + (Number(l.views) || 0), 0);
+  const totalDownloads = listings.reduce((s, l) => s + (Number(l.downloads) || 0), 0);
   const isVerified = profile?.is_verified;
   const verificationStatus = profile?.verification_status || "none";
 
@@ -152,11 +155,13 @@ export default function SellerDashboard({ user, profile }) {
       {tab === "overview" && (
         <div>
           <YoutubeConnectHighlight profile={profile} user={user} />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             {[
               { label: "Total Revenue", value: `₱${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
               { label: "Total Sales", value: totalSales, icon: Package, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
               { label: "Active Listings", value: activeListings, icon: Store, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
+              { label: "Total Views", value: totalViews.toLocaleString(), icon: Eye, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/30" },
+              { label: "Downloads", value: totalDownloads.toLocaleString(), icon: Download, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
               { label: "Pending Orders", value: orders.filter(o => o.order_status === "processing").length, icon: BarChart2, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
             ].map((s, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
@@ -216,7 +221,7 @@ export default function SellerDashboard({ user, profile }) {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {listings.map((l) => (
-                <div key={l.id} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
+                <div key={l.id} className={`bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden ${getListingGlowClass(l)}`} style={getListingGlowStyle(l)}>
                   {l.images?.[0] && <img src={l.images[0]} alt="" className="w-full h-40 object-cover" />}
                   <div className="p-4">
                     <p className="text-white font-bold truncate">{l.title}</p>

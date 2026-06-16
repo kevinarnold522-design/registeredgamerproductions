@@ -44,6 +44,8 @@ export default function AdminDashboard({ user, profile }) {
       setFeedbacksCount(feedbackList.length);
       const totalRev = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.amount || 0), 0);
       const totalComm = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.commission || 0), 0);
+      const totalViews = listings.reduce((s, l) => s + (Number(l.views) || 0), 0);
+      const totalDownloads = listings.reduce((s, l) => s + (Number(l.downloads) || 0), 0);
       setAllUsers(profiles);
       setAllListings(listings);
       setAllOrders(orders);
@@ -58,9 +60,11 @@ export default function AdminDashboard({ user, profile }) {
         ghostAccounts,
         regularUsers,
         listings: listings.length, 
-        orders: orders.length, 
-        revenue: totalRev, 
-        commission: totalComm 
+        orders: orders.length,
+        revenue: totalRev,
+        commission: totalComm,
+        views: totalViews,
+        downloads: totalDownloads
       });
       setLoading(false);
     };
@@ -100,7 +104,7 @@ export default function AdminDashboard({ user, profile }) {
 
   const totalModDownloads = allListings
     .filter(l => l.category === "modding")
-    .reduce((s, l) => s + (l.views || 0), 0);
+    .reduce((s, l) => s + (Number(l.downloads) || 0), 0);
 
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart2 },
@@ -167,14 +171,16 @@ export default function AdminDashboard({ user, profile }) {
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-green-400 text-xs font-semibold">LIVE DATA — Real-time platform stats</span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4 mb-8">
             {[
               { label: "Total Users (Live)", value: stats.users, icon: Users, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30", sub: `${stats.regularUsers || 0} regular + ${stats.ghostAccounts || 0} ghost` },
               { label: "Active Listings", value: stats.listings, icon: Store, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
+              { label: "Total Views", value: (stats.views || 0).toLocaleString(), icon: Eye, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/30" },
+              { label: "Downloads", value: (stats.downloads || 0).toLocaleString(), icon: BarChart2, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
               { label: "Total Orders", value: stats.orders, icon: Package, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
               { label: "Total Revenue", value: `₱${stats.revenue.toLocaleString()}`, icon: DollarSign, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
               { label: "Commission (10%)", value: `₱${stats.commission.toLocaleString()}`, icon: TrendingUp, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
-              { label: "Mod Downloads", value: totalModDownloads, icon: BarChart2, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
+              { label: "Mod Downloads", value: totalModDownloads.toLocaleString(), icon: BarChart2, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
             ].map((s, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                 className={`rounded-2xl p-4 border ${s.bg}`}>

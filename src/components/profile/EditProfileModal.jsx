@@ -82,6 +82,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
     favorite_game: profile?.favorite_game || "",
     favorite_hobby: profile?.favorite_hobby || "",
     business_name: profile?.business_name || "",
+    profile_theme_color: profile?.profile_theme_color || "#030712",
     email: user?.email || "",
   });
   
@@ -160,6 +161,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
         favorite_game: form.favorite_game.trim(),
         favorite_hobby: form.favorite_hobby.trim(),
         business_name: form.business_name.trim(),
+        profile_theme_color: form.profile_theme_color || "#030712",
       };
       
       if (isGhostSession && form.email && form.email !== originalData.email) {
@@ -311,6 +313,15 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
             {renderField("Nation", "location", Globe, "Select your nation", false, true, COUNTRIES)}
             
             <div className="pt-3 border-t border-gray-800">
+              <p className="text-purple-400 text-xs font-bold mb-3 uppercase tracking-wide">🎨 Profile Theme</p>
+              <div className="flex items-center gap-3 mb-4">
+                <input type="color" value={form.profile_theme_color || "#030712"} onChange={e => setForm(f => ({ ...f, profile_theme_color: e.target.value }))} className="w-12 h-10 rounded-xl bg-gray-900 border border-gray-700 p-1" />
+                <div className="flex flex-wrap gap-1.5">
+                  {["#581c87", "#0f172a", "#7f1d1d", "#064e3b", "#78350f", "#1e3a8a"].map(c => (
+                    <button key={c} type="button" onClick={() => setForm(f => ({ ...f, profile_theme_color: c }))} className="w-7 h-7 rounded-lg border border-white/20" style={{ background: c }} />
+                  ))}
+                </div>
+              </div>
               <p className="text-purple-400 text-xs font-bold mb-3 uppercase tracking-wide">🎯 Favorites</p>
               {renderField("Favorite Sports Team", "favorite_sports_team", null, "e.g. Manchester United")}
               {renderField("Favorite Game", "favorite_game", null, "e.g. FIFA 25, Valorant")}
