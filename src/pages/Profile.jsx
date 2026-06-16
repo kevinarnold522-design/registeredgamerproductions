@@ -317,7 +317,7 @@ export default function Profile() {
                 {profile?.business_name && (
                   <p className="text-gray-400 text-xs">@{profile?.username}</p>
                 )}
-                <p className={`text-sm font-semibold ${accountColors[profile?.account_type] || "text-gray-400"}`}>
+                <p className={`inline-flex items-center px-3 py-1 rounded-xl border text-xs font-black capitalize ${profile?.account_type === "business" ? "bg-green-900/20 border-green-700/40 text-green-300" : profile?.account_type === "digital_creator" ? "bg-purple-900/20 border-purple-700/40 text-purple-300" : "bg-blue-900/20 border-blue-700/40 text-blue-300"}`}>
                   {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : profile?.account_type === "business" ? "🏢 Business" : "👤 Gamer"}
                 </p>
                 {isOwnProfile && profile?.account_type === "regular" && (
@@ -435,8 +435,9 @@ export default function Profile() {
           })()}
 
           {/* Stats */}
-          <div className="flex gap-6 mb-8 text-center">
+          <div className="flex gap-6 mb-8 text-center flex-wrap">
             <div><p className="text-white font-black text-xl">{listings.length}</p><p className="text-gray-500 text-xs">Listings</p></div>
+            <div><p className="text-white font-black text-xl">{listings.reduce((sum, l) => sum + (Number(l.views) || 0), 0).toLocaleString()}</p><p className="text-gray-500 text-xs">Views</p></div>
             <div><p className="text-white font-black text-xl">{followers.toLocaleString()}</p><p className="text-gray-500 text-xs">Followers</p></div>
             <div><p className="text-white font-black text-xl">{profile?.following_count || 0}</p><p className="text-gray-500 text-xs">Following</p></div>
             {(profile?.account_type !== "regular") && (

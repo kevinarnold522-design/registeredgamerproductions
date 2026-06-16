@@ -44,6 +44,9 @@ import UploadContent from "./pages/UploadContent";
 import ContentFeedPage from "./pages/ContentFeedPage";
 import CreatedAccountsPage from "./pages/CreatedAccountsPage";
 import SearchPage from "./pages/SearchPage.jsx";
+import UsersLanding from "./pages/UsersLanding";
+import ListingsLanding from "./pages/ListingsLanding";
+import OrdersLanding from "./pages/OrdersLanding";
 
 const AuthenticatedApp = () => {
   // Pulling 'user' mapping from Base44 state engine layout
@@ -123,6 +126,10 @@ const AuthenticatedApp = () => {
       <Route path="/upload-content" element={<UploadContent />} />
       <Route path="/content" element={<ContentFeedPage />} />
       <Route path="/search" element={<SearchPage />} />
+      <Route path="/users" element={<AdminRoute element={<UsersLanding />} />} />
+      <Route path="/all-listings" element={<ListingsLanding mode="all" />} />
+      <Route path="/my-listings" element={<ListingsLanding mode="mine" />} />
+      <Route path="/orders" element={<OrdersLanding />} />
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>

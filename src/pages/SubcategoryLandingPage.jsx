@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, Send } from "lucide-react";
+import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, Send, ChevronLeft, ChevronRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin, isServiceListing } from "@/lib/constants";
@@ -234,6 +234,7 @@ export default function SubcategoryLandingPage() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showRecommend, setShowRecommend] = useState(false);
+  const [page, setPage] = useState(1);
   const [recommendText, setRecommendText] = useState("");
   const [recommendSent, setRecommendSent] = useState(false);
   const admin = isAdmin(user?.email);
@@ -284,7 +285,7 @@ export default function SubcategoryLandingPage() {
           : cat === "modding"
             ? allListings.filter(l => l.modding_subcategory === sub || l.digital_subcategory === sub || l.game_name === sub || (l.tags || []).includes(sub))
             : allListings.filter(l => l.community_franchise_id === sub);
-        setListings(listingsData.slice(0, 12));
+        setListings(listingsData);
       } catch (err) {
         console.error("Error loading subcategory data:", err);
       }
@@ -292,6 +293,8 @@ export default function SubcategoryLandingPage() {
     };
     loadData();
   }, [user, cat, sub]);
+
+  useEffect(() => { setPage(1); }, [cat, sub]);
 
   const saveCards = (updated) => {
     const key = getCardsKey(cat, sub);
@@ -306,6 +309,10 @@ export default function SubcategoryLandingPage() {
   const handleCardClick = (card) => {
     window.location.href = `/sub-landing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}&deep=${encodeURIComponent(card.id)}`;
   };
+
+  const perPage = 10;
+  const totalPages = Math.max(1, Math.ceil(listings.length / perPage));
+  const pagedListings = listings.slice((page - 1) * perPage, page * perPage);
 
   const handleRecommend = async () => {
     if (!recommendText.trim()) return;
@@ -346,7 +353,7 @@ export default function SubcategoryLandingPage() {
               <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
                 style={{ background: "linear-gradient(135deg, #059669, #0d9488)" }}>
-                <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
+                <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "📝 Post"}
               </button>
             )}
             {admin && (
@@ -397,13 +404,13 @@ export default function SubcategoryLandingPage() {
               {user && (
                 <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                   className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
-                  <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
+                  <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "📝 Post"}
                 </a>
               )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {listings.map(listing => (
+              {pagedListings.map(listing => (
                 <EnhancedListingCard
                   key={listing.id}
                   listing={listing}
@@ -412,6 +419,19 @@ export default function SubcategoryLandingPage() {
                   subcategory={sub}
                 />
               ))}
+            </div>
+          )}
+          {listings.length > perPage && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                className="px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-300 disabled:opacity-40">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="px-4 py-2 rounded-xl bg-purple-900/30 border border-purple-700/40 text-purple-200 text-sm font-bold">Page {page} of {totalPages}</span>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                className="px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-300 disabled:opacity-40">
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           )}
         </div>

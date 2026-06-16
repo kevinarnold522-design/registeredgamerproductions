@@ -14,7 +14,6 @@ import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import GlobalSearchBar from "@/components/layout/GlobalSearchBar";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import LanguageSelector from "@/components/layout/LanguageSelector";
-import EarnNowButton from "@/components/shared/EarnNowButton";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 
 export const SIDEBAR_WIDTH = 240;
@@ -116,13 +115,14 @@ export default function AuthNavbar({ user, profile }) {
     }
   }, []);
 
+  const activeUserEmail = isManagingAsGhost ? ghostAccountEmail : user?.email;
+
   useEffect(() => {
-    const emailToUse = isManagingAsGhost ? ghostAccountEmail : user?.email;
-    if (emailToUse) {
-      base44.entities.Cart.filter({ user_email: emailToUse }).then((r) => setCartCount(r.length)).catch(() => {});
-      base44.entities.Favorite.filter({ user_email: emailToUse }).then((r) => setFavCount(r.length)).catch(() => {});
+    if (activeUserEmail) {
+      base44.entities.Cart.filter({ user_email: activeUserEmail }).then((r) => setCartCount(r.length)).catch(() => {});
+      base44.entities.Favorite.filter({ user_email: activeUserEmail }).then((r) => setFavCount(r.length)).catch(() => {});
     }
-  }, [user, isManagingAsGhost, ghostAccountEmail]);
+  }, [activeUserEmail]);
 
   const toggleCollapsed = () => {
     setCollapsed(v => {
@@ -140,25 +140,25 @@ export default function AuthNavbar({ user, profile }) {
     { icon: CreditCard, label: "Payment", href: "/payment", color: "text-blue-300" },
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard", color: "text-orange-400" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments", color: "text-pink-400" },
-    { icon: Store, label: "All Listings", href: "/dashboard?tab=listings", color: "text-blue-400" },
-    { icon: Users, label: "Users", href: "/dashboard?tab=users", color: "text-yellow-300" },
+    { icon: Store, label: "All Listings", href: "/all-listings", color: "text-blue-400" },
+    { icon: Users, label: "Users", href: "/users", color: "text-yellow-300" },
     { icon: Users, label: "Created Accounts", href: "/admin/created-accounts", color: "text-pink-300" },
     { icon: Settings, label: "Website Editor", href: "/admin-editor", color: "text-gray-400" },
     { icon: Share2, label: "Social Manager", href: "/social-manager", color: "text-pink-300" },
   ];
 
   const sellerLinks = [
-    { icon: Store, label: "My Listings", href: "/dashboard?tab=listings" },
+    { icon: Store, label: "My Listings", href: "/my-listings" },
     { icon: BarChart2, label: "Analytics", href: "/analytics" },
     { icon: DollarSign, label: "Earnings", href: "/earnings", color: "text-green-400" },
-    { icon: Package, label: "Orders", href: "/dashboard?tab=orders" },
+    { icon: Package, label: "Orders", href: "/orders" },
     { icon: CreditCard, label: "Payment", href: "/payment" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard" },
   ];
 
   const regularLinks = [
-    { icon: ClipboardList, label: "Orders", href: "/dashboard?tab=orders" },
+    { icon: ClipboardList, label: "Orders", href: "/orders" },
     { icon: CreditCard, label: "Payment", href: "/payment" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
     { icon: TrendingUp, label: "Leaderboard", href: "/leaderboard" },
@@ -205,7 +205,6 @@ export default function AuthNavbar({ user, profile }) {
 
           {s && !(admin && !isManagingAsGhost) && (
             <div className="space-y-2">
-              <EarnNowButton />
               {accountType === "regular" && (
                 <button onClick={() => setShowTransition(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold transition-all hover:opacity-90">
                   <Sparkles className="w-3.5 h-3.5" /> Become Digital Creator
@@ -220,7 +219,7 @@ export default function AuthNavbar({ user, profile }) {
           )}
           <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <LanguageSelector />
-            <NotificationBell userEmail={user?.email} />
+            <NotificationBell userEmail={activeUserEmail} />
           </div>
         </div>
 
@@ -255,7 +254,7 @@ export default function AuthNavbar({ user, profile }) {
           <div className={`flex items-center gap-2 mt-3 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <Link to="/" className="flex items-center gap-1.5 min-w-0" onClick={(e) => { e.preventDefault(); handleControllerClick(); window.location.href = "/"; }}>
               <motion.div
-                className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorCycles[controllerColorIdx]} cursor-pointer`}
+                className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br ${colorCycles[controllerColorIdx]} cursor-pointer text-base`}
                 animate={{ scale: controllerAnimating ? [1, 1.15, 1] : 1 }}
                 transition={{ duration: 0.6 }}
                 style={{
@@ -265,7 +264,7 @@ export default function AuthNavbar({ user, profile }) {
                   transition: "box-shadow 0.4s ease, background 0.3s ease",
                 }}
               >
-                <Gamepad2 className="w-4 h-4 text-white" />
+                🎮
               </motion.div>
               {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
             </Link>
@@ -339,13 +338,21 @@ export default function AuthNavbar({ user, profile }) {
           <Menu className="w-5 h-5" />
         </button>
         <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); setControllerColorIdx(i => (i + 1) % colorCycles.length); window.location.href = "/"; }}>
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]}`}>
-            <Gamepad2 className="w-4 h-4 text-white" />
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center bg-gradient-to-br ${colorCycles[controllerColorIdx]} text-base`}>
+            🎮
           </div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
-          <NotificationBell userEmail={user?.email} />
+          <NotificationBell userEmail={activeUserEmail} />
+          <button onClick={() => { setFavOpen(true); setCartOpen(false); }} className="relative p-1">
+            <Star className="w-5 h-5 text-gray-400" />
+            {favCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-purple-500 text-white text-[8px] flex items-center justify-center font-black">
+                {favCount}
+              </span>
+            )}
+          </button>
           <button onClick={() => { setCartOpen(true); setFavOpen(false); }} className="relative p-1">
             <ShoppingCart className="w-5 h-5 text-gray-400" />
             {cartCount > 0 && (
@@ -390,8 +397,8 @@ export default function AuthNavbar({ user, profile }) {
       </AnimatePresence>
 
       {/* Global Shopping Drawer Interface components */}
-      <CartDropdown isOpen={cartOpen} onClose={() => setCartOpen(false)} userEmail={user?.email} />
-      <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={user?.email} />
+      <CartDropdown isOpen={cartOpen} onClose={() => setCartOpen(false)} userEmail={activeUserEmail} />
+      <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={activeUserEmail} />
 
       {/* Creator/Business Subscription Account Transitions handling Modal */}
       {showTransition && (

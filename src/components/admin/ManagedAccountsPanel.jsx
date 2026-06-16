@@ -178,9 +178,9 @@ export default function ManagedAccountsPanel() {
   const isImpersonating = impersonationData.isImpersonating;
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       {isImpersonating && (
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-pink-900/50 to-purple-900/50 border border-pink-700/50 flex items-center justify-between">
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-pink-900/50 to-purple-900/50 border border-pink-700/50 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-pink-400" />
             <div>
@@ -188,7 +188,7 @@ export default function ManagedAccountsPanel() {
               <p className="text-gray-400 text-xs">Ghost session - all data isolated to this account</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={() => {
                 const ghostEmail = impersonationData.targetEmail;
@@ -210,7 +210,7 @@ export default function ManagedAccountsPanel() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
           <h1 className="text-white font-black text-2xl flex items-center gap-2">
             <Users className="w-6 h-6 text-purple-400" />
@@ -225,7 +225,7 @@ export default function ManagedAccountsPanel() {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold transition-all hover:opacity-90"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold transition-all hover:opacity-90 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           Create New Account
@@ -260,7 +260,7 @@ export default function ManagedAccountsPanel() {
       </div>
 
       <div className="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
-        <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-800 bg-gray-900/80">
+        <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-800 bg-gray-900/80">
           <div className="col-span-3 text-gray-500 text-xs font-bold uppercase tracking-wider">Account</div>
           <div className="col-span-2 text-gray-500 text-xs font-bold uppercase tracking-wider">Type</div>
           <div className="col-span-2 text-gray-500 text-xs font-bold uppercase tracking-wider">Listings</div>
@@ -281,8 +281,8 @@ export default function ManagedAccountsPanel() {
         ) : (
           <div className="divide-y divide-gray-800">
             {filteredAccounts.map((account) => (
-              <div key={account.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-800/50 transition-colors">
-                <div className="col-span-3 flex items-center gap-3">
+              <div key={account.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 px-4 md:px-6 py-4 items-center hover:bg-gray-800/50 transition-colors">
+                <div className="md:col-span-3 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
                     {account.avatar_url ? (
                       <img src={account.avatar_url} className="w-full h-full object-cover rounded-xl" alt="" />
@@ -295,7 +295,7 @@ export default function ManagedAccountsPanel() {
                     <p className="text-gray-500 text-xs truncate">{account.user_email}</p>
                   </div>
                 </div>
-                <div className="col-span-2">
+                <div className="md:col-span-2">
                   <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold ${
                     account.account_type === 'business' ? 'bg-green-900/30 text-green-400 border border-green-700/30' :
                     account.account_type === 'digital_creator' ? 'bg-purple-900/30 text-purple-400 border border-purple-700/30' :
@@ -304,23 +304,23 @@ export default function ManagedAccountsPanel() {
                     {account.account_type.replace('_', ' ')}
                   </span>
                 </div>
-                <div className="col-span-2 text-white text-sm font-semibold">{account.stats?.listings || 0}</div>
-                <div className="col-span-2 text-white text-sm font-semibold">{account.stats?.posts || 0}</div>
-                <div className="col-span-2 text-white text-sm font-semibold">{account.stats?.following || 0}</div>
-                <div className="col-span-1 flex items-center justify-end gap-1">
+                <div className="md:col-span-2 text-white text-sm font-semibold"><span className="md:hidden text-gray-500 text-xs mr-1">Listings:</span>{account.stats?.listings || 0}</div>
+                <div className="md:col-span-2 text-white text-sm font-semibold"><span className="md:hidden text-gray-500 text-xs mr-1">Posts:</span>{account.stats?.posts || 0}</div>
+                <div className="md:col-span-2 text-white text-sm font-semibold"><span className="md:hidden text-gray-500 text-xs mr-1">Following:</span>{account.stats?.following || 0}</div>
+                <div className="md:col-span-1 flex items-center justify-start md:justify-end gap-2">
                   <button
                     onClick={() => handleLoginAsGhost(account)}
-                    className="w-8 h-8 rounded-lg bg-green-600 hover:bg-green-500 flex items-center justify-center transition-colors"
+                    className="flex-1 md:flex-none h-9 md:w-8 md:h-8 rounded-lg bg-green-600 hover:bg-green-500 flex items-center justify-center gap-2 transition-colors text-white text-xs font-bold"
                     title="Login as this account"
                   >
-                    <Shield className="w-3.5 h-3.5 text-white" />
+                    <Shield className="w-3.5 h-3.5 text-white" /><span className="md:hidden">Login as</span>
                   </button>
                   <button
                     onClick={() => handleEditGhostAccount(account)}
-                    className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-colors"
+                    className="flex-1 md:flex-none h-9 md:w-8 md:h-8 rounded-lg bg-blue-600 hover:bg-blue-500 flex items-center justify-center gap-2 transition-colors text-white text-xs font-bold"
                     title="Edit account details"
                   >
-                    <Users className="w-3.5 h-3.5 text-white" />
+                    <Users className="w-3.5 h-3.5 text-white" /><span className="md:hidden">Edit</span>
                   </button>
                 </div>
               </div>

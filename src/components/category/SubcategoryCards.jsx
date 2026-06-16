@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
-import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical } from "lucide-react";
+import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical, Eye } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
@@ -450,12 +450,19 @@ function AddSubcategoryModal({ cat, onClose, onAdded }) {
 // Feed of listings + community posts for the entire category
 function CategoryFeed({ cat, user, userProfile }) {
   const { user: authUser, isLoadingAuth } = useAuth();
-  const effectiveUser = user || authUser;
+  const [sessionUser, setSessionUser] = useState(null);
+  const effectiveUser = user || authUser || sessionUser;
   const [listings, setListings] = useState([]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newPost, setNewPost] = useState("");
   const [posting, setPosting] = useState(false);
+
+  useEffect(() => {
+    if (!user && !authUser) {
+      base44.auth.me().then(me => setSessionUser(me)).catch(() => {});
+    }
+  }, [user, authUser]);
 
   useEffect(() => {
     const load = async () => {
@@ -535,7 +542,10 @@ function CategoryFeed({ cat, user, userProfile }) {
               <div className="flex-1 min-w-0">
                 <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
                 <p className="text-gray-500 text-[10px]">by @{item.seller_username} · 📦 Listing</p>
-                <p className="font-black text-xs mt-0.5 text-purple-300">{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+                <div className="flex items-center justify-between gap-2 mt-0.5">
+                  <p className="font-black text-xs text-purple-300">{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+                  <span className="flex items-center gap-1 text-[10px] text-cyan-300 font-bold"><Eye className="w-3 h-3" />{(item.views || 0).toLocaleString()}</span>
+                </div>
               </div>
             </a>
           ) : (
@@ -666,8 +676,8 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
       <div ref={containerRef} className="flex flex-col md:flex-row gap-3 md:gap-0 min-h-[700px]">
         {/* LEFT: scrollable subcards column */}
         <div
-          className="flex-shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto pr-2"
-          style={{ width: window.innerWidth < 768 ? "100%" : sidebarWidth, maxHeight: window.innerWidth < 768 ? 260 : 700 }}
+          className="flex-shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto pr-2 pb-2 md:pb-0"
+          style={{ width: typeof window !== 'undefined' && window.innerWidth < 768 ? "100%" : sidebarWidth, maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 260 : 700 }}
         >
           {filteredItems.length === 0 && (
             <div className="text-center py-8 text-gray-600 text-xs">No matches</div>
@@ -695,10 +705,10 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
         <div
           onMouseDown={onDragStart}
           onTouchStart={onDragStart}
-          className="hidden md:flex flex-shrink-0 w-3 items-center justify-center cursor-col-resize group mx-1"
+          className="flex md:flex flex-shrink-0 h-3 md:h-auto md:w-3 items-center justify-center cursor-row-resize md:cursor-col-resize group mx-1"
           title="Drag to resize"
         >
-          <div className="w-1 h-16 rounded-full bg-gray-700 group-hover:bg-purple-500 transition-colors flex items-center justify-center">
+          <div className="h-1 w-16 md:w-1 md:h-16 rounded-full bg-gray-700 group-hover:bg-purple-500 transition-colors flex items-center justify-center">
             <GripVertical className="w-3 h-3 text-gray-500 group-hover:text-purple-300" />
           </div>
         </div>
@@ -713,7 +723,7 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
             {user && (
               <a href={`/create-listing?cat=${encodeURIComponent(cat)}`}
                 className="text-xs font-bold px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
-                {cat === "premium_mods" ? "+ Sell Premium Mod" : "+ Post"}
+                {cat === "premium_mods" ? "＋ Sell Premium Mod" : "📝 Post"}
               </a>
             )}
           </div>
