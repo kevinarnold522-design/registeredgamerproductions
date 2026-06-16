@@ -20,10 +20,10 @@ export default function DeleteConfirmModal({ label = "this item", isAdmin, isAcc
   const [step, setStep] = useState(1); // 1=sure?, 2=save alternatives?, 3=final
 
   const SAVE_OPTIONS = [
-    { id: "edit", label: "Edit the content instead", icon: "✏️" },
-    { id: "hide", label: "Hide it temporarily", icon: "👁️" },
-    { id: "archive", label: "Archive for later", icon: "📦" },
-    { id: "no", label: "No, proceed with deletion", icon: "🗑️" },
+    { id: "edit", label: "Edit the content instead" },
+    { id: "hide", label: "Hide it temporarily" },
+    { id: "archive", label: "Archive for later" },
+    { id: "no", label: "No, proceed with deletion" },
   ];
 
   const [saveChoice, setSaveChoice] = useState(null);
@@ -76,7 +76,7 @@ export default function DeleteConfirmModal({ label = "this item", isAdmin, isAcc
 
               {!isAdmin && !isAccountMod && (
                 <div className="p-3 rounded-xl bg-yellow-950/30 border border-yellow-700/40 mb-4">
-                  <p className="text-yellow-400 text-xs font-bold">⚠️ Only admins and Account Moderators can delete content.</p>
+                  <p className="text-yellow-400 text-xs font-bold">Only admins and Account Moderators can delete content.</p>
                 </div>
               )}
 
@@ -121,7 +121,7 @@ export default function DeleteConfirmModal({ label = "this item", isAdmin, isAcc
                     className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${opt.id === "no"
                       ? "border-red-700/40 bg-red-950/20 hover:bg-red-950/40 text-red-300"
                       : "border-gray-700 bg-gray-900 hover:border-purple-600 hover:bg-gray-800 text-white"}`}>
-                    <span className="text-lg">{opt.icon}</span>
+                    <CheckCircle className="w-4 h-4 text-purple-300" />
                     <span className="text-sm font-bold">{opt.label}</span>
                   </button>
                 ))}
@@ -162,7 +162,7 @@ export default function DeleteConfirmModal({ label = "this item", isAdmin, isAcc
                 <button onClick={handleFinalDelete}
                   className="flex-1 py-2.5 rounded-xl font-black text-white text-sm transition-all"
                   style={{ background: isAdmin ? "#dc2626" : "linear-gradient(135deg, #1d4ed8, #7c3aed)" }}>
-                  {isAdmin ? "🗑️ Delete Now" : "📨 Request Deletion"}
+                  {isAdmin ? "Delete Now" : "Request Deletion"}
                 </button>
               </div>
             </motion.div>

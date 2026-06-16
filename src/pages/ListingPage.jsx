@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2, Flag } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -16,6 +16,7 @@ import BrandLogo from "@/components/shared/BrandLogo";
 import { CATEGORIES } from "@/lib/constants";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 import { formatListingPrice } from "@/lib/currency";
+import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 
 function GlowDownloadButton({ isFree, price, currency, onClick }) {
   return (
@@ -91,7 +92,7 @@ export default function ListingPage() {
   const [showRecommendModal, setShowRecommendModal] = useState(false);
   const [recommendText, setRecommendText] = useState("");
   const [recommendSent, setRecommendSent] = useState(false);
-  const [deleteRequested, setDeleteRequested] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -296,25 +297,9 @@ export default function ListingPage() {
 
   const handleDeleteListing = async () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
-    const ownsListing = listing?.seller_email === user.email;
-    if (ownsListing || isAdmin(user.email)) {
-      if (!window.confirm("Delete this listing?")) return;
-      await base44.entities.Listing.update(listing.id, { status: "removed" });
-      window.location.href = ownsListing ? "/my-listings" : "/all-listings";
-      return;
-    }
-    const reason = window.prompt("Why should this listing be reviewed for deletion?");
-    if (!reason?.trim()) return;
-    await base44.entities.ListingDeleteRequest.create({
-      listing_id: listing.id,
-      listing_title: listing.title,
-      listing_owner_email: listing.seller_email,
-      requested_by_email: user.email,
-      requested_by_username: profile?.username || user.full_name || "User",
-      reason: reason.trim(),
-      status: "pending",
-    });
-    setDeleteRequested(true);
+    if (!canEdit) return;
+    await base44.functions.invoke("deleteListingPermanent", { listing_id: listing.id });
+    window.location.href = adminUser ? "/all-listings" : "/my-listings";
   };
 
   const adminUser = user && isAdmin(user.email);
@@ -367,11 +352,10 @@ export default function ListingPage() {
                 <Pencil className="w-4 h-4" /> Edit Listing
               </a>
             )}
-            {user && (
-              <button onClick={handleDeleteListing} disabled={deleteRequested}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all ${canEdit ? "bg-red-950/50 border-red-700/50 text-red-300 hover:bg-red-900/60" : "bg-gray-900 border-gray-700 text-gray-300 hover:border-red-600/50"}`}>
-                {canEdit ? <Trash2 className="w-4 h-4" /> : <Flag className="w-4 h-4" />}
-                {canEdit ? "Delete Listing" : deleteRequested ? "Delete Request Sent" : "Request Delete"}
+            {canEdit && (
+              <button onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all bg-red-950/50 border-red-700/50 text-red-300 hover:bg-red-900/60">
+                <Trash2 className="w-4 h-4" /> Delete Listing
               </button>
             )}
             <button onClick={() => setShowRecommendModal(true)}
@@ -619,6 +603,18 @@ export default function ListingPage() {
           />
         </div>
       </div>
+
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <DeleteConfirmModal
+            label={listing.title || "this listing"}
+            isAdmin={true}
+            isAccountMod={false}
+            onDelete={handleDeleteListing}
+            onClose={() => setShowDeleteConfirm(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Recommend Modal */}
       <AnimatePresence>

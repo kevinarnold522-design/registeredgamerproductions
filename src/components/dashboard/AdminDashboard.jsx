@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Shield, Users, BarChart2, TrendingUp, DollarSign,
   Store, Eye, Package, CheckCircle, XCircle, AlertCircle,
-  MessageSquare, Play, Mail, Trophy
+  MessageSquare, Play, Mail, Trophy, Trash2
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ReviewsTab from "./ReviewsTab";
@@ -82,8 +82,9 @@ export default function AdminDashboard({ user, profile }) {
   };
 
   const removeListing = async (listingId) => {
-    await base44.entities.Listing.update(listingId, { status: "removed" });
-    setAllListings(prev => prev.map(l => l.id === listingId ? { ...l, status: "removed" } : l));
+    if (!window.confirm("Are you sure you want to permanently delete this listing and its files?")) return;
+    await base44.functions.invoke("deleteListingPermanent", { listing_id: listingId });
+    setAllListings(prev => prev.filter(l => l.id !== listingId));
   };
 
   const toggleVerifiedBadge = async (profileId, currentValue) => {
@@ -114,20 +115,20 @@ export default function AdminDashboard({ user, profile }) {
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart2 },
     { id: "users", label: "Users", icon: Users },
-    { id: "created_accounts", label: "🎭 Created Accounts", icon: Users },
+    { id: "created_accounts", label: "Created Accounts", icon: Users },
     { id: "listings", label: "Listings", icon: Store },
-    { id: "games", label: "🎮 Games", icon: Gamepad2 },
+    { id: "games", label: "Games", icon: Gamepad2 },
     { id: "orders", label: "Orders", icon: Package },
     { id: "verifications", label: `Verifications${pendingVerifications.length > 0 ? ` (${pendingVerifications.length})` : ""}`, icon: CheckCircle },
     { id: "reviews", label: "Reviews", icon: MessageSquare },
     { id: "videos", label: "Videos", icon: Play },
     { id: "leaderboard", label: "Leaderboard", icon: Trophy },
-    { id: "transactions", label: "💰 Transactions", icon: DollarSign },
-    { id: "payment", label: "💳 Payment Account", icon: Shield },
-    { id: "subcategories", label: "📂 Subcategories", icon: Store },
-    { id: "analytics", label: "📊 Analytics", icon: BarChart2 },
-    { id: "pending_listings", label: `🔍 Pending Review${allListings.filter(l => l.status === "pending").length > 0 ? ` (${allListings.filter(l => l.status === "pending").length})` : ""}`, icon: AlertCircle },
-    { id: "feedback", label: `💬 Feedback${feedbacks_count > 0 ? ` (${feedbacks_count})` : ""}`, icon: MessageSquare },
+    { id: "transactions", label: "Transactions", icon: DollarSign },
+    { id: "payment", label: "Payment Account", icon: Shield },
+    { id: "subcategories", label: "Subcategories", icon: Store },
+    { id: "analytics", label: "Analytics", icon: BarChart2 },
+    { id: "pending_listings", label: `Pending Review${allListings.filter(l => l.status === "pending").length > 0 ? ` (${allListings.filter(l => l.status === "pending").length})` : ""}`, icon: AlertCircle },
+    { id: "feedback", label: `Feedback${feedbacks_count > 0 ? ` (${feedbacks_count})` : ""}`, icon: MessageSquare },
     { id: "site_text", label: "Site Text", icon: Shield },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
@@ -135,9 +136,19 @@ export default function AdminDashboard({ user, profile }) {
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
-    <div className="bg-gray-950 min-h-screen flex">
+    <div className="bg-gray-950 min-h-screen flex flex-col md:flex-row">
+      <div className="md:hidden sticky top-16 z-30 bg-gray-950 border-b border-gray-800 px-3 py-2 overflow-x-auto">
+        <div className="flex gap-2 min-w-max">
+          {tabs.map((t) => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap ${tab === t.id ? "bg-yellow-500/20 border border-yellow-500/40 text-yellow-300" : "bg-gray-900 border border-gray-800 text-gray-400"}`}>
+              <t.icon className="w-3.5 h-3.5" /> {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
       {/* LEFT: Vertical Sidebar */}
-      <div className="w-56 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex flex-col pt-4 pb-8 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+      <div className="hidden md:flex w-56 flex-shrink-0 bg-gray-900 border-r border-gray-800 flex-col pt-4 pb-8 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
         <div className="px-4 mb-6">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-lg bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center">
@@ -145,7 +156,7 @@ export default function AdminDashboard({ user, profile }) {
             </div>
             <div>
               <p className="text-white font-black text-xs leading-tight">Admin Panel</p>
-              <p className="text-yellow-400 text-[10px]">👑 CEO & President</p>
+              <p className="text-yellow-400 text-[10px]">CEO & President</p>
             </div>
           </div>
           <GamerCheckmark accountType="admin" isVerified={true} userEmail={user?.email} size="sm" />
@@ -161,7 +172,7 @@ export default function AdminDashboard({ user, profile }) {
       </div>
 
       {/* RIGHT: Content */}
-      <div className="flex-1 min-w-0 px-6 py-8 overflow-y-auto">
+      <div className="flex-1 min-w-0 px-3 sm:px-6 py-5 sm:py-8 overflow-y-auto">
 
       {/* Overview */}
       {tab === "overview" && (
@@ -276,13 +287,13 @@ export default function AdminDashboard({ user, profile }) {
                       {u.paypal_email ? (
                         <div className="flex flex-col">
                           <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-900/50 text-indigo-400 w-fit mb-1">
-                            🅿️ PayPal Connected
+                            PayPal Connected
                           </span>
                           <span className="text-gray-500 text-[10px] truncate max-w-[150px]">{u.paypal_email}</span>
                         </div>
                       ) : u.payout_method === "stripe" ? (
                         <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-900/50 text-blue-400">
-                          💳 Stripe
+                          Stripe
                         </span>
                       ) : (
                         <span className="text-gray-600 text-xs">Not connected</span>
@@ -320,7 +331,7 @@ export default function AdminDashboard({ user, profile }) {
                         </div>
                       ) : (
                         <button onClick={() => startEdit(u)} className="px-2 py-1 bg-gray-800 hover:bg-purple-900/40 border border-gray-700 hover:border-purple-600/50 text-gray-400 hover:text-purple-300 text-xs rounded font-semibold transition-colors">
-                          ✏️ Edit
+                          Edit
                         </button>
                       )}
                     </td>
@@ -370,7 +381,7 @@ export default function AdminDashboard({ user, profile }) {
                     <td className="px-4 py-3 flex gap-2">
                       <a href={`/create-listing?edit=${l.id}`} className="text-purple-400 hover:text-purple-300 text-xs font-semibold">Edit</a>
                       {l.status !== "removed" && (
-                        <button onClick={() => removeListing(l.id)} className="text-red-400 hover:text-red-300 text-xs font-semibold">Remove</button>
+                        <button onClick={() => removeListing(l.id)} className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 text-xs font-semibold"><Trash2 className="w-3 h-3" /> Delete</button>
                       )}
                     </td>
                   </tr>
@@ -439,7 +450,7 @@ export default function AdminDashboard({ user, profile }) {
                       </button>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-900/50 text-yellow-400 border border-yellow-700/30 flex-shrink-0">⚠️ PENDING</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-900/50 text-yellow-400 border border-yellow-700/30 flex-shrink-0">PENDING</span>
                 </div>
               ))}
             </div>
