@@ -12,10 +12,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing file data' }, { status: 400 });
     }
 
-    const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')?.trim();
+    const accountId = 'f9559f35122ab25fb52ed96e81ca17a4';
     let accessKeyId = Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY_ID')?.trim();
     let secretAccessKey = Deno.env.get('CLOUDFLARE_R2_SECRET_ACCESS_KEY')?.trim();
-    const bucket = Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME')?.trim();
+    const bucket = 'gamerproductionsmedia';
     if (!accountId || !accessKeyId || !secretAccessKey || !bucket) {
       return Response.json({ error: 'Cloudflare R2 is not configured' }, { status: 500 });
     }
@@ -49,9 +49,12 @@ Deno.serve(async (req) => {
       ContentType: contentType,
     }));
 
-    const publicBaseUrl = Deno.env.get('CLOUDFLARE_R2_PUBLIC_URL');
-    const fileUrl = publicBaseUrl
-      ? `${publicBaseUrl.replace(/\/$/, '')}/${key}`
+    const publicBaseUrl = Deno.env.get('CLOUDFLARE_R2_PUBLIC_URL')?.trim();
+    const normalizedPublicBaseUrl = publicBaseUrl
+      ? (publicBaseUrl.startsWith('http://') || publicBaseUrl.startsWith('https://') ? publicBaseUrl : `https://${publicBaseUrl}`)
+      : '';
+    const fileUrl = normalizedPublicBaseUrl
+      ? `${normalizedPublicBaseUrl.replace(/\/$/, '')}/${key}`
       : `https://${bucket}.${accountId}.r2.cloudflarestorage.com/${key}`;
 
     return Response.json({ key, file_url: fileUrl });
