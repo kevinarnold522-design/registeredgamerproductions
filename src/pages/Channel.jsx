@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Youtube, Instagram, Twitter, Facebook, Globe, Play,
   Users, Eye, Heart, Edit2, Check, Plus, ExternalLink, Upload, Wand2,
-  MessageCircle, Share2, Image as ImageIcon, X, Send, Gamepad2
+  MessageCircle, Share2, Image as ImageIcon, X, Send, Gamepad2, Package, Video, Sparkles, CircleDollarSign
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
@@ -14,24 +14,25 @@ import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { isAdmin } from "@/lib/constants";
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import UserPointsBadge from "@/components/profile/UserPointsBadge";
+import BrandLogo from "@/components/shared/BrandLogo";
 
 const CONTENT_SUBCATEGORIES = [
   "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream", "other"
 ];
 
 const SOCIAL_PLATFORMS = [
-  { key: "youtube", label: "YouTube", icon: <Youtube className="w-4 h-4" />, color: "text-red-400 border-red-700/40 bg-red-900/10", placeholder: "https://youtube.com/@yourchannel" },
-  { key: "twitch", label: "Twitch", icon: <span className="text-xs font-black">📺</span>, color: "text-purple-400 border-purple-700/40 bg-purple-900/10", placeholder: "https://twitch.tv/yourchannel" },
-  { key: "steam", label: "Steam", icon: <span className="text-xs font-black">🎮</span>, color: "text-blue-300 border-blue-600/40 bg-blue-900/10", placeholder: "https://steamcommunity.com/id/yourprofile" },
-  { key: "playstation", label: "PlayStation", icon: <span className="text-xs font-black">🕹️</span>, color: "text-blue-400 border-blue-600/40 bg-blue-900/10", placeholder: "https://psnprofiles.com/yourid" },
-  { key: "xbox", label: "Xbox", icon: <span className="text-xs font-black">🟢</span>, color: "text-green-400 border-green-600/40 bg-green-900/10", placeholder: "https://account.xbox.com/en-us/profile?gamerTag=yourTag" },
-  { key: "epicgames", label: "Epic Games", icon: <span className="text-xs font-black">⚫</span>, color: "text-gray-300 border-gray-600/40 bg-gray-800/50", placeholder: "https://store.epicgames.com/en-US/u/yourid" },
-  { key: "instagram", label: "Instagram", icon: <Instagram className="w-4 h-4" />, color: "text-pink-400 border-pink-700/40 bg-pink-900/10", placeholder: "https://instagram.com/yourhandle" },
-  { key: "twitter", label: "X / Twitter", icon: <Twitter className="w-4 h-4" />, color: "text-blue-400 border-blue-700/40 bg-blue-900/10", placeholder: "https://x.com/yourhandle" },
-  { key: "facebook", label: "Facebook", icon: <Facebook className="w-4 h-4" />, color: "text-blue-500 border-blue-600/40 bg-blue-900/10", placeholder: "https://facebook.com/yourpage" },
-  { key: "tiktok", label: "TikTok", icon: <span className="text-xs font-black">TT</span>, color: "text-white border-gray-600/40 bg-gray-800/50", placeholder: "https://tiktok.com/@yourhandle" },
-  { key: "whatsapp", label: "WhatsApp", icon: <span className="text-xs font-black">💬</span>, color: "text-green-400 border-green-600/40 bg-green-900/10", placeholder: "+639XXXXXXXXX or https://wa.me/..." },
-  { key: "telegram", label: "Telegram", icon: <span className="text-xs font-black">✈️</span>, color: "text-sky-400 border-sky-600/40 bg-sky-900/10", placeholder: "@yourusername or https://t.me/..." },
+  { key: "youtube", label: "YouTube", icon: <BrandLogo brand="youtube" label="YouTube" className="w-4 h-4" />, color: "text-red-400 border-red-700/40 bg-red-900/10", placeholder: "https://youtube.com/@yourchannel" },
+  { key: "twitch", label: "Twitch", icon: <BrandLogo brand="twitch" label="Twitch" className="w-4 h-4" />, color: "text-purple-400 border-purple-700/40 bg-purple-900/10", placeholder: "https://twitch.tv/yourchannel" },
+  { key: "steam", label: "Steam", icon: <BrandLogo brand="steam" label="Steam" className="w-4 h-4" />, color: "text-blue-300 border-blue-600/40 bg-blue-900/10", placeholder: "https://steamcommunity.com/id/yourprofile" },
+  { key: "playstation", label: "PlayStation", icon: <BrandLogo brand="playstation" label="PlayStation" className="w-4 h-4" />, color: "text-blue-400 border-blue-600/40 bg-blue-900/10", placeholder: "https://psnprofiles.com/yourid" },
+  { key: "xbox", label: "Xbox", icon: <BrandLogo brand="xbox" label="Xbox" className="w-4 h-4" />, color: "text-green-400 border-green-600/40 bg-green-900/10", placeholder: "https://account.xbox.com/en-us/profile?gamerTag=yourTag" },
+  { key: "epicgames", label: "Epic Games", icon: <BrandLogo brand="epicgames" label="Epic Games" className="w-4 h-4" />, color: "text-gray-300 border-gray-600/40 bg-gray-800/50", placeholder: "https://store.epicgames.com/en-US/u/yourid" },
+  { key: "instagram", label: "Instagram", icon: <BrandLogo brand="instagram" label="Instagram" className="w-4 h-4" />, color: "text-pink-400 border-pink-700/40 bg-pink-900/10", placeholder: "https://instagram.com/yourhandle" },
+  { key: "twitter", label: "X / Twitter", icon: <BrandLogo brand="x" label="X" className="w-4 h-4" />, color: "text-blue-400 border-blue-700/40 bg-blue-900/10", placeholder: "https://x.com/yourhandle" },
+  { key: "facebook", label: "Facebook", icon: <BrandLogo brand="facebook" label="Facebook" className="w-4 h-4" />, color: "text-blue-500 border-blue-600/40 bg-blue-900/10", placeholder: "https://facebook.com/yourpage" },
+  { key: "tiktok", label: "TikTok", icon: <BrandLogo brand="tiktok" label="TikTok" className="w-4 h-4" />, color: "text-white border-gray-600/40 bg-gray-800/50", placeholder: "https://tiktok.com/@yourhandle" },
+  { key: "whatsapp", label: "WhatsApp", icon: <BrandLogo brand="whatsapp" label="WhatsApp" className="w-4 h-4" />, color: "text-green-400 border-green-600/40 bg-green-900/10", placeholder: "+639XXXXXXXXX or https://wa.me/..." },
+  { key: "telegram", label: "Telegram", icon: <BrandLogo brand="telegram" label="Telegram" className="w-4 h-4" />, color: "text-sky-400 border-sky-600/40 bg-sky-900/10", placeholder: "@yourusername or https://t.me/..." },
   { key: "website", label: "Website", icon: <Globe className="w-4 h-4" />, color: "text-green-400 border-green-700/40 bg-green-900/10", placeholder: "https://yourwebsite.com" },
 ];
 
@@ -39,6 +40,7 @@ export default function Channel() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [videos, setVideos] = useState([]);
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingSocial, setEditingSocial] = useState(false);
   const [socialLinks, setSocialLinks] = useState({});
@@ -91,15 +93,17 @@ export default function Channel() {
       setUser(ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me);
       setTargetEmail(email);
       if (email) {
-        const [profiles, myVideos, myPosts] = await Promise.all([
+        const [profiles, myVideos, myPosts, myListings] = await Promise.all([
           base44.entities.UserProfile.filter({ user_email: email }),
           base44.entities.VideoPost.filter({ creator_email: email }),
           base44.entities.ChannelPost.filter({ creator_email: email }),
+          base44.entities.Listing.filter({ seller_email: email }),
         ]);
         const p = profiles[0] || null;
         setProfile(p);
         setSocialLinks(p?.social_links || {});
         setVideos(myVideos.filter(v => v.status === "active"));
+        setListings(myListings.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setPosts(myPosts.filter(post => post.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
       }
       setLoading(false);
@@ -152,7 +156,7 @@ export default function Channel() {
 
   const displayName = profile?.display_name || profile?.username || user?.full_name || "Gamer";
   const connectedSocials = SOCIAL_PLATFORMS.filter(p => profile?.social_links?.[p.key]);
-  const totalViews = videos.reduce((s, v) => s + (v.views || 0), 0);
+  const totalViews = videos.reduce((s, v) => s + (v.views || 0), 0) + listings.reduce((s, l) => s + (l.views || 0), 0);
 
   return (
     <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, minHeight: "100vh" }}>
@@ -172,7 +176,7 @@ export default function Channel() {
                 <Check className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-black text-sm">✨ New Ghost Account Created!</p>
+                <p className="font-black text-sm flex items-center gap-2"><Sparkles className="w-4 h-4" /> New Ghost Account Created!</p>
                 <p className="text-[10px] text-green-100">You're now managing as {profile?.username || "this user"}</p>
               </div>
               <button onClick={() => setShowNewAccountBanner(false)} className="ml-2 text-white/80 hover:text-white">
@@ -218,7 +222,7 @@ export default function Channel() {
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl">🎮</div>
+                  <div className="w-full h-full flex items-center justify-center"><Gamepad2 className="w-10 h-10 text-gray-600" /></div>
                 )}
               </div>
               {isOwner && (
@@ -250,7 +254,7 @@ export default function Channel() {
                 )}
                 {profile?.gaming_checkmark && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-900/30 border border-purple-600/40 text-purple-300 text-xs font-bold">
-                    🎮 Gaming
+                    <Gamepad2 className="w-3 h-3" /> Gaming
                   </span>
                 )}
               </div>
@@ -286,7 +290,7 @@ export default function Channel() {
                   <a href="https://youtube.com/@registeredgamerproductions?si=Ypv_k-lHs-UBRDAe" target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white text-xs font-bold hover:opacity-80"
                     style={{ background: "#ff0000" }}>
-                    <span className="font-black">▶</span> YouTube
+                    <BrandLogo brand="youtube" label="YouTube" className="w-3.5 h-3.5" /> YouTube
                   </a>
                 </div>
               )}
@@ -296,19 +300,19 @@ export default function Channel() {
                   {profile.kofi_url && (
                     <a href={profile.kofi_url} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-900/20 border border-orange-700/40 text-orange-300 text-xs font-bold hover:bg-orange-900/40 transition-colors">
-                      ☕ Ko-fi <ExternalLink className="w-3 h-3" />
+                      <BrandLogo brand="kofi" label="Ko-fi" className="w-4 h-4" /> Ko-fi <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                   {profile.buymeacoffee_url && (
                     <a href={profile.buymeacoffee_url} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-900/20 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:bg-yellow-900/40 transition-colors">
-                      ☕ Buy Me a Coffee <ExternalLink className="w-3 h-3" />
+                      <BrandLogo brand="buymeacoffee" label="Buy Me a Coffee" className="w-4 h-4" /> Buy Me a Coffee <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                   {profile.patreon_url && (
                     <a href={profile.patreon_url} target="_blank" rel="noopener noreferrer"
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-900/20 border border-red-600/40 text-red-300 text-xs font-bold hover:bg-red-900/40 transition-colors">
-                      🎖️ Patreon <ExternalLink className="w-3 h-3" />
+                      <BrandLogo brand="patreon" label="Patreon" className="w-4 h-4" /> Patreon <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                 </div>
@@ -327,9 +331,10 @@ export default function Channel() {
           {/* Stats */}
           <div className="flex gap-6 mb-6 flex-wrap">
             {[
-              { label: "Videos", value: videos.length },
-              { label: "Total Views", value: totalViews.toLocaleString() },
-              { label: "Registered", value: profile?.followers_count || 0 },
+            { label: "Listings", value: listings.length },
+            { label: "Videos", value: videos.length },
+            { label: "Total Views", value: totalViews.toLocaleString() },
+            { label: "Registered", value: profile?.followers_count || 0 },
             ].map((s, i) => (
               <div key={i} className="text-center">
                 <p className="text-white font-black text-xl">{s.value}</p>
@@ -461,6 +466,47 @@ export default function Channel() {
             )}
           </div>
 
+          {/* Listings */}
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-white font-black text-lg">Listings ({listings.length})</h2>
+              {isOwner && (
+                <a href="/create-listing" className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+                  <Plus className="w-3.5 h-3.5" /> Post Listing
+                </a>
+              )}
+            </div>
+            {listings.length === 0 ? (
+              <div className="text-center py-12 bg-gray-900 rounded-2xl border border-gray-800">
+                <Package className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+                <p className="text-gray-400 font-semibold">No listings yet</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {listings.map((l, i) => (
+                  <motion.a key={l.id}
+                    href={`/listing?id=${l.id}`}
+                    initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                    className="group bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-700/50 transition-colors">
+                    <div className="relative aspect-square bg-gray-800 overflow-hidden flex items-center justify-center">
+                      {l.images?.[0] ? (
+                        <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <Package className="w-10 h-10 text-gray-600" />
+                      )}
+                      <span className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="p-3">
+                      <p className="text-white font-bold text-sm truncate">{l.title}</p>
+                      <p className="text-gray-500 text-[11px] truncate">by @{l.seller_username || l.seller_email?.split("@")[0] || "gamer"}</p>
+                      <p className="text-purple-400 text-xs font-black mt-0.5">{!l.price || l.is_free ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
+                    </div>
+                  </motion.a>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Videos */}
           <div className="mb-12">
             <div className="flex items-center justify-between mb-5">
@@ -509,7 +555,7 @@ export default function Channel() {
                       <div className="flex items-center gap-3 mt-2 text-gray-500 text-xs">
                         <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{v.views || 0}</span>
                         <span className="flex items-center gap-1"><Heart className="w-3 h-3" />{v.likes || 0}</span>
-                        {v.is_monetized && <span className="text-green-400 font-semibold">💰 Monetized</span>}
+                        {v.is_monetized && <span className="inline-flex items-center gap-1 text-green-400 font-semibold"><CircleDollarSign className="w-3 h-3" /> Monetized</span>}
                       </div>
                     </div>
                   </motion.a>
@@ -524,7 +570,7 @@ export default function Channel() {
       {setupMode && !showEditProfile && profile && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3"
           style={{ background: "linear-gradient(135deg,#7c3aed,#ec4899)", maxWidth: "90vw" }}>
-          <span className="text-xl">👋</span>
+          <Sparkles className="w-5 h-5 text-white" />
           <div>
             <p className="text-white font-black text-sm">Welcome! No profile found — let's set yours up</p>
             <p className="text-white/70 text-xs">You signed in with Google. Complete your profile to get started.</p>
@@ -562,7 +608,7 @@ export default function Channel() {
                 </div>
                 <div className="flex-1">
                   <p className="text-white font-bold text-sm flex items-center gap-2">
-                    🎬 Create in Studio
+                    <Video className="w-4 h-4" /> Create in Studio
                     <span className="px-1.5 py-0.5 rounded-full bg-pink-500/30 border border-pink-500/40 text-pink-300 text-[9px] font-black">NEW</span>
                   </p>
                   <p className="text-purple-300 text-xs mt-0.5">Edit & create videos with AI tools</p>

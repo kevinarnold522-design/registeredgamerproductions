@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -12,6 +12,7 @@ import StickySearchBar from "@/components/shared/StickySearchBar";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
+import BrandLogo from "@/components/shared/BrandLogo";
 import { CATEGORIES } from "@/lib/constants";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 
@@ -342,8 +343,8 @@ export default function ListingPage() {
               </a>
             )}
             <button onClick={() => setShowRecommendModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all">
-              💡 Recommend Subcategory
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all">
+            <Lightbulb className="w-4 h-4" /> Recommend Subcategory
             </button>
           </div>
         </div>
@@ -466,9 +467,9 @@ export default function ListingPage() {
               <span className="px-2.5 py-1 rounded-full bg-purple-900/40 border border-purple-700/40 text-purple-300 text-xs font-bold capitalize">{listing.category}</span>
               {listing.ign_rating != null && <IgnRatingBadge rating={listing.ign_rating} size="md" />}
               {listing.digital_subcategory && <span className="px-2.5 py-1 rounded-full bg-orange-900/30 border border-orange-700/30 text-orange-300 text-xs font-bold capitalize">{listing.digital_subcategory}</span>}
-              {listing.modding_subcategory && <span className="px-2.5 py-1 rounded-full bg-yellow-900/30 border border-yellow-700/30 text-yellow-300 text-xs font-bold">🔧 {listing.modding_subcategory}</span>}
-              {listing.community_franchise_id && <span className="px-2.5 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/30 text-cyan-300 text-xs font-bold">🎮 {listing.community_franchise_id}</span>}
-              {listing.is_premium && <span className="px-2.5 py-1 rounded-full bg-yellow-900/40 border border-yellow-500/40 text-yellow-300 text-xs font-black">⭐ PREMIUM</span>}
+              {listing.modding_subcategory && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-900/30 border border-yellow-700/30 text-yellow-300 text-xs font-bold"><Wrench className="w-3 h-3" /> {listing.modding_subcategory}</span>}
+              {listing.community_franchise_id && <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-900/30 border border-cyan-700/30 text-cyan-300 text-xs font-bold"><Gamepad2 className="w-3 h-3" /> {listing.community_franchise_id}</span>}
+              {listing.is_premium && <span className="px-2.5 py-1 rounded-full bg-yellow-900/40 border border-yellow-500/40 text-yellow-300 text-xs font-black">PREMIUM</span>}
             </div>
 
             <h1 className="text-2xl font-black text-white leading-tight">{listing.title}</h1>
@@ -485,9 +486,9 @@ export default function ListingPage() {
 
             {(listing.game_name || listing.game_platform || listing.platforms?.length > 0 || listing.tool_target_game) && (
               <div className="flex gap-2 flex-wrap">
-                {listing.game_name && <span className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold">🎮 {listing.game_name}</span>}
+                {listing.game_name && <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold"><Gamepad2 className="w-3 h-3" /> {listing.game_name}</span>}
                 {listing.game_platform && <span className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">Platform: {listing.game_platform}</span>}
-                {listing.tool_target_game && <span className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">🛠️ For: {listing.tool_target_game}</span>}
+                {listing.tool_target_game && <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold"><Wrench className="w-3 h-3" /> For: {listing.tool_target_game}</span>}
                 {(listing.platforms || []).map(p => (
                   <span key={p} className="px-2.5 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">{p}</span>
                 ))}
@@ -519,12 +520,12 @@ export default function ListingPage() {
                 <a href={`/category?cat=${listing.category}`} className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs hover:bg-purple-900/50 transition-colors capitalize">{listing.category}</a>
                 {listing.community_franchise_id && (
                   <a href={`/community/${listing.community_franchise_id}`} className="px-2 py-1 rounded-lg bg-cyan-900/30 border border-cyan-700/30 text-cyan-300 text-xs hover:bg-cyan-900/50 transition-colors">
-                    🎮 {listing.community_franchise_id} Community
+                    {listing.community_franchise_id} Community
                   </a>
                 )}
                 {listing.modding_subcategory && (
                   <a href={`/category?cat=modding`} className="px-2 py-1 rounded-lg bg-yellow-900/30 border border-yellow-700/30 text-yellow-300 text-xs hover:bg-yellow-900/50 transition-colors">
-                    🔧 Modding › {listing.modding_subcategory}
+                    Modding › {listing.modding_subcategory}
                   </a>
                 )}
               </div>
@@ -545,22 +546,22 @@ export default function ListingPage() {
             <div className="flex flex-col gap-3">
               {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} onClick={handleDownload} />}
               <div className="flex gap-2 flex-wrap">
-                {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80">☕ Ko-fi</a>}
-                {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80">☕ BuyMeACoffee</a>}
-                {listing.patreon_url && <a href={listing.patreon_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg bg-red-900/30 border border-red-700/40 text-red-300 text-xs font-bold hover:opacity-80">🎖️ Patreon</a>}
+                {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="kofi" label="Ko-fi" className="w-4 h-4" /> Ko-fi</a>}
+                {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="buymeacoffee" label="Buy Me a Coffee" className="w-4 h-4" /> BuyMeACoffee</a>}
+                {listing.patreon_url && <a href={listing.patreon_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-900/30 border border-red-700/40 text-red-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="patreon" label="Patreon" className="w-4 h-4" /> Patreon</a>}
               </div>
             </div>
 
             {siteSettings && (
               <div className="bg-gray-900/60 rounded-xl border border-gray-800 p-4">
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3">🎮 Gamer.Productions</p>
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2"><Gamepad2 className="w-3.5 h-3.5" /> Gamer.Productions</p>
                 <div className="flex flex-wrap gap-2">
                   {siteSettings.youtube_url && <a href={siteSettings.youtube_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-red-900/30 border border-red-700/30 text-red-300 text-xs font-bold hover:opacity-80">▶ YouTube</a>}
                   {siteSettings.facebook_url && <a href={siteSettings.facebook_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-bold hover:opacity-80">f Facebook</a>}
-                  {siteSettings.tiktok_url && <a href={siteSettings.tiktok_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-xs font-bold hover:opacity-80">♪ TikTok</a>}
-                  {siteSettings.discord_url && <a href={siteSettings.discord_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-indigo-900/30 border border-indigo-700/30 text-indigo-300 text-xs font-bold hover:opacity-80">⚡ Discord</a>}
-                  {siteSettings.instagram_url && <a href={siteSettings.instagram_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-bold hover:opacity-80">📸 Instagram</a>}
-                  {siteSettings.twitter_url && <a href={siteSettings.twitter_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-sky-900/30 border border-sky-700/30 text-sky-300 text-xs font-bold hover:opacity-80">🐦 Twitter/X</a>}
+                  {siteSettings.tiktok_url && <a href={siteSettings.tiktok_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-xs font-bold hover:opacity-80"><BrandLogo brand="tiktok" label="TikTok" className="w-3.5 h-3.5" /> TikTok</a>}
+                  {siteSettings.discord_url && <a href={siteSettings.discord_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-900/30 border border-indigo-700/30 text-indigo-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="discord" label="Discord" className="w-3.5 h-3.5" /> Discord</a>}
+                  {siteSettings.instagram_url && <a href={siteSettings.instagram_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="instagram" label="Instagram" className="w-3.5 h-3.5" /> Instagram</a>}
+                  {siteSettings.twitter_url && <a href={siteSettings.twitter_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sky-900/30 border border-sky-700/30 text-sky-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="x" label="X" className="w-3.5 h-3.5" /> Twitter/X</a>}
                 </div>
               </div>
             )}
@@ -597,11 +598,11 @@ export default function ListingPage() {
               onClick={e => e.stopPropagation()}
               className="bg-gray-950 border border-cyan-700/40 rounded-2xl p-6 w-full max-w-sm">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-black">💡 Recommend Subcategory</h3>
+                <h3 className="text-white font-black flex items-center gap-2"><Lightbulb className="w-4 h-4 text-cyan-300" /> Recommend Subcategory</h3>
                 <button onClick={() => setShowRecommendModal(false)}><X className="w-4 h-4 text-gray-400" /></button>
               </div>
               {recommendSent ? (
-                <div className="text-center py-6"><p className="text-green-400 font-black text-lg">✅ Sent!</p><p className="text-gray-400 text-sm mt-1">Admin will review your recommendation.</p></div>
+                <div className="text-center py-6"><p className="text-green-400 font-black text-lg">Sent!</p><p className="text-gray-400 text-sm mt-1">Admin will review your recommendation.</p></div>
               ) : (
                 <>
                   <p className="text-gray-400 text-sm mb-4">Suggest a new subcategory for Gaming or Modding community related to this listing.</p>

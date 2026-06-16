@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X } from "lucide-react";
+import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Star, Zap, Gem, Crown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
@@ -131,7 +131,7 @@ export default function Profile() {
             ghostData: impersonationData,
           });
         }
-        setListings(listingsData.filter(l => l.status === "active"));
+        setListings(listingsData);
         setIsOwnProfile(true); // Ghost account can edit their own profile
         setLoading(false);
         return;
@@ -311,7 +311,7 @@ export default function Profile() {
                   size={80}
                   rounded="rounded-2xl"
                   showDots={(profile?.avatar_urls?.length || 0) > 1}
-                  fallback={<span className="text-4xl">🎮</span>}
+                  fallback={<Gamepad2 className="w-10 h-10 text-gray-500" />}
                 />
               )}
             </div>
@@ -331,7 +331,7 @@ export default function Profile() {
                     <LogOut className="w-3 h-3" /> Stop Managing
                   </button>
                 )}
-                {admin && isOwnProfile && !isGhostLogin && <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold">⚡ ADMIN</span>}
+                {admin && isOwnProfile && !isGhostLogin && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold"><Zap className="w-3 h-3" /> ADMIN</span>}
                 <FollowerRankBadge followers={followers} size="md" />
                 {profile?.honor_badge && <HonorBadge label={profile.honor_badge_label || "Founding Member"} size="sm" />}
               </div>
@@ -340,7 +340,7 @@ export default function Profile() {
                   <p className="text-gray-400 text-xs">@{profile?.username}</p>
                 )}
                 <p className={`inline-flex items-center px-3 py-1 rounded-xl border text-xs font-black capitalize ${profile?.account_type === "business" ? "bg-green-900/20 border-green-700/40 text-green-300" : profile?.account_type === "digital_creator" ? "bg-purple-900/20 border-purple-700/40 text-purple-300" : "bg-blue-900/20 border-blue-700/40 text-blue-300"}`}>
-                  {profile?.account_type === "digital_creator" ? "🎨 Digital Creator" : profile?.account_type === "business" ? "🏢 Business" : "👤 Gamer"}
+                  {profile?.account_type === "digital_creator" ? <><Palette className="w-3 h-3 mr-1" /> Digital Creator</> : profile?.account_type === "business" ? <><Building2 className="w-3 h-3 mr-1" /> Business</> : <><UserRound className="w-3 h-3 mr-1" /> Gamer</>}
                 </p>
                 {isOwnProfile && profile?.account_type === "regular" && (
                   <button onClick={() => setShowTransition(true)} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-bold transition-all hover:opacity-90">
@@ -356,10 +356,7 @@ export default function Profile() {
               {profile?.bio && <p className="text-gray-400 text-sm mt-1">{profile.bio}</p>}
               {profile?.location && (
                 <p className="text-gray-600 text-xs mt-1 flex items-center gap-1">
-                  <span>{(() => {
-                    const country = COUNTRIES.find(c => c.name === profile.location);
-                    return country?.flag || "📍";
-                  })()}</span>
+                  <MapPin className="w-3 h-3" />
                   <span>{profile.location}</span>
                 </p>
               )}
@@ -367,17 +364,17 @@ export default function Profile() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   {profile?.favorite_sports_team && (
                     <span className="px-2 py-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-semibold">
-                      ⚽ {profile.favorite_sports_team}
+                      <Trophy className="w-3 h-3 inline mr-1" /> {profile.favorite_sports_team}
                     </span>
                   )}
                   {profile?.favorite_game && (
                     <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/30 text-purple-300 text-xs font-semibold">
-                      🎮 {profile.favorite_game}
+                      <Gamepad2 className="w-3 h-3 inline mr-1" /> {profile.favorite_game}
                     </span>
                   )}
                   {profile?.favorite_hobby && (
                     <span className="px-2 py-1 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-semibold">
-                      🎨 {profile.favorite_hobby}
+                      <Palette className="w-3 h-3 inline mr-1" /> {profile.favorite_hobby}
                     </span>
                   )}
                 </div>
@@ -427,7 +424,7 @@ export default function Profile() {
                 <a href="https://youtube.com/@registeredgamerproductions?si=Ypv_k-lHs-UBRDAe" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-white text-xs font-bold"
                   style={{ background: "#ff0000", boxShadow: "0 0 10px rgba(255,0,0,0.4)" }}>
-                  <span className="font-black">▶</span> YouTube
+                  <span className="font-black">YT</span> YouTube
                 </a>
               </div>
             )}
@@ -436,9 +433,9 @@ export default function Profile() {
           {/* Rank progress banner */}
           {(() => {
             const rankInfo = [
-              { min: 0, next: 1000, label: "Supreme Digital Creator 💎", color: "#00d4ff" },
-              { min: 1000, next: 10000, label: "Gaming Guru 🌟", color: "#a855f7" },
-              { min: 10000, next: 100000, label: "Gaming God/Goddess ⚡👑", color: "#ffd700" },
+              { min: 0, next: 1000, label: "Supreme Digital Creator", color: "#00d4ff" },
+              { min: 1000, next: 10000, label: "Gaming Guru", color: "#a855f7" },
+              { min: 10000, next: 100000, label: "Gaming God/Goddess", color: "#ffd700" },
             ];
             const current = rankInfo.slice().reverse().find(r => followers >= r.min) || rankInfo[0];
             if (followers >= 100000) return null;
@@ -504,7 +501,7 @@ export default function Profile() {
                     {l.images?.[0] ? (
                       <img src={l.images[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl">🎮</div>
+                      <div className="w-full h-full flex items-center justify-center"><Gamepad2 className="w-9 h-9 text-gray-600" /></div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="absolute bottom-2 left-2 right-2">
@@ -513,7 +510,7 @@ export default function Profile() {
                       </div>
                     </div>
                     <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] bg-black/70 text-cyan-300 font-bold px-1.5 py-0.5 rounded-md"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
-                    {l.is_premium && <span className="absolute top-1.5 right-1.5 text-xs bg-yellow-500/90 text-black font-bold px-1.5 py-0.5 rounded-md">⭐</span>}
+                    {l.is_premium && <span className="absolute top-1.5 right-1.5 bg-yellow-500/90 text-black font-bold p-1 rounded-md"><Star className="w-3 h-3" /></span>}
                   </motion.a>
                 ))}
               </div>
