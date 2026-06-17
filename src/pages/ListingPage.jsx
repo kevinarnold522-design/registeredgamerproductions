@@ -7,6 +7,7 @@ import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
 import CommentThread from "@/components/shared/CommentThread";
 import DownloadAdGate from "@/components/ads/DownloadAdGate";
+import ScheduledAdOverlay from "@/components/ads/ScheduledAdOverlay";
 import SimilarListings from "@/components/shared/SimilarListings";
 import StickySearchBar from "@/components/shared/StickySearchBar";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
@@ -19,6 +20,8 @@ import { formatListingPrice } from "@/lib/currency";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import { formatCount } from "@/lib/formatCounts";
 import { buildProfileTheme } from "@/components/channel/ChannelThemePicker";
+import ListingCommentsBlock from "@/components/listings/ListingCommentsBlock";
+import ListingPageEditor from "@/components/listings/ListingPageEditor";
 
 function GlowDownloadButton({ isFree, price, currency, onClick, theme }) {
   return (
@@ -95,6 +98,9 @@ export default function ListingPage() {
   const [recommendText, setRecommendText] = useState("");
   const [recommendSent, setRecommendSent] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pageLayout, setPageLayout] = useState(null);
+  const [showPageEditor, setShowPageEditor] = useState(false);
+  const [tier1Active, setTier1Active] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -109,6 +115,7 @@ export default function ListingPage() {
         if (activeUser) {
           const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
           if (profiles[0]) setProfile(profiles[0]);
+          base44.entities.Tier1Subscription.filter({ user_email: activeUser.email, status: "active" }).then(rows => setTier1Active(rows.length > 0)).catch(() => {});
         }
       } catch {}
       setAuthLoaded(true);
@@ -139,6 +146,7 @@ export default function ListingPage() {
           base44.entities.PostComment.filter({ post_id: l.id }).then(c => {
             setComments(c.filter(x => x.status !== "removed").sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
           });
+          base44.entities.ListingPageLayout.filter({ listing_id: l.id }).then(rows => setPageLayout(rows[0] || null)).catch(() => {});
           base44.entities.PostRating.filter({ post_id: l.id }).then(ratings => {
             if (ratings.length > 0) {
               const avg = ratings.reduce((s, r) => s + r.rating, 0) / ratings.length;
@@ -310,6 +318,7 @@ export default function ListingPage() {
   const adminUser = user && isAdmin(user.email);
   const isOwner = user && listing && user.email === listing.seller_email;
   const canEdit = adminUser || isOwner;
+  const canPageEdit = canEdit && (adminUser || tier1Active || profile?.page_editor_enabled);
 
   if (loading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -331,6 +340,9 @@ export default function ListingPage() {
   const listingTheme = listing.listing_theme_color || sellerTheme.background || "#030712";
   const glowStyle = { ...getListingGlowStyle(listing), boxShadow: `${sellerTheme.border}, ${getListingGlowStyle(listing).boxShadow || "none"}` };
   const glowClass = getListingGlowClass(listing);
+  const sectionOrder = pageLayout?.section_order?.length ? pageLayout.section_order : ["media", "details", "comments"];
+  const showCommentsTop = sectionOrder[0] === "comments";
+  const commentsBlock = <ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} />;
 
   return (
     <div className="min-h-screen text-white" style={{ background: seller ? sellerTheme.bg : `linear-gradient(135deg, ${listingTheme}, #030712 55%, #050510)`, backgroundImage: seller ? sellerTheme.grid : undefined, backgroundSize: "42px 42px" }}>
@@ -344,6 +356,7 @@ export default function ListingPage() {
           onComplete={handleAdDone}
         />
       )}
+      <ScheduledAdOverlay listing={listing} />
 
       <div className="pt-20 max-w-7xl mx-auto px-4 pb-16">
         {/* Back + Edit */}
@@ -362,6 +375,12 @@ export default function ListingPage() {
               <button onClick={() => setShowDeleteConfirm(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all bg-red-950/50 border-red-700/50 text-red-300 hover:bg-red-900/60">
                 <Trash2 className="w-4 h-4" /> Delete Listing
+              </button>
+            )}
+            {canPageEdit && (
+              <button onClick={() => setShowPageEditor(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all">
+                <Pencil className="w-4 h-4" /> Page Editor
               </button>
             )}
             <button onClick={() => setShowRecommendModal(true)}
@@ -387,6 +406,8 @@ export default function ListingPage() {
             <span className="text-purple-400 text-xs font-bold">View Channel →</span>
           </a>
         )}
+
+        {showCommentsTop && commentsBlock}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT: Media */}
@@ -599,23 +620,20 @@ export default function ListingPage() {
           </div>
         </div>
 
-        {/* Comments */}
-        <div className="mt-12">
-          <div className="flex items-center gap-2 mb-6">
-            <MessageCircle className="w-5 h-5 text-purple-400" />
-            <h2 className="text-xl font-black text-white">Comments</h2>
-            <span className="px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-300 text-xs font-bold">{formatCount(comments.length)}</span>
-          </div>
-          <CommentThread
-            key={commentKey}
-            comments={comments}
-            user={user}
-            profile={profile}
-            postId={listing.id}
-            onRefresh={refreshComments}
-          />
-        </div>
+        {!showCommentsTop && commentsBlock}
       </div>
+
+      <AnimatePresence>
+        {showPageEditor && (
+          <ListingPageEditor
+            listing={listing}
+            layout={pageLayout}
+            user={user}
+            onClose={() => setShowPageEditor(false)}
+            onSaved={setPageLayout}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showDeleteConfirm && (

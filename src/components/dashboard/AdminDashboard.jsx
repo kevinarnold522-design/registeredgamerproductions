@@ -22,7 +22,8 @@ import FeedbackDashboard from "./FeedbackDashboard";
 import AdRevenueDashboard from "./AdRevenueDashboard";
 import ManagedAccountsPanel from "@/components/admin/ManagedAccountsPanel";
 import AdminGamesPanel from "@/components/dashboard/AdminGamesPanel";
-import { Gamepad2 } from "lucide-react";
+import AdminAdManager from "@/components/admin/AdminAdManager";
+import { Gamepad2, Megaphone } from "lucide-react";
 
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -112,6 +113,11 @@ export default function AdminDashboard({ user, profile }) {
     setAllUsers(prev => prev.map(u => u.id === profileId ? { ...u, no_ads: !currentValue } : u));
   };
 
+  const togglePageEditor = async (profileId, currentValue) => {
+    await base44.entities.UserProfile.update(profileId, { page_editor_enabled: !currentValue });
+    setAllUsers(prev => prev.map(u => u.id === profileId ? { ...u, page_editor_enabled: !currentValue } : u));
+  };
+
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({});
 
@@ -134,6 +140,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "created_accounts", label: "Created Accounts", icon: Users },
     { id: "listings", label: "Listings", icon: Store },
     { id: "games", label: "Games", icon: Gamepad2 },
+    { id: "ads", label: "Ad Scheduler", icon: Megaphone },
     { id: "orders", label: "Orders", icon: Package },
     { id: "verifications", label: `Verifications${pendingVerifications.length > 0 ? ` (${pendingVerifications.length})` : ""}`, icon: CheckCircle },
     { id: "reviews", label: "Reviews", icon: MessageSquare },
@@ -271,7 +278,7 @@ export default function AdminDashboard({ user, profile }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-800/50">
                 <tr>
-                  {["Username", "Email", "Type", "Payment", "Verified Badge", "No Ads", "Revenue", "Joined", "Edit"].map(h => (
+                  {["Username", "Email", "Type", "Payment", "Verified Badge", "No Ads", "Page Editor", "Revenue", "Joined", "Edit"].map(h => (
                    <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
                   ))}
                 </tr>
@@ -336,6 +343,15 @@ export default function AdminDashboard({ user, profile }) {
                         title="Permanently control whether this account sees ads"
                       >
                         {u.no_ads ? "Ad-free" : "Shows ads"}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => togglePageEditor(u.id, u.page_editor_enabled)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${u.page_editor_enabled ? "bg-cyan-900/40 border-cyan-600/50 text-cyan-300" : "bg-gray-800 border-gray-700 text-gray-400 hover:border-cyan-600/50 hover:text-cyan-300"}`}
+                        title="Allow this user to open the listing Page Editor"
+                      >
+                        {u.page_editor_enabled ? "Enabled" : "Disabled"}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-yellow-400 font-bold">₱{(u.total_revenue || 0).toLocaleString()}</td>
@@ -435,6 +451,9 @@ export default function AdminDashboard({ user, profile }) {
 
       {/* Games Management */}
       {tab === "games" && <AdminGamesPanel />}
+
+      {/* Ad Scheduler */}
+      {tab === "ads" && <AdminAdManager listings={allListings} />}
 
       {/* Analytics — combined */}
       {tab === "analytics" && (
