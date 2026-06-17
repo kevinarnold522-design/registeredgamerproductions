@@ -1,13 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { X, Megaphone } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { isAdmin } from "@/lib/constants";
 
-export default function ScheduledAdOverlay({ listing }) {
+export default function ScheduledAdOverlay({ listing, adsDisabled = false }) {
   const [ads, setAds] = useState([]);
   const [activeAd, setActiveAd] = useState(null);
+  const [exempt, setExempt] = useState(adsDisabled);
+
+  // Permanently block all ads for ad-free users (admin-controlled no_ads, account moderators, admins)
+  useEffect(() => {
+    if (adsDisabled) { setExempt(true); return; }
+    base44.auth.me().then(me => {
+      if (!me) return;
+      if (isAdmin(me.email)) { setExempt(true); return; }
+      base44.entities.UserProfile.filter({ user_email: me.email }).then(p => {
+        const prof = p[0];
+        if (prof && (prof.no_ads === true || prof.moderator_type === "account_moderator")) setExempt(true);
+      }).catch(() => {});
+    }).catch(() => {});
+  }, [adsDisabled]);
 
   useEffect(() => {
-    if (!listing) return;
+    if (!listing || exempt) return;
     base44.entities.AdPlacement.filter({ is_active: true }).then(rows => {
       setAds(rows.filter(ad =>
         ad.page_type === "global" ||
@@ -15,10 +30,10 @@ export default function ScheduledAdOverlay({ listing }) {
         (ad.page_type === "category" && ad.category === listing.category)
       ));
     });
-  }, [listing?.id]);
+  }, [listing?.id, exempt]);
 
   useEffect(() => {
-    if (ads.length === 0) return;
+    if (ads.length === 0 || exempt) return;
     const timers = [];
     ads.forEach((ad, index) => {
       const delay = ((Number(ad.start_delay_seconds) || 0) + index * 2) * 1000;
@@ -36,7 +51,7 @@ export default function ScheduledAdOverlay({ listing }) {
     return () => timers.forEach(clearTimeout);
   }, [ads]);
 
-  if (!activeAd) return null;
+  if (!activeAd || exempt) return null;
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">

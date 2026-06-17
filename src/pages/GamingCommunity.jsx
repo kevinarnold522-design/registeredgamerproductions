@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Search, Pencil, Plus, X, Check, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Filter, CheckSquare, Square, Newspaper } from "lucide-react";
+import { Users, Search, Pencil, Plus, X, Check, GripVertical, Link2, Upload, ArrowLeft, EyeOff, Eye, SlidersHorizontal, Filter, CheckSquare, Square, Newspaper, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -15,6 +15,7 @@ import AnimatedController from "@/components/shared/AnimatedController";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import GroupChat from "@/components/community/GroupChat";
 import PostComposer from "@/components/community/PostComposer";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
@@ -197,7 +198,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
-                    <p className="text-gray-500 text-[9px]">by @{item.seller_username}</p>
+                    <p className="text-gray-400 text-[9px] inline-flex items-center gap-1"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> Posted Date: {item.created_date ? new Date(item.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>
                     <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `\u20B1${item.price}`}</p>
                     <div className="mt-1.5">
                       <ListingEngagementBar listing={item} user={user} profile={profile} compact />
@@ -961,6 +962,7 @@ export default function GamingCommunity() {
           accentColor={activeFranchise.accent}
         />
       )}
+      <GamerBrandFooter />
     </div>
   );
 }

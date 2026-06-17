@@ -12,6 +12,7 @@ import Navbar from "@/components/home/Navbar";
 import Pagination from "@/components/shared/Pagination";
 import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 
 const PER_PAGE = 10;
 
@@ -78,19 +79,19 @@ function VideoCard({ video, onClick, user }) {
 
         {/* Engagement row */}
         <div className="flex items-center gap-3 mt-2.5 pt-2 border-t border-gray-800">
-          <button onClick={handleLike} className={`flex items-center gap-1 text-xs font-bold transition-all ${liked ? "text-pink-400" : "text-gray-500 hover:text-pink-400"}`}>
-            <Heart className="w-3.5 h-3.5" fill={liked ? "currentColor" : "none"} />
+          <button onClick={handleLike} className={`theme-glow-action rounded-lg px-1 flex items-center gap-1 text-xs font-bold transition-all ${liked ? "text-pink-400" : "text-gray-500 hover:text-pink-400"}`}>
+            <Heart className="w-3.5 h-3.5 theme-glow-icon" fill={liked ? "currentColor" : "none"} />
             <span>{likeCount}</span>
           </button>
-          <button onClick={() => onClick(video)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-purple-400 transition-colors">
-            <MessageCircle className="w-3.5 h-3.5" />
+          <button onClick={() => onClick(video)} className="theme-glow-action rounded-lg px-1 flex items-center gap-1 text-xs text-gray-500 hover:text-purple-400 transition-colors">
+            <MessageCircle className="w-3.5 h-3.5 theme-glow-icon" />
           </button>
-          <button onClick={handleShare} className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-400 transition-colors">
-            <Share2 className="w-3.5 h-3.5" />
+          <button onClick={handleShare} className="theme-glow-action rounded-lg px-1 flex items-center gap-1 text-xs text-gray-500 hover:text-blue-400 transition-colors">
+            <Share2 className="w-3.5 h-3.5 theme-glow-icon" />
           </button>
           <button onClick={(e) => { e.stopPropagation(); setSaved(v => !v); }}
-            className={`flex items-center gap-1 text-xs transition-colors ml-auto ${saved ? "text-yellow-400" : "text-gray-500 hover:text-yellow-400"}`}>
-            <Bookmark className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
+            className={`theme-glow-action rounded-lg px-1 flex items-center gap-1 text-xs transition-colors ml-auto ${saved ? "text-yellow-400" : "text-gray-500 hover:text-yellow-400"}`}>
+            <Bookmark className="w-3.5 h-3.5 theme-glow-icon" fill={saved ? "currentColor" : "none"} />
           </button>
         </div>
       </div>
@@ -611,6 +612,7 @@ export default function ContentFeedPage() {
           />
         )}
       </AnimatePresence>
+      <GamerBrandFooter />
     </div>
   );
 }

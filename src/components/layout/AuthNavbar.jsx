@@ -143,6 +143,7 @@ export default function AuthNavbar({ user, profile }) {
   // ── Links Setup ──────────────────────────────────────────
   const adminLinks = [
     { icon: Shield, label: "Admin Dashboard", href: "/dashboard", color: "text-yellow-400" },
+    { icon: User, label: "My Profile", href: "/profile", color: "text-blue-300" },
     { icon: GitBranch, label: "Routing Dashboard", href: "/routing-dashboard", color: "text-cyan-400" },
     { icon: BarChart2, label: "Analytics", href: "/analytics", color: "text-purple-400" },
     { icon: DollarSign, label: "Earnings", href: "/earnings", color: "text-green-400" },
@@ -157,6 +158,7 @@ export default function AuthNavbar({ user, profile }) {
   ];
 
   const sellerLinks = [
+    { icon: User, label: "My Profile", href: "/profile", color: "text-blue-300" },
     { icon: Store, label: "My Listings", href: "/my-listings" },
     { icon: BarChart2, label: "Analytics", href: "/analytics" },
     { icon: DollarSign, label: "Earnings", href: "/earnings", color: "text-green-400" },
@@ -167,6 +169,7 @@ export default function AuthNavbar({ user, profile }) {
   ];
 
   const regularLinks = [
+    { icon: User, label: "My Profile", href: "/profile", color: "text-blue-300" },
     { icon: ClipboardList, label: "Orders", href: "/orders" },
     { icon: CreditCard, label: "Payment", href: "/payment" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },

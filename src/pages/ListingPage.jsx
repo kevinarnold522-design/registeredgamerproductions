@@ -23,6 +23,7 @@ import { buildProfileTheme } from "@/components/channel/ChannelThemePicker";
 import ListingCommentsBlock from "@/components/listings/ListingCommentsBlock";
 import ListingPageEditor from "@/components/listings/ListingPageEditor";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 
 function GlowDownloadButton({ isFree, price, currency, onClick, theme }) {
   return (
@@ -604,16 +605,16 @@ export default function ListingPage() {
               </div>
             </div>
 
-            {siteSettings && (
+            {(
               <div className="bg-gray-900/60 rounded-xl border border-gray-800 p-4">
                 <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2"><Gamepad2 className="w-3.5 h-3.5" /> Gamer.Productions</p>
                 <div className="flex flex-wrap gap-2">
-                  {siteSettings.youtube_url && <a href={siteSettings.youtube_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-red-900/30 border border-red-700/30 text-red-300 text-xs font-bold hover:opacity-80">▶ YouTube</a>}
-                  {siteSettings.facebook_url && <a href={siteSettings.facebook_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-bold hover:opacity-80">f Facebook</a>}
-                  {siteSettings.tiktok_url && <a href={siteSettings.tiktok_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-xs font-bold hover:opacity-80"><BrandLogo brand="tiktok" label="TikTok" className="w-3.5 h-3.5" /> TikTok</a>}
-                  {siteSettings.discord_url && <a href={siteSettings.discord_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-900/30 border border-indigo-700/30 text-indigo-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="discord" label="Discord" className="w-3.5 h-3.5" /> Discord</a>}
-                  {siteSettings.instagram_url && <a href={siteSettings.instagram_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="instagram" label="Instagram" className="w-3.5 h-3.5" /> Instagram</a>}
-                  {siteSettings.twitter_url && <a href={siteSettings.twitter_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sky-900/30 border border-sky-700/30 text-sky-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="x" label="X" className="w-3.5 h-3.5" /> Twitter/X</a>}
+                  <a href={siteSettings?.youtube_url || OFFICIAL_LINKS.youtube} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-red-900/30 border border-red-700/30 text-red-300 text-xs font-bold hover:opacity-80">▶ YouTube</a>
+                  <a href={siteSettings?.facebook_url || OFFICIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-xs font-bold hover:opacity-80">f Facebook</a>
+                  <a href={siteSettings?.tiktok_url || OFFICIAL_LINKS.tiktok} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700 text-white text-xs font-bold hover:opacity-80"><BrandLogo brand="tiktok" label="TikTok" className="w-3.5 h-3.5" /> TikTok</a>
+                  <a href={siteSettings?.discord_url || OFFICIAL_LINKS.discord} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-900/30 border border-indigo-700/30 text-indigo-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="discord" label="Discord" className="w-3.5 h-3.5" /> Discord</a>
+                  <a href={siteSettings?.instagram_url || OFFICIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-pink-900/30 border border-pink-700/30 text-pink-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="instagram" label="Instagram" className="w-3.5 h-3.5" /> Instagram</a>
+                  {siteSettings?.twitter_url && <a href={siteSettings.twitter_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sky-900/30 border border-sky-700/30 text-sky-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="x" label="X" className="w-3.5 h-3.5" /> Twitter/X</a>}
                 </div>
               </div>
             )}
