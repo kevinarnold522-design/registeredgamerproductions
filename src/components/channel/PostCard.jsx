@@ -92,16 +92,16 @@ export default function PostCard({ post, user, profile, onLike, onComment, onSha
             await onLike();
             setIsLiked(!isLiked);
           }}
-          className={`flex items-center gap-2 text-sm font-semibold transition-colors ${isLiked ? "text-pink-500" : "text-gray-400 hover:text-pink-500"}`}
+          className={`theme-glow-action flex items-center gap-2 text-sm font-semibold transition-colors rounded-lg px-1 ${isLiked ? "text-pink-500" : "text-gray-400 hover:text-pink-500"}`}
         >
-          <Heart className={`w-5 h-5 ${isLiked ? "fill-pink-500" : ""}`} />
+          <Heart className={`w-5 h-5 theme-glow-icon ${isLiked ? "fill-pink-500" : ""}`} />
           {post.likes || 0}
         </button>
         <button
           onClick={handleToggleComments}
-          className="flex items-center gap-2 text-gray-400 hover:text-white text-sm font-semibold transition-colors"
+          className="theme-glow-action flex items-center gap-2 text-gray-400 hover:text-white text-sm font-semibold transition-colors rounded-lg px-1"
         >
-          <MessageCircle className="w-5 h-5" />
+          <MessageCircle className="w-5 h-5 theme-glow-icon" />
           {post.comments_count || 0}
         </button>
         <ShareButton type="post" id={post.id} title={post.caption} />

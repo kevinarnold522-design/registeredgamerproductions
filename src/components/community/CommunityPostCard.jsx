@@ -386,21 +386,21 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
               {/* Actions */}
               <div className="flex items-center gap-0.5 mt-4 pt-3 border-t border-gray-800 flex-wrap">
                 <button onClick={handleLike}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${liked ? "text-pink-400 bg-pink-900/20" : "text-gray-500 hover:text-pink-400 hover:bg-gray-800"}`}>
-                  <Heart className="w-4 h-4" fill={liked ? "currentColor" : "none"} />
+                  className={`theme-glow-action flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${liked ? "text-pink-400 bg-pink-900/20" : "text-gray-500 hover:text-pink-400 hover:bg-gray-800"}`}>
+                  <Heart className="w-4 h-4 theme-glow-icon" fill={liked ? "currentColor" : "none"} />
                   <span>{likeCount}</span>
                 </button>
 
                 <button onClick={() => setShowComments(v => !v)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${showComments ? "text-purple-400 bg-purple-900/20" : "text-gray-500 hover:text-purple-400 hover:bg-gray-800"}`}>
-                  <MessageCircle className="w-4 h-4" />
+                  className={`theme-glow-action flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all ${showComments ? "text-purple-400 bg-purple-900/20" : "text-gray-500 hover:text-purple-400 hover:bg-gray-800"}`}>
+                  <MessageCircle className="w-4 h-4 theme-glow-icon" />
                   <span>Comment</span>
                 </button>
 
                 <div className="relative">
                   <button onClick={() => setShareOpen(v => !v)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-gray-500 hover:text-blue-400 hover:bg-gray-800 transition-all">
-                    <Share2 className="w-4 h-4" />
+                    className="theme-glow-action flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-gray-500 hover:text-blue-400 hover:bg-gray-800 transition-all">
+                    <Share2 className="w-4 h-4 theme-glow-icon" />
                     <span>Share</span>
                   </button>
                   <AnimatePresence>

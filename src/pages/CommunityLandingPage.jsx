@@ -449,7 +449,298 @@ export default function CommunityLandingPage() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
-...
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Feed */}
+          <div className="lg:col-span-2">
+            {/* Post Composer */}
+            <PostComposer
+              user={user}
+              profile={profile}
+              franchise={franchise}
+              community={community}
+              isJoined={isJoined}
+              admin={admin}
+              isModerator={isModerator}
+              onPostCreated={handlePostCreated}
+              accentColor={franchise.accent}
+            />
+
+            {/* Bulk post toggle */}
+            {user && (isJoined || admin || isModerator) && (
+              <div className="mb-4">
+                <button onClick={() => setShowBulkPost(v => !v)} className="text-xs text-purple-400 font-semibold hover:text-purple-300 transition-colors flex items-center gap-1">
+                  <Plus className="w-3.5 h-3.5" /> {showBulkPost ? 'Hide' : 'Create Multiple Posts'} (Bulk Posting)
+                </button>
+              </div>
+            )}
+
+            {/* Bulk Post Panel */}
+            {user && showBulkPost && (
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-bold text-sm">📦 Bulk Posting</h3>
+                  <button onClick={addBulkPost} className="text-xs text-purple-400 font-semibold hover:text-purple-300 flex items-center gap-1">
+                    <Plus className="w-3.5 h-3.5" /> Add Another Post
+                  </button>
+                </div>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {bulkPosts.map((post, idx) => (
+                    <div key={idx} className="bg-gray-800 rounded-xl p-3 border border-gray-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-gray-500 font-semibold">Post #{idx + 1}</span>
+                        {bulkPosts.length > 1 && (
+                          <button onClick={() => removeBulkPost(idx)} className="text-gray-500 hover:text-red-400">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <input value={post.content} onChange={e => updateBulkPost(idx, 'content', e.target.value)}
+                        placeholder="Post content..."
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2" />
+                      <textarea value={post.description} onChange={e => updateBulkPost(idx, 'description', e.target.value)}
+                        placeholder="Description (optional)..."
+                        rows={2}
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500 mb-2 resize-none" />
+                      <div className="flex gap-2 flex-wrap mb-2">
+                        {(post.images || []).map((url, i) => (
+                          <div key={i} className="relative">
+                            <img src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" alt="" />
+                            <button onClick={() => updateBulkPost(idx, 'images', (post.images || []).filter((_, j) => j !== i))}
+                              className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
+                          </div>
+                        ))}
+                        {(post.videos || []).map((url, i) => (
+                          <div key={i} className="relative">
+                            <video src={url} className="w-16 h-16 object-cover rounded-lg border border-gray-700" muted />
+                            <button onClick={() => updateBulkPost(idx, 'videos', (post.videos || []).filter((_, j) => j !== i))}
+                              className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 text-white text-[8px]">×</button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <label className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-900 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
+                          <Image className="w-3 h-3" /> Add Image
+                          <input type="file" accept="image/*" onChange={(e) => handleBulkImageUpload(idx, e)} className="hidden" />
+                        </label>
+                        <label className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-900 border border-gray-700 text-gray-400 hover:text-purple-400 cursor-pointer text-[10px]">
+                          <Video className="w-3 h-3" /> Add Video
+                          <input type="file" accept="video/*" onChange={(e) => handleBulkVideoUpload(idx, e)} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={handleBulkPost} disabled={bulkPosting || bulkPosts.every(p => !p.content.trim() && !p.description.trim())}
+                  className="mt-3 w-full py-2.5 rounded-xl font-bold text-sm text-white disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  <Upload className="w-4 h-4 inline mr-2" /> Post All ({bulkPosts.filter(p => p.content.trim() || p.description.trim()).length})
+                </button>
+              </div>
+            )}
+
+            {/* Search & Sort */}
+            <div className="flex gap-3 mb-3 flex-wrap">
+              <div className="flex-1 relative min-w-[140px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Search posts..."
+                  className="w-full bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+              </div>
+              <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}
+                className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-gray-400 text-sm focus:outline-none focus:border-purple-500">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="popular">Most Liked</option>
+              </select>
+              <button onClick={() => setShowAdvFilter(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-bold border transition-all ${showAdvFilter ? "border-purple-500/60 bg-purple-900/20 text-purple-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
+                <SlidersHorizontal className="w-4 h-4" /> Filter
+              </button>
+            </div>
+            {/* Advanced listing filters */}
+            <AnimatePresence>
+              {showAdvFilter && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden mb-4">
+                  <div className="bg-gray-900 border border-purple-700/30 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <input type="number" value={listingFilter.priceMin} onChange={e => setListingFilter(f => ({ ...f, priceMin: e.target.value }))}
+                      placeholder="Min ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                    <input type="number" value={listingFilter.priceMax} onChange={e => setListingFilter(f => ({ ...f, priceMax: e.target.value }))}
+                      placeholder="Max ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={listingFilter.isFree} onChange={e => setListingFilter(f => ({ ...f, isFree: e.target.checked }))} className="accent-green-500 w-3.5 h-3.5 rounded" />
+                      <span className="text-green-400 text-xs font-semibold">Free Only</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={listingFilter.isPremium} onChange={e => setListingFilter(f => ({ ...f, isPremium: e.target.checked }))} className="accent-yellow-500 w-3.5 h-3.5 rounded" />
+                      <span className="text-yellow-400 text-xs font-semibold">Premium Only</span>
+                    </label>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Posts */}
+            {loading ? (
+              <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-32 rounded-2xl bg-gray-900 animate-pulse" />)}</div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="text-center py-16 rounded-2xl bg-gray-900 border border-gray-800">
+                <p className="text-4xl mb-3">{franchise.emoji}</p>
+                <p className="text-gray-400 font-semibold">No posts yet</p>
+                <p className="text-gray-600 text-sm mt-1">Be the first to post in this community!</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredPosts.map(post => (
+                  <CommunityPostCard
+                    key={post.id}
+                    post={post}
+                    user={user}
+                    profile={profile}
+                    isTier1={isTier1}
+                    canManage={canManage}
+                    canDelete={canDelete}
+                    accentColor={franchise.accent}
+                    onUpdate={handlePostUpdate}
+                    onFlag={async (p) => {
+                      await base44.entities.CommunityPost.update(p.id, { status: "pending_review" });
+                      setPosts(prev => prev.filter(x => x.id !== p.id));
+                    }}
+                    onRemove={async (p) => {
+                      await base44.entities.CommunityPost.update(p.id, { status: "removed" });
+                      setPosts(prev => prev.filter(x => x.id !== p.id));
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Group Chat — inline below posts */}
+            <div className="mt-6">
+              <GroupChat
+                franchiseId={franchise.id}
+                communityId={community?.id}
+                user={user}
+                profile={profile}
+                accentColor={franchise.accent}
+                inline={true}
+              />
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-4">
+            {/* Leaderboard */}
+            <MemberLeaderboard franchiseId={franchiseId} accentColor={franchise.accent} />
+
+            {/* Post Notifications */}
+            {user && <PostNotifications user={user} franchiseId={franchiseId} />}
+            {/* Community Info */}
+            <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
+              <h3 className="text-white font-black text-sm mb-3">About Community</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-gray-400">
+                  <span>Members</span><span className="text-white font-bold">{members.length}</span>
+                </div>
+                <div className="flex justify-between text-gray-400">
+                  <span>Posts</span><span className="text-white font-bold">{posts.length}</span>
+                </div>
+                <div className="flex justify-between text-gray-400">
+                  <span>Genre</span><span className="text-white font-bold">{franchise.genre}</span>
+                </div>
+              </div>
+              {canManage && (
+                <button onClick={() => setShowEditProfile(true)}
+                  className="mt-3 w-full py-2 rounded-xl text-xs font-bold text-purple-300 bg-purple-900/20 border border-purple-700/30 hover:bg-purple-900/40 transition-all flex items-center justify-center gap-2">
+                  <Camera className="w-3.5 h-3.5" /> Edit Community Profile
+                </button>
+              )}
+              {!isTier1 && user && (
+                <button onClick={() => setShowMembershipModal(true)}
+                  className="mt-2 w-full py-2 rounded-xl text-xs font-black text-white flex items-center justify-center gap-1"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+                  <Shield className="w-3 h-3" /> Get Verified — from $0.99/mo
+                </button>
+              )}
+            </div>
+
+            {/* Share */}
+            <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
+              <h3 className="text-white font-black text-sm mb-3">Share Community</h3>
+              <div className="flex gap-2">
+                <button onClick={() => handleShare("facebook")}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                  Facebook
+                </button>
+                <button onClick={() => handleShare("whatsapp")}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors">
+                  WhatsApp
+                </button>
+                <button onClick={() => handleShare("telegram")}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-sky-500 hover:bg-sky-600 transition-colors">
+                  Telegram
+                </button>
+              </div>
+            </div>
+
+            {/* Listings */}
+            {listings.length > 0 && (
+              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
+                <h3 className="text-white font-black text-sm mb-3">📦 Community Listings</h3>
+                <div className="space-y-3">
+                  {listings.map(l => (
+                    <div key={l.id}>
+                      <Link to={`/listing?id=${l.id}`}
+                        onClick={async (e) => {
+                          // Increment view count on click
+                          try {
+                            const fresh = await base44.entities.Listing.get(l.id);
+                            const newViews = (fresh.views || 0) + 1;
+                            await base44.entities.Listing.update(l.id, { views: newViews });
+                          } catch {}
+                        }}
+                        className="flex gap-3 p-2 rounded-xl hover:bg-gray-800 transition-colors group">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
+                          {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center">🎮</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{l.title}</p>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `₱${l.price}`}</p>
+                            <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                              <Eye className="w-2.5 h-2.5 theme-glow-icon" />{(l.views || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                      <div className="px-2 pb-1">
+                        <ListingEngagementBar listing={l} user={user} profile={profile} compact />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Members */}
+            <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
+              <h3 className="text-white font-black text-sm mb-3">Members ({members.length})</h3>
+              <div className="flex flex-wrap gap-2">
+                {members.slice(0, 12).map(m => (
+                  <div key={m.id} className="relative" title={m.username}>
+                    <div className="w-9 h-9 rounded-full overflow-hidden border-2"
+                      style={{ borderColor: m.is_moderator ? "#f59e0b" : `${franchise.accent}44` }}>
+                      {m.avatar_url ? <img src={m.avatar_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full bg-gray-800 flex items-center justify-center text-xs text-gray-500">{(m.username || "G")[0].toUpperCase()}</div>}
+                    </div>
+                    {m.is_moderator && <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-yellow-500 flex items-center justify-center text-[8px]">🛡</div>}
+                  </div>
+                ))}
+                {members.length > 12 && <div className="w-9 h-9 rounded-full bg-gray-800 border-2 border-gray-700 flex items-center justify-center text-xs text-gray-500">+{members.length - 12}</div>}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <GamerBrandFooter />
     </div>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import SubcategoryCards from "./SubcategoryCards";
 import { motion } from "framer-motion";
-import { Search, ShoppingCart, Send } from "lucide-react";
+import { Search, ShoppingCart, Send, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { CATEGORIES, isAdmin } from "@/lib/constants";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 
 const buySellCat = CATEGORIES.find(c => c.id === "buy_sell");
 
@@ -57,7 +58,7 @@ function ListingCard({ listing, index }) {
             <span className="px-2 py-0.5 rounded-lg bg-gray-800 text-gray-400 text-[10px]">{listing.subcategory}</span>
           )}
         </div>
-        <p className="text-gray-600 text-[10px] mt-1">by {listing.seller_username || "Seller"}</p>
+        <p className="theme-glow-action inline-flex items-center gap-1.5 text-gray-400 text-[10px] mt-1 rounded-lg px-1.5 py-0.5"><CalendarDays className="w-3 h-3 theme-glow-icon" /> Posted Date: {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>
       </div>
     </motion.a>
   );
@@ -153,6 +154,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
           </div>
         )}
       </div>
+      <GamerBrandFooter />
     </div>
   );
 }
