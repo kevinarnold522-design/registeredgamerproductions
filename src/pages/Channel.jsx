@@ -9,7 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import PostCard from "@/components/channel/PostCard";
-import ChannelThemePicker, { THEMES } from "@/components/channel/ChannelThemePicker";
+import ChannelThemePicker, { THEMES, buildProfileTheme } from "@/components/channel/ChannelThemePicker";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { isAdmin } from "@/lib/constants";
 import EditProfileModal from "@/components/profile/EditProfileModal";
@@ -103,6 +103,7 @@ export default function Channel() {
         ]);
         const p = profiles[0] || null;
         setProfile(p);
+        setChannelTheme(p?.profile_theme_style || "default");
         setSocialLinks(p?.social_links || {});
         setVideos(myVideos.filter(v => v.status === "active"));
         setListings(myListings.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
@@ -118,11 +119,8 @@ export default function Channel() {
   })();
   const isGhostOwner = ghostSession.isImpersonating && ghostSession.isGhostLogin && ghostSession.targetEmail === targetEmail;
   const isOwner = !viewEmail || (user && viewEmail === user.email) || isGhostOwner;
-  const currentThemeObj = THEMES.find(t => t.id === channelTheme) || THEMES[0];
-  const handleThemeChange = (themeId) => {
-    setChannelTheme(themeId);
-    localStorage.setItem("channel_theme", themeId);
-  };
+  const currentThemeObj = buildProfileTheme(profile || {}, channelTheme);
+  const handleThemeChange = (themeId) => setChannelTheme(themeId);
 
   const saveSocialLinks = async () => {
     if (!profile?.id) return;
@@ -164,7 +162,7 @@ export default function Channel() {
   const totalShares = posts.reduce((s, p) => s + (Number(p.shares_count) || 0), 0) + listings.reduce((s, l) => s + (Number(l.shares) || 0), 0);
 
   return (
-    <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, minHeight: "100vh" }}>
+    <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, backgroundImage: currentThemeObj.grid, backgroundSize: "42px 42px", minHeight: "100vh" }}>
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-16">
 
@@ -325,7 +323,7 @@ export default function Channel() {
             </div>
             {isOwner && (
               <div className="flex items-center gap-2">
-                <ChannelThemePicker currentTheme={channelTheme} onSelect={handleThemeChange} />
+                <ChannelThemePicker profile={profile} currentTheme={channelTheme} onSelect={handleThemeChange} onSaved={setProfile} />
                 <button onClick={() => setShowEditProfile(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
                   <Edit2 className="w-4 h-4" /> Edit Profile
                 </button>

@@ -100,6 +100,7 @@ function ModCard({ mod, user, profile }) {
       </div>
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{mod.title}</p>
+        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/channel?email=${encodeURIComponent(mod.seller_email || "")}`; }} className="text-[10px] text-cyan-200/80 hover:text-cyan-200 truncate block max-w-full">by @{mod.seller_username || mod.seller_email?.split("@")[0] || "gamer"}</button>
         <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? `₱${mod.price?.toLocaleString()}` : "FREE"}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
           <Download className="w-2.5 h-2.5" /><span className="text-[8px]">{(mod.downloads || 0).toLocaleString()} downloads</span>
@@ -152,6 +153,7 @@ function ProductCard({ product, user, profile }) {
       </div>
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{product.title}</p>
+        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/channel?email=${encodeURIComponent(product.seller_email || "")}`; }} className="text-[10px] text-cyan-200/80 hover:text-cyan-200 truncate block max-w-full">by @{product.seller_username || product.seller_email?.split("@")[0] || "gamer"}</button>
         <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>₱{(product.price || 0).toLocaleString()}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
           <Download className="w-2 h-2" /><span className="text-[8px]">{(product.downloads || 0).toLocaleString()}</span>

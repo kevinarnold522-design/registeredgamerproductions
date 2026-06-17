@@ -18,15 +18,16 @@ import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 import { formatListingPrice } from "@/lib/currency";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import { formatCount } from "@/lib/formatCounts";
+import { buildProfileTheme } from "@/components/channel/ChannelThemePicker";
 
-function GlowDownloadButton({ isFree, price, currency, onClick }) {
+function GlowDownloadButton({ isFree, price, currency, onClick, theme }) {
   return (
     <motion.button
-      onClick={onClick}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className="w-full py-4 rounded-xl font-black text-white text-base flex items-center justify-center gap-2 relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}
+    onClick={onClick}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className="w-full py-4 rounded-xl font-black text-white text-base flex items-center justify-center gap-2 relative overflow-hidden"
+    style={{ background: theme?.cta || "linear-gradient(135deg, #7c3aed, #ec4899)", boxShadow: theme?.border }}
     >
       {/* Rocket glow animation */}
       <motion.div
@@ -326,12 +327,13 @@ export default function ListingPage() {
   const ytId = listing.youtube_video_id || (listing.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
   const isFree = !listing.price || listing.price === 0 || listing.is_free;
   const hasDownload = listing.download_url || listing.external_link;
-  const listingTheme = listing.listing_theme_color || "#030712";
-  const glowStyle = getListingGlowStyle(listing);
+  const sellerTheme = buildProfileTheme(seller || {}, seller?.profile_theme_style || "default");
+  const listingTheme = listing.listing_theme_color || sellerTheme.background || "#030712";
+  const glowStyle = { ...getListingGlowStyle(listing), boxShadow: `${sellerTheme.border}, ${getListingGlowStyle(listing).boxShadow || "none"}` };
   const glowClass = getListingGlowClass(listing);
 
   return (
-    <div className="min-h-screen text-white" style={{ background: `linear-gradient(135deg, ${listingTheme}, #030712 55%, #050510)` }}>
+    <div className="min-h-screen text-white" style={{ background: seller ? sellerTheme.bg : `linear-gradient(135deg, ${listingTheme}, #030712 55%, #050510)`, backgroundImage: seller ? sellerTheme.grid : undefined, backgroundSize: "42px 42px" }}>
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <StickySearchBar />
@@ -571,7 +573,7 @@ export default function ListingPage() {
             })()}
 
             <div className="flex flex-col gap-3">
-              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} />}
+              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} />}
               <div className="flex gap-2 flex-wrap">
                 {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="kofi" label="Ko-fi" className="w-4 h-4" /> Ko-fi</a>}
                 {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="buymeacoffee" label="Buy Me a Coffee" className="w-4 h-4" /> BuyMeACoffee</a>}

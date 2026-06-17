@@ -37,15 +37,48 @@
     },
     "profile_theme_color": {
       "type": "string",
-      "default": "#030712"
+      "default": "#8b5cf6"
+    },
+    "profile_theme_secondary": {
+      "type": "string",
+      "default": "#ec4899"
+    },
+    "profile_theme_background": {
+      "type": "string",
+      "default": "#050510"
     },
     "profile_theme_style": {
       "type": "string",
       "enum": [
         "default",
-        "custom"
+        "custom",
+        "fire",
+        "ocean",
+        "forest",
+        "gold",
+        "neon",
+        "sakura",
+        "galaxy",
+        "midnight"
       ],
       "default": "default"
+    },
+    "profile_theme_background_style": {
+      "type": "string",
+      "enum": [
+        "solid",
+        "gradient",
+        "cyber_grid"
+      ],
+      "default": "gradient"
+    },
+    "profile_theme_gradient_angle": {
+      "type": "number",
+      "default": 135
+    },
+    "profile_theme_neon_intensity": {
+      "type": "number",
+      "default": 60
     },
     "location": {
       "type": "string"

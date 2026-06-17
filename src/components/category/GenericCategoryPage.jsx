@@ -378,7 +378,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
                  {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
                  {cat === "games" && l.store_platforms?.length > 0 && <div className="mt-2"><StorePlatformBadges platforms={l.store_platforms} links={l.store_platform_links} size="sm" /></div>}
-                 <ListingSellerBadge sellerEmail={l.seller_email} sellerUsername={l.seller_username} />
+                 <div onClick={(e) => e.stopPropagation()}><ListingSellerBadge sellerEmail={l.seller_email} sellerUsername={l.seller_username} /></div>
                  </div>
                  </motion.a>
                  );
