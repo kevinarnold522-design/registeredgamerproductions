@@ -7,6 +7,7 @@ import { isAdmin, isServiceListing } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import EnhancedListingCard from "@/components/community/EnhancedListingCard";
+import MascotShowcase from "@/components/shared/MascotShowcase";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
 
 // Storage key for cards in a subcategory landing page
@@ -373,6 +374,15 @@ export default function SubcategoryLandingPage() {
               </button>
             )}
           </div>
+        </div>
+
+        <div className="mb-8">
+          <MascotShowcase
+            contextName={`${cat} ${sub} ${deep} football life pafc pes`}
+            title={`${decodeURIComponent(sub)} Mascot Zone`}
+            subtitle="Mascots are featured for Football Life, PAFC, PES, gaming community and modding listing groups."
+            mode={/football|pes|pafc|modding|gaming/i.test(`${cat} ${sub} ${deep}`) ? "default" : "all"}
+          />
         </div>
 
         {cards.length === 0 && !admin && (

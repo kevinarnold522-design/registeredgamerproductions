@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import MascotShowcase from "@/components/shared/MascotShowcase";
 import { getActiveListings } from "@/lib/homeDataCache";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
@@ -281,6 +282,15 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
           </ScrollRow>
         </div>
       )}
+
+      <div className="max-w-7xl mx-auto px-4 mb-8">
+        <MascotShowcase
+          contextName="football life pafc pes gaming modding"
+          title="Mascots Between the Live Dashboards"
+          subtitle="Football Life, PAFC, PES, gaming and modding mascots now travel with the marketplace feed."
+          mode="all"
+        />
+      </div>
 
       {/* Paid/Premium Mods */}
       {paidMods.length > 0 && (

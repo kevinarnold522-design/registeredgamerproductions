@@ -4,6 +4,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2 } from "lucide-react";
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
+import MascotShowcase from "@/components/shared/MascotShowcase";
 
 export default function ListingsLanding({ mode = "mine" }) {
   const [user, setUser] = useState(null);
@@ -61,6 +62,15 @@ export default function ListingsLanding({ mode = "mine" }) {
             </div>
             <a href="/create-listing" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-700 text-white text-sm font-bold"><Plus className="w-4 h-4" /> Post</a>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <MascotShowcase
+            contextName="all listings football life pafc pes gaming modding"
+            title={mode === "all" ? "All Listings Mascot Squad" : "My Listings Mascot Squad"}
+            subtitle="Football Life, PAFC, PES and gaming mascots highlight every listings landing page."
+            mode="all"
+          />
         </div>
 
         {loading ? (

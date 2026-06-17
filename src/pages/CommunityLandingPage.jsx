@@ -18,6 +18,7 @@ import CommunityPostCard from "@/components/community/CommunityPostCard";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GroupChat from "@/components/community/GroupChat";
 import AnimatedController from "@/components/shared/AnimatedController";
+import MascotShowcase from "@/components/shared/MascotShowcase";
 
 export default function CommunityLandingPage() {
   const { user } = useAuth();
@@ -336,6 +337,16 @@ export default function CommunityLandingPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 -mt-4 relative z-10">
+        <MascotShowcase
+          contextName={`${franchise.name} ${franchise.id} football life pafc pes modding gaming`}
+          title={`${franchise.name} Mascots`}
+          subtitle="Official mascot energy for this gaming community and its listing groups."
+          compact
+          mode={/football|pes|pafc|modding|gaming/i.test(`${franchise.name} ${franchise.id}`) ? "default" : "all"}
+        />
       </div>
 
       {/* Tiered Membership Modal */}
