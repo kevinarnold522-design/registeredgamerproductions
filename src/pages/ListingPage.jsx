@@ -22,6 +22,7 @@ import { formatCount } from "@/lib/formatCounts";
 import { buildProfileTheme } from "@/components/channel/ChannelThemePicker";
 import ListingCommentsBlock from "@/components/listings/ListingCommentsBlock";
 import ListingPageEditor from "@/components/listings/ListingPageEditor";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 
 function GlowDownloadButton({ isFree, price, currency, onClick, theme }) {
   return (
@@ -341,8 +342,9 @@ export default function ListingPage() {
   const glowStyle = { ...getListingGlowStyle(listing), boxShadow: `${sellerTheme.border}, ${getListingGlowStyle(listing).boxShadow || "none"}` };
   const glowClass = getListingGlowClass(listing);
   const sectionOrder = pageLayout?.section_order?.length ? pageLayout.section_order : ["media", "details", "comments"];
-  const showCommentsTop = sectionOrder[0] === "comments";
-  const commentsBlock = <ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} />;
+  const commentsIndex = sectionOrder.indexOf("comments");
+  const showCommentsTop = commentsIndex !== -1 && commentsIndex < sectionOrder.length - 1;
+  const commentsBlock = <div id="comments"><ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} /></div>;
 
   return (
     <div className="min-h-screen text-white" style={{ background: seller ? sellerTheme.bg : `linear-gradient(135deg, ${listingTheme}, #030712 55%, #050510)`, backgroundImage: seller ? sellerTheme.grid : undefined, backgroundSize: "42px 42px" }}>
@@ -679,6 +681,8 @@ export default function ListingPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <GamerBrandFooter />
     </div>
   );
 }

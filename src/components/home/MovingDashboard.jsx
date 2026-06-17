@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat, User, Tags } from "lucide-react";
+import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat, CalendarDays, Tags } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import MascotShowcase from "@/components/shared/MascotShowcase";
@@ -52,18 +52,16 @@ function CardActions({ item, user, profile }) {
   return <div className="mt-1.5"><ListingEngagementBar listing={item} user={user} profile={profile} compact /></div>;
 }
 
-function OwnerPill({ item, owner }) {
-  const name = item.seller_username || owner?.username || item.seller_email?.split("@")[0] || "gamer";
+function OwnerPill({ item }) {
+  const date = item.created_date ? new Date(item.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently";
   return (
-    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/channel?email=${encodeURIComponent(item.seller_email || "")}`; }} className="mt-1 flex items-center gap-2 max-w-full group/owner">
-      <span className="w-7 h-7 rounded-full overflow-hidden bg-gray-900 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_14px_rgba(34,211,238,.3)] flex-shrink-0">
-        {owner?.avatar_url ? <img src={owner.avatar_url} alt={name} className="w-full h-full object-cover" /> : <User className="w-3.5 h-3.5 text-cyan-200" />}
-      </span>
+    <div className="theme-glow-action mt-1 inline-flex items-center gap-2 max-w-full rounded-xl px-1.5 py-1 bg-black/20 border border-cyan-400/20">
+      <CalendarDays className="w-3.5 h-3.5 theme-glow-icon flex-shrink-0" />
       <span className="min-w-0 text-left">
-        <span className="block text-[8px] uppercase tracking-wider text-cyan-300/60 font-black">Owner</span>
-        <span className="block text-[10px] text-cyan-100/80 group-hover/owner:text-cyan-100 truncate">@{name}</span>
+        <span className="block text-[8px] uppercase tracking-wider text-cyan-300/70 font-black">Posted Date</span>
+        <span className="block text-[10px] text-cyan-100/85 truncate">{date}</span>
       </span>
-    </button>
+    </div>
   );
 }
 
@@ -116,7 +114,7 @@ function ModCard({ mod, user, profile, owner }) {
           <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: `${CP.yellow}30`, border: `1px solid ${CP.yellow}60`, color: CP.yellow }}>PREMIUM</div>
         )}
         <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1 py-0.5 rounded text-[8px]" style={{ background: "rgba(0,0,0,0.7)", color: CP.cyan }}>
-          <Eye className="w-2 h-2" /> {(mod.views || 0).toLocaleString()}
+          <Eye className="w-2 h-2 theme-glow-icon" /> {(mod.views || 0).toLocaleString()}
         </div>
       </div>
       <div className="p-3">
@@ -125,7 +123,7 @@ function ModCard({ mod, user, profile, owner }) {
         <PlacementBadges item={mod} />
         <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? `₱${mod.price?.toLocaleString()}` : "FREE"}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
-          <Download className="w-2.5 h-2.5" /><span className="text-[8px]">{(mod.downloads || 0).toLocaleString()} downloads</span>
+          <Download className="w-2.5 h-2.5 theme-glow-icon" /><span className="text-[8px]">{(mod.downloads || 0).toLocaleString()} downloads</span>
         </div>
         <CardActions item={mod} liked={liked} likeCount={likeCount} onLike={handleLike} user={user} profile={profile} />
       </div>
@@ -170,7 +168,7 @@ function ProductCard({ product, user, profile, owner }) {
         <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: CP.cyan }} />
         <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: CP.pink }} />
         <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1 py-0.5 rounded text-[8px]" style={{ background: "rgba(0,0,0,0.7)", color: CP.cyan }}>
-          <Eye className="w-2 h-2" /> {(product.views || 0).toLocaleString()}
+          <Eye className="w-2 h-2 theme-glow-icon" /> {(product.views || 0).toLocaleString()}
         </div>
       </div>
       <div className="p-3">
@@ -179,7 +177,7 @@ function ProductCard({ product, user, profile, owner }) {
         <PlacementBadges item={product} />
         <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>₱{(product.price || 0).toLocaleString()}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
-          <Download className="w-2 h-2" /><span className="text-[8px]">{(product.downloads || 0).toLocaleString()}</span>
+          <Download className="w-2 h-2 theme-glow-icon" /><span className="text-[8px]">{(product.downloads || 0).toLocaleString()}</span>
         </div>
         <CardActions item={product} liked={liked} likeCount={likeCount} onLike={handleLike} user={user} profile={profile} />
       </div>

@@ -252,6 +252,26 @@ body {
   animation: controller-cycle 1.5s linear infinite;
 }
 
+.theme-glow-icon {
+  color: #c084fc;
+  filter: drop-shadow(0 0 7px rgba(168, 85, 247, 0.85)) drop-shadow(0 0 14px rgba(34, 211, 238, 0.35));
+  transition: color 0.2s ease, filter 0.2s ease, transform 0.2s ease;
+}
+.theme-glow-action:hover .theme-glow-icon,
+.theme-glow-icon:hover {
+  color: #67e8f9;
+  filter: drop-shadow(0 0 9px rgba(34, 211, 238, 0.95)) drop-shadow(0 0 18px rgba(236, 72, 153, 0.55));
+  transform: translateY(-1px) scale(1.06);
+}
+.theme-glow-action {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.theme-glow-action:hover {
+  transform: translateY(-1px);
+  border-color: rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.32), inset 0 0 12px rgba(34, 211, 238, 0.08);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

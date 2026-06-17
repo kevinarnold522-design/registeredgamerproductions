@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { GripVertical, X, Save } from "lucide-react";
+import { GripVertical, X, Save, ArrowUp, ArrowDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const LABELS = { media: "Media Gallery", details: "Listing Details", comments: "Comments" };
@@ -14,6 +14,14 @@ export default function ListingPageEditor({ listing, layout, user, onClose, onSa
     const next = [...order];
     const [moved] = next.splice(result.source.index, 1);
     next.splice(result.destination.index, 0, moved);
+    setOrder(next);
+  };
+
+  const moveSection = (index, direction) => {
+    const target = index + direction;
+    if (target < 0 || target >= order.length) return;
+    const next = [...order];
+    [next[index], next[target]] = [next[target], next[index]];
     setOrder(next);
   };
 
@@ -45,9 +53,17 @@ export default function ListingPageEditor({ listing, layout, user, onClose, onSa
                 {order.map((section, index) => (
                   <Draggable key={section} draggableId={section} index={index}>
                     {(dragProvided) => (
-                      <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps} className="flex items-center gap-3 rounded-2xl border border-gray-800 bg-gray-900 p-4 text-white">
-                        <GripVertical className="w-4 h-4 text-cyan-300" />
-                        <span className="font-bold text-sm">{LABELS[section]}</span>
+                      <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} className="flex items-center gap-3 rounded-2xl border border-gray-800 bg-gray-900 p-4 text-white">
+                        <button {...dragProvided.dragHandleProps} className="theme-glow-action rounded-lg p-1" title="Drag section">
+                          <GripVertical className="w-4 h-4 theme-glow-icon" />
+                        </button>
+                        <span className="font-bold text-sm flex-1">{LABELS[section]}</span>
+                        <button onClick={() => moveSection(index, -1)} disabled={index === 0} className="theme-glow-action rounded-lg p-1 disabled:opacity-30" title="Move up">
+                          <ArrowUp className="w-4 h-4 theme-glow-icon" />
+                        </button>
+                        <button onClick={() => moveSection(index, 1)} disabled={index === order.length - 1} className="theme-glow-action rounded-lg p-1 disabled:opacity-30" title="Move down">
+                          <ArrowDown className="w-4 h-4 theme-glow-icon" />
+                        </button>
                       </div>
                     )}
                   </Draggable>

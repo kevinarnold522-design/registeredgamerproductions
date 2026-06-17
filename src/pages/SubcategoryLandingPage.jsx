@@ -8,6 +8,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import EnhancedListingCard from "@/components/community/EnhancedListingCard";
 import MascotShowcase from "@/components/shared/MascotShowcase";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
 
 // Storage key for cards in a subcategory landing page
@@ -466,6 +467,8 @@ export default function SubcategoryLandingPage() {
           ))}
         </div>
       </div>
+
+      <GamerBrandFooter />
 
       <AnimatePresence>
         {showAdd && <AddCardModal onClose={() => setShowAdd(false)} onAdd={handleAdd} />}

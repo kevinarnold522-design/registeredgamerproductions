@@ -66,15 +66,15 @@ export default function RepostButton({ item, type = "listing", user, profile, co
     setLoading(false);
   };
 
-  const iconSize = compact ? "w-3 h-3" : "w-3.5 h-3.5";
+  const iconSize = compact ? "w-3 h-3 theme-glow-icon" : "w-3.5 h-3.5 theme-glow-icon";
   const textSize = compact ? "text-[9px]" : "text-[10px]";
 
   return (
     <div className="relative inline-flex">
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!done) setShowConfirm(v => !v); }}
-        className={`flex items-center gap-0.5 ${textSize} transition-colors`}
-        style={{ color: done ? "#a855f7" : "rgba(156,163,175,0.7)" }}
+        className={`theme-glow-action flex items-center gap-0.5 ${textSize} rounded-lg px-1 py-0.5 transition-colors`}
+        style={{ color: done ? "#a855f7" : "rgba(216,180,254,0.82)" }}
         title="Repost to your profile"
       >
         <Repeat2 className={iconSize} />

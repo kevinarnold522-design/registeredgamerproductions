@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Share2, Eye, Download, Flag, Package } from "lucide-react";
+import { Eye, Package, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import { formatListingPrice } from "@/lib/currency";
@@ -98,7 +98,7 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
         {(listing.price === 0 || listing.is_free) && (
           <span className="absolute top-3 right-3 text-xs font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         )}
-        <span className="absolute bottom-3 right-3 flex items-center gap-1 text-xs bg-black/70 text-cyan-300 font-bold px-2 py-1 rounded-full"><Eye className="w-3 h-3" />{viewCount.toLocaleString()}</span>
+        <span className="theme-glow-action absolute bottom-3 right-3 flex items-center gap-1 text-xs bg-black/70 text-cyan-300 font-bold px-2 py-1 rounded-full"><Eye className="w-3 h-3 theme-glow-icon" />{viewCount.toLocaleString()}</span>
       </a>
 
       {/* Content */}
@@ -106,7 +106,7 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
         <a href={`/listing?id=${listing.id}`} className="block">
           <p className="text-purple-400 text-xs font-semibold mb-1">{subcategory || listing.modding_subcategory || listing.digital_subcategory || "Listing"}</p>
           <h3 className="text-white font-bold text-sm line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</h3>
-          <p className="text-gray-600 text-xs mt-1">by @{listing.seller_username}</p>
+          <p className="theme-glow-action inline-flex items-center gap-1.5 text-gray-400 text-xs mt-1 rounded-lg px-1.5 py-0.5"><CalendarDays className="w-3 h-3 theme-glow-icon" /> Posted Date: {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>
           
           <div className="flex items-center justify-between mt-3">
             <span className={`font-black text-sm ${listing.price === 0 || listing.is_free ? "text-green-400" : "text-yellow-400"}`}>

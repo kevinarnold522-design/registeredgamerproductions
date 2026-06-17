@@ -108,10 +108,10 @@ export default function ShareButton({ type, id, title, compact = false }) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 text-gray-400 hover:text-purple-400 transition-colors ${compact ? "p-1.5" : "px-3 py-1.5 rounded-lg hover:bg-purple-900/20 text-xs font-semibold"}`}
+        className={`theme-glow-action flex items-center gap-1.5 text-gray-300 hover:text-purple-200 transition-colors rounded-lg ${compact ? "p-1.5" : "px-3 py-1.5 hover:bg-purple-900/20 text-xs font-semibold"}`}
         title="Share"
       >
-        <Share2 className="w-4 h-4" />
+        <Share2 className="w-4 h-4 theme-glow-icon" />
         {!compact && <span>Share</span>}
       </button>
 
