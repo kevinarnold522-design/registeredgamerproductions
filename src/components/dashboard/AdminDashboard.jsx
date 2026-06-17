@@ -17,6 +17,7 @@ import AdminTransactionsDashboard from "./AdminTransactionsDashboard";
 import AdminSubcategoryManager from "./AdminSubcategoryManager";
 import AdvancedAnalytics from "./AdvancedAnalytics";
 import AdminVisitorAnalytics from "./AdminVisitorAnalytics";
+import AdminUserLogs from "./AdminUserLogs";
 import FeedbackDashboard from "./FeedbackDashboard";
 import AdRevenueDashboard from "./AdRevenueDashboard";
 import ManagedAccountsPanel from "@/components/admin/ManagedAccountsPanel";
@@ -115,6 +116,7 @@ export default function AdminDashboard({ user, profile }) {
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart2 },
     { id: "users", label: "Users", icon: Users },
+    { id: "user_logs", label: "User Logs", icon: Eye },
     { id: "created_accounts", label: "Created Accounts", icon: Users },
     { id: "listings", label: "Listings", icon: Store },
     { id: "games", label: "Games", icon: Gamepad2 },
@@ -343,6 +345,9 @@ export default function AdminDashboard({ user, profile }) {
           </div>
         </div>
       )}
+
+      {/* User Logs */}
+      {tab === "user_logs" && <AdminUserLogs users={allUsers} />}
 
       {/* Created Accounts */}
       {tab === "created_accounts" && (

@@ -132,7 +132,7 @@ export default function CreateListing() {
       const ghostSession = (() => {
         try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
       })();
-      const ghostEmail = ghostSession.isImpersonating && ghostSession.isGhostLogin ? ghostSession.targetEmail : null;
+      const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
       const activeUser = ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
       setUser(activeUser);
       const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
@@ -335,7 +335,9 @@ export default function CreateListing() {
 
     const ytId = extractYouTubeId(form.youtube_url);
     const priceVal = parseFloat(form.price) || 0;
-    const sellerName = profile?.username || profile?.display_name || user.email?.split("@")[0] || "Gamer";
+    const existingListing = editId ? await base44.entities.Listing.get(editId) : null;
+    const sellerEmail = existingListing?.seller_email || user.email;
+    const sellerName = existingListing?.seller_username || profile?.username || profile?.display_name || sellerEmail?.split("@")[0] || "Gamer";
     const data = {
       ...form,
       price: priceVal,
@@ -347,7 +349,7 @@ export default function CreateListing() {
       keywords: form.keywords.split(",").map(t => t.trim()).filter(Boolean),
       images,
       youtube_video_id: ytId || undefined,
-      seller_email: user.email,
+      seller_email: sellerEmail,
       seller_username: sellerName,
       seller_paypal_email: form.paypal_email || undefined,
       external_link: form.external_link || undefined,
@@ -393,8 +395,8 @@ export default function CreateListing() {
       base44.entities.CommunityPost.create({
         community_id: communityId,
         franchise_id: data.community_franchise_id,
-        author_email: user.email,
-        author_username: sellerName,
+        author_email: data.seller_email,
+        author_username: data.seller_username,
         author_avatar: profile?.avatar_url || "",
         content: `New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
         status: "active",
@@ -407,8 +409,8 @@ export default function CreateListing() {
       base44.entities.CommunityPost.create({
         community_id: "modding",
         franchise_id: "modding_" + data.modding_subcategory.toLowerCase().replace(/\s+/g, "_"),
-        author_email: user.email,
-        author_username: sellerName,
+        author_email: data.seller_email,
+        author_username: data.seller_username,
         author_avatar: profile?.avatar_url || "",
         content: `New mod: **${data.title}** [${data.modding_subcategory}] — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
         status: "active",
@@ -421,8 +423,8 @@ export default function CreateListing() {
       base44.entities.CommunityPost.create({
         community_id: "buy_sell",
         franchise_id: "store",
-        author_email: user.email,
-        author_username: sellerName,
+        author_email: data.seller_email,
+        author_username: data.seller_username,
         author_avatar: profile?.avatar_url || "",
         content: `New store listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
         status: "active",

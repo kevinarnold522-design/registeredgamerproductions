@@ -100,7 +100,7 @@ export default function AuthNavbar({ user, profile }) {
   
   useEffect(() => {
     const impData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
-    if (impData.isImpersonating && impData.isGhostLogin && impData.isPersistent) {
+    if (impData.isImpersonating && impData.targetEmail) {
       setIsManagingAsGhost(true);
       setGhostAccountEmail(impData.targetEmail);
       setGhostAccountData({

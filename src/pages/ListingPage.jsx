@@ -102,7 +102,7 @@ export default function ListingPage() {
         const ghostSession = (() => {
           try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
         })();
-        const ghostEmail = ghostSession.isImpersonating && ghostSession.isGhostLogin ? ghostSession.targetEmail : null;
+        const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
         const activeUser = ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
         setUser(activeUser);
         if (activeUser) {

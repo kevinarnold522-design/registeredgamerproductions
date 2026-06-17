@@ -90,7 +90,7 @@ export default function Channel() {
       const ghostSession = (() => {
         try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
       })();
-      const ghostEmail = ghostSession.isImpersonating && ghostSession.isGhostLogin ? ghostSession.targetEmail : null;
+      const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
       const email = viewEmail || ghostEmail || me?.email;
       setUser(ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me);
       setTargetEmail(email);

@@ -75,9 +75,13 @@ export default function ManagedAccountsPanel() {
           if (impResponse.data.success) {
             const impersonationData = {
               isImpersonating: true,
+              isGhostLogin: true,
+              isPersistent: true,
               originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
               targetEmail: formData.email,
               targetUsername: formData.username,
+              targetDisplayName: formData.display_name || formData.username,
+              targetAccountType: formData.account_type,
             };
             localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
             
@@ -137,9 +141,14 @@ export default function ManagedAccountsPanel() {
       if (response.data.success) {
         const impersonationData = {
           isImpersonating: true,
+          isGhostLogin: true,
+          isPersistent: true,
           originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
           targetEmail: account.user_email,
           targetUsername: account.username,
+          targetDisplayName: account.display_name || account.username,
+          targetAvatar: account.avatar_url,
+          targetAccountType: account.account_type,
         };
         localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
         
