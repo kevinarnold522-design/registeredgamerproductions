@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat } from "lucide-react";
+import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat, User, Tags } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import MascotShowcase from "@/components/shared/MascotShowcase";
@@ -52,7 +52,28 @@ function CardActions({ item, user, profile }) {
   return <div className="mt-1.5"><ListingEngagementBar listing={item} user={user} profile={profile} compact /></div>;
 }
 
-function ModCard({ mod, user, profile }) {
+function OwnerPill({ item, owner }) {
+  const name = item.seller_username || owner?.username || item.seller_email?.split("@")[0] || "gamer";
+  return (
+    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/channel?email=${encodeURIComponent(item.seller_email || "")}`; }} className="mt-1 flex items-center gap-2 max-w-full group/owner">
+      <span className="w-7 h-7 rounded-full overflow-hidden bg-gray-900 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_14px_rgba(34,211,238,.3)] flex-shrink-0">
+        {owner?.avatar_url ? <img src={owner.avatar_url} alt={name} className="w-full h-full object-cover" /> : <User className="w-3.5 h-3.5 text-cyan-200" />}
+      </span>
+      <span className="min-w-0 text-left">
+        <span className="block text-[8px] uppercase tracking-wider text-cyan-300/60 font-black">Owner</span>
+        <span className="block text-[10px] text-cyan-100/80 group-hover/owner:text-cyan-100 truncate">@{name}</span>
+      </span>
+    </button>
+  );
+}
+
+function PlacementBadges({ item }) {
+  const badges = [item.category, item.modding_subcategory, ...(item.subcategories || [])].filter(Boolean).slice(0, 3);
+  if (badges.length === 0) return null;
+  return <div className="mt-1 flex flex-wrap gap-1">{badges.map(b => <span key={b} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-[8px] font-black text-purple-200"><Tags className="w-2 h-2" />{b}</span>)}</div>;
+}
+
+function ModCard({ mod, user, profile, owner }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(mod.likes || 0);
 
@@ -100,7 +121,8 @@ function ModCard({ mod, user, profile }) {
       </div>
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{mod.title}</p>
-        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/channel?email=${encodeURIComponent(mod.seller_email || "")}`; }} className="text-[10px] text-cyan-200/80 hover:text-cyan-200 truncate block max-w-full">by @{mod.seller_username || mod.seller_email?.split("@")[0] || "gamer"}</button>
+        <OwnerPill item={mod} owner={owner} />
+        <PlacementBadges item={mod} />
         <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? `₱${mod.price?.toLocaleString()}` : "FREE"}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
           <Download className="w-2.5 h-2.5" /><span className="text-[8px]">{(mod.downloads || 0).toLocaleString()} downloads</span>
@@ -111,7 +133,7 @@ function ModCard({ mod, user, profile }) {
   );
 }
 
-function ProductCard({ product, user, profile }) {
+function ProductCard({ product, user, profile, owner }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(product.likes || 0);
 
@@ -153,7 +175,8 @@ function ProductCard({ product, user, profile }) {
       </div>
       <div className="p-3">
         <p className="text-white font-bold text-xs truncate">{product.title}</p>
-        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/channel?email=${encodeURIComponent(product.seller_email || "")}`; }} className="text-[10px] text-cyan-200/80 hover:text-cyan-200 truncate block max-w-full">by @{product.seller_username || product.seller_email?.split("@")[0] || "gamer"}</button>
+        <OwnerPill item={product} owner={owner} />
+        <PlacementBadges item={product} />
         <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>₱{(product.price || 0).toLocaleString()}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
           <Download className="w-2 h-2" /><span className="text-[8px]">{(product.downloads || 0).toLocaleString()}</span>
@@ -188,6 +211,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [sellerProfiles, setSellerProfiles] = useState({});
 
   const [freeMods, setFreeMods] = useState([]);
   const [paidMods, setPaidMods] = useState([]);
@@ -199,7 +223,8 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
 
   useEffect(() => {
     const load = async () => {
-      const listings = await getActiveListings();
+      const [listings, profiles] = await Promise.all([getActiveListings(), base44.entities.UserProfile.list()]);
+      setSellerProfiles(Object.fromEntries(profiles.map(p => [p.user_email, p])));
       // Deduplicate by id
       const seen = new Set();
       const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
@@ -270,7 +295,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Monitor} label="PC GAME LISTINGS" color={CP.cyan} />
           <ScrollRow speed={38}>
-            {pcGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} />)}
+            {pcGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} owner={sellerProfiles[g.seller_email]} />)}
           </ScrollRow>
         </div>
       )}
@@ -280,7 +305,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Smartphone} label="MOBILE GAME LISTINGS" color={CP.pink} />
           <ScrollRow speed={42} reverse>
-            {mobileGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} />)}
+            {mobileGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} owner={sellerProfiles[g.seller_email]} />)}
           </ScrollRow>
         </div>
       )}
@@ -296,7 +321,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="PREMIUM MODS — Paid" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {paidMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
+            {paidMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} owner={sellerProfiles[m.seller_email]} />)}
           </ScrollRow>
         </div>
       )}
@@ -306,7 +331,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="FREE MODS — Community" color="#4ade80" />
           <ScrollRow speed={38}>
-            {freeMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
+            {freeMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} owner={sellerProfiles[m.seller_email]} />)}
           </ScrollRow>
         </div>
       )}
@@ -316,7 +341,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="TOP MODS" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {mods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} />)}
+            {mods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} owner={sellerProfiles[m.seller_email]} />)}
           </ScrollRow>
         </div>
       )}
@@ -326,7 +351,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div>
           <SectionLabel icon={TrendingUp} label="MARKETPLACE LISTINGS" color="#4ade80" />
           <ScrollRow speed={45}>
-            {products.map((p, i) => <ProductCard key={i} product={p} user={user} profile={profile} />)}
+            {products.map((p, i) => <ProductCard key={i} product={p} user={user} profile={profile} owner={sellerProfiles[p.seller_email]} />)}
           </ScrollRow>
         </div>
       )}

@@ -24,6 +24,10 @@
         "twitch_sync"
       ],
       "default": "manual"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [

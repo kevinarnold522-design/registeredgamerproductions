@@ -12,6 +12,10 @@
       "type": "number",
       "minimum": 1,
       "maximum": 5
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [

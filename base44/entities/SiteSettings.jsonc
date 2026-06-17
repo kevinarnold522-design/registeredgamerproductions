@@ -25,6 +25,10 @@
     "email_banner_color_end": {
       "type": "string",
       "default": "#ec4899"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [

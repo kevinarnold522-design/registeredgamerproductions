@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GitBranch, Search, Check, X, Gamepad2, Wrench, RefreshCw, Eye, Link2, Image, FileText, ShoppingBag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { isAdmin } from "@/lib/constants";
+import { isAdmin, CATEGORIES } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 
@@ -59,6 +59,10 @@ export default function RoutingDashboard() {
   }, []);
 
   const allFranchises = TOP_FRANCHISES;
+  const dynamicCategories = CATEGORIES.map(category => {
+    const extras = listings.flatMap(l => l.category === category.id ? (l.subcategories || []) : []);
+    return { ...category, subcategories: [...new Set([...(category.subcategories || []), ...extras])] };
+  });
 
   const updateListingRouting = async (listingId, field, value) => {
     setSaving(s => ({ ...s, [listingId]: true }));
@@ -227,6 +231,44 @@ export default function RoutingDashboard() {
                   </p>
                 </div>
 
+                {/* Category routing */}
+                {tab === "listings" && (
+                  <div className="flex flex-col gap-1.5 min-w-[200px]">
+                    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                      <ShoppingBag className="w-3 h-3 text-green-400" /> Category Placement
+                    </p>
+                    <select
+                      value={item.category || ""}
+                      onChange={e => updateListingRouting(item.id, "category", e.target.value)}
+                      className="bg-gray-800 border border-green-700/50 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-green-500">
+                      {dynamicCategories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                    </select>
+                  </div>
+                )}
+
+                {/* Subcategory routing */}
+                {tab === "listings" && (
+                  <div className="flex flex-col gap-1.5 min-w-[220px]">
+                    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                      <FileText className="w-3 h-3 text-cyan-400" /> Subcategories
+                    </p>
+                    <select
+                      value=""
+                      onChange={e => {
+                        if (!e.target.value) return;
+                        const next = [...new Set([...(item.subcategories || []), e.target.value])];
+                        updateListingRouting(item.id, "subcategories", next);
+                      }}
+                      className="bg-gray-800 border border-cyan-700/50 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-cyan-500">
+                      <option value="">Add subcategory...</option>
+                      {(dynamicCategories.find(c => c.id === item.category)?.subcategories || []).map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    <div className="flex flex-wrap gap-1">
+                      {(item.subcategories || []).map(s => <button key={s} onClick={() => updateListingRouting(item.id, "subcategories", (item.subcategories || []).filter(x => x !== s))} className="px-1.5 py-0.5 rounded-full bg-cyan-900/30 border border-cyan-700/30 text-cyan-300 text-[9px]">{s} ×</button>)}
+                    </div>
+                  </div>
+                )}
+
                 {/* Gaming Community routing */}
                 <div className="flex flex-col gap-1.5 min-w-[200px]">
                   <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
@@ -297,6 +339,11 @@ export default function RoutingDashboard() {
                     🔧 {item.modding_subcategory}
                   </span>
                 )}
+                {tab === "listings" && (item.subcategories || []).map(s => (
+                  <span key={s} className="px-2 py-0.5 rounded-full bg-cyan-900/40 border border-cyan-700/40 text-cyan-300 text-[10px] font-bold">
+                    📌 {s}
+                  </span>
+                ))}
               </div>
             </motion.div>
           ))}

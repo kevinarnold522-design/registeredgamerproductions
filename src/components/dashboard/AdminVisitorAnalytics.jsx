@@ -32,6 +32,12 @@ export default function AdminVisitorAnalytics() {
   const totalReg = data.reduce((s, d) => s + (Number(d.new_registrations) || 0), 0);
 
   const countryMap = data.reduce((acc, item) => {
+    if (item.countries && typeof item.countries === "object") {
+      Object.entries(item.countries).forEach(([country, visitors]) => {
+        acc[country] = (acc[country] || 0) + (Number(visitors) || 0);
+      });
+      return acc;
+    }
     const country = pickField(item, ["country", "country_name", "ip_country", "visitor_country"]);
     if (!country) return acc;
     const views = Number(item.page_views) || Number(item.visitors) || Number(item.unique_visitors) || 1;

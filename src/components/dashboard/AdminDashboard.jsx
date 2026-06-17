@@ -21,6 +21,7 @@ import AdminUserLogs from "./AdminUserLogs";
 import FeedbackDashboard from "./FeedbackDashboard";
 import AdRevenueDashboard from "./AdRevenueDashboard";
 import ManagedAccountsPanel from "@/components/admin/ManagedAccountsPanel";
+import CategoryStyleEditor from "@/components/admin/CategoryStyleEditor";
 import AdminGamesPanel from "@/components/dashboard/AdminGamesPanel";
 import AdminAdManager from "@/components/admin/AdminAdManager";
 import { Gamepad2, Megaphone } from "lucide-react";
@@ -153,6 +154,7 @@ export default function AdminDashboard({ user, profile }) {
     { id: "pending_listings", label: `Pending Review${allListings.filter(l => l.status === "pending").length > 0 ? ` (${allListings.filter(l => l.status === "pending").length})` : ""}`, icon: AlertCircle },
     { id: "feedback", label: `Feedback${feedbacks_count > 0 ? ` (${feedbacks_count})` : ""}`, icon: MessageSquare },
     { id: "site_text", label: "Site Text", icon: Shield },
+    { id: "category_design", label: "Category Design", icon: Megaphone },
     { id: "email_settings", label: "Email Settings", icon: Mail },
   ];
 
@@ -535,6 +537,13 @@ export default function AdminDashboard({ user, profile }) {
       {tab === "site_text" && (
         <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
           <AdminTextEditor />
+        </div>
+      )}
+
+      {/* Category Design */}
+      {tab === "category_design" && (
+        <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+          <CategoryStyleEditor />
         </div>
       )}
 

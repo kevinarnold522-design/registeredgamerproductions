@@ -55,6 +55,7 @@ export default function CreateListing() {
   const defaultGame = params.get("game") || defaultSub;
 
   const [gamingCommunities, setGamingCommunities] = useState([]);
+  const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
   const [gameSearch, setGameSearch] = useState("");
   const [showGameDropdown, setShowGameDropdown] = useState(false);
   const gameDropdownRef = useRef(null);
@@ -138,6 +139,18 @@ export default function CreateListing() {
       const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
       if (profiles.length > 0) setProfile(profiles[0]);
       setGamingCommunities(TOP_FRANCHISES.map(f => ({ id: f.id, name: f.name })));
+      base44.entities.Listing.list("-created_date", 200).then(existing => {
+        const byCategory = Object.fromEntries(CATEGORIES.map(c => [c.id, { ...c, subcategories: [...(c.subcategories || [])] }]));
+        existing.forEach(item => {
+          if (item.category && !byCategory[item.category]) byCategory[item.category] = { id: item.category, label: item.category.replace(/_/g, " "), icon: item.category, subcategories: [] };
+          const target = byCategory[item.category];
+          if (!target) return;
+          [...(item.subcategories || []), item.modding_subcategory, item.digital_subcategory, item.physical_subcategory].filter(Boolean).forEach(sub => {
+            if (!target.subcategories.includes(sub)) target.subcategories.push(sub);
+          });
+        });
+        setDynamicCategories(Object.values(byCategory));
+      }).catch(() => {});
       if (!editId && defaultGame) setGameSearch(defaultGame);
       if (editId) {
         const l = await base44.entities.Listing.get(editId);
@@ -461,7 +474,7 @@ export default function CreateListing() {
     }
   };
 
-  const selectedCat = CATEGORIES.find(c => c.id === form.category);
+  const selectedCat = dynamicCategories.find(c => c.id === form.category) || CATEGORIES.find(c => c.id === form.category);
   const ytId = extractYouTubeId(form.youtube_url);
   const isDigital = form.product_type === "digital";
   const isPhysical = form.product_type === "physical";
@@ -822,7 +835,7 @@ export default function CreateListing() {
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Main Category *</label>
               <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, community_franchise_id: e.target.value === "games" ? "" : form.community_franchise_id, bulk_cross_post_ids: e.target.value === "games" ? [] : form.bulk_cross_post_ids })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                {dynamicCategories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </div>
 

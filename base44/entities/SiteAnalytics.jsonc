@@ -28,6 +28,14 @@
     "commission_earned": {
       "type": "number",
       "default": 0
+    },
+    "countries": {
+      "type": "object",
+      "default": {}
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [

@@ -35,6 +35,10 @@
         "type": "string"
       },
       "description": "Array of ISO date strings for each check-in"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [

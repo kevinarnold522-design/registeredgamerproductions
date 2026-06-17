@@ -11,6 +11,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import LanguagePrompt from '@/components/layout/LanguagePrompt';
 import InAppBrowserLinkFix from '@/components/layout/InAppBrowserLinkFix';
+import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker';
 // Add page imports here
 import GamingCommunity from "./pages/GamingCommunity";
 import Home from "./pages/Home";
@@ -147,6 +148,7 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <InAppBrowserLinkFix />
+            <VisitorCountryTracker />
             <ShootingStars />
             <div style={{ position: "relative", zIndex: 10 }}>
               <SidebarLayout>
