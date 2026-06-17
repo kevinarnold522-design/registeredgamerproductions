@@ -378,10 +378,7 @@ export default function SubcategoryLandingPage() {
 
         <div className="mb-8">
           <MascotShowcase
-            contextName={`${cat} ${sub} ${deep} football life pafc pes`}
-            title={`${decodeURIComponent(sub)} Mascot Zone`}
-            subtitle="Mascots are featured for Football Life, PAFC, PES, gaming community and modding listing groups."
-            mode={/football|pes|pafc|modding|gaming/i.test(`${cat} ${sub} ${deep}`) ? "default" : "all"}
+            compact={false}
           />
         </div>
 

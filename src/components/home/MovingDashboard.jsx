@@ -285,10 +285,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
 
       <div className="max-w-7xl mx-auto px-4 mb-8">
         <MascotShowcase
-          contextName="football life pafc pes gaming modding"
-          title="Mascots Between the Live Dashboards"
-          subtitle="Football Life, PAFC, PES, gaming and modding mascots now travel with the marketplace feed."
-          mode="all"
+          compact={false}
         />
       </div>
 

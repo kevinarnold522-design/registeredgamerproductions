@@ -32,6 +32,7 @@ export default function AdminDashboard({ user, profile }) {
   const [allOrders, setAllOrders] = useState([]);
   const [pendingVerifications, setPendingVerifications] = useState([]);
   const [feedbacks_count, setFeedbacksCount] = useState(0);
+  const [transferTargets, setTransferTargets] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,6 +87,19 @@ export default function AdminDashboard({ user, profile }) {
     if (!window.confirm("Are you sure you want to permanently delete this listing and its files?")) return;
     await base44.functions.invoke("deleteListingPermanent", { listing_id: listingId });
     setAllListings(prev => prev.filter(l => l.id !== listingId));
+  };
+
+  const transferListingOwner = async (listing) => {
+    const targetEmail = transferTargets[listing.id];
+    const targetUser = allUsers.find(u => u.user_email === targetEmail);
+    if (!targetUser) return;
+    const sellerUsername = targetUser.username || targetUser.display_name || targetUser.user_email?.split("@")[0] || "Gamer";
+    await base44.entities.Listing.update(listing.id, {
+      seller_email: targetUser.user_email,
+      seller_username: sellerUsername,
+    });
+    setAllListings(prev => prev.map(item => item.id === listing.id ? { ...item, seller_email: targetUser.user_email, seller_username: sellerUsername } : item));
+    setTransferTargets(prev => ({ ...prev, [listing.id]: "" }));
   };
 
   const toggleVerifiedBadge = async (profileId, currentValue) => {
@@ -367,7 +381,7 @@ export default function AdminDashboard({ user, profile }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-800/50">
                 <tr>
-                  {["Title", "Seller", "Category", "Price", "Status", "Actions"].map(h => (
+                  {["Title", "Seller", "Category", "Price", "Status", "Transfer Owner", "Actions"].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
                   ))}
                 </tr>
@@ -383,6 +397,27 @@ export default function AdminDashboard({ user, profile }) {
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${l.status === "active" ? "bg-green-900/50 text-green-400" : l.status === "sold" ? "bg-blue-900/50 text-blue-400" : "bg-red-900/50 text-red-400"}`}>
                         {l.status}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 min-w-[220px]">
+                        <select
+                          value={transferTargets[l.id] || ""}
+                          onChange={e => setTransferTargets(prev => ({ ...prev, [l.id]: e.target.value }))}
+                          className="min-w-0 flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500"
+                        >
+                          <option value="">Select user...</option>
+                          {allUsers.map(u => (
+                            <option key={u.id} value={u.user_email}>{u.username || u.display_name || u.user_email} · {u.user_email}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => transferListingOwner(l)}
+                          disabled={!transferTargets[l.id]}
+                          className="px-2 py-1.5 rounded-lg bg-blue-900/40 border border-blue-700/50 text-blue-300 text-xs font-bold hover:bg-blue-900/60 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Transfer
+                        </button>
+                      </div>
                     </td>
                     <td className="px-4 py-3 flex gap-2">
                       <a href={`/create-listing?edit=${l.id}`} className="text-purple-400 hover:text-purple-300 text-xs font-semibold">Edit</a>

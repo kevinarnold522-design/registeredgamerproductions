@@ -7,15 +7,15 @@ export const MASCOTS = [
     name: "Football Life Penguin",
     role: "Football Life / PES",
     image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/bcc42761a_0A6C238E-59C1-48B0-9714-0037484B4EC3.png",
-    keywords: ["football life", "pes", "efootball", "argentina", "soccer", "football"],
+    keywords: ["football life", "pes", "efootball", "argentina", "soccer", "football", "eafc", "ea fc"],
     glow: "rgba(56,189,248,0.75)",
   },
   {
-    id: "pafc-moose",
-    name: "PAFC Moose",
-    role: "PAFC Groups",
+    id: "eafc-moose",
+    name: "EAFC Moose",
+    role: "EAFC Groups",
     image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/a08f62096_F0158797-6390-4E4A-B980-CCEC50A1F046.png",
-    keywords: ["pafc", "england", "premier", "football"],
+    keywords: ["eafc", "ea fc", "fifa", "england", "premier", "football"],
     glow: "rgba(96,165,250,0.75)",
   },
   {
@@ -28,27 +28,18 @@ export const MASCOTS = [
   },
 ];
 
-function selectMascots(contextName = "", mode = "default") {
-  const text = String(contextName || "").toLowerCase();
-  if (mode === "all" || !text) return MASCOTS;
-  const matched = MASCOTS.filter((mascot) => mascot.keywords.some((keyword) => text.includes(keyword)));
-  return matched.length > 0 ? matched : MASCOTS;
+function selectMascots() {
+  return MASCOTS;
 }
 
-export default function MascotShowcase({ contextName = "", title = "Official GAMER Mascots", subtitle = "Football Life, PAFC, PES, gaming and modding community mascots", compact = false, mode = "default" }) {
-  const mascots = selectMascots(contextName, mode);
+export default function MascotShowcase({ compact = false }) {
+  const mascots = selectMascots();
 
   return (
     <section className={`relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gray-950/80 ${compact ? "px-4 py-4" : "px-5 py-6"} shadow-[0_0_34px_rgba(124,58,237,0.18)]`}>
       <div className="absolute inset-0 bg-gradient-to-r from-purple-900/25 via-cyan-900/10 to-pink-900/25" />
       <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, rgba(34,211,238,.5), transparent 24%), radial-gradient(circle at 80% 40%, rgba(236,72,153,.45), transparent 24%)" }} />
-      <div className="relative flex flex-col lg:flex-row items-center justify-between gap-4">
-        <div className="text-center lg:text-left">
-          <p className="text-cyan-300 text-[10px] font-black uppercase tracking-[0.28em]">Mascot Squad Live</p>
-          <h2 className={`${compact ? "text-xl" : "text-2xl md:text-3xl"} font-black text-white mt-1`}>{title}</h2>
-          <p className="text-gray-400 text-sm mt-1 max-w-xl">{subtitle}</p>
-        </div>
-        <div className="flex items-end justify-center gap-2 sm:gap-4 flex-wrap">
+      <div className="relative flex items-end justify-center gap-2 sm:gap-5 flex-wrap">
           {mascots.map((mascot, index) => (
             <motion.div
               key={mascot.id}
@@ -65,10 +56,9 @@ export default function MascotShowcase({ contextName = "", title = "Official GAM
                 className={`${compact ? "h-24 sm:h-28" : "h-28 sm:h-36 md:h-44"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110`}
                 loading="lazy"
               />
-              {!compact && <span className="relative z-10 -mt-1 rounded-full border border-white/10 bg-black/50 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-white/80">{mascot.role}</span>}
+
             </motion.div>
           ))}
-        </div>
       </div>
     </section>
   );

@@ -19,7 +19,7 @@ export default function ListingsLanding({ mode = "mine" }) {
       const ghostSession = (() => {
         try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
       })();
-      const ghostEmail = ghostSession.isImpersonating && ghostSession.isGhostLogin ? ghostSession.targetEmail : null;
+      const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
       const activeUser = ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
       setUser(activeUser);
       const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
@@ -66,10 +66,7 @@ export default function ListingsLanding({ mode = "mine" }) {
 
         <div className="mb-6">
           <MascotShowcase
-            contextName="all listings football life pafc pes gaming modding"
-            title={mode === "all" ? "All Listings Mascot Squad" : "My Listings Mascot Squad"}
-            subtitle="Football Life, PAFC, PES and gaming mascots highlight every listings landing page."
-            mode="all"
+            compact={false}
           />
         </div>
 

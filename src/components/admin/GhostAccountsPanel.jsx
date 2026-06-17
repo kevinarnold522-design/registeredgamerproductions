@@ -81,11 +81,15 @@ export default function GhostAccountsPanel() {
       
       if (res.data.success) {
         // Store the impersonation session
-        localStorage.setItem("impersonating", JSON.stringify({
-          target_email: ghost.user_email,
-          username: ghost.username,
-          display_name: ghost.display_name,
-          avatar_url: ghost.avatar_url,
+        localStorage.setItem("impersonation_session", JSON.stringify({
+          isImpersonating: true,
+          isGhostLogin: true,
+          isPersistent: true,
+          targetEmail: ghost.user_email,
+          targetUsername: ghost.username,
+          targetDisplayName: ghost.display_name || ghost.username,
+          targetAvatar: ghost.avatar_url,
+          targetAccountType: ghost.account_type,
           started_at: new Date().toISOString(),
         }));
         
@@ -102,7 +106,7 @@ export default function GhostAccountsPanel() {
   };
 
   const handleStopImpersonating = async () => {
-    localStorage.removeItem("impersonating");
+    localStorage.removeItem("impersonation_session");
     toast.success("Stopped managing account");
     setTimeout(() => {
       window.location.reload();
@@ -113,7 +117,7 @@ export default function GhostAccountsPanel() {
   const [impersonating, setImpersonating] = useState(null);
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("impersonating");
+      const stored = localStorage.getItem("impersonation_session");
       if (stored) {
         setImpersonating(JSON.parse(stored));
       }

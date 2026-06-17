@@ -220,11 +220,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
       <div className="max-w-7xl mx-auto px-4 pt-8">
         <MascotShowcase
-          contextName={`${meta.title} ${sub || ""} football life pafc pes`}
-          title={`${meta.title} Mascots`}
-          subtitle="Football Life, PAFC, PES, gaming and modding mascots are featured across this listings page."
           compact={cat !== "games" && cat !== "modding" && cat !== "premium_mods"}
-          mode={cat === "games" || cat === "modding" || cat === "premium_mods" ? "all" : "default"}
         />
       </div>
 
