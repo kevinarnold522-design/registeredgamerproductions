@@ -1,0 +1,34 @@
+# =====================================================================
+# Cloudflare Worker config for Gamer.Productions backend
+# Deploy:  cd cloudflare && wrangler deploy
+# =====================================================================
+name = "gamer-productions-api"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---- D1 database binding ----
+[[d1_databases]]
+binding = "DB"
+database_name = "gamer_productions"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"   # from: wrangler d1 create gamer_productions
+
+# ---- R2 bucket binding (media storage) ----
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "gamerproductionsmedia"
+
+# ---- Non-secret vars ----
+[vars]
+BASE44_BACKUP_ENABLED = "true"
+R2_PUBLIC_URL = "https://media.gamer.productions"
+
+# ---- Secrets (set via: wrangler secret put NAME) ----
+#   STRIPE_SECRET_KEY
+#   STRIPE_PUBLISHABLE_KEY
+#   PAYPAL_CLIENT_ID
+#   PAYPAL_CLIENT_SECRET
+#   BASE44_APP_ID
+#   BASE44_SERVICE_TOKEN     (used by the backup dual-write layer)
+#   CLOUDFLARE_R2_ACCESS_KEY_ID
+#   CLOUDFLARE_R2_SECRET_ACCESS_KEY
