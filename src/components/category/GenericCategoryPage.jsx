@@ -13,9 +13,10 @@ import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import GameCoverCard from "@/components/category/GameCoverCard";
 import { isServiceListing } from "@/lib/constants";
 
-const PER_PAGE = 10;
+const PER_PAGE = 12;
 
 const CATEGORY_META = {
   modding: {
@@ -341,6 +342,15 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             <p className="text-xl font-bold mb-2 text-gray-400">No listings yet</p>
             <p className="text-sm">Be the first to add one!</p>
           </div>
+        ) : cat === "games" ? (
+          <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            {paged.map((l, i) => (
+              <GameCoverCard key={l.id} l={l} i={i} user={user} profile={profile} />
+            ))}
+          </div>
+          <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
+          </>
         ) : (
           <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -363,9 +373,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-700"><Play className="w-10 h-10" /></div>
                   )}
-                  {cat === "games" && l.ign_rating != null && (
-                    <div className="absolute top-2 right-2"><IgnRatingBadge rating={l.ign_rating} size="sm" /></div>
-                  )}
                 </div>
                 <div className="p-4">
                  <div className="flex items-center justify-between gap-2">
@@ -379,7 +386,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  <div className="mt-2"><ListingEngagementBar listing={l} user={user} profile={profile} compact /></div>
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
                  {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
-                 {cat === "games" && l.store_platforms?.length > 0 && <div className="mt-2"><StorePlatformBadges platforms={l.store_platforms} links={l.store_platform_links} size="sm" /></div>}
                  <div onClick={(e) => e.stopPropagation()}><ListingSellerBadge createdDate={l.created_date} /></div>
                  </div>
                  </motion.a>

@@ -327,7 +327,7 @@ export default function AuthNavbar({ user, profile }) {
       <motion.aside
         animate={{ width: w }}
         transition={{ duration: 0.2 }}
-        className="hidden lg:flex fixed top-0 left-0 bottom-0 z-50 flex-col bg-gray-950/98 backdrop-blur-md border-r border-purple-900/30"
+        className="hidden lg:flex fixed top-0 left-0 bottom-0 z-50 flex-col bg-gray-950 border-r border-purple-900/30"
         style={{ width: w }}
       >
         {sidebarInner(false)}

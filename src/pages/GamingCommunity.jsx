@@ -26,18 +26,20 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [feedFilters, setFeedFilters] = useState(DEFAULT_FEED_FILTERS);
+  const [listingsPage, setListingsPage] = useState(1);
+  const LISTINGS_PER_PAGE = 12;
   const admin = isAdmin(user?.email);
 
   useEffect(() => {
     const load = async () => {
       try {
         const allPosts = await base44.entities.CommunityPost.filter({ franchise_id: franchise.id });
-        let allListings = await base44.entities.Listing.filter({ community_franchise_id: franchise.id }, "-created_date", 20);
+        let allListings = await base44.entities.Listing.filter({ community_franchise_id: franchise.id }, "-created_date", 120);
         if (allListings.length === 0) {
-          allListings = await base44.entities.Listing.list("-created_date", 20);
+          allListings = await base44.entities.Listing.list("-created_date", 120);
         }
         setPosts(allPosts.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50));
-        setListings(allListings.filter(l => l.status === "active").slice(0, 20));
+        setListings(allListings.filter(l => l.status === "active"));
       } catch { setPosts([]); setListings([]); }
       setLoading(false);
     };
@@ -61,20 +63,18 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
     return true;
   });
 
-  const allMerged = [
-    ...(feedFilters.contentType !== "listings" ? filteredPosts.map(p => ({ type: "post", item: p, date: p.created_date })) : []),
-    ...(feedFilters.contentType !== "posts" ? filteredListings.map(l => ({ type: "listing", item: l, date: l.created_date })) : []),
-  ];
-  const merged = allMerged.sort((a, b) => {
-    if (feedFilters.sortBy === "newest") return new Date(b.date) - new Date(a.date);
-    if (feedFilters.sortBy === "oldest") return new Date(a.date) - new Date(b.date);
-    if (feedFilters.sortBy === "popular") {
-      const aScore = a.type === "listing" ? (a.item.views || 0) : (a.item.likes || 0);
-      const bScore = b.type === "listing" ? (b.item.views || 0) : (b.item.likes || 0);
-      return bScore - aScore;
-    }
-    return 0;
-  });
+  const sortFn = (a, b) => {
+    if (feedFilters.sortBy === "oldest") return new Date(a.created_date) - new Date(b.created_date);
+    if (feedFilters.sortBy === "popular") return (b.views || b.likes || 0) - (a.views || a.likes || 0);
+    return new Date(b.created_date) - new Date(a.created_date);
+  };
+  const sortedListings = (feedFilters.contentType === "posts" ? [] : [...filteredListings]).sort(sortFn);
+  const sortedPosts = (feedFilters.contentType === "listings" ? [] : [...filteredPosts]).sort(sortFn);
+  const totalItems = sortedListings.length + sortedPosts.length;
+  const listingsTotalPages = Math.ceil(sortedListings.length / LISTINGS_PER_PAGE) || 1;
+  const pagedListings = sortedListings.slice((listingsPage - 1) * LISTINGS_PER_PAGE, listingsPage * LISTINGS_PER_PAGE);
+
+  useEffect(() => { setListingsPage(1); }, [feedFilters.contentType, feedFilters.sortBy, feedFilters.search, feedFilters.isFree, feedFilters.isPremium, feedFilters.priceMin, feedFilters.priceMax]);
 
   return (
     <motion.div key={franchise.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
@@ -85,7 +85,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-white text-sm font-black">{franchise.name} Feed</p>
-            <p className="text-white/40 text-[10px]">Posts + listings &middot; {merged.length} items</p>
+            <p className="text-white/40 text-[10px]">Posts + listings &middot; {totalItems} items</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowFilters(v => !v)}
@@ -162,11 +162,11 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
           accentColor={franchise.accent}
         />
       </div>
-      {/* Feed: posts + listings mixed */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      {/* Feed: listings grid (4-up) + posts */}
+      <div className="flex-1 overflow-y-auto p-2 space-y-3">
         {loading ? (
           <div className="p-6 text-center text-gray-600 text-sm">Loading...</div>
-        ) : merged.length === 0 ? (
+        ) : totalItems === 0 ? (
           <div className="p-8 text-center">
             <p className="text-3xl mb-2">{franchise.emoji}</p>
             <p className="text-gray-600 text-sm">No posts yet. Be the first!</p>
@@ -183,50 +183,72 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                 </button>
               </div>
             )}
-            {merged.map(({ type, item }) => (
-              type === "listing" ? (
-                <a key={item.id} href={`/listing?id=${item.id}`}
-                  onClick={async () => {
-                    try {
-                      const fresh = await base44.entities.Listing.get(item.id);
-                      await base44.entities.Listing.update(item.id, { views: (fresh.views || 0) + 1 });
-                    } catch {}
-                  }}
-                  className="flex gap-3 px-3 py-2.5 rounded-xl border border-gray-800 hover:bg-gray-800/30 transition-colors group bg-gray-900/60">
-                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
-                    {item.images?.[0] ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>}
+
+            {/* Listings — 4 across, 12 per page */}
+            {pagedListings.length > 0 && (
+              <div>
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+                  {pagedListings.map((item) => (
+                    <a key={item.id} href={`/listing?id=${item.id}`}
+                      onClick={async () => {
+                        try {
+                          const fresh = await base44.entities.Listing.get(item.id);
+                          await base44.entities.Listing.update(item.id, { views: (fresh.views || 0) + 1 });
+                        } catch {}
+                      }}
+                      className="flex flex-col rounded-xl border border-gray-800 hover:border-purple-600/40 hover:bg-gray-800/30 transition-colors group bg-gray-900/60 overflow-hidden">
+                      <div className="aspect-square bg-gray-800 overflow-hidden">
+                        {item.images?.[0] ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
+                      </div>
+                      <div className="p-2 flex-1 flex flex-col">
+                        <p className="text-white text-[11px] font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{item.title}</p>
+                        <p className="text-gray-500 text-[8px] inline-flex items-center gap-1 mt-1"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> {item.created_date ? new Date(item.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}</p>
+                        <p className="font-black text-[11px] mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `\u20B1${item.price}`}</p>
+                        <div className="mt-1.5">
+                          <ListingEngagementBar listing={item} user={user} profile={profile} compact />
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+                {listingsTotalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    <button disabled={listingsPage === 1} onClick={() => setListingsPage(p => Math.max(1, p - 1))}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-800 text-gray-300 disabled:opacity-40 hover:bg-gray-700 transition-colors">Prev</button>
+                    <span className="text-gray-500 text-[10px] font-semibold">Page {listingsPage} / {listingsTotalPages}</span>
+                    <button disabled={listingsPage === listingsTotalPages} onClick={() => setListingsPage(p => Math.min(listingsTotalPages, p + 1))}
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-800 text-gray-300 disabled:opacity-40 hover:bg-gray-700 transition-colors">Next</button>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
-                    <p className="text-gray-400 text-[9px] inline-flex items-center gap-1"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> Posted Date: {item.created_date ? new Date(item.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>
-                    <p className="font-black text-xs mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `\u20B1${item.price}`}</p>
-                    <div className="mt-1.5">
-                      <ListingEngagementBar listing={item} user={user} profile={profile} compact />
-                    </div>
-                  </div>
-                </a>
-              ) : (
-                <CommunityPostCard
-                  key={item.id}
-                  post={item}
-                  user={user}
-                  profile={profile}
-                  isTier1={true}
-                  canManage={admin}
-                  canDelete={admin}
-                  accentColor={franchise.accent}
-                  onUpdate={handlePostUpdate}
-                  onFlag={async (p) => {
-                    await base44.entities.CommunityPost.update(p.id, { status: "pending_review" });
-                    setPosts(prev => prev.filter(x => x.id !== p.id));
-                  }}
-                  onRemove={async (p) => {
-                    await base44.entities.CommunityPost.update(p.id, { status: "removed" });
-                    setPosts(prev => prev.filter(x => x.id !== p.id));
-                  }}
-                />
-              )
-            ))}
+                )}
+              </div>
+            )}
+
+            {/* Posts */}
+            {sortedPosts.length > 0 && (
+              <div className="space-y-2">
+                {sortedPosts.map((item) => (
+                  <CommunityPostCard
+                    key={item.id}
+                    post={item}
+                    user={user}
+                    profile={profile}
+                    isTier1={true}
+                    canManage={admin}
+                    canDelete={admin}
+                    accentColor={franchise.accent}
+                    onUpdate={handlePostUpdate}
+                    onFlag={async (p) => {
+                      await base44.entities.CommunityPost.update(p.id, { status: "pending_review" });
+                      setPosts(prev => prev.filter(x => x.id !== p.id));
+                    }}
+                    onRemove={async (p) => {
+                      await base44.entities.CommunityPost.update(p.id, { status: "removed" });
+                      setPosts(prev => prev.filter(x => x.id !== p.id));
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

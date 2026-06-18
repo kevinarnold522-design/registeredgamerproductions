@@ -39,6 +39,8 @@ export default function CommunityLandingPage() {
   const [showAdvFilter, setShowAdvFilter] = useState(false);
   const [listingFilter, setListingFilter] = useState({ priceMin: "", priceMax: "", isFree: false, isPremium: false });
   const [showBulkPost, setShowBulkPost] = useState(false);
+  const [listingsPage, setListingsPage] = useState(1);
+  const LISTINGS_PER_PAGE = 12;
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editLogoUrl, setEditLogoUrl] = useState("");
   const [editLogoUrls, setEditLogoUrls] = useState([]);
@@ -92,7 +94,7 @@ export default function CommunityLandingPage() {
     const active = postsData.filter(p => p.status === "active")
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
     setPosts(active);
-    setListings(listingsData.slice(0, 8));
+    setListings(listingsData);
     if (user?.email) {
       const myMember = membersData.find(m => m.user_email === user.email);
       setIsJoined(!!myMember);
@@ -684,45 +686,6 @@ export default function CommunityLandingPage() {
               </div>
             </div>
 
-            {/* Listings */}
-            {listings.length > 0 && (
-              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
-                <h3 className="text-white font-black text-sm mb-3">📦 Community Listings</h3>
-                <div className="space-y-3">
-                  {listings.map(l => (
-                    <div key={l.id}>
-                      <Link to={`/listing?id=${l.id}`}
-                        onClick={async (e) => {
-                          // Increment view count on click
-                          try {
-                            const fresh = await base44.entities.Listing.get(l.id);
-                            const newViews = (fresh.views || 0) + 1;
-                            await base44.entities.Listing.update(l.id, { views: newViews });
-                          } catch {}
-                        }}
-                        className="flex gap-3 p-2 rounded-xl hover:bg-gray-800 transition-colors group">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                          {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center">🎮</div>}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{l.title}</p>
-                          <div className="flex items-center justify-between mt-0.5">
-                            <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `₱${l.price}`}</p>
-                            <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
-                              <Eye className="w-2.5 h-2.5 theme-glow-icon" />{(l.views || 0).toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                      <div className="px-2 pb-1">
-                        <ListingEngagementBar listing={l} user={user} profile={profile} compact />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Members */}
             <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4">
               <h3 className="text-white font-black text-sm mb-3">Members ({members.length})</h3>
@@ -741,6 +704,55 @@ export default function CommunityLandingPage() {
             </div>
           </div>
         </div>
+
+        {/* Community Listings — full width, 4 across, 12 per page */}
+        {listings.length > 0 && (() => {
+          const totalListPages = Math.ceil(listings.length / LISTINGS_PER_PAGE) || 1;
+          const pagedL = listings.slice((listingsPage - 1) * LISTINGS_PER_PAGE, listingsPage * LISTINGS_PER_PAGE);
+          return (
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mt-6">
+            <h3 className="text-white font-black text-sm mb-3">📦 Community Listings</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {pagedL.map(l => (
+                <div key={l.id} className="flex flex-col rounded-xl border border-gray-800 bg-gray-900/60 overflow-hidden hover:border-purple-600/40 transition-colors group">
+                  <Link to={`/listing?id=${l.id}`}
+                    onClick={async () => {
+                      try {
+                        const fresh = await base44.entities.Listing.get(l.id);
+                        await base44.entities.Listing.update(l.id, { views: (fresh.views || 0) + 1 });
+                      } catch {}
+                    }}>
+                    <div className="aspect-square overflow-hidden bg-gray-800">
+                      {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
+                    </div>
+                    <div className="p-2.5">
+                      <p className="text-white text-xs font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{l.title}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `₱${l.price}`}</p>
+                        <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                          <Eye className="w-2.5 h-2.5 theme-glow-icon" />{(l.views || 0).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                  <div className="px-2.5 pb-2">
+                    <ListingEngagementBar listing={l} user={user} profile={profile} compact />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {totalListPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <button disabled={listingsPage === 1} onClick={() => setListingsPage(p => Math.max(1, p - 1))}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300 disabled:opacity-40 hover:bg-gray-700 transition-colors">Prev</button>
+                <span className="text-gray-500 text-xs font-semibold">Page {listingsPage} / {totalListPages}</span>
+                <button disabled={listingsPage === totalListPages} onClick={() => setListingsPage(p => Math.min(totalListPages, p + 1))}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300 disabled:opacity-40 hover:bg-gray-700 transition-colors">Next</button>
+              </div>
+            )}
+          </div>
+          );
+        })()}
       </div>
       <GamerBrandFooter />
     </div>
