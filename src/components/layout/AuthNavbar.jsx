@@ -14,6 +14,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
+import PostTypeModal from "@/components/listings/PostTypeModal";
 import SwitchAccountDropdown from "@/components/layout/SwitchAccountDropdown";
 import ScrollDownHint from "@/components/layout/ScrollDownHint";
 
@@ -67,6 +68,7 @@ export default function AuthNavbar({ user, profile }) {
   const [controllerColorIdx, setControllerColorIdx] = useState(0);
   const [controllerAnimating, setControllerAnimating] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
+  const [showPostMenu, setShowPostMenu] = useState(false);
   const [localAccountType, setLocalAccountType] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -202,13 +204,16 @@ export default function AuthNavbar({ user, profile }) {
     { icon: Trophy, label: "Tournaments", href: "/category?cat=tournaments" },
   ];
 
+  // Pinned to the very top of the nav tree
+  const topLinks = [
+    { icon: User, label: "My Channel & Profile", href: "/profile" },
+    ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Post", action: () => setShowPostMenu(true) }] : []),
+  ];
+
   const toolLinks = [
     { icon: Globe, label: "Communities", href: "/gaming-community" },
     { icon: Play, label: "Content Hub", href: "/content" },
-    // Combined My Channel + My Profile into a single destination
-    { icon: User, label: "My Channel & Profile", href: "/profile" },
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
-    ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Post", href: "/create-listing" }] : []),
     { icon: Radio, label: "Go Live", href: "/studio", dot: true },
   ];
 
@@ -304,6 +309,12 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Dynamic Sidebar Nav Tree */}
         <div className="flex-1 overflow-y-scroll overflow-x-hidden py-2 px-2 space-y-0.5 gamer-sidebar-scroll gamer-sidebar-scroll-always">
+          {topLinks.map((link, i) => (
+            <NavLink key={`top-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
+          ))}
+
+          <div className="nav-divider mx-2 my-1.5" />
+
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">{(admin && !isManagingAsGhost) ? "Admin" : "Dashboard"}</p>}
           {navLinks.map((link, i) => (
             <NavLink key={`${link.label}-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
@@ -418,6 +429,9 @@ export default function AuthNavbar({ user, profile }) {
       </AnimatePresence>
 
       <FavoritesDropdown isOpen={favOpen} onClose={() => setFavOpen(false)} userEmail={activeUserEmail} />
+
+      <PostTypeModal open={showPostMenu} onClose={() => setShowPostMenu(false)} />
+
 
       {/* Creator/Business Subscription Account Transitions handling Modal */}
       {showTransition && (

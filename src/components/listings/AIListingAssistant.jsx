@@ -26,7 +26,6 @@ export default function AIListingAssistant({ form, setForm, images, setImages })
   const [files, setFiles] = useState([]);
   const [busy, setBusy] = useState(false);
   const [answers, setAnswers] = useState({});
-  const [showQuestions, setShowQuestions] = useState(false);
   const [result, setResult] = useState(null);
   const [done, setDone] = useState(false);
   const inputRef = useRef(null);
@@ -145,27 +144,24 @@ Current selected category: ${form.category}. Only override it if a different cat
         <Bot className="w-5 h-5 text-purple-300" />
         <div>
           <p className="text-white text-sm font-black">AI Listing Assistant</p>
-          <p className="text-gray-500 text-xs">Paste one or more descriptions, add images, and the AI recommends every field — category, subcategory, price &amp; more — before you publish.</p>
+          <p className="text-gray-500 text-xs">Paste one or more descriptions, add images, answer a couple of quick questions, and the AI recommends every field — category, subcategory, price &amp; more — before you publish.</p>
         </div>
-        <button type="button" onClick={() => setShowQuestions(v => !v)}
-          className="ml-auto flex items-center gap-1.5 rounded-lg border border-purple-700/50 bg-purple-900/30 px-2.5 py-1.5 text-[11px] font-bold text-purple-200 hover:bg-purple-900/50">
-          <MessageCircle className="w-3.5 h-3.5" /> {showQuestions ? "Hide questions" : "Answer questions"}
-        </button>
       </div>
 
-      {/* Optional guided questions to make the AI smarter */}
-      {showQuestions && (
-        <div className="mb-3 grid gap-2 rounded-xl border border-purple-800/40 bg-gray-900/60 p-3">
-          {SMART_QUESTIONS.map(({ key, q }) => (
-            <div key={key}>
-              <label className="text-purple-200/80 text-[11px] font-semibold block mb-1">{q}</label>
-              <input value={answers[key] || ""} onChange={e => setAnswers(a => ({ ...a, [key]: e.target.value }))}
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-white placeholder-gray-600 outline-none focus:border-purple-500" />
-            </div>
-          ))}
-          <p className="text-gray-500 text-[10px]">These help the AI pick the right category &amp; subcategory automatically.</p>
+      {/* Guided questions — always shown, combined with the prompt box */}
+      <div className="mb-3 grid gap-2 sm:grid-cols-2 rounded-xl border border-purple-800/40 bg-gray-900/60 p-3">
+        <div className="sm:col-span-2 flex items-center gap-1.5 text-purple-200 text-[11px] font-black uppercase tracking-wider">
+          <MessageCircle className="w-3.5 h-3.5" /> Quick Questions
         </div>
-      )}
+        {SMART_QUESTIONS.map(({ key, q }) => (
+          <div key={key}>
+            <label className="text-purple-200/80 text-[11px] font-semibold block mb-1">{q}</label>
+            <input value={answers[key] || ""} onChange={e => setAnswers(a => ({ ...a, [key]: e.target.value }))}
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-white placeholder-gray-600 outline-none focus:border-purple-500" />
+          </div>
+        ))}
+        <p className="sm:col-span-2 text-gray-500 text-[10px]">These help the AI pick the right category &amp; subcategory automatically.</p>
+      </div>
 
       <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={4}
         placeholder={"You can paste multiple prompts at once, e.g.:\n- Premium GTA 5 graphics mod, install guide included, latest PC version\n- Also works on Steam, ₱250"}

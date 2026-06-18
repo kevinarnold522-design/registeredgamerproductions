@@ -15,6 +15,7 @@ import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
 import SocialLinksPanel from "@/components/profile/SocialLinksPanel";
 import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
+import UserPointsBadge from "@/components/profile/UserPointsBadge";
 import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
 import ReelCreator from "@/components/shared/ReelCreator";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
@@ -353,6 +354,7 @@ export default function Profile() {
                   </button>
                 )}
               </div>
+              {(profile?.user_email || user?.email) && <UserPointsBadge userEmail={profile?.user_email || user?.email} />}
               {profile?.bio && <p className="text-gray-400 text-sm mt-1">{profile.bio}</p>}
               {profile?.location && (
                 <p className="text-gray-600 text-xs mt-1 flex items-center gap-1">
