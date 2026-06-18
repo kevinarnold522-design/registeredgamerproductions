@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink, Package, Monitor, Gamepad2, CheckCircle, Store, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag } from "lucide-react";
+import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink, Package, Monitor, Gamepad2, CheckCircle, Store, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag, LayoutGrid } from "lucide-react";
+
+const NEWSFEED_TARGETS = [
+  { id: "games", label: "Games" },
+  { id: "modding", label: "Modding" },
+  { id: "premium_mods", label: "Premium Mods" },
+  { id: "store", label: "Store" },
+  { id: "buy_sell", label: "Buy & Sell" },
+  { id: "paid_tools", label: "Tools" },
+  { id: "content_streaming", label: "Content" },
+];
 import { base44 } from "@/api/base44Client";
 import { isAdmin, CATEGORIES, GAMES_STORES } from "@/lib/constants";
 
@@ -26,6 +36,7 @@ const PHYSICAL_SUBCATEGORIES = [
 ];
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import AIListingAssistant from "@/components/listings/AIListingAssistant";
+import { compressImage } from "@/lib/compressImage";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { CURRENCY_OPTIONS } from "@/lib/currency";
 
@@ -81,6 +92,7 @@ export default function CreateListing() {
     product_type: defaultCat === "premium_mods" ? "digital" : "",
     category: defaultCat,
     subcategories: defaultSub ? [defaultSub] : [],
+    newsfeed_categories: [],
     digital_subcategory: "",
     digital_subcategory_custom: "",
     physical_subcategory: "",
@@ -165,6 +177,7 @@ export default function CreateListing() {
             product_type: l.product_type || "",
             category: l.category || defaultCat,
             subcategories: l.subcategories || [],
+            newsfeed_categories: l.newsfeed_categories || [],
             digital_subcategory: l.digital_subcategory || "",
             digital_subcategory_custom: "",
             physical_subcategory: l.physical_subcategory || "",
@@ -212,7 +225,8 @@ export default function CreateListing() {
       throw new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`);
     }
     if ((file.type || "").startsWith("image/")) {
-      const res = await base44.integrations.Core.UploadFile({ file });
+      const compressed = await compressImage(file);
+      const res = await base44.integrations.Core.UploadFile({ file: compressed });
       return res.file_url;
     }
 
@@ -855,9 +869,29 @@ export default function CreateListing() {
                     className="w-full bg-gray-800 border border-emerald-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 text-sm" />
                   <p className="text-emerald-400/70 text-xs mt-1">Numbers only, one decimal (e.g. 9.5)</p>
                 </div>
+                <div>
+                  <label className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Subcategory</label>
+                  <select value={form.subcategories?.[0] || ""} onChange={e => setForm({ ...form, subcategories: e.target.value ? [e.target.value] : [] })}
+                    className="w-full bg-gray-800 border border-emerald-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm">
+                    <option value="">— Select platform —</option>
+                    {(CATEGORIES.find(c => c.id === "games")?.subcategories || []).map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
                 {!isAdmin(user?.email) && !editId && (
                   <p className="text-yellow-400/80 text-xs flex items-center gap-1.5"><Info className="w-3 h-3" /> Game submissions require admin approval before going live.</p>
                 )}
+              </div>
+            )}
+
+            {/* PREMIUM MODS category — dedicated subcategory (hides unrelated subs) */}
+            {form.category === "premium_mods" && (
+              <div className="bg-amber-900/20 border border-amber-700/40 rounded-xl p-4">
+                <label className="text-amber-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Premium Mod Subcategory</label>
+                <select value={form.subcategories?.[0] || ""} onChange={e => setForm({ ...form, subcategories: e.target.value ? [e.target.value] : [] })}
+                  className="w-full bg-gray-800 border border-amber-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 text-sm">
+                  <option value="">— Select premium mod type —</option>
+                  {(CATEGORIES.find(c => c.id === "premium_mods")?.subcategories || []).map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
             )}
 
@@ -1011,8 +1045,8 @@ export default function CreateListing() {
               </div>
             )}
 
-            {/* Additional subcategories (multi-select) */}
-            <div>
+            {/* Additional subcategories (multi-select) — hidden for Games & Premium Mods which use their own selector */}
+            {form.category !== "games" && form.category !== "premium_mods" && <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Additional Subcategories (Optional)</label>
               <p className="text-gray-500 text-xs mb-3">Show your listing in multiple subcategories for more visibility</p>
               {selectedCat?.subcategories?.length > 0 ? (
@@ -1046,6 +1080,26 @@ export default function CreateListing() {
                 {form.subcategories.length >= 3 && (
                   <p className="text-yellow-400 text-xs">Maximum 3 subcategories reached</p>
                 )}
+              </div>
+            </div>}
+
+            {/* Newsfeed visibility — manually pick which categories this shows in */}
+            <div className="bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-4">
+              <label className="text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                <LayoutGrid className="w-3 h-3 text-indigo-300" /> Show in Newsfeeds (Optional)
+              </label>
+              <p className="text-gray-500 text-xs mb-3">Pick which category newsfeeds this listing also appears in. Leave empty to use its main category only.</p>
+              <div className="flex flex-wrap gap-2">
+                {NEWSFEED_TARGETS.map(t => {
+                  const sel = (form.newsfeed_categories || []).includes(t.id);
+                  return (
+                    <button key={t.id} type="button"
+                      onClick={() => setForm(f => ({ ...f, newsfeed_categories: sel ? (f.newsfeed_categories || []).filter(x => x !== t.id) : [...(f.newsfeed_categories || []), t.id] }))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${sel ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-indigo-900/30"}`}>
+                      {t.label} {sel && <CheckCircle className="w-3 h-3 inline ml-1" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>

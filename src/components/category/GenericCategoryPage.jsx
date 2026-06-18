@@ -119,7 +119,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         ]).then(([mods, premiumMods]) => [...mods, ...premiumMods])
       : base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 80);
 
-    listingsPromise.then(l => {
+    // Also pull listings the seller/admin manually targeted to this category's newsfeed
+    const newsfeedPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date", 120)
+      .then(all => all.filter(x => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes(cat)))
+      .catch(() => []);
+
+    Promise.all([listingsPromise, newsfeedPromise]).then(([base, extra]) => {
+      const seen = new Set(base.map(x => x.id));
+      const l = [...base, ...extra.filter(x => !seen.has(x.id))];
       let cleaned = l.filter(x => x.is_approved !== false);
       // Marketplace discovery categories must never show service-type listings
       if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {

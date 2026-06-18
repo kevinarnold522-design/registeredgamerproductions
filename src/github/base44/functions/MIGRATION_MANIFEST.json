@@ -1,5 +1,5 @@
 {
-  "revision_date": "2026-06-15",
+  "revision_date": "2026-06-18",
   "purpose": "Base44 backend function migration manifest for future Cloudflare Workers or Vercel Functions porting.",
   "runtime_notes": {
     "base44_current_runtime": "Deno backend functions",
@@ -20,6 +20,8 @@
     "createManagedAccount",
     "createPaypalOrder",
     "createTier1Order",
+    "dailyUpdatesEmail",
+    "deleteListingPermanent",
     "getPaypalConfig",
     "getSellerPaypalStatus",
     "logLogin",
@@ -31,6 +33,8 @@
     "sendDailyRewardEmail",
     "sendOrderNotification",
     "sendPaypalGuideEmail",
+    "updateProfileMedia",
+    "uploadToR2",
     "verifyPaymentStatus"
   ]
 }

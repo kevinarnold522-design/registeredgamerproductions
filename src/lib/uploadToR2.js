@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { compressImage } from "@/lib/compressImage";
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 export const MAX_UPLOAD_LABEL = "25MB";
@@ -16,7 +17,8 @@ export async function uploadFileToR2(file, folder = "uploads") {
   }
 
   if ((file.type || "").startsWith("image/")) {
-    const res = await base44.integrations.Core.UploadFile({ file });
+    const compressed = await compressImage(file);
+    const res = await base44.integrations.Core.UploadFile({ file: compressed });
     return { file_url: res.file_url };
   }
 

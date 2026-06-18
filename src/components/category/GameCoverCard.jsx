@@ -5,11 +5,12 @@ import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import { formatListingPrice } from "@/lib/currency";
 
 // Tall poster-style glassmorphism game card — cover art forward with a frosted
 // info panel overlaid at the bottom and a neon purple frame.
 export default function GameCoverCard({ l, i, user, profile }) {
-  const priceLabel = (!l.price || l.price === 0 || l.is_free) ? "FREE" : `₱${Number(l.price).toLocaleString()}`;
+  const priceLabel = (!l.price || l.price === 0 || l.is_free) ? "FREE" : formatListingPrice(l.price, l.currency);
   const mediaUrl = l.preview_video_url || l.video_url || l.youtube_url;
 
   return (

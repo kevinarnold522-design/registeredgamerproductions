@@ -51,17 +51,17 @@
         "type": "string"
       }
     },
+    "newsfeed_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Extra category newsfeeds this listing should appear in",
+      "default": []
+    },
     "digital_subcategory": {
       "type": "string",
-      "enum": [
-        "mods",
-        "skins",
-        "maps",
-        "cheats",
-        "tools",
-        "guides",
-        "other"
-      ]
+      "description": "Digital subcategory id or custom free-text value"
     },
     "physical_subcategory": {
       "type": "string",

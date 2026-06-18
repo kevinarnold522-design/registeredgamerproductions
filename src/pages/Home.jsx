@@ -62,30 +62,32 @@ export default function Home() {
 
   // Show "Sign in to block ads" sign for guests after 3 min (only after splash dismissed)
   useEffect(() => {
-    if (showSplash || isAuthenticated) return;
+    if (showSplash || isAuthenticated || profile?.no_ads) return;
     const t = setTimeout(() => setShowAdSign(true), 180000);
     return () => clearTimeout(t);
-  }, [showSplash, isAuthenticated]);
+  }, [showSplash, isAuthenticated, profile?.no_ads]);
 
   // Ad logic:
   // - During splash (showSplash=true): NEVER show ads
   // - 0-3 min after splash dismissed: no ads for anyone
   // - After 3 min: ads start for non-signed-in users only
   // - Signed-in users: ads permanently disabled
+  const adFree = isAuthenticated || profile?.no_ads === true;
+
   useEffect(() => {
-    // Always clean up ads for authenticated users
-    if (isAuthenticated) {
+    // Always clean up ads for ad-free users (signed-in OR admin-granted no_ads)
+    if (adFree) {
       document.querySelectorAll("[data-zone]").forEach(el => el.remove());
       document.querySelectorAll("[data-ad-slot]").forEach(el => { el.style.display = "none"; });
       return;
     }
-  }, [isAuthenticated]);
+  }, [adFree]);
 
   useEffect(() => {
     // Don't start ad timers during splash screen
     if (showSplash) return;
-    // Signed-in users never see ads
-    if (isAuthenticated) return;
+    // Ad-free users never see ads
+    if (adFree) return;
 
     const injectBanner = (slot, style) => {
       const existing = document.querySelector(`[data-zone="${slot}"]`);
@@ -117,7 +119,7 @@ export default function Home() {
     }, 1200000);
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [isAuthenticated, showSplash]);
+  }, [adFree, showSplash]);
 
   // Load or auto-create user profile once auth is confirmed
   useEffect(() => {
