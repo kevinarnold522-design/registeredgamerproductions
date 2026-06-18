@@ -376,7 +376,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           </div>
         ) : cat === "games" ? (
           <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {paged.map((l, i) => (
               <GameCoverCard key={l.id} l={l} i={i} user={user} profile={profile} />
             ))}
@@ -420,6 +420,13 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
                  <div onClick={(e) => e.stopPropagation()}><ListingSellerBadge createdDate={l.created_date} /></div>
                  </div>
+                 {(l.preview_video_url || l.video_url || l.youtube_url) && (
+                   <div className="border-t border-purple-500/30 bg-black" onClick={(e) => e.preventDefault()}>
+                     <div className="w-full overflow-hidden" style={{ aspectRatio: "16 / 9" }}>
+                       <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
+                     </div>
+                   </div>
+                 )}
                  </motion.a>
                  );
                  })}
