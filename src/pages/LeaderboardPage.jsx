@@ -136,7 +136,7 @@ export default function LeaderboardPage() {
     const [posts, ratings, profiles, orders] = await Promise.all([
       base44.entities.CommunityPost.list("-created_date", 500),
       base44.entities.PostRating.list("-created_date", 1000),
-      base44.entities.UserProfile.list("-created_date", 200),
+      base44.entities.UserProfile.list("-created_date", 1000),
       base44.entities.Order.filter({ status: "completed" }, "-created_date", 500).catch(() => []),
     ]);
 
@@ -149,6 +149,19 @@ export default function LeaderboardPage() {
       : posts;
 
     const scoreMap = {};
+
+    // Seed EVERY registered user so all members appear on the leaderboard, even with 0 points
+    profiles.forEach(p => {
+      if (!p.user_email) return;
+      scoreMap[p.user_email] = {
+        email: p.user_email,
+        username: p.username || p.display_name || p.user_email,
+        posts: 0,
+        likes: 0,
+        score: 0,
+        avatar_url: p.avatar_url || "",
+      };
+    });
 
     filteredPosts.forEach(post => {
       const key = post.author_email;

@@ -24,8 +24,9 @@ import ListingCommentsBlock from "@/components/listings/ListingCommentsBlock";
 import ListingPageEditor from "@/components/listings/ListingPageEditor";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { OFFICIAL_LINKS } from "@/lib/officialLinks";
+import BuyUnlockModal from "@/components/payments/BuyUnlockModal";
 
-function GlowDownloadButton({ isFree, price, currency, onClick, theme }) {
+function GlowDownloadButton({ isFree, price, currency, onClick, theme, purchased }) {
   return (
     <motion.button
     onClick={onClick}
@@ -65,7 +66,7 @@ function GlowDownloadButton({ isFree, price, currency, onClick, theme }) {
       />
       <Download className="w-5 h-5 relative z-10" />
       <span className="relative z-10">
-        {isFree ? "Download" : `Buy for ${formatListingPrice(price, currency)}`}
+        {isFree || purchased ? "Download" : `Buy for ${formatListingPrice(price, currency)}`}
       </span>
     </motion.button>
   );
@@ -103,6 +104,8 @@ export default function ListingPage() {
   const [pageLayout, setPageLayout] = useState(null);
   const [showPageEditor, setShowPageEditor] = useState(false);
   const [tier1Active, setTier1Active] = useState(false);
+  const [purchased, setPurchased] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -144,6 +147,9 @@ export default function ListingPage() {
           }
           if (user) {
             base44.entities.Favorite.filter({ user_email: user.email, listing_id: l.id }).then(favs => setLiked(favs.length > 0));
+            // Check if this user already paid for this listing (unlocks the download)
+            base44.entities.Order.filter({ buyer_email: user.email, listing_id: l.id, payment_status: "paid" })
+              .then(orders => setPurchased(orders.length > 0)).catch(() => {});
           }
           base44.entities.PostComment.filter({ post_id: l.id }).then(c => {
             setComments(c.filter(x => x.status !== "removed").sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
@@ -224,6 +230,16 @@ export default function ListingPage() {
   const handleDownload = () => {
     const url = listing.download_url || listing.external_link;
     if (!url) return;
+
+    // Paid listing → require purchase before unlocking the download
+    const needsPurchase = !isFree && Number(listing.price) > 0;
+    const isOwnerOrAdmin = user && (isAdmin(user.email) || user.email === listing.seller_email);
+    if (needsPurchase && !purchased && !isOwnerOrAdmin) {
+      if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
+      setShowBuyModal(true);
+      return;
+    }
+
     const isExempt = user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator");
     if (isExempt) {
       // Increment download count for exempt users too
@@ -262,6 +278,21 @@ export default function ListingPage() {
       }).catch(() => {});
       window.open(pendingDownloadUrl, "_blank");
       setPendingDownloadUrl(null);
+    }
+  };
+
+  const handlePaid = () => {
+    setPurchased(true);
+    setShowBuyModal(false);
+    const url = listing.download_url || listing.external_link;
+    if (url) {
+      base44.entities.Listing.get(listing.id).then(fresh => {
+        const newDownloads = (fresh.downloads || 0) + 1;
+        base44.entities.Listing.update(listing.id, { downloads: newDownloads });
+        setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
+      }).catch(() => {});
+      autoFollowSeller();
+      window.open(url, "_blank");
     }
   };
 
@@ -596,7 +627,7 @@ export default function ListingPage() {
             })()}
 
             <div className="flex flex-col gap-3">
-              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} />}
+              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} purchased={purchased} />}
               <div className="flex gap-2 flex-wrap">
                 {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="kofi" label="Ko-fi" className="w-4 h-4" /> Ko-fi</a>}
                 {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="buymeacoffee" label="Buy Me a Coffee" className="w-4 h-4" /> BuyMeACoffee</a>}
@@ -677,6 +708,17 @@ export default function ListingPage() {
               )}
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showBuyModal && (
+          <BuyUnlockModal
+            listing={listing}
+            user={user}
+            onClose={() => setShowBuyModal(false)}
+            onPaid={handlePaid}
+          />
         )}
       </AnimatePresence>
 

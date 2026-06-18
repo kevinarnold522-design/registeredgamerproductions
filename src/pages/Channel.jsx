@@ -171,7 +171,7 @@ export default function Channel() {
   const totalShares = posts.reduce((s, p) => s + (Number(p.shares_count) || 0), 0) + listings.reduce((s, l) => s + (Number(l.shares) || 0), 0);
 
   return (
-    <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, backgroundImage: currentThemeObj.grid, backgroundSize: "42px 42px", minHeight: "100vh" }}>
+    <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, backgroundImage: currentThemeObj.grid, backgroundSize: "42px 42px", minHeight: "100vh", "--channel-bg": currentThemeObj.background || "#050510" }}>
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-16">
 
@@ -225,19 +225,19 @@ export default function Channel() {
           )}
         </div>
 
-        {/* iOS26-style glass reflection — mirrors the cover and bounces down half the page */}
-        <div className="relative h-24 md:h-32 overflow-hidden pointer-events-none -mt-px" aria-hidden="true">
+        {/* iOS26-style glass reflection — mirrors the cover and dissolves into the page */}
+        <div className="relative h-28 md:h-36 overflow-hidden pointer-events-none -mt-px" aria-hidden="true">
           {profile?.banner_url ? (
             <img src={profile.banner_url} alt="" className="w-full h-full object-cover"
-              style={{ transform: "scaleY(-1)", filter: "blur(2px) saturate(1.1)" }} />
+              style={{ transform: "scaleY(-1)", filter: "blur(1.5px) saturate(1.15) brightness(0.95)", opacity: 0.85 }} />
           ) : (
-            <div className="absolute inset-0" style={{ transform: "scaleY(-1)", background: "radial-gradient(ellipse at 60% 50%, rgba(139,92,246,0.3), rgba(236,72,153,0.15), #030712)" }} />
+            <div className="absolute inset-0" style={{ transform: "scaleY(-1)", background: "radial-gradient(ellipse at 60% 50%, rgba(139,92,246,0.45), rgba(236,72,153,0.22), #030712)" }} />
           )}
           {/* Glass frost + fade-out so the reflection dissolves into the page */}
-          <div className="absolute inset-0 backdrop-blur-md"
-            style={{ background: "linear-gradient(to bottom, rgba(5,5,16,0.35) 0%, rgba(5,5,16,0.7) 55%, var(--channel-bg, #050510) 100%)" }} />
-          {/* Subtle sheen highlight like an iOS glass surface */}
-          <div className="absolute inset-x-0 top-0 h-px bg-white/15" />
+          <div className="absolute inset-0 backdrop-blur-[3px]"
+            style={{ background: "linear-gradient(to bottom, rgba(5,5,16,0.05) 0%, rgba(5,5,16,0.35) 50%, var(--channel-bg, #050510) 100%)" }} />
+          {/* Bright sheen highlight like an iOS glass surface */}
+          <div className="absolute inset-x-0 top-0 h-[2px] bg-white/30" style={{ boxShadow: "0 0 12px rgba(255,255,255,0.4)" }} />
         </div>
 
         {/* Profile Row */}
