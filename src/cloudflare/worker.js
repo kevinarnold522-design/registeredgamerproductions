@@ -52,6 +52,18 @@ export default {
         }
       }
 
+      // ---- Orders + R2 files snapshot:  GET /orders-files ----
+      if (parts[0] === "orders-files") {
+        const dbResult = await env.DB.prepare(
+          "SELECT Id, CustomerName, OrderDate FROM [Order] ORDER BY OrderDate DESC LIMIT 100"
+        ).all();
+        const r2Result = await env.MEDIA.list();
+        return json({
+          orders: dbResult.results,
+          files: r2Result.objects,
+        });
+      }
+
       // ---- Health check ----
       if (parts[0] === "health" || parts.length === 0) {
         return json({ status: "ok", primary: "cloudflare", backup: "base44", time: new Date().toISOString() });
