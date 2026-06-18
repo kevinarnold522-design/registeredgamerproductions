@@ -17,9 +17,8 @@ export default function GameCoverCard({ l, i, user, profile }) {
     <motion.a
       href={`/listing?id=${l.id}`}
       initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: i * 0.04, type: "tween" }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(i * 0.04, 0.4), type: "tween" }}
       whileHover={{ y: -4 }}
       className="group relative block rounded-[20px] p-[2px] cursor-pointer"
       style={{
