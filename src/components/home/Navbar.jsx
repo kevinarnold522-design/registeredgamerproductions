@@ -92,7 +92,7 @@ export default function Navbar() {
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           scrolled
-            ? "bg-gray-950/95 backdrop-blur-md lg:backdrop-blur-none lg:bg-gray-950 border-b border-purple-900/40 shadow-lg shadow-purple-900/10"
+            ? "glass-reflect-surface bg-gray-950/95 backdrop-blur-md lg:backdrop-blur-none lg:bg-gray-950 border-b border-purple-900/40 shadow-lg shadow-purple-900/10"
             : "bg-transparent"
         }`}
       >
