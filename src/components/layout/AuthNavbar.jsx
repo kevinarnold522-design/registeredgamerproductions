@@ -356,14 +356,14 @@ export default function AuthNavbar({ user, profile }) {
       <motion.aside
         animate={{ width: w }}
         transition={{ duration: 0.2 }}
-        className="glass-reflect-surface hidden lg:flex fixed top-0 left-0 bottom-0 z-50 flex-col bg-gray-950 border-r border-purple-900/30"
+        className="hidden lg:flex fixed top-0 left-0 bottom-0 z-50 flex-col bg-gray-950 border-r border-purple-900/30"
         style={{ width: w }}
       >
         {sidebarInner(false)}
       </motion.aside>
 
       {/* Mobile Top Bar */}
-      <nav className="glass-reflect-surface lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
+      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
 
         <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
           <Menu className="w-5 h-5" />

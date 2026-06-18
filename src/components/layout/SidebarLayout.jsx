@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import FloatingSearch from "@/components/layout/FloatingSearch";
+import { useAuth } from "@/lib/AuthContext";
 
-// Offsets page content to the right to account for the left sidebar (desktop only)
+// Offsets page content to the right to account for the left sidebar (desktop only).
+// The left sidebar only renders for logged-in users, so logged-out visitors get no offset.
 export default function SidebarLayout({ children }) {
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem("sidebar_collapsed") === "true"; } catch { return false; }
   });
@@ -17,7 +20,8 @@ export default function SidebarLayout({ children }) {
     return () => clearInterval(interval);
   }, []);
 
-  const sidebarW = collapsed ? 56 : 240;
+  // No sidebar for logged-out users → no left offset
+  const sidebarW = !user ? 0 : (collapsed ? 56 : 240);
 
   return (
     <>

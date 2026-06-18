@@ -90,11 +90,7 @@ export default function Navbar() {
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          scrolled
-            ? "glass-reflect-surface bg-gray-950/95 backdrop-blur-md lg:backdrop-blur-none lg:bg-gray-950 border-b border-purple-900/40 shadow-lg shadow-purple-900/10"
-            : "bg-transparent"
-        }`}
+        className="fixed top-0 left-0 right-0 z-40 bg-gray-950/95 backdrop-blur-md lg:bg-gray-950 border-b border-purple-900/40 shadow-lg shadow-purple-900/10"
       >
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
