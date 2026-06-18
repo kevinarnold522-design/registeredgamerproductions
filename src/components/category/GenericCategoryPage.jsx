@@ -399,10 +399,10 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                 style={glowStyle}
                 className={`bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer ${glowClass}`}>
                 <div className="h-36 overflow-hidden relative bg-gray-800">
-                  {l.images?.length > 0 ? (
-                    <ListingImageSlider images={l.images} title={l.title} heightClass="h-36" />
-                  ) : (l.preview_video_url || l.video_url || l.youtube_url) ? (
+                  {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                     <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
+                  ) : l.images?.length > 0 ? (
+                    <ListingImageSlider images={l.images} title={l.title} heightClass="h-36" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-700"><Play className="w-10 h-10" /></div>
                   )}
@@ -421,13 +421,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
                  <div onClick={(e) => e.stopPropagation()}><ListingSellerBadge createdDate={l.created_date} /></div>
                  </div>
-                 {(l.preview_video_url || l.video_url || l.youtube_url) && l.images?.length > 0 && (
-                   <div className="border-t border-purple-500/30 bg-black" onClick={(e) => e.preventDefault()}>
-                     <div className="w-full overflow-hidden" style={{ aspectRatio: "16 / 9" }}>
-                       <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
-                     </div>
-                   </div>
-                 )}
                  </motion.a>
                  );
                  })}

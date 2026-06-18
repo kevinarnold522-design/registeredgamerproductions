@@ -125,7 +125,7 @@ const AuthenticatedApp = () => {
       <Route path="/sub-landing" element={<SubcategoryLandingPage />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/listing" element={<ListingPage />} />
-      <Route path="/routing-dashboard" element={<RoutingDashboard />} />
+      <Route path="/routing-dashboard" element={<AdminRoute element={<RoutingDashboard />} />} />
       <Route path="/earnings" element={<EarningsDashboard />} />
       <Route path="/upload-content" element={<UploadContent />} />
       <Route path="/content" element={<ContentFeedPage />} />

@@ -308,6 +308,16 @@
     },
     "managed_by_admin": {
       "type": "string"
+    },
+    "is_banned": {
+      "type": "boolean",
+      "default": false
+    },
+    "banned_reason": {
+      "type": "string"
+    },
+    "banned_date": {
+      "type": "string"
     }
   },
   "required": [

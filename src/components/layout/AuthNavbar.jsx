@@ -352,21 +352,11 @@ export default function AuthNavbar({ user, profile }) {
 
   return (
     <>
-      {/* Desktop Left Sidebar */}
-      <motion.aside
-        animate={{ width: w }}
-        transition={{ duration: 0.2 }}
-        className="hidden lg:flex fixed top-0 left-0 bottom-0 z-50 flex-col bg-gray-950 border-r border-purple-900/30"
-        style={{ width: w }}
-      >
-        {sidebarInner(false)}
-      </motion.aside>
+      {/* Top Bar — hamburger menu on all screen sizes */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
 
-      {/* Mobile Top Bar */}
-      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
-
-        <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-white">
-          <Menu className="w-5 h-5" />
+        <button onClick={() => setMobileOpen(true)} className="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all" title="Menu">
+          <Menu className="w-6 h-6" />
         </button>
         <Link to="/" className="flex items-center gap-2" onClick={(e) => { e.preventDefault(); handleControllerClick(); setTimeout(() => { window.location.href = "/"; }, 180); }}>
           <motion.div
@@ -404,7 +394,7 @@ export default function AuthNavbar({ user, profile }) {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 z-50 bg-black/70"
+              className="fixed inset-0 z-50 bg-black/70"
               onClick={() => setMobileOpen(false)}
             />
             {/* Left side fly-out menu tree panel */}
@@ -413,7 +403,7 @@ export default function AuthNavbar({ user, profile }) {
               animate={{ x: 0 }} 
               exit={{ x: -280 }}
               transition={{ type: "tween", duration: 0.25 }}
-              className="lg:hidden fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 overflow-y-scroll overflow-x-hidden gamer-sidebar-scroll"
+              className="fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 overflow-y-scroll overflow-x-hidden gamer-sidebar-scroll"
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30">
                 <span className="font-black text-white text-sm">Navigation Menu</span>
