@@ -187,6 +187,16 @@
       "type": "number",
       "default": 1
     },
+    "total_dwell_seconds": {
+      "type": "number",
+      "default": 0,
+      "description": "Sum of seconds visitors spent on this listing page (feeds watchtime hours)"
+    },
+    "view_sessions": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of measured view sessions (used to compute average stay)"
+    },
     "download_url": {
       "type": "string"
     },
@@ -233,6 +243,20 @@
         "none"
       ],
       "default": "fade"
+    },
+    "card_size": {
+      "type": "string",
+      "enum": [
+        "sm",
+        "md",
+        "lg"
+      ],
+      "default": "md",
+      "description": "Card display size on category grids"
+    },
+    "card_category_label": {
+      "type": "string",
+      "description": "Custom category/section label shown on the card"
     },
     "card_glow_style": {
       "type": "string",

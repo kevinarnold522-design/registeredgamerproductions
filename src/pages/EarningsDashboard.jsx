@@ -75,6 +75,8 @@ export default function EarningsDashboard() {
   const paidOrders = orders.filter(o => o.payment_status === "paid");
   const totalRevenue = paidOrders.reduce((s, o) => s + (o.seller_payout || o.amount || 0), 0);
   const totalListingViews = listings.reduce((s, l) => s + (l.views || 0), 0);
+  const totalDwellSeconds = listings.reduce((s, l) => s + (l.total_dwell_seconds || 0), 0);
+  const totalWatchHours = Math.round((totalDwellSeconds / 3600) * 10) / 10;
   const tier1Revenue = tier1Subs.length * 1; // $1/month each
 
   // Revenue by month
@@ -128,18 +130,45 @@ export default function EarningsDashboard() {
           ))}
         </div>
 
-        {/* ── OVERVIEW ── */}
+        {/* ── OVERVIEW (with combined Total Revenue hero) ── */}
         {tab === "overview" && (
           <div className="space-y-6">
+            {/* Combined Total Revenue hero */}
+            <div className="rounded-3xl p-6 border border-green-500/30 relative overflow-hidden"
+              style={{ background: "linear-gradient(135deg, rgba(34,197,94,0.14), rgba(16,163,74,0.05))" }}>
+              <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10"
+                style={{ background: "radial-gradient(circle, #22c55e, transparent)", transform: "translate(30%, -30%)" }} />
+              <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-green-300/80 text-xs font-bold uppercase tracking-widest mb-1">Total Revenue</p>
+                  <p className="text-green-400 font-black" style={{ fontSize: "3rem", lineHeight: 1 }}>₱{totalRevenue.toLocaleString()}</p>
+                  <p className="text-gray-400 text-sm mt-2">{paidOrders.length} paid orders · {orders.length} total orders</p>
+                </div>
+                <div className="flex gap-3 flex-wrap">
+                  <div className="bg-gray-900/60 border border-gray-800 rounded-2xl px-4 py-3 text-center">
+                    <p className="text-purple-400 font-black text-xl">{listings.filter(l => l.status === "active").length}</p>
+                    <p className="text-gray-500 text-[10px] uppercase tracking-wide">Active Listings</p>
+                  </div>
+                  <div className="bg-gray-900/60 border border-gray-800 rounded-2xl px-4 py-3 text-center">
+                    <p className="text-cyan-400 font-black text-xl">{totalWatchHours.toLocaleString()}</p>
+                    <p className="text-gray-500 text-[10px] uppercase tracking-wide">Watch Hours</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard label="Total Revenue" value={`₱${totalRevenue.toLocaleString()}`} icon={DollarSign} color="text-green-400" bg="bg-green-500/10 border-green-500/30" sub={`${paidOrders.length} paid orders`} />
               <StatCard label="Total Orders" value={orders.length} icon={ShoppingBag} color="text-blue-400" bg="bg-blue-500/10 border-blue-500/30" />
               <StatCard label="Active Listings" value={listings.filter(l => l.status === "active").length} icon={Package} color="text-purple-400" bg="bg-purple-500/10 border-purple-500/30" sub={`${totalListingViews.toLocaleString()} views`} />
-              {admin
-                ? <StatCard label="Tier 1 Subs" value={tier1Subs.length} icon={Star} color="text-yellow-400" bg="bg-yellow-500/10 border-yellow-500/30" sub={`$${tier1Revenue}/mo`} />
-                : <StatCard label="Listing Views" value={totalListingViews.toLocaleString()} icon={Eye} color="text-cyan-400" bg="bg-cyan-500/10 border-cyan-500/30" />
-              }
+              <StatCard label="Watch Hours" value={totalWatchHours.toLocaleString()} icon={Clock} color="text-cyan-400" bg="bg-cyan-500/10 border-cyan-500/30" sub="From listing stay time" />
             </div>
+            {admin && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard label="Tier 1 Subs" value={tier1Subs.length} icon={Star} color="text-yellow-400" bg="bg-yellow-500/10 border-yellow-500/30" sub={`$${tier1Revenue}/mo`} />
+                <StatCard label="Listing Views" value={totalListingViews.toLocaleString()} icon={Eye} color="text-blue-400" bg="bg-blue-500/10 border-blue-500/30" />
+              </div>
+            )}
 
             {revenueChartData.length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">

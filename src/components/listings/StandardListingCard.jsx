@@ -1,12 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Package, CalendarDays, Star } from "lucide-react";
+import { Eye, Package, CalendarDays, Star, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
 import RepostButton from "@/components/shared/RepostButton";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
+import CardEditPencil from "@/components/listings/CardEditPencil";
 import { formatListingPrice } from "@/lib/currency";
+
+// Map glow color id -> "r,g,b" used by the --std-glow CSS var (matches resolveGlow)
+const SIZE_HEIGHTS = { sm: "h-36", md: "h-48", lg: "h-60" };
+
+// Average stay (seconds) -> "1m 20s" / "45s"
+function formatStay(listing) {
+  const total = listing?.total_dwell_seconds || 0;
+  const sessions = listing?.view_sessions || 0;
+  if (!sessions || !total) return null;
+  const avg = Math.round(total / sessions);
+  if (avg >= 60) return `${Math.floor(avg / 60)}m ${avg % 60}s`;
+  return `${avg}s`;
+}
 
 // Resolve the per-listing glow color into an "r,g,b" string used by the CSS var --std-glow
 const GLOW_PRESET_RGB = {
@@ -29,14 +43,19 @@ function resolveGlow(listing) {
   return GLOW_PRESET_RGB[listing?.card_glow_color] || "168,85,247";
 }
 
-export default function StandardListingCard({ listing, user, profile, subcategory, onReview }) {
+export default function StandardListingCard({ listing: initialListing, user, profile, subcategory, onReview }) {
   const cardRef = useRef(null);
   const countedRef = useRef(false);
-  const [viewCount, setViewCount] = useState(listing.views || 0);
+  const [listing, setListing] = useState(initialListing);
+  const [viewCount, setViewCount] = useState(initialListing.views || 0);
   const [touchActive, setTouchActive] = useState(false);
+
+  useEffect(() => { setListing(initialListing); }, [initialListing]);
 
   const glow = resolveGlow(listing);
   const isFree = listing.price === 0 || listing.is_free;
+  const heightClass = SIZE_HEIGHTS[listing.card_size] || "h-48";
+  const stay = formatStay(listing);
 
   // Count a view once when scrolled into view
   useEffect(() => {
@@ -70,6 +89,9 @@ export default function StandardListingCard({ listing, user, profile, subcategor
     >
       <ListingReportButton listingId={listing.id} />
 
+      {/* Inline card editor pencil — owner/admin only, top-left */}
+      <CardEditPencil listing={listing} user={user} onSaved={setListing} />
+
       {/* Repost — pinned top-right of the card */}
       <div className="absolute top-2 right-2 z-20 bg-black/60 rounded-lg px-1 py-0.5 backdrop-blur-sm">
         <RepostButton item={listing} type="listing" user={user} profile={profile} compact />
@@ -78,9 +100,9 @@ export default function StandardListingCard({ listing, user, profile, subcategor
       {/* Image */}
       <a href={`/listing?id=${listing.id}`} className="block relative">
         {listing.images?.length > 0 ? (
-          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass="h-48" />
+          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass={heightClass} />
         ) : (
-          <div className="h-48 w-full flex items-center justify-center bg-gray-800/60"><Package className="w-10 h-10 text-purple-300 icon-glow-hover" /></div>
+          <div className={`${heightClass} w-full flex items-center justify-center bg-gray-800/60`}><Package className="w-10 h-10 text-purple-300 icon-glow-hover" /></div>
         )}
         {isFree && (
           <span className="absolute top-3 right-3 z-10 text-xs font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
@@ -93,11 +115,18 @@ export default function StandardListingCard({ listing, user, profile, subcategor
       {/* Content */}
       <div className="p-4">
         <a href={`/listing?id=${listing.id}`} className="block">
-          <p className="text-purple-400 text-xs font-semibold mb-1">{subcategory || listing.modding_subcategory || listing.digital_subcategory || listing.game_name || "Listing"}</p>
+          <p className="text-purple-400 text-xs font-semibold mb-1 capitalize">{listing.card_category_label || subcategory || listing.modding_subcategory || listing.digital_subcategory || listing.game_name || "Listing"}</p>
           <h3 className="text-white font-bold text-sm line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</h3>
-          <p className="theme-glow-action inline-flex items-center gap-1.5 text-gray-400 text-xs mt-1 rounded-lg px-1.5 py-0.5">
-            <CalendarDays className="w-3 h-3 icon-glow-hover" /> Posted: {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}
-          </p>
+          <div className="flex items-center gap-3 flex-wrap mt-1">
+            <p className="theme-glow-action inline-flex items-center gap-1.5 text-gray-400 text-xs rounded-lg px-1.5 py-0.5">
+              <CalendarDays className="w-3 h-3 icon-glow-hover" /> {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}
+            </p>
+            {stay && (
+              <p className="theme-glow-action inline-flex items-center gap-1 text-cyan-300 text-xs rounded-lg px-1.5 py-0.5" title="Average stay time">
+                <Clock className="w-3 h-3 icon-glow-hover" /> {stay} avg
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center justify-between mt-3">
             <span className={`font-black text-sm ${isFree ? "text-green-400" : "text-yellow-400"}`}>

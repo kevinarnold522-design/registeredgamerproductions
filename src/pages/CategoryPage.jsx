@@ -9,12 +9,15 @@ import SubcategoryLandingPage from "@/components/category/SubcategoryLandingPage
 import { CATEGORIES } from "@/lib/constants";
 import RecommendModal from "@/components/shared/RecommendModal";
 import { useAuth } from "@/lib/AuthContext";
+import { useLocation } from "react-router-dom";
 
 export default function CategoryPage() {
   const { user, isLoadingAuth } = useAuth();
   const [profile, setProfile] = useState(null);
 
-  const params = new URLSearchParams(window.location.search);
+  // Read from the live location so query-string changes (cat / sub) re-render
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
   const cat = params.get("cat") || "games";
   const sub = params.get("sub") || "";
 

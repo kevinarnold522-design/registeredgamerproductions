@@ -5,11 +5,14 @@ import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import CardEditPencil from "@/components/listings/CardEditPencil";
 import { formatListingPrice } from "@/lib/currency";
 
 // Wide, sharp-edged game card — cover art on top, info panel, and a separate
 // YouTube/video preview pinned below the card.
-export default function GameCoverCard({ l, i, user, profile }) {
+export default function GameCoverCard({ l: initialL, i, user, profile }) {
+  const [l, setL] = React.useState(initialL);
+  React.useEffect(() => { setL(initialL); }, [initialL]);
   const priceLabel = (!l.price || l.price === 0 || l.is_free) ? "FREE" : formatListingPrice(l.price, l.currency);
   const coverUrl = l.images?.[0];
   const videoUrl = l.preview_video_url || l.video_url || l.youtube_url;
@@ -27,6 +30,7 @@ export default function GameCoverCard({ l, i, user, profile }) {
       }}
     >
       <div className="relative bg-gray-950">
+        <CardEditPencil listing={l} user={user} onSaved={setL} />
         <a href={`/listing?id=${l.id}`} className="block cursor-pointer">
           {/* Cover art (wide landscape) */}
           <div className="relative w-full overflow-hidden bg-gray-900" style={{ aspectRatio: "16 / 9" }}>
@@ -47,6 +51,9 @@ export default function GameCoverCard({ l, i, user, profile }) {
 
           {/* Info panel */}
           <div className="p-4">
+            {l.card_category_label && (
+              <span className="inline-block mb-1.5 px-2 py-0.5 rounded-full bg-purple-900/40 border border-purple-700/40 text-purple-300 text-[10px] font-bold capitalize">{l.card_category_label}</span>
+            )}
             <div className="flex items-start justify-between gap-2">
               <p className="text-white font-black text-base leading-tight line-clamp-1">{l.title}</p>
               <p className="text-white font-black text-base whitespace-nowrap">{priceLabel}</p>

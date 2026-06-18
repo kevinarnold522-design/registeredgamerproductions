@@ -275,11 +275,26 @@ export default function LeaderboardPage() {
             <p className="text-gray-400 text-base max-w-xl mx-auto">
               Top contributors across Gaming Community, Modding & Tournaments
             </p>
-            {!user ? (
+            {!user && (
               <p className="text-yellow-400/70 text-xs mt-2">Sign in to unlock Top 100 rankings</p>
-            ) : (
-              <p className="text-green-400/70 text-xs mt-2">Showing Top 100 · Physical sales & tournament wins = 1000pts each</p>
             )}
+            {/* Points legend — how each action is scored */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-2xl mx-auto">
+              {[
+                { label: "Post / Listing", pts: "+10" },
+                { label: "Like received", pts: "+5" },
+                { label: "Star rating", pts: "+2 ea" },
+                { label: "10 views", pts: "+1" },
+                { label: "Download", pts: "+2" },
+                { label: "Physical sale", pts: "+1000" },
+                { label: "Tournament win", pts: "+1000" },
+              ].map(p => (
+                <span key={p.label} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-900/30 border border-purple-700/40 text-xs">
+                  <span className="text-gray-300">{p.label}</span>
+                  <span className="font-black text-green-400">{p.pts}</span>
+                </span>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>

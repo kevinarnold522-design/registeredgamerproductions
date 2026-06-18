@@ -114,6 +114,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const meta = CATEGORY_META[cat] || CATEGORY_META.services;
   const canPost = user;
 
+  // Keep the active subcategory in sync with the URL when it changes
+  useEffect(() => { setActiveSub(sub || "all"); }, [sub]);
+
   useEffect(() => {
     const listingsPromise = cat === "modding"
       ? Promise.all([

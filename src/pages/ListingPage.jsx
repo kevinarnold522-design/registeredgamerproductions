@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -25,6 +25,17 @@ import ListingPageEditor from "@/components/listings/ListingPageEditor";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 import BuyUnlockModal from "@/components/payments/BuyUnlockModal";
+import { useDwellTracker } from "@/components/listings/useDwellTracker";
+
+// Average stay (seconds) -> "1m 20s" / "45s"
+function formatStay(listing) {
+  const total = listing?.total_dwell_seconds || 0;
+  const sessions = listing?.view_sessions || 0;
+  if (!sessions || !total) return null;
+  const avg = Math.round(total / sessions);
+  if (avg >= 60) return `${Math.floor(avg / 60)}m ${avg % 60}s`;
+  return `${avg}s`;
+}
 
 function GlowDownloadButton({ isFree, price, currency, onClick, theme, purchased }) {
   return (
@@ -106,6 +117,9 @@ export default function ListingPage() {
   const [tier1Active, setTier1Active] = useState(false);
   const [purchased, setPurchased] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
+
+  // Track average stay / dwell time -> contributes to watchtime hours
+  useDwellTracker(listing);
 
   useEffect(() => {
     const init = async () => {
@@ -562,6 +576,11 @@ export default function ListingPage() {
               <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
                 <Share2 className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.shares || 0)} shares
               </span>
+              {formatStay(listing) && (
+                <span className="theme-glow-action text-cyan-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5" title="Average time visitors stay on this listing">
+                  <Clock className="w-3.5 h-3.5 theme-glow-icon" /> {formatStay(listing)} avg stay
+                </span>
+              )}
             </div>
 
             {(listing.game_name || listing.game_platform || listing.platforms?.length > 0 || listing.tool_target_game) && (
