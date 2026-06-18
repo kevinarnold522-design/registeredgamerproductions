@@ -15,6 +15,7 @@ import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import GameCoverCard from "@/components/category/GameCoverCard";
 import { isServiceListing } from "@/lib/constants";
+import { formatListingPrice } from "@/lib/currency";
 
 const PER_PAGE = 12;
 
@@ -124,9 +125,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
         cleaned = cleaned.filter(x => !isServiceListing(x));
       }
-      // Games: only actual game listings — no community, modding, or service entries
+      // Games: only actual game listings in the games category (exclude obvious service entries)
       if (cat === "games") {
-        cleaned = cleaned.filter(x => !x.modding_subcategory && !x.community_franchise_id && x.category === "games" && !isServiceListing(x));
+        cleaned = cleaned.filter(x => x.category === "games" && !isServiceListing(x));
       }
       // Premium Mods: only paid/premium digital mod products
       if (cat === "premium_mods") {
@@ -405,7 +406,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  </div>
                  <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
                  <div className="flex items-center justify-between mt-2">
-                  <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
+                  <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
                  </div>
                  <div className="mt-2"><ListingEngagementBar listing={l} user={user} profile={profile} compact /></div>
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}

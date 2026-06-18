@@ -14,6 +14,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
+import SwitchAccountDropdown from "@/components/layout/SwitchAccountDropdown";
 
 export const SIDEBAR_WIDTH = 240;
 export const SIDEBAR_COLLAPSED_WIDTH = 56;
@@ -248,6 +249,9 @@ export default function AuthNavbar({ user, profile }) {
                 </button>
               )}
             </div>
+          )}
+          {admin && !isManagingAsGhost && (
+            <SwitchAccountDropdown currentUser={user} collapsed={collapsed && !isMobile} />
           )}
           <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <LanguageSelector />

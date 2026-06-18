@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { isAdmin, CATEGORIES, GAMES_STORES } from "@/lib/constants";
 
 const DIGITAL_SUBCATEGORIES = [
+  { id: "games", label: "Games / Full Games" },
   { id: "mods", label: "Mods / Modifications" },
   { id: "skins", label: "Skins / Textures" },
   { id: "maps", label: "Custom Maps" },
@@ -81,6 +82,7 @@ export default function CreateListing() {
     category: defaultCat,
     subcategories: defaultSub ? [defaultSub] : [],
     digital_subcategory: "",
+    digital_subcategory_custom: "",
     physical_subcategory: "",
     condition: defaultCat === "premium_mods" ? "digital" : "",
     is_premium: defaultCat === "premium_mods",
@@ -164,6 +166,7 @@ export default function CreateListing() {
             category: l.category || defaultCat,
             subcategories: l.subcategories || [],
             digital_subcategory: l.digital_subcategory || "",
+            digital_subcategory_custom: "",
             physical_subcategory: l.physical_subcategory || "",
             condition: l.condition || "digital",
             is_premium: l.is_premium || false,
@@ -353,6 +356,8 @@ export default function CreateListing() {
     const sellerName = existingListing?.seller_username || profile?.username || profile?.display_name || sellerEmail?.split("@")[0] || "Gamer";
     const data = {
       ...form,
+      digital_subcategory: form.digital_subcategory_custom?.trim() || form.digital_subcategory,
+      digital_subcategory_custom: undefined,
       price: priceVal,
       currency: form.currency || "PHP",
       is_free: priceVal === 0,
@@ -880,6 +885,13 @@ export default function CreateListing() {
                 {form.digital_subcategory && (
                   <p className="text-purple-400 text-xs mt-2">This will be auto-categorized under Digital: {DIGITAL_SUBCATEGORIES.find(s => s.id === form.digital_subcategory)?.label}</p>
                 )}
+                <div className="mt-3">
+                  <label className="text-purple-300/80 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block">Or type a custom subcategory</label>
+                  <input value={form.digital_subcategory_custom || ""} onChange={e => setForm({ ...form, digital_subcategory_custom: e.target.value })}
+                    placeholder="e.g. Emulators, Save Files, ROM Hacks..."
+                    className="w-full bg-gray-800 border border-purple-700/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 text-sm" />
+                  <p className="text-gray-500 text-[11px] mt-1">Leave blank to use the dropdown above. A custom value overrides it.</p>
+                </div>
               </div>
             )}
 
