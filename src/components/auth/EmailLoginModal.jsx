@@ -29,9 +29,8 @@ export default function EmailLoginModal({ isOpen, onClose }) {
 
           <div className="space-y-3">
             <SocialButton onClick={loginWithProvider} bg="bg-white" text="text-black" icon="/logos/google.svg" label="Google" />
-            <SocialButton onClick={loginWithProvider} bg="bg-[#5865F2]" text="text-white" icon="/logos/discord.svg" label="Discord" />
-            <SocialButton onClick={loginWithProvider} bg="bg-[#24292e]" text="text-white" icon="/logos/github.svg" label="GitHub" />
-            <SocialButton onClick={loginWithProvider} bg="bg-[#0078d4]" text="text-white" icon="/logos/outlook.svg" label="Outlook" />
+            <SocialButton onClick={loginWithProvider} bg="bg-[#1877F2]" text="text-white" icon="/logos/facebook.svg" label="Facebook" />
+            <SocialButton onClick={loginWithProvider} bg="bg-gradient-to-r from-[#feda75] via-[#d62976] to-[#4f5bd5]" text="text-white" icon="/logos/instagram.svg" label="Instagram" />
           </div>
         </motion.div>
       </motion.div>

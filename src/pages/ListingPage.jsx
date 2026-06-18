@@ -342,9 +342,7 @@ export default function ListingPage() {
   const listingTheme = listing.listing_theme_color || sellerTheme.background || "#030712";
   const glowStyle = { ...getListingGlowStyle(listing), boxShadow: `${sellerTheme.border}, ${getListingGlowStyle(listing).boxShadow || "none"}` };
   const glowClass = getListingGlowClass(listing);
-  const sectionOrder = pageLayout?.section_order?.length ? pageLayout.section_order : ["media", "details", "comments"];
-  const commentsIndex = sectionOrder.indexOf("comments");
-  const showCommentsTop = commentsIndex !== -1 && commentsIndex < sectionOrder.length - 1;
+  // Comments always render below the download button (bottom of page)
   const commentsBlock = <div id="comments"><ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} /></div>;
 
   return (
@@ -410,8 +408,6 @@ export default function ListingPage() {
           </a>
         )}
 
-        {showCommentsTop && commentsBlock}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT: Media */}
           <div>
@@ -464,8 +460,8 @@ export default function ListingPage() {
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all text-sm font-semibold ${copied ? "border-green-500 bg-green-900/30 text-green-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:border-blue-500/50 hover:text-blue-300"}`}>
                 <Share2 className="w-4 h-4" /> {copied ? "Copied!" : `Share ${formatCount(listing.shares || 0)}`}
               </button>
-              <div className="flex items-center gap-1.5 text-gray-500 text-sm ml-auto">
-                <Eye className="w-4 h-4" /> {formatCount(listing.views || 0)}
+              <div className="theme-glow-action flex items-center gap-1.5 text-purple-300 text-sm ml-auto rounded-lg px-1.5 py-0.5">
+                <Eye className="w-4 h-4 theme-glow-icon" /> {formatCount(listing.views || 0)}
               </div>
             </div>
 
@@ -526,14 +522,14 @@ export default function ListingPage() {
 
             <div className="flex items-center gap-4">
               {!isFree && <span className="text-3xl font-black text-purple-300">{formatListingPrice(listing.price, listing.currency)}</span>}
-              <span className="text-gray-500 text-sm flex items-center gap-1">
-                <Eye className="w-3.5 h-3.5" /> {formatCount(listing.views || 0)} views
+              <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
+                <Eye className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.views || 0)} views
               </span>
-              <span className="text-gray-500 text-sm flex items-center gap-1">
-                <Download className="w-3.5 h-3.5" /> {formatCount(listing.downloads || 0)} downloads
+              <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
+                <Download className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.downloads || 0)} downloads
               </span>
-              <span className="text-gray-500 text-sm flex items-center gap-1">
-                <Share2 className="w-3.5 h-3.5" /> {formatCount(listing.shares || 0)} shares
+              <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
+                <Share2 className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.shares || 0)} shares
               </span>
             </div>
 
@@ -623,7 +619,7 @@ export default function ListingPage() {
           </div>
         </div>
 
-        {!showCommentsTop && commentsBlock}
+        {commentsBlock}
       </div>
 
       <AnimatePresence>

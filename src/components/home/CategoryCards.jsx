@@ -90,19 +90,20 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
   return (
     <motion.div
       onClick={editing ? undefined : () => navigate(cat.href)}
-      initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+      initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
-      className="relative rounded-2xl cursor-pointer block group"
+      className="relative rounded-3xl cursor-pointer overflow-hidden block group"
+      style={{ minHeight: "200px", border: `2px solid ${hovered ? cat.glowColor : cat.glowColor.replace(/[\d.]+\)$/, "0.4)")}`, transition: "border-color 0.3s", boxShadow: hovered ? `0 0 40px 8px ${cat.glowColor}` : `0 0 20px ${cat.glowColor.replace(/[\d.]+\)$/, "0.12)")}` }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      whileHover={{ y: -4 }}
+      whileHover={{ scale: 1.005 }}
     >
       {canAdmin && !editing && (
         <button
           onClick={e => { e.stopPropagation(); setEditing(true); }}
-          className="absolute top-2 left-2 z-10 w-6 h-6 rounded-lg bg-black/70 hover:bg-purple-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+          className="absolute top-3 left-3 z-20 w-7 h-7 rounded-lg bg-black/70 hover:bg-purple-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
         >
-          <Pencil className="w-3 h-3 text-white" />
+          <Pencil className="w-3.5 h-3.5 text-white" />
         </button>
       )}
 
@@ -113,32 +114,37 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
         />
       )}
 
-      <div className={`relative h-56 rounded-2xl border-2 ${cat.borderColor} bg-gradient-to-br ${cat.color} p-4 flex flex-col items-center justify-center gap-3 transition-all`}
-        style={{ boxShadow: hovered ? `0 0 24px 4px ${cat.glowColor}` : "none" }}>
-        {cat.live && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-600/80 text-white text-[8px] font-black">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
+      <div className={`absolute inset-0 bg-gradient-to-br ${cat.color}`} />
+      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `linear-gradient(${cat.glowColor} 1px, transparent 1px), linear-gradient(90deg, ${cat.glowColor} 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
+      <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${cat.glowColor}, transparent)` }}
+        animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />
+
+      <div className="relative z-10 h-full flex items-center px-6 md:px-12 gap-6 py-6">
+        <motion.div animate={hovered ? { rotate: [0, -10, 10, 0], scale: 1.15 } : { scale: 1 }} transition={{ duration: 0.5 }}>
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-black/30 border-2 flex items-center justify-center flex-shrink-0"
+            style={{ borderColor: cat.glowColor, boxShadow: hovered ? `0 0 30px ${cat.glowColor}` : "none" }}>
+            {cat.customLogo
+              ? <img src={cat.customLogo} className="w-12 h-12 md:w-14 md:h-14 rounded-xl object-cover" alt="" />
+              : <CatIcon size={40} color={cat.iconColor} />
+            }
           </div>
-        )}
-        {cat.badge && !cat.live && (
-          <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded-full bg-black/40 text-white/60 text-[8px] font-semibold">{cat.badge}</div>
-        )}
-        <motion.div
-          animate={hovered ? { scale: 1.2, rotate: [0, -8, 8, 0] } : { scale: 1, rotate: 0 }}
-          transition={{ duration: 0.35 }}
-        >
-          {cat.customLogo
-            ? <img src={cat.customLogo} className="w-12 h-12 rounded-xl object-cover" alt="" />
-            : <CatIcon size={40} color={cat.iconColor} />
-          }
         </motion.div>
-        <div className="text-center">
-          <div className="text-white font-bold text-sm">{cat.title}</div>
-          <div className="text-white/40 text-[10px] mt-0.5 leading-tight">{cat.sub}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            {cat.live && (
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-600/80 text-white text-[10px] font-black uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
+              </span>
+            )}
+            {cat.badge && !cat.live && (
+              <span className="px-3 py-1 rounded-full bg-black/40 text-white/70 text-[10px] font-black uppercase tracking-wider">{cat.badge}</span>
+            )}
+          </div>
+          <h3 className="text-white font-black text-2xl md:text-3xl mb-1.5 truncate">{cat.title}</h3>
+          <p className="text-white/60 text-sm md:text-base max-w-xl">{cat.sub}</p>
         </div>
-        <div className={`absolute bottom-3 right-3 transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}>
-          <span className="text-white/60 text-xs font-bold">→</span>
-        </div>
+        <div className="hidden md:flex items-center gap-2 text-white/70 font-bold text-sm">Explore →</div>
       </div>
     </motion.div>
   );
@@ -151,10 +157,11 @@ function AddCategoryTile({ onClick }) {
       onClick={onClick}
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       whileHover={{ y: -4 }}
-      className="relative rounded-2xl cursor-pointer border-2 border-dashed border-purple-700/50 hover:border-purple-500 bg-purple-950/20 h-56 flex flex-col items-center justify-center gap-2 transition-all"
+      className="relative rounded-3xl cursor-pointer border-2 border-dashed border-purple-700/50 hover:border-purple-500 bg-purple-950/20 flex flex-col items-center justify-center gap-2 transition-all"
+      style={{ minHeight: "200px" }}
     >
       <Plus className="w-8 h-8 text-purple-500" />
-      <p className="text-purple-400 text-xs font-bold">Add Category Card</p>
+      <p className="text-purple-400 text-sm font-bold">Add Category Card</p>
     </motion.div>
   );
 }
@@ -351,8 +358,8 @@ export default function CategoryCards() {
           </div>
         </motion.div>
 
-        {/* Small category cards grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+        {/* Category cards — full-size like the community/modding cards */}
+        <div className="flex flex-col gap-6">
           {allSmall.map((cat, i) => (
             <SmallCard
               key={cat.id || i}

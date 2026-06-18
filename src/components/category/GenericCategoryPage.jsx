@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send, Eye } from "lucide-react";
+import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send, Eye, EyeOff, LayoutGrid } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
@@ -104,6 +104,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const [priceMax, setPriceMax] = useState("");
   const [isFree, setIsFree] = useState(false);
   const [productType, setProductType] = useState("all");
+  const [moddingGame, setModdingGame] = useState("all");
+  const [hideCategory, setHideCategory] = useState(false);
   const [page, setPage] = useState(1);
   const meta = CATEGORY_META[cat] || CATEGORY_META.services;
   const canPost = user;
@@ -140,10 +142,15 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   }, [cat, activeSub]);
 
   // Reset to page 1 whenever filters change
-  useEffect(() => { setPage(1); }, [activeSub, search, sortBy, priceMin, priceMax, isFree, productType]);
+  useEffect(() => { setPage(1); }, [activeSub, search, sortBy, priceMin, priceMax, isFree, productType, moddingGame]);
 
-  const resetFilters = () => { setSortBy("newest"); setPriceMin(""); setPriceMax(""); setIsFree(false); setProductType("all"); setSearch(""); };
-  const hasActiveFilters = sortBy !== "newest" || priceMin || priceMax || isFree || productType !== "all" || search;
+  const resetFilters = () => { setSortBy("newest"); setPriceMin(""); setPriceMax(""); setIsFree(false); setProductType("all"); setModdingGame("all"); setSearch(""); };
+  const hasActiveFilters = sortBy !== "newest" || priceMin || priceMax || isFree || productType !== "all" || moddingGame !== "all" || search;
+
+  // Modding: build the list of game categories present in the listings
+  const moddingGameOptions = cat === "modding"
+    ? Array.from(new Set(listings.flatMap(l => [l.modding_subcategory, l.tool_target_game, l.game_name].filter(Boolean).map(v => String(v))))).sort()
+    : [];
 
   const filtered = listings.filter(l => {
     const listingSubs = l.subcategories || (l.subcategory ? [l.subcategory] : []);
@@ -153,7 +160,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
     const matchMin = priceMin === "" || (l.price || 0) >= parseFloat(priceMin);
     const matchMax = priceMax === "" || (l.price || 0) <= parseFloat(priceMax);
     const matchType = productType === "all" || l.product_type === productType;
-    return matchSub && matchSearch && matchFree && matchMin && matchMax && matchType;
+    const matchModdingGame = moddingGame === "all" || [l.modding_subcategory, l.tool_target_game, l.game_name].filter(Boolean).map(v => String(v)).includes(moddingGame);
+    return matchSub && matchSearch && matchFree && matchMin && matchMax && matchType && matchModdingGame;
   }).sort((a, b) => {
     if (sortBy === "price_asc") return (a.price || 0) - (b.price || 0);
     if (sortBy === "price_desc") return (b.price || 0) - (a.price || 0);
@@ -221,17 +229,19 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 pt-8">
-        <MascotShowcase
-          compact={cat !== "games" && cat !== "modding" && cat !== "premium_mods"}
-        />
-      </div>
+      {!hideCategory && (
+        <div className="max-w-7xl mx-auto px-4 pt-8">
+          <MascotShowcase
+            compact={cat !== "games" && cat !== "modding" && cat !== "premium_mods"}
+          />
+        </div>
+      )}
 
       {/* Subcategory cards grid */}
-      {!sub && <SubcategoryCards cat={cat} categoryName={meta.title} userEmail={user?.email} user={user} userProfile={profile} />}
+      {!sub && !hideCategory && <SubcategoryCards cat={cat} categoryName={meta.title} userEmail={user?.email} user={user} userProfile={profile} />}
 
       {/* Subcategory tabs */}
-      {categoryData?.subcategories?.length > 0 && !sub && (
+      {categoryData?.subcategories?.length > 0 && !sub && !hideCategory && (
         <div className="bg-gray-950/95 backdrop-blur-sm border-b border-gray-800 sticky top-16 z-30">
           <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
             <div className="flex gap-2 min-w-max">
@@ -262,6 +272,10 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             <button onClick={() => setShowAdvanced(v => !v)}
               className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition-all ${showAdvanced ? "border-purple-500/60 bg-purple-900/20 text-purple-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
               <SlidersHorizontal className="w-4 h-4" /> Filters {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-purple-400" />}
+            </button>
+            <button onClick={() => setHideCategory(v => !v)}
+              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition-all ${hideCategory ? "border-pink-500/60 bg-pink-900/20 text-pink-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
+              {hideCategory ? <LayoutGrid className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />} {hideCategory ? "Show Category" : "Hide Category"}
             </button>
             {canPost && cat !== "tournaments" && (
               <a href={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
@@ -311,6 +325,16 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                       <option value="physical">Physical</option>
                     </select>
                   </div>
+                  {cat === "modding" && moddingGameOptions.length > 0 && (
+                    <div>
+                      <label className="text-gray-500 text-xs font-semibold mb-1 block">Category / Game</label>
+                      <select value={moddingGame} onChange={e => setModdingGame(e.target.value)}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-orange-500">
+                        <option value="all">All Games</option>
+                        {moddingGameOptions.map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </div>
+                  )}
                   <div>
                     <label className="text-gray-500 text-xs font-semibold mb-1 block">Min Price</label>
                     <input type="number" value={priceMin} onChange={e => setPriceMin(e.target.value)} placeholder="0"
@@ -377,7 +401,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                 <div className="p-4">
                  <div className="flex items-center justify-between gap-2">
                    <p className="text-white font-bold text-sm truncate">{l.title}</p>
-                   <span className="theme-glow-action flex items-center gap-1 text-cyan-300 text-[10px] font-bold rounded-lg px-1 py-0.5"><Eye className="w-3 h-3 theme-glow-icon" />{(l.views || 0).toLocaleString()}</span>
+                   <span className="theme-glow-action flex items-center gap-1 text-purple-300 text-[10px] font-bold rounded-lg px-1 py-0.5"><Eye className="w-3 h-3 theme-glow-icon" />{(l.views || 0).toLocaleString()}</span>
                  </div>
                  <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
                  <div className="flex items-center justify-between mt-2">

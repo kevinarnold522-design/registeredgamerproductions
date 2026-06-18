@@ -84,12 +84,21 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Clear EVERYTHING that references this listing across all entities
     const relatedEntities = [
       ['Favorite', { listing_id }],
       ['PostComment', { post_id: listing_id }],
       ['PostRating', { post_id: listing_id }],
+      ['PostLike', { post_id: listing_id }],
+      ['PostComment', { listing_id }],
+      ['ChannelPostComment', { post_id: listing_id }],
+      ['Review', { listing_id }],
       ['ListingDeleteRequest', { listing_id }],
+      ['ListingPageLayout', { listing_id }],
       ['Cart', { listing_id }],
+      ['Order', { listing_id }],
+      ['Notification', { related_id: listing_id }],
+      ['CommunityPost', { listing_id }],
     ];
     for (const [entityName, query] of relatedEntities) {
       try {

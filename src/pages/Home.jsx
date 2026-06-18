@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import SplashScreen from "@/components/home/SplashScreen";
 import Navbar from "@/components/home/Navbar";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -6,30 +6,32 @@ import VideoHeroBanner from "@/components/home/VideoHeroBanner";
 import HeroSection from "@/components/home/HeroSection";
 import MarqueeTicker from "@/components/home/MarqueeTicker";
 import CategoryCards from "@/components/home/CategoryCards";
-import BusinessModelSection from "@/components/home/BusinessModelSection";
-import MovingDashboard from "@/components/home/MovingDashboard";
-import LiveStreamSection from "@/components/home/LiveStreamSection";
-import HowWeHelpSection from "@/components/home/HowWeHelpSection";
-import PaidModsSection from "@/components/home/PaidModsSection";
-import ModdingSection from "@/components/home/ModdingSection";
-import MonetizationBadge from "@/components/home/MonetizationBadge";
-import VideosSection from "@/components/home/VideosSection";
-import FeaturedGames from "@/components/home/FeaturedGames";
-import CommunitySection from "@/components/home/CommunitySection";
-import Footer from "@/components/home/Footer";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
-import FeedbackWidget from "@/components/shared/FeedbackWidget";
-import AdminLinkScanner from "@/components/admin/AdminLinkScanner";
-import DailyRewards from "@/components/rewards/DailyRewards";
-import DailyRewardPopup from "@/components/rewards/DailyRewardPopup";
-import AdminApprovalPanel from "@/components/community/AdminApprovalPanel";
-import ListingOfWeek from "@/components/home/ListingOfWeek";
-import VerifiedBadgeBanner from "@/components/home/VerifiedBadgeBanner";
-import First10KBanner from "@/components/home/First10KBanner";
-import FirstLoginTutorial from "@/components/tutorial/FirstLoginTutorial";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
+
+// Below-the-fold sections are lazy-loaded so the page paints faster
+const BusinessModelSection = lazy(() => import("@/components/home/BusinessModelSection"));
+const MovingDashboard = lazy(() => import("@/components/home/MovingDashboard"));
+const LiveStreamSection = lazy(() => import("@/components/home/LiveStreamSection"));
+const HowWeHelpSection = lazy(() => import("@/components/home/HowWeHelpSection"));
+const PaidModsSection = lazy(() => import("@/components/home/PaidModsSection"));
+const ModdingSection = lazy(() => import("@/components/home/ModdingSection"));
+const MonetizationBadge = lazy(() => import("@/components/home/MonetizationBadge"));
+const VideosSection = lazy(() => import("@/components/home/VideosSection"));
+const FeaturedGames = lazy(() => import("@/components/home/FeaturedGames"));
+const CommunitySection = lazy(() => import("@/components/home/CommunitySection"));
+const Footer = lazy(() => import("@/components/home/Footer"));
+const FeedbackWidget = lazy(() => import("@/components/shared/FeedbackWidget"));
+const AdminLinkScanner = lazy(() => import("@/components/admin/AdminLinkScanner"));
+const DailyRewards = lazy(() => import("@/components/rewards/DailyRewards"));
+const DailyRewardPopup = lazy(() => import("@/components/rewards/DailyRewardPopup"));
+const AdminApprovalPanel = lazy(() => import("@/components/community/AdminApprovalPanel"));
+const ListingOfWeek = lazy(() => import("@/components/home/ListingOfWeek"));
+const VerifiedBadgeBanner = lazy(() => import("@/components/home/VerifiedBadgeBanner"));
+const First10KBanner = lazy(() => import("@/components/home/First10KBanner"));
+const FirstLoginTutorial = lazy(() => import("@/components/tutorial/FirstLoginTutorial"));
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
@@ -159,50 +161,52 @@ export default function Home() {
       {showSplash && <SplashScreen onDismiss={() => setShowSplash(false)} />}
       {!showSplash && (
         <>
-          {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
           <div className="relative z-10">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
-            {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
             {user && <AIAssistBanner user={user} />}
             <VideoHeroBanner />
             <HeroSection />
             <CategoryCards />
             <MarqueeTicker />
 
-            {/* GET VERIFIED BADGE — prominent top banner */}
-            <VerifiedBadgeBanner />
+            <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
+              {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
 
-            {/* First 10K Free Verified Badge promotion */}
-            <First10KBanner user={user} profile={profile} />
+              {/* GET VERIFIED BADGE — prominent top banner */}
+              <VerifiedBadgeBanner />
 
-            {/* Live Moving Dashboard (marketplace listings) */}
-            <MovingDashboard currentUser={user} currentProfile={profile} />
+              {/* First 10K Free Verified Badge promotion */}
+              <First10KBanner user={user} profile={profile} />
 
-            {/* Listing of the Week — right after marketplace listings */}
-            <ListingOfWeek />
+              {/* Live Moving Dashboard (marketplace listings) */}
+              <MovingDashboard currentUser={user} currentProfile={profile} />
 
-            {/* Content/Streaming - Merged */}
-            <LiveStreamSection />
-            <VideosSection />
+              {/* Listing of the Week — right after marketplace listings */}
+              <ListingOfWeek />
 
-            {/* How We Help */}
-            <HowWeHelpSection />
+              {/* Content/Streaming - Merged */}
+              <LiveStreamSection />
+              <VideosSection />
 
-            <PaidModsSection />
-            <ModdingSection currentUser={user} currentProfile={profile} />
-            <MonetizationBadge />
-            <FeaturedGames />
-            <CommunitySection />
+              {/* How We Help */}
+              <HowWeHelpSection />
 
-            {/* What GAMER Productions is — moved to bottom above footer */}
-            <BusinessModelSection />
+              <PaidModsSection />
+              <ModdingSection currentUser={user} currentProfile={profile} />
+              <MonetizationBadge />
+              <FeaturedGames />
+              <CommunitySection />
 
-            <Footer />
-            <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
-            <AdminLinkScanner userEmail={user?.email} />
-            <DailyRewards user={user} profile={profile} />
-            {user && <DailyRewardPopup user={user} />}
-            <AdminApprovalPanel userEmail={user?.email} />
+              {/* What GAMER Productions is — moved to bottom above footer */}
+              <BusinessModelSection />
+
+              <Footer />
+              <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
+              <AdminLinkScanner userEmail={user?.email} />
+              <DailyRewards user={user} profile={profile} />
+              {user && <DailyRewardPopup user={user} />}
+              <AdminApprovalPanel userEmail={user?.email} />
+            </Suspense>
           </div>
         </>
       )}
