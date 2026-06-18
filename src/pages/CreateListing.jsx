@@ -814,8 +814,9 @@ export default function CreateListing() {
                   <label className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Subcategory</label>
                   <select value={form.subcategories?.[0] || ""} onChange={e => setForm({ ...form, subcategories: e.target.value ? [e.target.value] : [] })}
                     className="w-full bg-gray-800 border border-emerald-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm">
-                    <option value="">— Select platform —</option>
-                    {(CATEGORIES.find(c => c.id === "games")?.subcategories || []).map(s => <option key={s} value={s}>{s}</option>)}
+                    <option value="">— Select type —</option>
+                    <option value="Games">Games</option>
+                    <option value="How To / Guides">How To / Guides</option>
                   </select>
                 </div>
                 {!isAdmin(user?.email) && !editId && (
@@ -931,8 +932,8 @@ export default function CreateListing() {
               )}
             </div>}
 
-            {/* Modding Community Subcategory — optional */}
-            <div className="bg-orange-900/20 border border-orange-700/40 rounded-xl p-4">
+            {/* Modding Community Subcategory — optional, never for Games listings */}
+            {form.category !== "games" && <div className="bg-orange-900/20 border border-orange-700/40 rounded-xl p-4">
               <label className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
                 <Wrench className="w-3 h-3 text-orange-300" /> Modding Community Subcategory (Optional)
               </label>
@@ -955,7 +956,7 @@ export default function CreateListing() {
               {form.modding_subcategory && (
                 <p className="text-orange-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Also listed in Modding: {form.modding_subcategory}</p>
               )}
-            </div>
+            </div>}
 
             {/* Store Subcategory — for paid/premium listings in buy_sell category */}
             {(form.price > 0 || form.is_premium) && form.category === "buy_sell" && (
@@ -1024,8 +1025,8 @@ export default function CreateListing() {
               </div>
             </div>}
 
-            {/* Newsfeed visibility — manually pick which categories this shows in */}
-            <div className="bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-4">
+            {/* Newsfeed visibility — manually pick which categories this shows in (not for Games) */}
+            {form.category !== "games" && <div className="bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-4">
               <label className="text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
                 <LayoutGrid className="w-3 h-3 text-indigo-300" /> Show in Newsfeeds (Optional)
               </label>
@@ -1042,7 +1043,7 @@ export default function CreateListing() {
                   );
                 })}
               </div>
-            </div>
+            </div>}
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Condition</label>
               <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}

@@ -342,7 +342,7 @@ export default function ListingPage() {
   const listingTheme = listing.listing_theme_color || sellerTheme.background || "#030712";
   const glowStyle = { ...getListingGlowStyle(listing), boxShadow: `${sellerTheme.border}, ${getListingGlowStyle(listing).boxShadow || "none"}` };
   const glowClass = getListingGlowClass(listing);
-  // Comments always render below the download button (bottom of page)
+  // Comments render directly below the "Rate this listing" block
   const commentsBlock = <div id="comments"><ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} /></div>;
 
   return (
@@ -481,6 +481,9 @@ export default function ListingPage() {
               </div>
               {userRating > 0 && <p className="text-green-400 text-xs mt-1">You rated {userRating}/5 ⭐</p>}
             </div>
+
+            {/* Comments render directly below "Rate this listing" */}
+            <div className="mt-4">{commentsBlock}</div>
           </div>
 
           {/* RIGHT: Details */}
@@ -618,8 +621,6 @@ export default function ListingPage() {
             <SimilarListings listing={listing} compact />
           </div>
         </div>
-
-        {commentsBlock}
       </div>
 
       <AnimatePresence>
