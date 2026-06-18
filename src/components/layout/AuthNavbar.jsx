@@ -4,7 +4,7 @@ import {
   ClipboardList, Store, BarChart2, Shield,
   Package, CreditCard, Upload, User, MessageCircle, Wand2, Radio, Trophy,
   GitBranch, ChevronLeft, ChevronRight, Menu, X, DollarSign,
-  Settings, Share2, LogOut, Globe, Users, TrendingUp, Sparkles, Play, Heart, Gamepad2, Puzzle
+  Settings, Share2, LogOut, Globe, Users, TrendingUp, Sparkles, Play, Heart, Gamepad2, Puzzle, Wrench
 } from "lucide-react";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { base44 } from "@/api/base44Client";
@@ -15,6 +15,7 @@ import FavoritesDropdown from "@/components/layout/FavoritesDropdown";
 import LanguageSelector from "@/components/layout/LanguageSelector";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 import SwitchAccountDropdown from "@/components/layout/SwitchAccountDropdown";
+import ScrollDownHint from "@/components/layout/ScrollDownHint";
 
 export const SIDEBAR_WIDTH = 240;
 export const SIDEBAR_COLLAPSED_WIDTH = 56;
@@ -27,16 +28,16 @@ function NavLink({ link, collapsed, isMobile, location }) {
     location.pathname === link.href?.split("?")[0]
   );
   const cls = [
-    "relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all border-b border-gray-800/70 last:border-b-0",
+    "relative flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-sm font-semibold transition-all border-b border-purple-900/30 last:border-b-0",
     isActive
-      ? "bg-purple-900/50 text-purple-200 border border-purple-700/50"
-      : "text-gray-400 hover:text-white hover:bg-gray-800/70",
+      ? "bg-purple-900/60 text-purple-100 border border-purple-600/60 shadow-[0_0_14px_rgba(168,85,247,0.25)]"
+      : "text-purple-200/70 hover:text-white hover:bg-purple-900/30 hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]",
     collapsed && !isMobile ? "justify-center" : "",
   ].join(" ");
 
   const content = (
     <>
-      <link.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-purple-300" : (link.color || "")}`} />
+      <link.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-purple-300" : "text-purple-300/80"}`} />
       {show && <span className="truncate flex-1">{link.label}</span>}
       {link.badge > 0 && (
         <span className={`${collapsed && !isMobile ? "absolute -top-0.5 -right-0.5" : "ml-auto"} w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] flex items-center justify-center font-bold`}>
@@ -144,7 +145,6 @@ export default function AuthNavbar({ user, profile }) {
   // ── Links Setup ──────────────────────────────────────────
   const adminLinks = [
     { icon: Shield, label: "Admin Dashboard", href: "/dashboard", color: "text-yellow-400" },
-    { icon: User, label: "My Profile", href: "/profile", color: "text-blue-300" },
     { icon: GitBranch, label: "Routing Dashboard", href: "/routing-dashboard", color: "text-cyan-400" },
     { icon: BarChart2, label: "Analytics", href: "/analytics", color: "text-purple-400" },
     { icon: DollarSign, label: "Earnings", href: "/earnings", color: "text-green-400" },
@@ -159,7 +159,6 @@ export default function AuthNavbar({ user, profile }) {
   ];
 
   const sellerLinks = [
-    { icon: User, label: "My Profile", href: "/profile", color: "text-blue-300" },
     { icon: Store, label: "My Listings", href: "/my-listings" },
     { icon: BarChart2, label: "Analytics", href: "/analytics" },
     { icon: DollarSign, label: "Earnings", href: "/earnings", color: "text-green-400" },
@@ -170,7 +169,6 @@ export default function AuthNavbar({ user, profile }) {
   ];
 
   const regularLinks = [
-    { icon: User, label: "My Profile", href: "/profile", color: "text-blue-300" },
     { icon: ClipboardList, label: "Orders", href: "/orders" },
     { icon: CreditCard, label: "Payment", href: "/payment" },
     { icon: Trophy, label: "Tournaments", href: "/tournaments" },
@@ -193,16 +191,25 @@ export default function AuthNavbar({ user, profile }) {
   const userTypeLabel = admin && !isManagingAsGhost ? "CEO & President" : contextAccountType === "regular" ? "Gamer" : contextAccountType.replace("_", " ");
   const userTypeColor = admin && !isManagingAsGhost ? "text-yellow-300 border-yellow-700/40 bg-yellow-900/20" : contextAccountType === "business" ? "text-green-300 border-green-700/40 bg-green-900/20" : contextAccountType === "digital_creator" ? "text-purple-300 border-purple-700/40 bg-purple-900/20" : "text-blue-300 border-blue-700/40 bg-blue-900/20";
 
+  // All marketplace categories surfaced directly in the navbar
+  const categoryLinks = [
+    { icon: Gamepad2, label: "Games", href: "/category?cat=games" },
+    { icon: Puzzle, label: "Modding Community", href: "/category?cat=modding" },
+    { icon: Sparkles, label: "Premium Mods", href: "/category?cat=premium_mods" },
+    { icon: Store, label: "Marketplace", href: "/category?cat=buy_sell" },
+    { icon: Wrench, label: "Tools", href: "/category?cat=paid_tools" },
+    { icon: Play, label: "Content / Streaming", href: "/category?cat=content_streaming" },
+    { icon: Trophy, label: "Tournaments", href: "/category?cat=tournaments" },
+  ];
+
   const toolLinks = [
-    { icon: Globe, label: "Communities", href: "/gaming-community", color: "text-cyan-400" },
-    { icon: Puzzle, label: "Modding Community", href: "/category?cat=modding", color: "text-orange-400" },
-    { icon: Gamepad2, label: "Games", href: "/category?cat=games", color: "text-purple-400" },
-    { icon: Play, label: "Content Category", href: "/category?cat=content_streaming", color: "text-blue-400" },
-    { icon: Play, label: "Content Hub", href: "/content", color: "text-purple-400" },
-    { icon: User, label: "My Channel", href: "/profile", color: "text-blue-400" },
+    { icon: Globe, label: "Communities", href: "/gaming-community" },
+    { icon: Play, label: "Content Hub", href: "/content" },
+    // Combined My Channel + My Profile into a single destination
+    { icon: User, label: "My Channel & Profile", href: "/profile" },
     { icon: Wand2, label: "AI Studio", href: "/ai-video-studio", badge: "NEW", badgeColor: "bg-pink-500/30 text-pink-300" },
-    ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Post", href: "/create-listing", color: "text-green-400" }] : []),
-    { icon: Radio, label: "Go Live", href: "/studio", dot: true, color: "text-red-400" },
+    ...((admin && !isManagingAsGhost) || isSeller ? [{ icon: Upload, label: "Post", href: "/create-listing" }] : []),
+    { icon: Radio, label: "Go Live", href: "/studio", dot: true },
   ];
 
   const w = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
@@ -304,6 +311,13 @@ export default function AuthNavbar({ user, profile }) {
 
           <div className="nav-divider mx-2 my-1.5" />
 
+          {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">Categories</p>}
+          {categoryLinks.map((link, i) => (
+            <NavLink key={`cat-${i}`} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
+          ))}
+
+          <div className="nav-divider mx-2 my-1.5" />
+
           {s && <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest px-2 py-1">Tools</p>}
           {toolLinks.map((link, i) => (
             <NavLink key={i} link={link} collapsed={collapsed} isMobile={isMobile} location={location} />
@@ -396,6 +410,7 @@ export default function AuthNavbar({ user, profile }) {
                   <X className="w-4 h-4" />
                 </button>
               </div>
+              <ScrollDownHint label="Scroll down for all options" />
               {sidebarInner(true)}
             </motion.div>
           </>

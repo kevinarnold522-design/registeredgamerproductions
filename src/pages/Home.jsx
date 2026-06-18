@@ -124,6 +124,26 @@ export default function Home() {
   // Load or auto-create user profile once auth is confirmed
   useEffect(() => {
     if (!isAuthenticated || !user) return;
+
+    // Every user automatically follows the Gamer.Productions admin account.
+    const ensureFollowsAdmin = async () => {
+      const ADMIN_EMAIL = "kevinarnold522@gmail.com";
+      if (user.email?.toLowerCase() === ADMIN_EMAIL) return;
+      try {
+        const existing = await base44.entities.Follow.filter({ follower_email: user.email, following_email: ADMIN_EMAIL });
+        if (existing.length === 0) {
+          await base44.entities.Follow.create({
+            follower_email: user.email,
+            following_email: ADMIN_EMAIL,
+            follower_username: user.full_name || user.email.split("@")[0],
+            following_username: "Gamer.Productions",
+            source: "manual",
+          });
+        }
+      } catch {}
+    };
+    ensureFollowsAdmin();
+
     const loadProfile = async () => {
       try {
         const profiles = await base44.entities.UserProfile.filter({ user_email: user.email });

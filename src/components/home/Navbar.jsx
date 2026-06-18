@@ -5,11 +5,14 @@ import { Gamepad2, Search, Menu, X, ArrowRight, User, Store, Youtube } from "luc
 import { base44 } from "@/api/base44Client";
 import EmailLoginModal from "@/components/auth/EmailLoginModal.jsx";
 import EarnNowButton from "@/components/shared/EarnNowButton";
+import ScrollDownHint from "@/components/layout/ScrollDownHint";
 
 const navLinks = [
   { label: "Categories", href: "#categories" },
   { label: "Games", href: "/category?cat=games" },
   { label: "Modding", href: "/category?cat=modding" },
+  { label: "Premium Mods", href: "/category?cat=premium_mods" },
+  { label: "Tools", href: "/category?cat=paid_tools" },
   { label: "Content", href: "/category?cat=content_streaming" },
   { label: "Go Live", href: "/studio", live: true },
   { label: "Tournaments", href: "/category?cat=tournaments" },
@@ -176,7 +179,7 @@ Get Started
 
         {/* Mobile menu */}
         {menuOpen && (
-        <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3">
+        <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto">
           {navLinks.map((link) => (
             link.href.startsWith("#") ? (
               <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
