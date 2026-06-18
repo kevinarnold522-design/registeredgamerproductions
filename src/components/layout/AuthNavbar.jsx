@@ -262,9 +262,6 @@ export default function AuthNavbar({ user, profile }) {
               )}
             </div>
           )}
-          {admin && !isManagingAsGhost && (
-            <SwitchAccountDropdown currentUser={user} collapsed={collapsed && !isMobile} />
-          )}
           <div className={`flex items-center gap-2.5 ${collapsed && !isMobile ? "flex-col" : ""}`}>
             <LanguageSelector />
             <NotificationBell userEmail={activeUserEmail} />
@@ -305,6 +302,11 @@ export default function AuthNavbar({ user, profile }) {
             )}
           </Link>
 
+          {admin && !isManagingAsGhost && (
+            <div className="mt-3">
+              <SwitchAccountDropdown currentUser={user} collapsed={collapsed && !isMobile} />
+            </div>
+          )}
         </div>
 
         {/* Dynamic Sidebar Nav Tree */}

@@ -12,6 +12,7 @@ import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import ListingReportButton from "@/components/shared/ListingReportButton";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import GameCoverCard from "@/components/category/GameCoverCard";
@@ -397,7 +398,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               return (
               <motion.a href={`/listing?id=${l.id}`} key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
                 style={glowStyle}
-                className={`bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer ${glowClass}`}>
+                className={`relative bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer ${glowClass}`}>
+                <ListingReportButton listingId={l.id} />
                 <div className="h-36 overflow-hidden relative bg-gray-800">
                   {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                     <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
@@ -416,7 +418,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                  <div className="flex items-center justify-between mt-2">
                   <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
                  </div>
-                 <div className="mt-2"><ListingEngagementBar listing={l} user={user} profile={profile} compact /></div>
+                 <div className="mt-2"><ListingEngagementBar listing={l} user={user} profile={profile} compact hideReport /></div>
                  {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
                  {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
                  <div onClick={(e) => e.stopPropagation()}><ListingSellerBadge createdDate={l.created_date} /></div>

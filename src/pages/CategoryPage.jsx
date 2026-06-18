@@ -6,7 +6,6 @@ import GenericCategoryPage from "@/components/category/GenericCategoryPage";
 import BuySellLandingPage from "@/components/category/BuySellLandingPage";
 import ContentLandingPage from "@/components/category/ContentLandingPage";
 import SubcategoryLandingPage from "@/components/category/SubcategoryLandingPage";
-import PremiumModsLandingPage from "@/components/category/PremiumModsLandingPage";
 import { CATEGORIES } from "@/lib/constants";
 import RecommendModal from "@/components/shared/RecommendModal";
 import { useAuth } from "@/lib/AuthContext";
@@ -52,8 +51,6 @@ export default function CategoryPage() {
             user={user} profile={profile} cat={cat} sub={sub}
             parentCategoryName={categoryData?.label || cat}
           />
-        ) : cat === "premium_mods" ? (
-          <PremiumModsLandingPage user={user} />
         ) : cat === "buy_sell" ? (
           <BuySellLandingPage user={user} profile={profile} sub={sub} />
         ) : cat === "content" ? (

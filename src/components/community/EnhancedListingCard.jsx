@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Eye, Package, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import ListingReportButton from "@/components/shared/ListingReportButton";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -84,8 +85,9 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       ref={cardRef}
-      className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group"
+      className="relative bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group"
     >
+      <ListingReportButton listingId={listing.id} />
       {/* Image */}
       <a href={`/listing?id=${listing.id}`} className="block relative">
         {listing.images?.length > 0 ? (
@@ -114,7 +116,7 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
         </a>
 
         <div className="mt-4 pt-3 border-t border-gray-800">
-          <ListingEngagementBar listing={listing} user={user} profile={profile} compact />
+          <ListingEngagementBar listing={listing} user={user} profile={profile} compact hideReport />
         </div>
       </div>
     </motion.div>

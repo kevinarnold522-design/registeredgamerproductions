@@ -3,7 +3,7 @@ import { Heart, MessageCircle, Share2, Bookmark, Eye, Flag } from "lucide-react"
 import { base44 } from "@/api/base44Client";
 import RepostButton from "@/components/shared/RepostButton";
 
-export default function ListingEngagementBar({ listing, user, profile, compact = false }) {
+export default function ListingEngagementBar({ listing, user, profile, compact = false, hideReport = false }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes || 0);
   const [saved, setSaved] = useState(false);
@@ -80,9 +80,11 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
       <RepostButton item={listing} type="listing" user={user} profile={profile} compact={compact} />
 
       {/* Report */}
-      <button onClick={handleReport} className={`${actionClass} text-gray-500 hover:text-red-300 transition-colors`} title="Report">
-        <Flag className={iconSize} />
-      </button>
+      {!hideReport && (
+        <button onClick={handleReport} className={`${actionClass} text-gray-500 hover:text-red-300 transition-colors`} title="Report">
+          <Flag className={iconSize} />
+        </button>
+      )}
     </div>
   );
 }

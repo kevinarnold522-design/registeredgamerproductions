@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat, CalendarDays, Tags } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import ListingReportButton from "@/components/shared/ListingReportButton";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { formatListingPrice } from "@/lib/currency";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
 const CP = {
@@ -49,7 +51,7 @@ function FireBurst() {
 }
 
 function CardActions({ item, user, profile }) {
-  return <div className="mt-1.5"><ListingEngagementBar listing={item} user={user} profile={profile} compact /></div>;
+  return <div className="mt-1.5"><ListingEngagementBar listing={item} user={user} profile={profile} compact hideReport /></div>;
 }
 
 function OwnerPill({ item }) {
@@ -99,6 +101,7 @@ function ModCard({ mod, user, profile, owner }) {
       }}
     >
       <FireBurst />
+      <ListingReportButton listingId={mod.id} />
       <div className="relative h-32 overflow-hidden">
         {mod.images?.[0] ? (
           <img src={mod.images[0]} alt={mod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -121,7 +124,7 @@ function ModCard({ mod, user, profile, owner }) {
         <p className="text-white font-bold text-xs truncate">{mod.title}</p>
         <OwnerPill item={mod} owner={owner} />
         <PlacementBadges item={mod} />
-        <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? `₱${mod.price?.toLocaleString()}` : "FREE"}</p>
+        <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? formatListingPrice(mod.price, mod.currency) : "FREE"}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
           <Download className="w-2.5 h-2.5 theme-glow-icon" /><span className="text-[8px]">{(mod.downloads || 0).toLocaleString()} downloads</span>
         </div>
@@ -159,6 +162,7 @@ function ProductCard({ product, user, profile, owner }) {
       }}
     >
       <FireBurst />
+      <ListingReportButton listingId={product.id} />
       <div className="h-28 overflow-hidden relative">
         {product.images?.[0] ? (
           <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -175,7 +179,7 @@ function ProductCard({ product, user, profile, owner }) {
         <p className="text-white font-bold text-xs truncate">{product.title}</p>
         <OwnerPill item={product} owner={owner} />
         <PlacementBadges item={product} />
-        <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>₱{(product.price || 0).toLocaleString()}</p>
+        <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>{(!product.price || product.price === 0 || product.is_free) ? "FREE" : formatListingPrice(product.price, product.currency)}</p>
         <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
           <Download className="w-2 h-2 theme-glow-icon" /><span className="text-[8px]">{(product.downloads || 0).toLocaleString()}</span>
         </div>
