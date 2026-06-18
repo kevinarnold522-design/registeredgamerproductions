@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Star, Zap, Users, MessageCircle, Heart, Shield } from "lucide-react";
+import { Trophy, Crown, Star, Zap, Users, MessageCircle, Heart, Shield, Medal, Award } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
@@ -19,12 +19,12 @@ const RANK_COLORS = [
   "from-amber-700 to-amber-600",
 ];
 
-const RANK_LABELS = ["🥇 Champion", "🥈 Elite", "🥉 Legend"];
+const RANK_LABELS = ["Champion", "Elite", "Legend"];
 
 function RankBadge({ rank }) {
-  if (rank === 0) return <span className="text-yellow-400 font-black text-lg">🥇</span>;
-  if (rank === 1) return <span className="text-slate-300 font-black text-lg">🥈</span>;
-  if (rank === 2) return <span className="text-amber-600 font-black text-lg">🥉</span>;
+  if (rank === 0) return <Medal className="w-5 h-5 text-yellow-400 mx-auto" style={{ filter: "drop-shadow(0 0 6px rgba(234,179,8,0.7))" }} />;
+  if (rank === 1) return <Medal className="w-5 h-5 text-slate-300 mx-auto" />;
+  if (rank === 2) return <Medal className="w-5 h-5 text-amber-600 mx-auto" />;
   return <span className="text-gray-500 font-black text-sm">#{rank + 1}</span>;
 }
 
@@ -58,7 +58,7 @@ function LeaderRow({ entry, rank, tab }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
-          {rank === 0 && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-900/50 border border-yellow-500/40 text-yellow-300 font-black">⭐ Top Contributor</span>}
+          {rank === 0 && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-900/50 border border-yellow-500/40 text-yellow-300 font-black inline-flex items-center gap-0.5"><Star className="w-2.5 h-2.5" /> Top Contributor</span>}
         </div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span className="text-gray-500 text-[10px] flex items-center gap-1">
@@ -68,7 +68,7 @@ function LeaderRow({ entry, rank, tab }) {
             <Heart className="w-2.5 h-2.5" /> {entry.likes} likes
           </span>
           {entry.is_verified && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-900/50 border border-purple-700/40 text-purple-300 font-bold">✓ Verified</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-900/50 border border-purple-700/40 text-purple-300 font-bold inline-flex items-center gap-0.5"><Award className="w-2.5 h-2.5" /> Verified</span>
           )}
         </div>
       </div>
@@ -308,9 +308,9 @@ export default function LeaderboardPage() {
                       className={`flex items-center gap-3 p-3 rounded-xl transition-all ${rank < 3 ? "bg-gradient-to-r from-purple-900/40 to-pink-900/20 border border-purple-700/30" : "bg-gray-800/30"}`}
                     >
                       <div className="w-8 text-center flex-shrink-0">
-                        {rank === 0 ? <span className="text-xl">🥇</span>
-                          : rank === 1 ? <span className="text-xl">🥈</span>
-                          : rank === 2 ? <span className="text-xl">🥉</span>
+                        {rank === 0 ? <Medal className="w-5 h-5 text-yellow-400 mx-auto" style={{ filter: "drop-shadow(0 0 6px rgba(234,179,8,0.7))" }} />
+                          : rank === 1 ? <Medal className="w-5 h-5 text-slate-300 mx-auto" />
+                          : rank === 2 ? <Medal className="w-5 h-5 text-amber-600 mx-auto" />
                           : <span className="text-gray-400 font-black text-sm">#{rank+1}</span>}
                       </div>
                       <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-sm border-2 ${rank < 3 ? "border-purple-500/60" : "border-gray-700"}`}
@@ -322,7 +322,7 @@ export default function LeaderboardPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
-                        {entry.is_verified && <span className="text-[9px] text-purple-300">✓ Verified</span>}
+                        {entry.is_verified && <span className="text-[9px] text-purple-300 inline-flex items-center gap-0.5"><Award className="w-2.5 h-2.5" /> Verified</span>}
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="font-black text-base" style={{ background: "linear-gradient(135deg,#a855f7,#ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -371,7 +371,7 @@ export default function LeaderboardPage() {
                     {leaderboard[1]?.avatar_url ? <img src={leaderboard[1].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[1]?.username?.[0] || "?")}
                   </div>
                   <p className="text-white text-xs font-bold text-center max-w-20 truncate">{leaderboard[1]?.username}</p>
-                  <div className="w-20 bg-slate-600 rounded-t-xl flex flex-col items-center py-2" style={{ height: 60 }}><span className="text-2xl">🥈</span></div>
+                  <div className="w-20 bg-slate-600 rounded-t-xl flex flex-col items-center py-2" style={{ height: 60 }}><Medal className="w-7 h-7 text-slate-200" /></div>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   className="flex flex-col items-center gap-2">
@@ -381,7 +381,7 @@ export default function LeaderboardPage() {
                   </div>
                   <p className="text-yellow-300 text-sm font-black text-center max-w-24 truncate">{leaderboard[0]?.username}</p>
                   <div className="w-24 rounded-t-xl flex flex-col items-center py-2"
-                    style={{ height: 80, background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}><span className="text-2xl">🥇</span></div>
+                    style={{ height: 80, background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}><Medal className="w-8 h-8 text-yellow-300" style={{ filter: "drop-shadow(0 0 8px rgba(234,179,8,0.8))" }} /></div>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                   className="flex flex-col items-center gap-2">
@@ -389,7 +389,7 @@ export default function LeaderboardPage() {
                     {leaderboard[2]?.avatar_url ? <img src={leaderboard[2].avatar_url} className="w-full h-full object-cover" alt="" /> : (leaderboard[2]?.username?.[0] || "?")}
                   </div>
                   <p className="text-white text-xs font-bold text-center max-w-20 truncate">{leaderboard[2]?.username}</p>
-                  <div className="w-20 bg-amber-800 rounded-t-xl flex flex-col items-center py-2" style={{ height: 48 }}><span className="text-2xl">🥉</span></div>
+                  <div className="w-20 bg-amber-800 rounded-t-xl flex flex-col items-center py-2" style={{ height: 48 }}><Medal className="w-7 h-7 text-amber-300" /></div>
                 </motion.div>
               </div>
             )}

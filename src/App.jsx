@@ -11,6 +11,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import LanguagePrompt from '@/components/layout/LanguagePrompt';
 import InAppBrowserLinkFix from '@/components/layout/InAppBrowserLinkFix';
+import PageTransition from '@/components/layout/PageTransition';
 import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker';
 // Add page imports here
 import GamingCommunity from "./pages/GamingCommunity";
@@ -147,6 +148,7 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
+            <PageTransition />
             <InAppBrowserLinkFix />
             <VisitorCountryTracker />
             <ShootingStars />

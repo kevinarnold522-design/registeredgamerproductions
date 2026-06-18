@@ -6,7 +6,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
 import CommentThread from "@/components/shared/CommentThread";
-import DownloadAdGate from "@/components/ads/DownloadAdGate";
+import DownloadAdUnlock from "@/components/ads/DownloadAdUnlock";
 import ScheduledAdOverlay from "@/components/ads/ScheduledAdOverlay";
 import SimilarListings from "@/components/shared/SimilarListings";
 import StickySearchBar from "@/components/shared/StickySearchBar";
@@ -383,10 +383,7 @@ export default function ListingPage() {
       <StickySearchBar />
 
       {showAdOverlay && (
-        <DownloadAdGate
-          isGuest={!user}
-          onComplete={handleAdDone}
-        />
+        <DownloadAdUnlock onComplete={handleAdDone} />
       )}
       <ScheduledAdOverlay listing={listing} />
 
