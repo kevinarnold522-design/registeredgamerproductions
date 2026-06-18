@@ -121,7 +121,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
     // Also pull listings the seller/admin manually targeted to this category's newsfeed
     const newsfeedPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date", 120)
-      .then(all => all.filter(x => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes(cat)))
+      .then(all => all.filter(x => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes(cat) && x.category !== "games"))
       .catch(() => []);
 
     Promise.all([listingsPromise, newsfeedPromise]).then(([base, extra]) => {
