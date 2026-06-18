@@ -16,6 +16,7 @@ import ListingReportButton from "@/components/shared/ListingReportButton";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import GameCoverCard from "@/components/category/GameCoverCard";
+import StandardListingCard from "@/components/listings/StandardListingCard";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -388,45 +389,10 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         ) : (
           <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {paged.map((l, i) => {
-              const anim = l.card_animation || "slide_up";
-              const initMap = { fade: { opacity: 0 }, slide_up: { opacity: 0, y: 30 }, slide_left: { opacity: 0, x: -30 }, zoom: { opacity: 0, scale: 0.85 }, flip: { opacity: 0, rotateY: 90 }, bounce: { opacity: 0, y: -20 }, glow: { opacity: 0 }, rotate: { opacity: 0, rotate: -10 }, none: {} };
-              const animMap = { fade: { opacity: 1 }, slide_up: { opacity: 1, y: 0 }, slide_left: { opacity: 1, x: 0 }, zoom: { opacity: 1, scale: 1 }, flip: { opacity: 1, rotateY: 0 }, bounce: { opacity: 1, y: 0 }, glow: { opacity: 1 }, rotate: { opacity: 1, rotate: 0 }, none: {} };
-              const glowColors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
-              const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 20px 3px rgba(139,92,246,0.4)" } : {}), "--listing-glow-color": l.card_glow_color === "custom" ? (l.card_glow_hex || "#a855f7") : glowColors[l.card_glow_color || "purple"] };
-              const glowClass = `listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : l.card_glow_style === "solid" ? "listing-glow-solid" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : l.card_glow_speed === "cycle" ? "listing-glow-cycle" : ""}`;
-              return (
-              <motion.a href={`/listing?id=${l.id}`} key={l.id} initial={initMap[anim] || { opacity: 0, y: 20 }} whileInView={animMap[anim] || { opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04, type: anim === "bounce" ? "spring" : "tween", stiffness: 180 }}
-                style={glowStyle}
-                className={`relative bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-500/30 transition-colors block cursor-pointer ${glowClass}`}>
-                <ListingReportButton listingId={l.id} />
-                <div className="h-36 overflow-hidden relative bg-gray-800">
-                  {(l.preview_video_url || l.video_url || l.youtube_url) ? (
-                    <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
-                  ) : l.images?.length > 0 ? (
-                    <ListingImageSlider images={l.images} title={l.title} heightClass="h-36" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-700"><Play className="w-10 h-10" /></div>
-                  )}
-                </div>
-                <div className="p-4">
-                 <div className="flex items-center justify-between gap-2">
-                   <p className="text-white font-bold text-sm truncate">{l.title}</p>
-                   <span className="theme-glow-action flex items-center gap-1 text-purple-300 text-[10px] font-bold rounded-lg px-1 py-0.5"><Eye className="w-3 h-3 theme-glow-icon" />{(l.views || 0).toLocaleString()}</span>
-                 </div>
-                 <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>
-                 <div className="flex items-center justify-between mt-2">
-                  <p className="text-purple-400 font-black">{(!l.price || l.price === 0 || l.is_free) ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
-                 </div>
-                 <div className="mt-2"><ListingEngagementBar listing={l} user={user} profile={profile} compact hideReport /></div>
-                 {l.subcategory && <span className="px-2 py-0.5 mt-1 rounded-lg bg-gray-800 text-gray-400 text-[10px] inline-block">{l.subcategory}</span>}
-                 {l.tool_target_game && <span className="px-2 py-0.5 mt-1 rounded-lg bg-blue-900/30 border border-blue-700/30 text-blue-300 text-[10px] inline-block">For: {l.tool_target_game}</span>}
-                 <div onClick={(e) => e.stopPropagation()}><ListingSellerBadge createdDate={l.created_date} /></div>
-                 </div>
-                 </motion.a>
-                 );
-                 })}
-                 </div>
+            {paged.map((l) => (
+              <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
+            ))}
+          </div>
           <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
           </>
         )}

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Download, Star, SlidersHorizontal, X, Filter, CheckSquare, Square, EyeOff, Eye, GripVertical } from "lucide-react";
+import { Download, Wrench, SlidersHorizontal, X, FolderOpen, CheckSquare, Square, EyeOff, Eye, Upload } from "lucide-react";
 import { getActiveListings } from "@/lib/homeDataCache";
 import ModReviewModal from "@/components/shared/ModReviewModal";
-import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import StandardListingCard from "@/components/listings/StandardListingCard";
 
 const MODDING_SUBCATEGORIES = [
   "WWE2K", "Football Life", "GTA 4", "GTA 5", "GTA SA",
@@ -138,8 +138,8 @@ export default function ModdingSection({ currentUser, currentProfile }) {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
           <div>
             <p className="text-orange-400 text-sm font-semibold uppercase tracking-wider mb-1">Modding Community</p>
-            <h2 className="text-3xl md:text-4xl font-black text-white">
-              🔧 Mods &{" "}
+            <h2 className="text-3xl md:text-4xl font-black text-white flex items-center gap-2">
+              <Wrench className="w-7 h-7 text-orange-400 icon-glow-hover" /> Mods &{" "}
               <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">Downloads</span>
             </h2>
             <p className="text-gray-500 text-sm mt-1">Premium and free mods by our community</p>
@@ -171,7 +171,7 @@ export default function ModdingSection({ currentUser, currentProfile }) {
         <div className="mb-4">
           <div className="bg-gray-900 border border-cyan-700/30 rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-white font-bold text-sm">📂 Filter Modding Communities</p>
+              <p className="text-white font-bold text-sm flex items-center gap-1.5"><FolderOpen className="w-4 h-4 text-cyan-400 icon-glow-hover" /> Filter Modding Communities</p>
               <div className="flex gap-2">
                 <button onClick={selectAll} className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">Show All</button>
                 <button onClick={clearAll} className="text-xs text-gray-500 hover:text-gray-300 font-semibold transition-colors">Clear</button>
@@ -202,8 +202,8 @@ export default function ModdingSection({ currentUser, currentProfile }) {
                 <div className="flex flex-wrap gap-1">
                   {[...hiddenIds].map(id => (
                     <button key={id} onClick={() => toggleHide(id)}
-                      className="px-2 py-1 rounded-lg bg-gray-700 text-white text-[10px] font-semibold hover:bg-purple-700 transition-colors">
-                      {id} 👁
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-700 text-white text-[10px] font-semibold hover:bg-purple-700 transition-colors">
+                      {id} <Eye className="w-3 h-3" />
                     </button>
                   ))}
                 </div>
@@ -300,7 +300,7 @@ export default function ModdingSection({ currentUser, currentProfile }) {
           <div className="text-center py-12"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" /></div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 bg-gray-900 rounded-2xl border border-gray-800">
-            <div className="text-5xl mb-4">🔧</div>
+            <Wrench className="w-12 h-12 mx-auto mb-4 text-gray-700" />
             <p className="text-gray-400 font-semibold">No mods found{activeFilter !== "All" ? ` for ${activeFilter}` : ""}</p>
             <p className="text-gray-600 text-sm mt-1">Try adjusting your filters or be the first to upload!</p>
             <a href="/register" className="inline-flex mt-5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-yellow-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
@@ -309,61 +309,15 @@ export default function ModdingSection({ currentUser, currentProfile }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((mod, i) => (
-              <motion.div key={mod.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.04 }}
-                className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-orange-700/50 transition-colors group">
-                <a href={`/listing?id=${mod.id}`} className="block">
-                  <div className="relative h-36">
-                    {mod.images?.[0] ? (
-                      <img src={mod.images[0]} alt={mod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl bg-gray-800">🔧</div>
-                    )}
-                    {mod.is_premium && (
-                      <span className="absolute top-2 left-2 text-xs font-bold bg-yellow-500/90 text-black px-2 py-0.5 rounded-full">⭐ Premium</span>
-                    )}
-                    {(mod.price === 0 || mod.is_free) && (
-                      <span className="absolute top-2 right-2 text-xs font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <p className="text-orange-400 text-xs font-semibold mb-0.5">{mod.digital_subcategory || mod.modding_subcategory || mod.game_name || mod.game_platform || "Mod"}</p>
-                    <h3 className="text-white font-bold text-sm truncate">{mod.title}</h3>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className={`font-black text-sm ${mod.price === 0 || mod.is_free ? "text-green-400" : "text-yellow-400"}`}>
-                        {mod.price === 0 || mod.is_free ? "FREE" : `₱${mod.price?.toLocaleString()}`}
-                      </span>
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setReviewMod(mod); }}
-                        className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-semibold transition-colors"
-                      >
-                        <Star className="w-3 h-3" /> Reviews
-                      </button>
-                    </div>
-                    <p className="text-gray-600 text-xs mt-1">by @{mod.seller_username}</p>
-                    {/* Engagement Bar */}
-                    <div className="mt-2 pt-2 border-t border-gray-800">
-                      <ListingEngagementBar listing={mod} user={user} profile={profile} compact />
-                    </div>
-                  </div>
-                </a>
-                {/* Download button — auto-follow */}
-                <div className="px-3 pb-3">
-                  <button onClick={(e) => handleDownload(e, mod)}
-                    className="w-full py-1.5 rounded-lg text-xs font-black text-white transition-all"
-                    style={{ background: "linear-gradient(135deg, #f97316, #eab308)" }}>
-                    <Download className="w-3 h-3 inline mr-1" /> Download
-                  </button>
-                </div>
-              </motion.div>
+            {filtered.map((mod) => (
+              <StandardListingCard key={mod.id} listing={mod} user={user} profile={profile} onReview={setReviewMod} />
             ))}
           </div>
         )}
 
         <div className="text-center mt-8">
           <a href="/register" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-yellow-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
-            🔧 Upload & Sell Your Mods
+            <Upload className="w-4 h-4 icon-glow-hover" /> Upload & Sell Your Mods
           </a>
         </div>
       </div>

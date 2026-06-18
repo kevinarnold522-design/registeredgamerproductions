@@ -132,9 +132,11 @@ export default function LeaderboardPage() {
       return;
     }
 
-    // For community & modding — aggregate from posts, ratings, and orders (physical sales)
-    const [posts, ratings, profiles, orders] = await Promise.all([
-      base44.entities.CommunityPost.list("-created_date", 500),
+    // For community & modding — aggregate from posts, channel posts, listings, ratings, and orders (physical sales)
+    const [posts, channelPosts, listings, ratings, profiles, orders] = await Promise.all([
+      base44.entities.CommunityPost.list("-created_date", 1000),
+      base44.entities.ChannelPost.list("-created_date", 1000).catch(() => []),
+      base44.entities.Listing.list("-created_date", 1000).catch(() => []),
       base44.entities.PostRating.list("-created_date", 1000),
       base44.entities.UserProfile.list("-created_date", 1000),
       base44.entities.Order.filter({ status: "completed" }, "-created_date", 500).catch(() => []),
@@ -170,6 +172,30 @@ export default function LeaderboardPage() {
       scoreMap[key].posts += 1;
       scoreMap[key].likes += (post.likes || 0);
       scoreMap[key].score += 10 + (post.likes || 0) * 5;
+    });
+
+    // Channel posts (gaming newsfeed) count toward Community ranking too
+    if (currentTab === "community") {
+      channelPosts.forEach(post => {
+        const key = post.creator_email;
+        if (!key) return;
+        if (!scoreMap[key]) scoreMap[key] = { email: key, username: post.creator_username || key, posts: 0, likes: 0, score: 0, avatar_url: post.creator_avatar || "" };
+        scoreMap[key].posts += 1;
+        scoreMap[key].likes += (post.likes || 0);
+        scoreMap[key].score += 10 + (post.likes || 0) * 5;
+      });
+    }
+
+    // Listings count as posts: modding tab → modding/premium mods only; community tab → all listings
+    listings.forEach(l => {
+      const key = l.seller_email;
+      if (!key) return;
+      const isMod = l.category === "modding" || l.category === "premium_mods";
+      if (currentTab === "modding" && !isMod) return;
+      if (!scoreMap[key]) scoreMap[key] = { email: key, username: l.seller_username || key, posts: 0, likes: 0, score: 0, avatar_url: "" };
+      scoreMap[key].posts += 1;
+      scoreMap[key].likes += (l.likes || 0);
+      scoreMap[key].score += 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2;
     });
 
     // Add 1000pts per completed physical product sale

@@ -4,6 +4,7 @@ import { Search, Filter, Gamepad2, DollarSign, Tag, Layers } from "lucide-react"
 import { getActiveListings } from "@/lib/homeDataCache";
 import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
+import StandardListingCard from "@/components/listings/StandardListingCard";
 
 const PAID_MOD_CATEGORIES = [
   { id: "premium_mods", label: "Premium Mods", color: "from-purple-600 to-pink-600" },
@@ -242,67 +243,8 @@ export default function PaidModsSection() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredListings.map((listing, i) => (
-                <motion.div
-                  key={listing.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className="group"
-                >
-                  <Link to={`/listing?id=${listing.id}`}>
-                    <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 group-hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
-                      {/* Image */}
-                      <div className="aspect-video relative overflow-hidden">
-                        {listing.images?.[0] ? (
-                          <img 
-                            src={listing.images[0]} 
-                            alt={listing.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-900/20 to-pink-900/20 flex items-center justify-center">
-                            <Gamepad2 className="w-12 h-12 text-gray-700" />
-                          </div>
-                        )}
-                        {listing.is_premium && (
-                          <span className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-yellow-500 text-black text-xs font-bold">
-                            Premium
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-4 space-y-2">
-                        <h4 className="text-white font-bold text-sm line-clamp-2 group-hover:text-purple-300 transition-colors">
-                          {listing.title}
-                        </h4>
-                        
-                        {listing.game_name && (
-                          <div className="flex items-center gap-1.5">
-                            <Gamepad2 className="w-3 h-3 text-gray-500" />
-                            <span className="text-gray-400 text-xs">{listing.game_name}</span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <DollarSign className="w-3 h-3 text-green-400" />
-                            <span className="text-green-400 font-bold text-sm">
-                              {listing.price === 0 ? "FREE" : `₱${listing.price?.toLocaleString()}`}
-                            </span>
-                          </div>
-                          {listing.category && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-900/30 border border-purple-700/40 text-purple-300">
-                              {PAID_MOD_CATEGORIES.find(c => c.id === listing.category)?.label || listing.category}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
+              {filteredListings.map((listing) => (
+                <StandardListingCard key={listing.id} listing={listing} />
               ))}
             </div>
           )}

@@ -277,6 +277,21 @@ export default function AuthNavbar({ user, profile }) {
 
         {/* Profile Header */}
         <div className={`px-3 pt-4 pb-3 border-b border-purple-900/30 ${collapsed && !isMobile ? "flex flex-col items-center gap-2" : ""}`}>
+          {/* Switch Account (admin) — pinned ABOVE My Profile */}
+          {admin && !isManagingAsGhost && (
+            <div className="mb-3">
+              <SwitchAccountDropdown currentUser={user} collapsed={collapsed && !isMobile} />
+            </div>
+          )}
+          {/* Switch Back to Admin (ghost session) — pinned ABOVE My Profile */}
+          {isManagingAsGhost && s && (
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 mb-3 px-3 py-2 rounded-xl bg-gradient-to-r from-yellow-600 to-amber-500 text-black text-xs font-black transition-all hover:opacity-90 shadow-[0_0_16px_rgba(234,179,8,0.4)]"
+            >
+              <Shield className="w-3.5 h-3.5" /> Switch Back to Admin
+            </button>
+          )}
           <Link to={isManagingAsGhost ? `/profile?email=${encodeURIComponent(ghostAccountEmail)}&ghost_session=1` : "/profile"} className={`flex items-center gap-3 rounded-xl p-2 hover:bg-gray-800/60 transition-all ${collapsed && !isMobile ? "justify-center" : ""}`}>
             <div className="relative flex-shrink-0">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
@@ -301,12 +316,6 @@ export default function AuthNavbar({ user, profile }) {
               </div>
             )}
           </Link>
-
-          {admin && !isManagingAsGhost && (
-            <div className="mt-3">
-              <SwitchAccountDropdown currentUser={user} collapsed={collapsed && !isMobile} />
-            </div>
-          )}
         </div>
 
         {/* Dynamic Sidebar Nav Tree */}
