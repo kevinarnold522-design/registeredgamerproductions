@@ -6,6 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { CATEGORIES, isAdmin } from "@/lib/constants";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import { formatListingPrice } from "@/lib/currency";
 
 const buySellCat = CATEGORIES.find(c => c.id === "buy_sell");
 
@@ -53,7 +54,7 @@ function ListingCard({ listing, index }) {
         <p className="text-white font-bold text-sm truncate mb-1">{listing.title}</p>
         <p className="text-gray-500 text-xs line-clamp-2 mb-2">{listing.description || "No description."}</p>
         <div className="flex items-center justify-between">
-          <span className="text-yellow-400 font-black text-sm">₱{listing.price?.toLocaleString()}</span>
+          <span className="text-yellow-400 font-black text-sm">{!listing.price || listing.is_free ? "FREE" : formatListingPrice(listing.price, listing.currency)}</span>
           {listing.subcategory && (
             <span className="px-2 py-0.5 rounded-lg bg-gray-800 text-gray-400 text-[10px]">{listing.subcategory}</span>
           )}

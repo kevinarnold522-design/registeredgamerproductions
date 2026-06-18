@@ -17,6 +17,7 @@ import UserPointsBadge from "@/components/profile/UserPointsBadge";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { formatListingPrice } from "@/lib/currency";
 import GlowStat from "@/components/shared/GlowStat";
+import ListingImageSlider from "@/components/listings/ListingImageSlider";
 
 const CONTENT_SUBCATEGORIES = [
   "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream", "other"
@@ -66,6 +67,7 @@ export default function Channel() {
   const [showComments, setShowComments] = useState({});
   const [newComment, setNewComment] = useState({});
   const [channelTheme, setChannelTheme] = useState(() => localStorage.getItem("channel_theme") || "default");
+  const [startingChat, setStartingChat] = useState(false);
   const setupMode = new URLSearchParams(window.location.search).get("setup") === "1";
   const [showEditProfile, setShowEditProfile] = useState(setupMode);
 
@@ -142,6 +144,13 @@ export default function Channel() {
     e.target.value = "";
   };
 
+  const handleStartMessage = () => {
+    if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
+    if (!targetEmail) return;
+    setStartingChat(true);
+    window.location.href = `/messages?with=${encodeURIComponent(targetEmail)}`;
+  };
+
   const handleRemoveCover = async () => {
     if (!profile?.id) return;
     const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: "" });
@@ -214,6 +223,21 @@ export default function Channel() {
               </label>
             </div>
           )}
+        </div>
+
+        {/* iOS26-style glass reflection — mirrors the cover and bounces down half the page */}
+        <div className="relative h-24 md:h-32 overflow-hidden pointer-events-none -mt-px" aria-hidden="true">
+          {profile?.banner_url ? (
+            <img src={profile.banner_url} alt="" className="w-full h-full object-cover"
+              style={{ transform: "scaleY(-1)", filter: "blur(2px) saturate(1.1)" }} />
+          ) : (
+            <div className="absolute inset-0" style={{ transform: "scaleY(-1)", background: "radial-gradient(ellipse at 60% 50%, rgba(139,92,246,0.3), rgba(236,72,153,0.15), #030712)" }} />
+          )}
+          {/* Glass frost + fade-out so the reflection dissolves into the page */}
+          <div className="absolute inset-0 backdrop-blur-md"
+            style={{ background: "linear-gradient(to bottom, rgba(5,5,16,0.35) 0%, rgba(5,5,16,0.7) 55%, var(--channel-bg, #050510) 100%)" }} />
+          {/* Subtle sheen highlight like an iOS glass surface */}
+          <div className="absolute inset-x-0 top-0 h-px bg-white/15" />
         </div>
 
         {/* Profile Row */}
@@ -321,14 +345,21 @@ export default function Channel() {
                 </div>
               )}
             </div>
-            {isOwner && (
+            {isOwner ? (
               <div className="flex items-center gap-2">
                 <ChannelThemePicker profile={profile} currentTheme={channelTheme} onSelect={handleThemeChange} onSaved={setProfile} />
                 <button onClick={() => setShowEditProfile(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
                   <Edit2 className="w-4 h-4" /> Edit Profile
                 </button>
               </div>
-            )}
+            ) : user ? (
+              <div className="flex items-center gap-2">
+                <button onClick={handleStartMessage} disabled={startingChat}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
+                  <MessageCircle className="w-4 h-4" /> {startingChat ? "Opening..." : "Message"}
+                </button>
+              </div>
+            ) : null}
           </div>
 
           {/* Stats */}
@@ -487,13 +518,13 @@ export default function Channel() {
                     href={`/listing?id=${l.id}`}
                     initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                     className="group bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-700/50 transition-colors">
-                    <div className="relative aspect-square bg-gray-800 overflow-hidden flex items-center justify-center">
-                      {l.images?.[0] ? (
-                        <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="relative bg-gray-800 overflow-hidden flex items-center justify-center">
+                      {l.images?.length > 0 ? (
+                        <ListingImageSlider images={l.images} title={l.title} heightClass="aspect-square w-full" />
                       ) : (
-                        <Package className="w-10 h-10 text-gray-600" />
+                        <div className="aspect-square w-full flex items-center justify-center"><Package className="w-10 h-10 text-gray-600" /></div>
                       )}
-                      <span className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
+                      <span className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
                     </div>
                     <div className="p-3">
                       <p className="text-white font-bold text-sm truncate">{l.title}</p>

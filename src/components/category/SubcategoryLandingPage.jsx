@@ -4,7 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { Eye, Plus, Tag, Search, Send } from "lucide-react";
 import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
+import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { isServiceListing } from "@/lib/constants";
+import { formatListingPrice } from "@/lib/currency";
 
 const PER_PAGE = 10;
 
@@ -138,12 +140,8 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
             >
               {(listing.preview_video_url || listing.video_url || listing.youtube_url) ? (
                 <UniversalVideoPreview url={listing.preview_video_url || listing.video_url || listing.youtube_url} poster={listing.images?.[0]} className="w-full h-40 object-cover" />
-              ) : listing.images?.[0] ? (
-                <img src={listing.images[0]} alt={listing.title} className="w-full h-40 object-cover" />
               ) : (
-                <div className="w-full h-40 bg-gray-800 flex items-center justify-center">
-                  <Tag className="w-8 h-8 text-gray-600" />
-                </div>
+                <ListingImageSlider images={listing.images || []} title={listing.title} />
               )}
               <div className="p-4">
                 <div className="flex items-center justify-between gap-2">
@@ -153,7 +151,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
                 <p className="text-gray-500 text-xs mt-1 truncate">{listing.seller_username || listing.seller_email}</p>
                 <div className="flex items-center justify-between mt-3">
                   <p className="text-purple-400 font-black">
-                    {listing.is_free ? "FREE" : `₱${listing.price?.toLocaleString()}`}
+                    {!listing.price || listing.is_free ? "FREE" : formatListingPrice(listing.price, listing.currency)}
                   </p>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${listing.condition === "new" ? "bg-green-900/50 text-green-400" : "bg-gray-800 text-gray-400"}`}>
                     {listing.condition || "digital"}

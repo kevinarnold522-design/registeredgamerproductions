@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Tag } from "lucide-react";
 
-export default function ListingImageSlider({ images = [], title = "", badge = null, discountPct = null }) {
+export default function ListingImageSlider({ images = [], title = "", badge = null, discountPct = null, heightClass = "h-40" }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -26,7 +26,7 @@ export default function ListingImageSlider({ images = [], title = "", badge = nu
 
   if (!images || images.length === 0) {
     return (
-      <div className="relative h-40 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-4xl rounded-t-2xl overflow-hidden">
+      <div className={`relative ${heightClass} bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-4xl rounded-t-2xl overflow-hidden`}>
         🎮
         {badge && <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 text-[10px] font-black">{badge}</div>}
       </div>
@@ -34,7 +34,7 @@ export default function ListingImageSlider({ images = [], title = "", badge = nu
   }
 
   return (
-    <div className="relative h-40 bg-gray-900 rounded-t-2xl overflow-hidden group">
+    <div className={`relative ${heightClass} bg-gray-900 rounded-t-2xl overflow-hidden group`}>
       <AnimatePresence custom={direction} initial={false}>
         <motion.img
           key={current}

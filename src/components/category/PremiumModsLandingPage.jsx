@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import ListingImageSlider from "@/components/listings/ListingImageSlider";
 
 // Homepage-style premium mod game cards
 const PREMIUM_MOD_GAME_CARDS = [
@@ -149,13 +150,12 @@ export default function PremiumModsLandingPage({ user }) {
               <motion.div key={l.id} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="group">
                 <Link to={`/listing?id=${l.id}`}>
                   <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 group-hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
-                    <div className="aspect-video relative overflow-hidden">
-                      {l.images?.[0] ? (
-                        <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    <div className="relative overflow-hidden">
+                      {l.images?.length > 0 ? (
+                        <ListingImageSlider images={l.images} title={l.title} badge={l.is_premium ? "PREMIUM" : null} heightClass="h-44" />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-purple-900/20 to-pink-900/20 flex items-center justify-center"><Gamepad2 className="w-12 h-12 text-gray-700" /></div>
+                        <div className="h-44 w-full bg-gradient-to-br from-purple-900/20 to-pink-900/20 flex items-center justify-center"><Gamepad2 className="w-12 h-12 text-gray-700" /></div>
                       )}
-                      {l.is_premium && <span className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-yellow-500 text-black text-xs font-bold">Premium</span>}
                     </div>
                     <div className="p-4 space-y-2">
                       <h4 className="text-white font-bold text-sm line-clamp-2 group-hover:text-purple-300 transition-colors">{l.title}</h4>

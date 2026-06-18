@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Eye, Package, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { formatListingPrice } from "@/lib/currency";
 
 export default function EnhancedListingCard({ listing, user, profile, subcategory }) {
@@ -86,19 +87,16 @@ export default function EnhancedListingCard({ listing, user, profile, subcategor
       className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all group"
     >
       {/* Image */}
-      <a href={`/listing?id=${listing.id}`} className="block relative h-48">
-        {listing.images?.[0] ? (
-          <img src={listing.images[0]} alt={listing.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+      <a href={`/listing?id=${listing.id}`} className="block relative">
+        {listing.images?.length > 0 ? (
+          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass="h-48" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-800"><Package className="w-10 h-10 text-purple-300" /></div>
-        )}
-        {listing.is_premium && (
-          <span className="absolute top-3 left-3 text-xs font-bold bg-yellow-500/90 text-black px-2 py-0.5 rounded-full">Premium</span>
+          <div className="h-48 w-full flex items-center justify-center bg-gray-800"><Package className="w-10 h-10 text-purple-300" /></div>
         )}
         {(listing.price === 0 || listing.is_free) && (
-          <span className="absolute top-3 right-3 text-xs font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
+          <span className="absolute top-3 right-3 z-10 text-xs font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         )}
-        <span className="theme-glow-action absolute bottom-3 right-3 flex items-center gap-1 text-xs bg-black/70 text-cyan-300 font-bold px-2 py-1 rounded-full"><Eye className="w-3 h-3 theme-glow-icon" />{viewCount.toLocaleString()}</span>
+        <span className="theme-glow-action absolute bottom-3 right-3 z-10 flex items-center gap-1 text-xs bg-black/70 text-cyan-300 font-bold px-2 py-1 rounded-full"><Eye className="w-3 h-3 theme-glow-icon" />{viewCount.toLocaleString()}</span>
       </a>
 
       {/* Content */}

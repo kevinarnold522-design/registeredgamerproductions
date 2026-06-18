@@ -10,6 +10,7 @@ import Pagination from "@/components/shared/Pagination";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
+import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
@@ -400,8 +401,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                 <div className="h-36 overflow-hidden relative bg-gray-800">
                   {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                     <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
-                  ) : l.images?.[0] ? (
-                    <img src={l.images[0]} alt={l.title} loading="lazy" className="w-full h-full object-cover" />
+                  ) : l.images?.length > 0 ? (
+                    <ListingImageSlider images={l.images} title={l.title} heightClass="h-36" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-700"><Play className="w-10 h-10" /></div>
                   )}
