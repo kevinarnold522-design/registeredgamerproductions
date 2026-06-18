@@ -15,6 +15,7 @@ import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
 import SocialLinksPanel from "@/components/profile/SocialLinksPanel";
 import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
+import StandardListingCard from "@/components/listings/StandardListingCard";
 import UserPointsBadge from "@/components/profile/UserPointsBadge";
 import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
 import ReelCreator from "@/components/shared/ReelCreator";
@@ -492,31 +493,9 @@ export default function Profile() {
                 <p>No listings yet</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {sortListings(listings, sortOrder).map((l, i) => (
-                  <motion.a
-                    key={l.id}
-                    href={`/listing?id=${l.id}`}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    className={`group relative aspect-square bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-purple-500 transition-colors ${getListingGlowClass(l)}`}
-                    style={getListingGlowStyle(l)}
-                  >
-                    {l.images?.[0] ? (
-                      <img src={l.images[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center"><Gamepad2 className="w-9 h-9 text-gray-600" /></div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="text-white text-xs font-bold truncate">{l.title}</p>
-                        <p className="text-purple-400 text-xs font-black">{l.price === 0 ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
-                      </div>
-                    </div>
-                    <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] bg-black/70 text-cyan-300 font-bold px-1.5 py-0.5 rounded-md"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
-                    {l.is_premium && <span className="absolute top-1.5 right-1.5 bg-yellow-500/90 text-black font-bold p-1 rounded-md"><Star className="w-3 h-3" /></span>}
-                  </motion.a>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {sortListings(listings, sortOrder).map((l) => (
+                  <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
                 ))}
               </div>
             )}

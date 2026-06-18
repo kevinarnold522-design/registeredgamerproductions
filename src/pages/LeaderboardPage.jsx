@@ -139,7 +139,7 @@ export default function LeaderboardPage() {
       base44.entities.Listing.list("-created_date", 1000).catch(() => []),
       base44.entities.PostRating.list("-created_date", 1000),
       base44.entities.UserProfile.list("-created_date", 1000),
-      base44.entities.Order.filter({ status: "completed" }, "-created_date", 500).catch(() => []),
+      base44.entities.Order.filter({ payment_status: "paid" }, "-created_date", 500).catch(() => []),
     ]);
 
     // Filter posts by category for modding
@@ -174,17 +174,21 @@ export default function LeaderboardPage() {
       scoreMap[key].score += 10 + (post.likes || 0) * 5;
     });
 
-    // Channel posts (gaming newsfeed) count toward Community ranking too
-    if (currentTab === "community") {
-      channelPosts.forEach(post => {
-        const key = post.creator_email;
-        if (!key) return;
-        if (!scoreMap[key]) scoreMap[key] = { email: key, username: post.creator_username || key, posts: 0, likes: 0, score: 0, avatar_url: post.creator_avatar || "" };
-        scoreMap[key].posts += 1;
-        scoreMap[key].likes += (post.likes || 0);
-        scoreMap[key].score += 10 + (post.likes || 0) * 5;
-      });
-    }
+    // Channel posts (gaming newsfeed) count toward Community ranking; in Modding only mod-related ones.
+    const filteredChannelPosts = currentTab === "modding"
+      ? channelPosts.filter(p => {
+          const hay = `${p.caption || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
+          return hay.includes("mod") || hay.includes("hack") || hay.includes("patch") || hay.includes("iso");
+        })
+      : channelPosts;
+    filteredChannelPosts.forEach(post => {
+      const key = post.creator_email;
+      if (!key) return;
+      if (!scoreMap[key]) scoreMap[key] = { email: key, username: post.creator_username || key, posts: 0, likes: 0, score: 0, avatar_url: post.creator_avatar || "" };
+      scoreMap[key].posts += 1;
+      scoreMap[key].likes += (post.likes || 0);
+      scoreMap[key].score += 10 + (post.likes || 0) * 5;
+    });
 
     // Listings count as posts: modding tab → modding/premium mods only; community tab → all listings
     listings.forEach(l => {
@@ -206,13 +210,14 @@ export default function LeaderboardPage() {
       scoreMap[key].score += 1000;
     });
 
-    // Also add rating scores
+    // Add rating scores — a rating's post_id may belong to a community post OR a listing.
+    const authorByContentId = {};
+    posts.forEach(p => { if (p.id) authorByContentId[p.id] = p.author_email; });
+    listings.forEach(l => { if (l.id) authorByContentId[l.id] = l.seller_email; });
     ratings.forEach(r => {
-      // find the post author from posts
-      const post = posts.find(p => p.id === r.post_id);
-      if (!post?.author_email) return;
-      if (!scoreMap[post.author_email]) return;
-      scoreMap[post.author_email].score += r.rating * 2;
+      const authorEmail = authorByContentId[r.post_id];
+      if (!authorEmail || !scoreMap[authorEmail]) return;
+      scoreMap[authorEmail].score += r.rating * 2;
     });
 
     // Enrich with profile data

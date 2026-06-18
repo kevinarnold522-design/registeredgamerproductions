@@ -36,6 +36,7 @@ const PHYSICAL_SUBCATEGORIES = [
 ];
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import AIListingAssistant from "@/components/listings/AIListingAssistant";
+import BrandLogo from "@/components/shared/BrandLogo";
 import { compressImage } from "@/lib/compressImage";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { CURRENCY_OPTIONS } from "@/lib/currency";
@@ -72,10 +73,23 @@ export default function CreateListing() {
   const [showGameDropdown, setShowGameDropdown] = useState(false);
   const gameDropdownRef = useRef(null);
 
-  const PLATFORMS = ["PC", "Nintendo Switch", "PlayStation 5", "PlayStation 4", "PlayStation 3", "PlayStation 2", "PSP", "Android", "PPSSPP", "Xbox", "Steam"];
+  // Each platform maps to a brand logo slug (BrandLogo) when one exists.
+  const PLATFORMS = [
+    { id: "PC", brand: null },
+    { id: "Nintendo Switch", brand: "nintendo" },
+    { id: "PlayStation 5", brand: "playstation" },
+    { id: "PlayStation 4", brand: "playstation" },
+    { id: "PlayStation 3", brand: "playstation" },
+    { id: "PlayStation 2", brand: "playstation" },
+    { id: "PSP", brand: "playstation" },
+    { id: "Android", brand: "googleplay" },
+    { id: "PPSSPP", brand: null },
+    { id: "Xbox", brand: "xbox" },
+    { id: "Steam", brand: "steam" },
+  ];
   const COMBINED_AVAILABLE_OPTIONS = [
-    ...PLATFORMS.map(p => ({ id: p, label: p, type: "platform" })),
-    ...GAMES_STORES.map(s => ({ id: s.id, label: s.label, type: "store", color: s.color, iconText: s.iconText })),
+    ...PLATFORMS.map(p => ({ id: p.id, label: p.id, type: "platform", brand: p.brand })),
+    ...GAMES_STORES.map(s => ({ id: s.id, label: s.label, type: "store", color: s.color, iconText: s.iconText, brand: s.id })),
   ];
   const DOWNLOAD_HOSTS = [
     { id: "mediafire", label: "Mediafire", color: "#1E90FF" },
@@ -737,7 +751,9 @@ export default function CreateListing() {
                         : ({ ...f, store_platforms: selected ? (f.store_platforms || []).filter(x => x !== option.id) : [...(f.store_platforms || []), option.id] })
                       )}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selected ? "bg-purple-600 text-white border border-purple-500" : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-purple-500/50"}`}>
-                      {option.type === "store" && <span className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-white/15 px-1 text-[8px] font-black">{option.iconText}</span>}
+                      {option.brand
+                        ? <span className="inline-flex h-4 w-4 items-center justify-center"><BrandLogo brand={option.brand} label={option.label} className="w-3.5 h-3.5" /></span>
+                        : option.type === "store" && <span className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-white/15 px-1 text-[8px] font-black">{option.iconText}</span>}
                       {option.label}
                       {selected && <CheckCircle className="w-3 h-3" />}
                     </button>

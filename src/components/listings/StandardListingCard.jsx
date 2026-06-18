@@ -4,6 +4,7 @@ import { Eye, Package, CalendarDays, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
+import RepostButton from "@/components/shared/RepostButton";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -69,6 +70,11 @@ export default function StandardListingCard({ listing, user, profile, subcategor
     >
       <ListingReportButton listingId={listing.id} />
 
+      {/* Repost — pinned top-right of the card */}
+      <div className="absolute top-2 right-2 z-20 bg-black/60 rounded-lg px-1 py-0.5 backdrop-blur-sm">
+        <RepostButton item={listing} type="listing" user={user} profile={profile} compact />
+      </div>
+
       {/* Image */}
       <a href={`/listing?id=${listing.id}`} className="block relative">
         {listing.images?.length > 0 ? (
@@ -110,7 +116,7 @@ export default function StandardListingCard({ listing, user, profile, subcategor
         </a>
 
         <div className="mt-4 pt-3 border-t border-purple-900/30">
-          <ListingEngagementBar listing={listing} user={user} profile={profile} compact hideReport />
+          <ListingEngagementBar listing={listing} user={user} profile={profile} compact hideReport hideRepost />
         </div>
       </div>
     </motion.div>
