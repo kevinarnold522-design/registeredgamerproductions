@@ -420,68 +420,9 @@ export default function CreateListing() {
       savedListing = await base44.entities.Listing.create(data);
     }
 
-    // Cross-post to Gaming Community newsfeed
-    if (data.community_franchise_id && savedListing) {
-      const comms = await base44.entities.GamingCommunity.filter({ franchise_id: data.community_franchise_id });
-      const communityId = comms[0]?.id || data.community_franchise_id;
-      base44.entities.CommunityPost.create({
-        community_id: communityId,
-        franchise_id: data.community_franchise_id,
-        author_email: data.seller_email,
-        author_username: data.seller_username,
-        author_avatar: profile?.avatar_url || "",
-        content: `New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
-        status: "active",
-        section_id: "listings",
-      }).catch(() => {});
-    }
-
-    // Cross-post to Modding Community newsfeed if modding subcategory selected
-    if (data.modding_subcategory && savedListing) {
-      base44.entities.CommunityPost.create({
-        community_id: "modding",
-        franchise_id: "modding_" + data.modding_subcategory.toLowerCase().replace(/\s+/g, "_"),
-        author_email: data.seller_email,
-        author_username: data.seller_username,
-        author_avatar: profile?.avatar_url || "",
-        content: `New mod: **${data.title}** [${data.modding_subcategory}] — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
-        status: "active",
-        section_id: data.modding_subcategory,
-      }).catch(() => {});
-    }
-
-    // AUTO cross-post to Store newsfeed for paid/premium listings
-    if ((data.price > 0 || data.is_premium) && savedListing && data.category === "buy_sell") {
-      base44.entities.CommunityPost.create({
-        community_id: "buy_sell",
-        franchise_id: "store",
-        author_email: data.seller_email,
-        author_username: data.seller_username,
-        author_avatar: profile?.avatar_url || "",
-        content: `New store listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
-        status: "active",
-        section_id: data.subcategories?.[0] || "general",
-      }).catch(() => {});
-    }
-
-    // Bulk cross-post to selected gaming communities
-    if (form.bulk_cross_post_ids && form.bulk_cross_post_ids.length > 0 && savedListing) {
-      form.bulk_cross_post_ids.forEach(franchiseId => {
-        base44.entities.GamingCommunity.filter({ franchise_id: franchiseId }).then(comms => {
-          const communityId = comms[0]?.id || franchiseId;
-          base44.entities.CommunityPost.create({
-            community_id: communityId,
-            franchise_id: franchiseId,
-            author_email: user.email,
-            author_username: sellerName,
-            author_avatar: profile?.avatar_url || "",
-            content: `New listing: **${data.title}** — ${data.description?.slice(0, 100) || ""}${data.price > 0 ? ` — ₱${data.price}` : " — FREE"}\n/listing?id=${savedListing.id}`,
-            status: "active",
-            section_id: "listings",
-          }).catch(() => {});
-        });
-      });
-    }
+    // Note: listings are surfaced in community/category newsfeeds via their
+    // category, community_franchise_id, modding_subcategory & newsfeed_categories
+    // fields directly — no auto-generated "New listing" announcement posts.
 
     setSaving(false);
     if (mod?.requiresReview) {
