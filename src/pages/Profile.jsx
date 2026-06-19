@@ -292,8 +292,9 @@ export default function Profile() {
                   <X className="w-4 h-4 text-red-200" />
                 </button>
               )}
-              <label className="w-10 h-10 rounded-xl bg-gray-900/80 border border-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm" title="Upload cover photo">
-                <Upload className="w-4 h-4 text-gray-300" />
+              <label className="flex items-center gap-2 px-3 h-10 rounded-xl bg-gray-900/80 border border-gray-700 cursor-pointer hover:bg-gray-800 transition-colors backdrop-blur-sm text-gray-200 text-xs font-semibold" title="Upload cover photo">
+                <Upload className="w-4 h-4" />
+                <span>Change cover</span>
                 <input type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
               </label>
             </div>

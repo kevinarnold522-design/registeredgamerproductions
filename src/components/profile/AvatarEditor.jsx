@@ -72,6 +72,11 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
           }
         </div>
 
+        {/* Always-visible camera badge so the upload action is discoverable */}
+        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-purple-600 border-2 border-gray-950 flex items-center justify-center shadow-lg">
+          <Camera className="w-3.5 h-3.5 text-white" />
+        </div>
+
         {/* Count badge */}
         {allAvatars.length > 1 && (
           <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-purple-600 border-2 border-gray-950 flex items-center justify-center text-[9px] text-white font-black">
