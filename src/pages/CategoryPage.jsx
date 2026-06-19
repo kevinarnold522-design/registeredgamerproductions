@@ -6,7 +6,6 @@ import GenericCategoryPage from "@/components/category/GenericCategoryPage";
 import BuySellLandingPage from "@/components/category/BuySellLandingPage";
 import ContentLandingPage from "@/components/category/ContentLandingPage";
 import SubcategoryLandingPage from "@/components/category/SubcategoryLandingPage";
-import AllCategoriesNewsfeed from "@/components/home/AllCategoriesNewsfeed";
 import { CATEGORIES } from "@/lib/constants";
 import RecommendModal from "@/components/shared/RecommendModal";
 import { useAuth } from "@/lib/AuthContext";
@@ -48,10 +47,6 @@ export default function CategoryPage() {
       {showRecommend && (
         <RecommendModal type="category" parentCategory={cat} user={user} profile={profile} onClose={() => setShowRecommend(false)} />
       )}
-      {/* Single global newsfeed — all categories, latest listings */}
-      <div className="px-4 max-w-7xl mx-auto pt-3">
-        <AllCategoriesNewsfeed user={user} profile={profile} />
-      </div>
       <div className="pt-2">
         {/* If a specific subcategory is selected, render its own unique landing page */}
         {sub ? (
