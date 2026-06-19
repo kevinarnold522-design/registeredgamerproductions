@@ -187,12 +187,12 @@ export default function Home() {
       {!showSplash && (
         <>
           <div className="relative z-10">
-            {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
-            {user && <AIAssistBanner user={user} />}
-            {/* Official socials — top of homepage */}
-            <div className="max-w-7xl mx-auto px-4 pt-4">
+            {/* Official socials — pinned to the very top, above the logo/nav */}
+            <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
               <GamerSocialsBar />
             </div>
+            {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
+            {user && <AIAssistBanner user={user} />}
             <VideoHeroBanner />
             <HeroSection />
             <CategoryCards />

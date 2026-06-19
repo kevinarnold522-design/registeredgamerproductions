@@ -7,6 +7,7 @@ import BuySellLandingPage from "@/components/category/BuySellLandingPage";
 import ContentLandingPage from "@/components/category/ContentLandingPage";
 import SubcategoryLandingPage from "@/components/category/SubcategoryLandingPage";
 import { CATEGORIES } from "@/lib/constants";
+import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import RecommendModal from "@/components/shared/RecommendModal";
 import { useAuth } from "@/lib/AuthContext";
 import { useLocation } from "react-router-dom";
@@ -34,6 +35,10 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white relative z-10">
+      {/* Official socials — pinned to the very top of every category & subcategory */}
+      <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
+        <GamerSocialsBar />
+      </div>
       {!isLoadingAuth && (user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />)}
       {/* Recommend Category bar */}
       <div className="pt-16 px-4 max-w-7xl mx-auto">
