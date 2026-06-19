@@ -154,6 +154,8 @@ export default function CreateListing() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const [needsLogin, setNeedsLogin] = useState(false);
+
   useEffect(() => {
     const init = async () => {
       // Current user comes from Supabase auth (matches the rest of the app post-migration)
@@ -161,7 +163,9 @@ export default function CreateListing() {
       const { data: { session } } = await supabase.auth.getSession();
       const supaUser = session?.user;
       if (!supaUser) {
-        await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
+        // No session — show a sign-in prompt instead of hanging on the spinner forever.
+        setNeedsLogin(true);
+        setLoading(false);
         return;
       }
       const me = { email: supaUser.email, full_name: supaUser.user_metadata?.full_name || supaUser.email?.split("@")[0] };
@@ -463,6 +467,23 @@ export default function CreateListing() {
   if (loading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (needsLogin) return (
+    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-4 text-center">
+      <Gamepad2 className="w-12 h-12 text-purple-400 mb-4" />
+      <h2 className="text-xl font-black text-white mb-2">Sign in to post</h2>
+      <p className="text-gray-400 text-sm mb-6 max-w-sm">You need to be logged in to create a listing, add a game, or post.</p>
+      <button
+        onClick={async () => {
+          const { supabase } = await import("@/lib/supabaseClient");
+          await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
+        }}
+        className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity"
+      >
+        Sign in with Google
+      </button>
     </div>
   );
 
