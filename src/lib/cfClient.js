@@ -8,11 +8,25 @@
 // auth.me/logout/...) so existing pages keep working unchanged.
 // =====================================================================
 
-const API_BASE = (import.meta.env.VITE_CF_API_URL || "").replace(/\/$/, "");
+// Permanent fallback to the live Cloudflare Worker. The build-time env var
+// (VITE_CF_API_URL) takes priority, but if it's missing or accidentally set to
+// the app's own origin, we fall back to the known worker URL so auth and all
+// backend calls always reach the worker (never the React app → no more 404s).
+const WORKER_URL = "https://website-connected-gamerproductions.kevinarnold522.workers.dev";
 
-if (!API_BASE) {
-  console.error("VITE_CF_API_URL is not set — backend calls will fail.");
+function resolveApiBase() {
+  const fromEnv = (import.meta.env.VITE_CF_API_URL || "").replace(/\/$/, "");
+  if (!fromEnv) return WORKER_URL;
+  try {
+    // If the env var points at the app's own origin, it's wrong — use the worker.
+    if (new URL(fromEnv).origin === window.location.origin) return WORKER_URL;
+  } catch {
+    return WORKER_URL;
+  }
+  return fromEnv;
 }
+
+const API_BASE = resolveApiBase();
 
 // The worker sets an HttpOnly session cookie on login. We always send it
 // (credentials: "include"). We also mirror any non-HttpOnly token we may
