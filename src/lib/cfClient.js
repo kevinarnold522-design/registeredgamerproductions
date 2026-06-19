@@ -55,10 +55,14 @@ async function authHeaders(extra = {}) {
 
 async function request(path, { method = "GET", body, headers } = {}) {
   let res;
+  // Fail fast: never let a call hang forever if the worker is slow/unreachable.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
   try {
     res = await fetch(`${API_BASE}${path}`, {
       method,
       credentials: "include",
+      signal: controller.signal,
       headers: await authHeaders({
         ...(body ? { "Content-Type": "application/json" } : {}),
         ...headers,
@@ -69,11 +73,15 @@ async function request(path, { method = "GET", body, headers } = {}) {
     // fetch() rejects with "Failed to fetch" on network/CORS/offline errors.
     // Wrap it in a clean, catchable error so callers' .catch() handlers can
     // degrade gracefully instead of the raw TypeError crashing the UI.
-    const err = new Error("Network request failed. Please check your connection and try again.");
+    const err = new Error(networkErr?.name === "AbortError"
+      ? "The server took too long to respond. Please try again."
+      : "Network request failed. Please check your connection and try again.");
     err.status = 0;
     err.isNetworkError = true;
     err.cause = networkErr;
     throw err;
+  } finally {
+    clearTimeout(timeout);
   }
   const text = await res.text();
   let data;

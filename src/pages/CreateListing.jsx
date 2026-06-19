@@ -357,13 +357,17 @@ export default function CreateListing() {
     setSaving(true);
     setModerationResult(null);
 
-    // Run AI content moderation first
-    const modRes = await base44.functions.invoke("moderateListing", {
-      title: form.title,
-      description: form.description,
-      category: form.category,
-    });
-    const mod = modRes?.data;
+    try {
+    // Run AI content moderation first (don't block posting if it fails/times out)
+    let mod = null;
+    try {
+      const modRes = await base44.functions.invoke("moderateListing", {
+        title: form.title,
+        description: form.description,
+        category: form.category,
+      });
+      mod = modRes?.data;
+    } catch (_) { mod = null; }
 
     const ytId = extractYouTubeId(form.youtube_url);
     const priceVal = parseFloat(form.price) || 0;
@@ -426,13 +430,17 @@ export default function CreateListing() {
     // category, community_franchise_id, modding_subcategory & newsfeed_categories
     // fields directly — no auto-generated "New listing" announcement posts.
 
-    setSaving(false);
     if (mod?.requiresReview) {
       setModerationResult(mod);
     } else if (savedListing?.id) {
       window.location.href = `/listing?id=${savedListing.id}`;
     } else {
       window.location.href = "/dashboard?tab=listings";
+    }
+    } catch (err) {
+      alert(err?.message || "Could not save your post. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
