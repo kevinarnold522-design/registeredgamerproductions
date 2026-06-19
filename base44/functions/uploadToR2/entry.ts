@@ -1,10 +1,28 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3.699.0';
+
+// Verify the Supabase access token sent as Authorization: Bearer <token>.
+// Auth migrated from Base44 -> Supabase, so we no longer use base44.auth.me().
+async function getSupabaseUser(req) {
+  const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!token) return null;
+  const url = Deno.env.get('SUPABASE_URL') || Deno.env.get('VITE_SUPABASE_URL');
+  const key = Deno.env.get('SUPABASE_KEY') || Deno.env.get('VITE_SUPABASE_ANON_KEY');
+  if (!url || !key) return null;
+  try {
+    const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return null;
+    return { id: user.id, email: user.email };
+  } catch (err) {
+    console.error('uploadToR2 supabase verify failed', err.message);
+    return null;
+  }
+}
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await getSupabaseUser(req);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { fileName, contentType, dataUrl, folder = 'uploads' } = await req.json();
@@ -20,10 +38,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Cloudflare R2 is not configured' }, { status: 500 });
     }
 
+    // Auto-correct if the access key id / secret were pasted in swapped order.
     if (accessKeyId.length !== 32 && secretAccessKey.length === 32) {
       const originalAccessKeyId = accessKeyId;
       accessKeyId = secretAccessKey;
       secretAccessKey = originalAccessKeyId;
+    }
+
+    if (accessKeyId.length !== 32) {
+      return Response.json({ error: `The R2 Access Key ID must be exactly 32 characters. The saved value is ${accessKeyId.length} characters, which means a URL, API token, or Secret Access Key was pasted instead.` }, { status: 500 });
     }
 
     const base64 = String(dataUrl).includes(',') ? String(dataUrl).split(',')[1] : String(dataUrl);
@@ -33,19 +56,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'File upload limit is 25MB' }, { status: 413 });
     }
     const safeName = String(fileName).replace(/[^a-zA-Z0-9._-]/g, '-');
-
-    if (String(contentType).startsWith('image/')) {
-      const imageFile = new File([binary], safeName, { type: contentType });
-      const uploaded = await base44.asServiceRole.integrations.Core.UploadFile({ file: imageFile });
-      return Response.json({ key: uploaded.file_url, file_url: uploaded.file_url });
-    }
-
     const safeFolder = String(folder).replace(/[^a-zA-Z0-9/_-]/g, '-');
     const key = `${safeFolder}/${user.id || user.email}/${Date.now()}-${safeName}`;
-
-    if (accessKeyId.length !== 32) {
-      return Response.json({ error: `The R2 Access Key ID must be exactly 32 characters. The saved value is ${accessKeyId.length} characters, which means a URL, API token, or Secret Access Key was pasted instead.` }, { status: 500 });
-    }
 
     const client = new S3Client({
       region: 'auto',
