@@ -20,6 +20,7 @@ import GroupChat from "@/components/community/GroupChat";
 import AnimatedController from "@/components/shared/AnimatedController";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 
 export default function CommunityLandingPage() {
   const { user } = useAuth();
@@ -265,6 +266,10 @@ export default function CommunityLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      {/* Official socials — pinned to the very top */}
+      <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
+        <GamerSocialsBar />
+      </div>
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       {/* Hero Cover */}
