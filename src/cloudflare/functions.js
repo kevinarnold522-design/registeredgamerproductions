@@ -8,6 +8,7 @@
 // =====================================================================
 import { createRecord, updateRecord, deleteRecord, listRecords } from "./db.js";
 import { getSessionUser } from "./auth.js";
+import { getSupabaseUser } from "./supabaseAuth.js";
 
 const MASTER_EMAIL = "kevinarnold522@gmail.com";
 const ADMIN_EMAILS = ["kevinjersey2019@gmail.com", "arnoldk137@gmail.com", "kevinarnold522@gmail.com"];
@@ -51,11 +52,14 @@ export async function handleFunction(name, body, env, request) {
 // Shared helpers
 // ─────────────────────────────────────────────────────────────────────
 
-// Resolve the current user from the request via the Worker's own session
-// (HttpOnly cookie or Bearer token), the single source of truth for auth.
+// Resolve the current user from the request. Try the Worker's own session
+// (HttpOnly cookie or Bearer token) first, then fall back to a Supabase
+// access token — this is what image uploads send, so the fallback fixes 401.
 async function getUser(env, request) {
   if (!request) return null;
-  return getSessionUser(env, request);
+  const sessionUser = await getSessionUser(env, request);
+  if (sessionUser) return sessionUser;
+  return getSupabaseUser(env, request);
 }
 
 function isAdmin(user) {
