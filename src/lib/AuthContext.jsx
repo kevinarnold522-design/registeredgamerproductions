@@ -38,6 +38,24 @@ export const AuthProvider = ({ children }) => {
       avatar_url: supaUser.user_metadata?.avatar_url,
       isSupabase: true
     };
+
+    // Merge in the stored UserProfile so real account details (username,
+    // avatar, account_type, etc.) actually show up instead of just the bare auth object.
+    try {
+      const profiles = await base44.entities.UserProfile.filter({ user_email: supaUser.email });
+      if (profiles && profiles.length > 0) {
+        const p = profiles[0];
+        formattedUser.profile = p;
+        formattedUser.full_name = p.display_name || p.username || formattedUser.full_name;
+        formattedUser.avatar_url = p.avatar_url || formattedUser.avatar_url;
+        formattedUser.username = p.username;
+        formattedUser.account_type = p.account_type;
+        formattedUser.role = p.user_email && isAdmin(p.user_email) ? 'admin' : 'user';
+      }
+    } catch (e) {
+      console.error('Failed to load user profile', e);
+    }
+
     setUser(formattedUser);
     setIsAuthenticated(true);
     
@@ -98,7 +116,8 @@ export const AuthProvider = ({ children }) => {
       if (supabase) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          handleSetUser(session.user);
+          await handleSetUser(session.user);
+          setIsLoadingAuth(false);
           return;
         }
       }
@@ -129,14 +148,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('base44_access_token');
       localStorage.removeItem('base44_token');
       
-      if (isGhostLogout) {
-        // If logging out from ghost account, just clear everything and go home
-        if (supabase) await supabase.auth.signOut();
-      } else {
-        // Normal admin logout
-        if (supabase) await supabase.auth.signOut();
-        else await base44.auth.logout('/');
-      }
+      // Sign out of Supabase (the live auth provider). Never call the old
+      // base44.auth.logout — that hits the dead /api/apps/auth/logout route (404).
+      if (supabase) await supabase.auth.signOut();
     } catch (e) {
       console.error("Logout cleanup failed", e);
     } finally {
