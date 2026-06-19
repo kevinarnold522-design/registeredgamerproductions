@@ -16,6 +16,8 @@ const ADMIN_EMAILS = ["kevinjersey2019@gmail.com", "arnoldk137@gmail.com", "kevi
 export async function handleFunction(name, body, env, request) {
   switch (name) {
     case "api/hello":              return { status: 200, body: { message: "Hello from Cloudflare Worker" } };
+    case "api/register":           return apiRegister(body, env);
+    case "adminUpdateEntity":      return adminUpdateEntity(body, env, request);
     case "getPaypalConfig":        return getPaypalConfig(body, env);
     case "createPaypalOrder":      return createPaypalOrder(body, env, request);
     case "capturePaypalPayment":   return capturePaypalPayment(body, env, request);
@@ -875,6 +877,50 @@ async function loginAsGhost(body, env, request) {
       redirect_url: `/profile?email=${encodeURIComponent(target_email)}&ghost_session=1`,
     },
   };
+}
+
+// Admin-gated entity create/update (matches the standalone Base44 fn).
+async function adminUpdateEntity(body, env, request) {
+  const ALLOWED_ENTITIES = ["Listing", "CommunityPost", "UserProfile", "GamingCommunity"];
+  const ALLOWED_ACTIONS = ["update", "create"];
+
+  const user = await getUser(env, request);
+  if (!user) return { status: 401, body: { error: "Unauthorized" } };
+  if (!isAdmin(user)) return { status: 403, body: { error: "Forbidden" } };
+
+  const { entity, action = "update", id, data } = body;
+  if (!ALLOWED_ENTITIES.includes(entity) || !ALLOWED_ACTIONS.includes(action) || !data) {
+    return { status: 400, body: { error: "Invalid request" } };
+  }
+
+  let result;
+  if (action === "create") {
+    result = await createRecord(env, entity, data);
+  } else {
+    if (!id) return { status: 400, body: { error: "Missing id" } };
+    result = await updateRecord(env, entity, id, data);
+  }
+  return { status: 200, body: { success: true, result } };
+}
+
+// Email + password sign-up straight into D1 (Pages-style register route).
+async function apiRegister(body, env) {
+  const { email, password, full_name } = body;
+  if (!email || !password) return { status: 400, body: { error: "Missing fields" } };
+
+  const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+  if (existing) return { status: 409, body: { error: "Email already registered" } };
+
+  const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+  const passwordHash = Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+  const userId = crypto.randomUUID().replace(/-/g, "");
+  const now = new Date().toISOString();
+  await env.DB.prepare(
+    "INSERT INTO users (id, email, full_name, password_hash, role, auth_provider, created_date, updated_date) VALUES (?, ?, ?, ?, 'user', 'email', ?, ?)"
+  ).bind(userId, email, full_name || email.split("@")[0], passwordHash, now, now).run();
+
+  return { status: 200, body: { success: true, user: { id: userId, email } } };
 }
 
 // ─────────────────────────────────────────────────────────────────────
