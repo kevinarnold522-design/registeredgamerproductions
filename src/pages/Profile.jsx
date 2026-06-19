@@ -197,8 +197,8 @@ export default function Profile() {
     if (!file) return;
     try {
       const file_url = await uploadToR2(file, "profile-avatars");
-      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
-      setProfile({ ...profile, avatar_url: file_url });
+      const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "avatar_url", value: file_url });
+      setProfile(res.data.profile);
       toast.success("Avatar updated");
     } catch (error) {
       toast.error("Failed to upload avatar");
@@ -228,8 +228,8 @@ export default function Profile() {
 
   const handleThemeChange = async (themeColor) => {
     if (!profile?.id) return;
-    await base44.entities.UserProfile.update(profile.id, { profile_theme_color: themeColor });
-    setProfile({ ...profile, profile_theme_color: themeColor });
+    const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "profile_theme_color", value: themeColor });
+    setProfile(res.data.profile);
   };
 
   if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;
