@@ -156,8 +156,15 @@ export default function CreateListing() {
 
   useEffect(() => {
     const init = async () => {
-      const me = await base44.auth.me();
-      if (!me) { base44.auth.redirectToLogin("/create-listing"); return; }
+      // Current user comes from Supabase auth (matches the rest of the app post-migration)
+      const { supabase } = await import("@/lib/supabaseClient");
+      const { data: { session } } = await supabase.auth.getSession();
+      const supaUser = session?.user;
+      if (!supaUser) {
+        await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
+        return;
+      }
+      const me = { email: supaUser.email, full_name: supaUser.user_metadata?.full_name || supaUser.email?.split("@")[0] };
       const ghostSession = (() => {
         try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
       })();
