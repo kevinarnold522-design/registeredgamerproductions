@@ -12,6 +12,7 @@ const NEWSFEED_TARGETS = [
   { id: "content_streaming", label: "Content" },
 ];
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { isAdmin, CATEGORIES, GAMES_STORES } from "@/lib/constants";
 
 const DIGITAL_SUBCATEGORIES = [
@@ -51,6 +52,7 @@ const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const MAX_UPLOAD_LABEL = "25MB";
 
 export default function CreateListing() {
+  const { user: authUser, isLoadingAuth } = useAuth();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -158,17 +160,15 @@ export default function CreateListing() {
 
   useEffect(() => {
     const init = async () => {
-      // Current user comes from Supabase auth (matches the rest of the app post-migration)
-      const { supabase } = await import("@/lib/supabaseClient");
-      const { data: { session } } = await supabase.auth.getSession();
-      const supaUser = session?.user;
-      if (!supaUser) {
+      // Wait for the shared auth context to resolve the Supabase session.
+      if (isLoadingAuth) return;
+      const me = authUser;
+      if (!me?.email) {
         // No session — show a sign-in prompt instead of hanging on the spinner forever.
         setNeedsLogin(true);
         setLoading(false);
         return;
       }
-      const me = { email: supaUser.email, full_name: supaUser.user_metadata?.full_name || supaUser.email?.split("@")[0] };
       const ghostSession = (() => {
         try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
       })();
@@ -243,7 +243,7 @@ export default function CreateListing() {
       setLoading(false);
     };
     init();
-  }, []);
+  }, [authUser, isLoadingAuth]);
 
   const uploadToR2 = async (file, folder) => {
     if (file.size > MAX_UPLOAD_BYTES) {
