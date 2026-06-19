@@ -61,7 +61,7 @@ function LiveStats() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-      className="flex flex-wrap justify-center gap-8 mb-14 text-center">
+      className="flex flex-wrap justify-center gap-8 mb-8 text-center">
       {/* Registered Gamers — admin only */}
       {isAdmin && (
         <motion.div
@@ -123,7 +123,7 @@ export default function HeroSection() {
   const navigate = useNavigate();
   const { user } = useAuth();
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16">
+    <section className="relative flex flex-col items-center justify-center overflow-hidden pt-16">
       {/* Background */}
       <div className="absolute inset-0" style={{
         background: "radial-gradient(ellipse at 60% 40%, rgba(139,92,246,0.18) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.12) 0%, transparent 50%), #030712",
@@ -141,7 +141,7 @@ export default function HeroSection() {
         transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-10">
         {/* GP Logo */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="flex flex-col items-center mb-4">
           <motion.img
@@ -235,7 +235,7 @@ export default function HeroSection() {
 
         {/* Trust signals */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-          className="flex flex-wrap justify-center gap-4 mb-10 text-xs text-gray-500">
+          className="flex flex-wrap justify-center gap-4 mb-6 text-xs text-gray-500">
           {[
             { icon: ShieldCheck, text: "Free to Join" },
             { icon: Lock, text: "Secure Payments via PayPal & Stripe" },
