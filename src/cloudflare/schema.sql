@@ -10,17 +10,29 @@
 
 PRAGMA foreign_keys = OFF;
 
--- ---------- Users (Base44 built-in User entity) ----------
+-- ---------- Users (native Cloudflare auth) ----------
 CREATE TABLE IF NOT EXISTS users (
   id            TEXT PRIMARY KEY,
   full_name     TEXT,
   email         TEXT UNIQUE,
   role          TEXT DEFAULT 'user',
+  avatar_url    TEXT,
+  auth_provider TEXT DEFAULT 'email',          -- email | google | facebook | yahoo
+  password_hash TEXT,                           -- SHA-256, only for email sign-ups
   created_date  TEXT DEFAULT (datetime('now')),
   updated_date  TEXT DEFAULT (datetime('now')),
   created_by_id TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- ---------- Sessions (native Cloudflare auth) ----------
+CREATE TABLE IF NOT EXISTS sessions (
+  token         TEXT PRIMARY KEY,
+  user_id       TEXT NOT NULL,
+  created_date  TEXT DEFAULT (datetime('now')),
+  expires_date  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 
 -- ---------- UserProfile ----------
 CREATE TABLE IF NOT EXISTS user_profiles (

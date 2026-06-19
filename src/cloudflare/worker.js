@@ -5,6 +5,7 @@
 // =====================================================================
 import { createRecord, updateRecord, deleteRecord, listRecords } from "./db.js";
 import { handleFunction } from "./functions.js";
+import { handleAuth } from "./auth.js";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +24,19 @@ export default {
     const parts = url.pathname.split("/").filter(Boolean);
 
     try {
+      // ---- Native auth:  /auth/<provider|register|login|logout|me> ----
+      if (parts[0] === "auth") {
+        const authResponse = await handleAuth(parts, request, env);
+        if (authResponse) {
+          // ensure CORS + credentials on JSON auth responses (redirects pass through)
+          if (authResponse.status !== 302) {
+            for (const [k, v] of Object.entries(CORS)) authResponse.headers.set(k, v);
+            authResponse.headers.set("Access-Control-Allow-Credentials", "true");
+          }
+          return authResponse;
+        }
+      }
+
       // ---- Backend functions:  /functions/<name> ----
       if (parts[0] === "functions" && parts[1]) {
         const body = request.method === "POST" ? await request.json().catch(() => ({})) : {};
