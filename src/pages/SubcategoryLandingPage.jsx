@@ -427,6 +427,20 @@ export default function SubcategoryLandingPage() {
               )}
             </div>
           ) : (
+            <>
+            {listings.length > perPage && (
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                  className="px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-300 disabled:opacity-40">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="px-4 py-2 rounded-xl bg-purple-900/30 border border-purple-700/40 text-purple-200 text-sm font-bold">Page {page} of {totalPages}</span>
+                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                  className="px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-300 disabled:opacity-40">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {pagedListings.map(listing => (
                 <EnhancedListingCard
@@ -438,6 +452,7 @@ export default function SubcategoryLandingPage() {
                 />
               ))}
             </div>
+            </>
           )}
           {listings.length > perPage && (
             <div className="flex items-center justify-center gap-2 mt-6">

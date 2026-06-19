@@ -6,7 +6,10 @@ import { base44 } from "@/api/base44Client";
 import { CATEGORIES, isAdmin } from "@/lib/constants";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import Pagination from "@/components/shared/Pagination";
 import { formatListingPrice } from "@/lib/currency";
+
+const PER_PAGE = 15;
 
 const buySellCat = CATEGORIES.find(c => c.id === "buy_sell");
 
@@ -70,6 +73,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeSub, setActiveSub] = useState(sub || "all");
+  const [page, setPage] = useState(1);
 
   const canPost = user;
 
@@ -80,11 +84,17 @@ export default function BuySellLandingPage({ user, profile, sub }) {
     });
   }, []);
 
+  useEffect(() => { setPage(1); }, [activeSub, search]);
+
   const filtered = listings.filter(l => {
     const matchSub = activeSub === "all" || l.subcategory === activeSub;
     const matchSearch = !search || l.title?.toLowerCase().includes(search.toLowerCase());
     return matchSub && matchSearch;
   });
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const goToPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -150,9 +160,13 @@ export default function BuySellLandingPage({ user, profile, sub }) {
             {canPost && <a href="/create-listing?cat=buy_sell" className="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-600 text-white font-bold text-sm"><Send className="w-4 h-4" /> Post</a>}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filtered.map((l, i) => <ListingCard key={l.id} listing={l} index={i} />)}
-          </div>
+          <>
+            <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {paged.map((l, i) => <ListingCard key={l.id} listing={l} index={i} />)}
+            </div>
+            <div className="mt-8"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
+          </>
         )}
       </div>
       <GamerBrandFooter />

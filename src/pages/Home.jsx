@@ -7,6 +7,7 @@ import HeroSection from "@/components/home/HeroSection";
 import MarqueeTicker from "@/components/home/MarqueeTicker";
 import CategoryCards from "@/components/home/CategoryCards";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
+import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
@@ -187,6 +188,10 @@ export default function Home() {
           <div className="relative z-10">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
             {user && <AIAssistBanner user={user} />}
+            {/* Official socials — top of homepage */}
+            <div className="max-w-7xl mx-auto px-4 pt-4">
+              <GamerSocialsBar />
+            </div>
             <VideoHeroBanner />
             <HeroSection />
             <CategoryCards />
@@ -229,6 +234,11 @@ export default function Home() {
 
               {/* What GAMER Productions is — moved to bottom above footer */}
               <BusinessModelSection />
+
+              {/* Official socials — bottom of homepage */}
+              <div className="max-w-7xl mx-auto px-4 py-6">
+                <GamerSocialsBar />
+              </div>
 
               <Footer />
               <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />

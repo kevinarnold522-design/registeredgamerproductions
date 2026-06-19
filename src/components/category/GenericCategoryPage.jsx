@@ -388,6 +388,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               <GameCoverCard key={l.id} l={l} i={i} user={user} profile={profile} />
             ))}
           </div>
+          <div className="mt-8"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
           </>
         ) : (
           <>
@@ -397,6 +398,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
             ))}
           </div>
+          <div className="mt-8"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
           </>
         )}
       </div>

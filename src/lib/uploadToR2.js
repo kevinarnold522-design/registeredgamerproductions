@@ -8,18 +8,24 @@ export function validateUploadSize(file) {
   return file && file.size <= MAX_UPLOAD_BYTES;
 }
 
-// Upload through the Cloudflare Worker — it authenticates from the worker
-// session cookie, falling back to the Supabase access token (sent as a
-// Bearer header) so uploads work even when the cookie is unavailable.
+// Upload through the backend uploadToR2 function. It verifies the Supabase
+// access token, which we send BOTH as a Bearer header and inside the request
+// body (`accessToken`) — the SDK does not reliably forward custom headers, so
+// the body is the dependable path and prevents 401 "Unauthorized" upload errors.
 async function invokeUpload(payload) {
   let headers;
+  let accessToken;
   try {
     const { supabase } = await import("@/lib/supabaseClient");
     const { data } = await supabase.auth.getSession();
-    const token = data?.session?.access_token;
-    if (token) headers = { Authorization: `Bearer ${token}` };
+    accessToken = data?.session?.access_token;
+    if (accessToken) headers = { Authorization: `Bearer ${accessToken}` };
   } catch (_) {}
-  const res = await base44.functions.invoke("uploadToR2", payload, headers ? { headers } : {});
+  const res = await base44.functions.invoke(
+    "uploadToR2",
+    { ...payload, accessToken },
+    headers ? { headers } : {}
+  );
   return res.data;
 }
 

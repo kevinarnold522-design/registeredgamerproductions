@@ -147,7 +147,13 @@ export default function ListingPage() {
     if (!id) { setLoading(false); return; }
     const load = async () => {
       try {
-        const l = await base44.entities.Listing.get(id);
+        // Primary lookup; fall back to a filter query if get() returns null
+        // (prevents a false "Listing not found" 404 when the direct id route misses).
+        let l = await base44.entities.Listing.get(id).catch(() => null);
+        if (!l) {
+          const rows = await base44.entities.Listing.filter({ id }).catch(() => []);
+          l = rows?.[0] || null;
+        }
         if (l) {
           // Increment view count and update local state with the new value
           const newViews = (l.views || 0) + 1;

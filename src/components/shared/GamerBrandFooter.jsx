@@ -2,14 +2,15 @@ import React from "react";
 import { Facebook, Instagram, Youtube, MessageCircle } from "lucide-react";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import BrandLogo from "@/components/shared/BrandLogo";
+import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 
 export default function GamerBrandFooter({ showMascots = true }) {
   const socials = [
-    { label: "YouTube", href: "https://youtube.com", icon: Youtube, color: "text-red-300" },
-    { label: "Facebook", href: "https://facebook.com", icon: Facebook, color: "text-blue-300" },
-    { label: "Instagram", href: "https://instagram.com", icon: Instagram, color: "text-pink-300" },
-    { label: "Discord", href: "https://discord.com", brand: "discord", color: "text-indigo-300" },
-    { label: "TikTok", href: "https://tiktok.com", brand: "tiktok", color: "text-white" },
+    { label: "YouTube", href: OFFICIAL_LINKS.youtube, icon: Youtube, color: "text-red-300" },
+    { label: "Facebook", href: OFFICIAL_LINKS.facebook, icon: Facebook, color: "text-blue-300" },
+    { label: "Instagram", href: OFFICIAL_LINKS.instagram, icon: Instagram, color: "text-pink-300" },
+    { label: "Discord", href: OFFICIAL_LINKS.discord, brand: "discord", color: "text-indigo-300" },
+    { label: "TikTok", href: OFFICIAL_LINKS.tiktok, brand: "tiktok", color: "text-white" },
     { label: "Contact", href: "/contact", icon: MessageCircle, color: "text-cyan-300" },
   ];
 
