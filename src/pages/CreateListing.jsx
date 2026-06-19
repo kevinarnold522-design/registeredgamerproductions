@@ -38,7 +38,7 @@ const PHYSICAL_SUBCATEGORIES = [
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import AIListingAssistant from "@/components/listings/AIListingAssistant";
 import BrandLogo from "@/components/shared/BrandLogo";
-import { compressImage } from "@/lib/compressImage";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { CURRENCY_OPTIONS } from "@/lib/currency";
 
@@ -246,31 +246,8 @@ export default function CreateListing() {
   }, [authUser, isLoadingAuth]);
 
   const uploadToR2 = async (file, folder) => {
-    if (file.size > MAX_UPLOAD_BYTES) {
-      throw new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`);
-    }
-    if ((file.type || "").startsWith("image/")) {
-      const compressed = await compressImage(file);
-      const res = await base44.integrations.Core.UploadFile({ file: compressed });
-      return res.file_url;
-    }
-
-    return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const res = await base44.functions.invoke("uploadToR2", {
-          fileName: file.name,
-          contentType: file.type || "application/octet-stream",
-          dataUrl: reader.result,
-          folder,
-        });
-        resolve(res.data.file_url);
-      } catch (error) { reject(error); }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-    });
+    const { file_url } = await uploadFileToR2(file, folder);
+    return file_url;
   };
 
   const handleImageUpload = async (e) => {

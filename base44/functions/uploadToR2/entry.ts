@@ -3,8 +3,11 @@ import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3.699.0';
 
 // Verify the Supabase access token sent as Authorization: Bearer <token>.
 // Auth migrated from Base44 -> Supabase, so we no longer use base44.auth.me().
-async function getSupabaseUser(req) {
-  const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+async function getSupabaseUser(req, bodyToken) {
+  // Token can arrive via the Authorization header OR the request body — the
+  // base44 SDK does not always forward custom headers, so the body is the reliable path.
+  const headerToken = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  const token = headerToken || bodyToken || '';
   if (!token) return null;
   const url = Deno.env.get('VITE_SUPABASE_URL');
   const key = Deno.env.get('VITE_SUPABASE_ANON_KEY');
@@ -22,10 +25,12 @@ async function getSupabaseUser(req) {
 
 Deno.serve(async (req) => {
   try {
-    const user = await getSupabaseUser(req);
+    const body = await req.json();
+    const { fileName, contentType, dataUrl, folder = 'uploads', accessToken } = body;
+
+    const user = await getSupabaseUser(req, accessToken);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { fileName, contentType, dataUrl, folder = 'uploads' } = await req.json();
     if (!fileName || !contentType || !dataUrl) {
       return Response.json({ error: 'Missing file data' }, { status: 400 });
     }

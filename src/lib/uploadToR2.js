@@ -10,14 +10,17 @@ export function validateUploadSize(file) {
 }
 
 // Send the current Supabase access token so the backend function can authenticate the upload.
+// Token goes in BOTH the header and the body — the base44 SDK doesn't reliably forward
+// custom headers, so the body is the dependable path.
 async function invokeUpload(payload) {
   let headers = {};
+  let accessToken;
   try {
     const { data } = await supabase.auth.getSession();
-    const token = data?.session?.access_token;
-    if (token) headers.Authorization = `Bearer ${token}`;
+    accessToken = data?.session?.access_token;
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
   } catch (_) {}
-  const res = await base44.functions.invoke("uploadToR2", payload, { headers });
+  const res = await base44.functions.invoke("uploadToR2", { ...payload, accessToken }, { headers });
   return res.data;
 }
 
