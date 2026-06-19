@@ -1,59 +1,255 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 
 export default function EmailLoginModal({ isOpen, onClose }) {
-  const loginWithProvider = () => {
-    base44.auth.redirectToLogin(window.location.href);
-  };
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [loading, setLoading] = useState(false);
+const [message, setMessage] = useState("");
 
-  if (!isOpen) return null;
+if (!isOpen) return null;
 
-  return (
-    <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4"
-        onClick={onClose}
-      >
-        <motion.div 
-          initial={{ scale: 0.95 }} animate={{ scale: 1 }}
-          onClick={(e) => e.stopPropagation()}
-          className="bg-gray-950 border border-white/10 p-8 rounded-3xl w-full max-w-sm shadow-2xl"
-        >
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-white font-black text-2xl">Sign In</h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-white"><X size={24} /></button>
-          </div>
+const handleSubmit = async (e) => {
+e.preventDefault();
+setLoading(true);
+setMessage("");
 
-          <div className="space-y-3">
-            <SocialButton onClick={loginWithProvider} bg="bg-white" text="text-black" icon={<GoogleIcon />} label="Google" />
-            <SocialButton onClick={loginWithProvider} bg="bg-[#1877F2]" text="text-white" icon="/logos/facebook.svg" label="Facebook" />
-            <SocialButton onClick={loginWithProvider} bg="bg-gradient-to-r from-[#feda75] via-[#d62976] to-[#4f5bd5]" text="text-white" icon="/logos/instagram.svg" label="Instagram" />
-          </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
+try {
+const res = await fetch("/api/register", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ email, password }),
+});
+
+const data = await res.json();
+
+if (res.ok && data.success) {
+setMessage("Account successfully saved to Cloudflare D1!");
+setTimeout(() => {
+onClose();
+}, 2000);
+} else {
+setMessage(data.error || "Something went wrong.");
+}
+} catch (err) {
+setMessage("Failed to connect to registration server.");
+} finally {
+setLoading(false);
+}
+};
+
+return (
+<AnimatePresence>
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4" onClick={onClose}>
+<motion.div
+initial={{ scale: 0.95 }}
+animate={{ scale: 1 }}
+exit={{ scale: 0.95 }}
+onClick={(e) => e.stopPropagation()}
+className="bg-gray-950 border border-white/10 p-8 rounded-3xl w-full max-w-sm shadow-2xl"
+>
+<div className="flex justify-between items-center mb-6">
+<h2 className="text-white font-black text-2xl">Sign Up / In</h2>
+<button onClick={onClose} className="text-gray-400 hover:text-white">
+<X size={24} />
+</button>
+</div>
+
+<form onSubmit={handleSubmit} className="space-y-4 mb-4">
+<div>
+<label className="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">Email Address</label>
+<input
+type="email"
+required
+value={email}
+onChange={(e) => setEmail(e.target.value)}
+className="w-full bg-gray-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors"
+placeholder="you@example.com"
+/>
+</div>
+<div>
+<label className="block text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">Password</label>
+<input
+type="password"
+required
+value={password}
+onChange={(e) => setPassword(e.target.value)}
+className="w-full bg-gray-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors"
+placeholder="••••••••"
+/>
+</div>
+
+<button
+type="submit"
+disabled={loading}
+className="w-full bg-white hover:bg-gray-200 text-black font-bold py-3 px-4 rounded-xl transition-colors disabled:opacity-50"
+>
+{loading ? "Processing..." : "Submit to D1"}
+</button>
+</form>
+
+{message && (
+<p className="text-center text-sm font-medium text-white bg-white/5 py-2 px-3 rounded-xl border border-white/5">
+{message}
+</p>
+)}
+</motion.div>
+</div>
+</AnimatePresence>
+);
 }
 
-function GoogleIcon() {
-  return (
-    <svg className="w-5 h-5" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-      <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
-      <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
-      <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
-      <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
-    </svg>
-  );
+On Fri, Jun 19, 2026 at 7:37 PM kevin jersey <kevinjersey2019@gmail.com> wrote:
+export async function onRequestPost(context) {
+try {
+const { request, env } = context;
+const { email, password } = await request.json();
+
+if (!email || !password) {
+return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
 }
 
-function SocialButton({ onClick, bg, text, icon, label }) {
-  return (
-    <button onClick={onClick} className={`w-full flex items-center gap-4 py-3 px-5 ${bg} ${text} rounded-2xl font-bold text-sm hover:brightness-110 transition-all`}>
-      {typeof icon === "string" ? <img src={icon} alt={label} className="w-5 h-5 object-contain" /> : icon}
-      Continue with {label}
-    </button>
-  );
+// Hash password with native Web Crypto API
+const encoder = new TextEncoder();
+const data = encoder.encode(password);
+const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+const passwordHash = Array.from(new Uint8Array(hashBuffer))
+.map(b => b.toString(16).padStart(2, "0"))
+.join("");
+
+const userId = crypto.randomUUID();
+
+// Securely insert into D1 using your 'DB' binding
+await env.DB.prepare(
+"INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)"
+)
+.bind(userId, email, passwordHash)
+.run();
+
+return new Response(JSON.stringify({ success: true }), {
+status: 200,
+headers: { "Content-Type": "application/json" }
+});
+
+} catch (error) {
+return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+}
+}
+
+
+
+𝒦ℯ𝓋𝒾𝓃 𝒥 ℛℴ𝒷ℯ𝓇𝓉ℴ
+Inline image
+
+On Fri, Jun 19, 2026 at 7:37 PM kevin Roberto <kevinarnold522@gmail.com> wrote:
+export async function onRequestPost(context) {
+try {
+const { request, env } = context;
+const { email, password } = await request.json();
+
+if (!email || !password) {
+return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+}
+
+// Hash password with native Web Crypto API
+const encoder = new TextEncoder();
+const data = encoder.encode(password);
+const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+const passwordHash = Array.from(new Uint8Array(hashBuffer))
+.map(b => b.toString(16).padStart(2, "0"))
+.join("");
+
+const userId = crypto.randomUUID();
+
+// Securely insert into D1 using your 'DB' binding
+await env.DB.prepare(
+"INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)"
+)
+.bind(userId, email, passwordHash)
+.run();
+
+return new Response(JSON.stringify({ success: true }), {
+status: 200,
+headers: { "Content-Type": "application/json" }
+});
+
+} catch (error) {
+return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+}
+}
+
+
+On Fri, Jun 19, 2026 at 7:34 PM kevin Roberto <kevinarnold522@gmail.com> wrote:
+export async function onRequestPost(context) {
+try {
+const { request, env } = context;
+const { email, password } = await request.json();
+
+if (!email || !password) {
+return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+}
+
+// Hash password with native Web Crypto API
+const encoder = new TextEncoder();
+const data = encoder.encode(password);
+const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+const passwordHash = Array.from(new Uint8Array(hashBuffer))
+.map(b => b.toString(16).padStart(2, "0"))
+.join("");
+
+const userId = crypto.randomUUID();
+
+// Securely insert into D1 using your 'DB' binding
+await env.DB.prepare(
+"INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)"
+)
+.bind(userId, email, passwordHash)
+.run();
+
+return new Response(JSON.stringify({ success: true }), {
+status: 200,
+headers: { "Content-Type": "application/json" }
+});
+
+} catch (error) {
+return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+}
+}
+
+On Fri, Jun 19, 2026 at 7:34 PM kevin Roberto <kevinarnold522@gmail.com> wrote:
+export async function onRequestPost(context) {
+try {
+const { request, env } = context;
+const { email, password } = await request.json();
+
+if (!email || !password) {
+return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+}
+
+// Hash password with native Web Crypto API
+const encoder = new TextEncoder();
+const data = encoder.encode(password);
+const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+const passwordHash = Array.from(new Uint8Array(hashBuffer))
+.map(b => b.toString(16).padStart(2, "0"))
+.join("");
+
+const userId = crypto.randomUUID();
+
+// Securely insert into D1 using your 'DB' binding
+await env.DB.prepare(
+"INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)"
+)
+.bind(userId, email, passwordHash)
+.run();
+
+return new Response(JSON.stringify({ success: true }), {
+status: 200,
+headers: { "Content-Type": "application/json" }
+});
+
+} catch (error) {
+return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+}
 }
