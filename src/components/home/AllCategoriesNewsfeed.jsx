@@ -5,7 +5,6 @@ import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import { formatListingPrice } from "@/lib/currency";
 
 const PER_PAGE = 8;
-const MAX_PAGES = 10;
 
 // Single newsfeed for ALL categories — pulls every previous listing from the
 // Cloudflare database, newest first, paginated 1..10.
@@ -16,7 +15,7 @@ export default function AllCategoriesNewsfeed({ user, profile }) {
 
   useEffect(() => {
     const load = async () => {
-      const res = await base44.entities.Listing.list("-created_date", 200);
+      const res = await base44.entities.Listing.list("-created_date", 1000);
       const all = Array.isArray(res) ? res : (res?.data || res?.records || []);
       const active = all.filter(l => (l.status ? l.status === "active" : true) && l.is_approved !== false);
       setListings(active);
@@ -25,7 +24,8 @@ export default function AllCategoriesNewsfeed({ user, profile }) {
     load();
   }, []);
 
-  const totalPages = Math.min(MAX_PAGES, Math.max(1, Math.ceil(listings.length / PER_PAGE)));
+  // Unlimited pages — grows as more listings are added (starts at 1..10, then keeps going).
+  const totalPages = Math.max(1, Math.ceil(listings.length / PER_PAGE));
   const startIdx = (page - 1) * PER_PAGE;
   const pageItems = listings.slice(startIdx, startIdx + PER_PAGE);
 
@@ -61,20 +61,29 @@ export default function AllCategoriesNewsfeed({ user, profile }) {
         </div>
       )}
 
-      {/* Page numbers 1..10 */}
-      {!loading && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-1.5 flex-wrap px-3 py-3 border-t border-gray-800/60">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`min-w-7 h-7 px-2 rounded-lg text-xs font-bold transition-all ${p === page ? "bg-purple-600 text-white border border-purple-500" : "bg-gray-900 border border-gray-700 text-gray-300 hover:border-purple-500/50"}`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Page numbers — starts 1..10, grows unlimited as listings evolve (windowed) */}
+      {!loading && totalPages > 1 && (() => {
+        const start = Math.max(1, Math.min(page - 4, totalPages - 9));
+        const end = Math.min(totalPages, start + 9);
+        const nums = [];
+        for (let i = start; i <= end; i++) nums.push(i);
+        const numBtn = (p) => (
+          <button
+            key={p}
+            onClick={() => setPage(p)}
+            className={`min-w-7 h-7 px-2 rounded-lg text-xs font-bold transition-all ${p === page ? "bg-purple-600 text-white border border-purple-500" : "bg-gray-900 border border-gray-700 text-gray-300 hover:border-purple-500/50"}`}
+          >
+            {p}
+          </button>
+        );
+        return (
+          <div className="flex items-center justify-center gap-1.5 flex-wrap px-3 py-3 border-t border-gray-800/60">
+            {start > 1 && (<>{numBtn(1)}{start > 2 && <span className="text-gray-600 text-xs">…</span>}</>)}
+            {nums.map(numBtn)}
+            {end < totalPages && (<>{end < totalPages - 1 && <span className="text-gray-600 text-xs">…</span>}{numBtn(totalPages)}</>)}
+          </div>
+        );
+      })()}
     </div>
   );
 }
