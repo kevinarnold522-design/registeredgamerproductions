@@ -348,4 +348,18 @@ CREATE TABLE IF NOT EXISTS entity_records (
 );
 CREATE INDEX IF NOT EXISTS idx_entity_records_name ON entity_records(entity_name);
 
+-- ---------- Uploaded media metadata (R2 file tracking) ----------
+CREATE TABLE IF NOT EXISTS media (
+  id            TEXT PRIMARY KEY,
+  r2_key        TEXT NOT NULL,
+  filename      TEXT,
+  content_type  TEXT,
+  size_bytes    INTEGER,
+  file_url      TEXT,
+  folder        TEXT,
+  uploaded_by   TEXT,
+  uploaded_at   TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_media_uploaded_by ON media(uploaded_by);
+
 PRAGMA foreign_keys = ON;

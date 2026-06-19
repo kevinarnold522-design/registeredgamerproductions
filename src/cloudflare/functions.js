@@ -41,6 +41,7 @@ export async function handleFunction(name, body, env, request) {
     case "adminGhostAccounts":     return adminGhostAccounts(body, env, request);
     case "loginAsGhost":           return loginAsGhost(body, env, request);
     case "uploadToR2":             return uploadToR2(body, env, request);
+    case "listMedia":              return listMedia(body, env, request);
     default:
       return { status: 404, body: { error: `Function '${name}' not found` } };
   }
@@ -917,5 +918,35 @@ async function uploadToR2(body, env, request) {
   const fileUrl = publicBase
     ? `${publicBase.startsWith("http") ? publicBase : "https://" + publicBase}/${key}`
     : `/${key}`;
+
+  // Record file metadata in D1 alongside the R2 upload
+  try {
+    await env.DB.prepare(
+      "INSERT INTO media (id, r2_key, filename, content_type, size_bytes, file_url, folder, uploaded_by, uploaded_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(
+      crypto.randomUUID().replace(/-/g, ""),
+      key, safeName, contentType, binary.byteLength, fileUrl, safeFolder,
+      user.email || user.id, new Date().toISOString()
+    ).run();
+  } catch (e) {
+    console.error("media metadata insert failed:", e.message);
+  }
+
   return { status: 200, body: { key, file_url: fileUrl } };
+}
+
+// List uploaded media metadata from D1 (admins see all, users see their own)
+async function listMedia(_body, env, request) {
+  const user = await getUser(env, request);
+  if (!user) return { status: 401, body: { error: "Unauthorized" } };
+  try {
+    const stmt = isAdmin(user)
+      ? env.DB.prepare("SELECT * FROM media ORDER BY uploaded_at DESC LIMIT 200")
+      : env.DB.prepare("SELECT * FROM media WHERE uploaded_by = ? ORDER BY uploaded_at DESC LIMIT 200").bind(user.email || user.id);
+    const { results } = await stmt.all();
+    return { status: 200, body: { media: results || [] } };
+  } catch (e) {
+    console.error("listMedia failed:", e.message);
+    return { status: 500, body: { error: e.message } };
+  }
 }
