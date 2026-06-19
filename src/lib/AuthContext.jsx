@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabaseClient';
 import { isAdmin } from '@/lib/constants';
 
 const AuthContext = createContext();
@@ -14,6 +15,26 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     initAuth();
+    // Supabase drives auth — react to sign-in / sign-out (e.g. after the
+    // OAuth redirect back to the app) without needing a manual reload.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
+      }
+      if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+        const u = session.user;
+        const meta = u.user_metadata || {};
+        buildUser({
+          id: u.id,
+          email: u.email,
+          full_name: meta.full_name || meta.name || u.email?.split('@')[0],
+          avatar_url: meta.avatar_url || meta.picture || '',
+        }).catch(() => {});
+      }
+    });
+    return () => { try { sub?.subscription?.unsubscribe(); } catch (_) {} };
   }, []);
 
   // Build the full app user from the worker's auth user + their UserProfile.

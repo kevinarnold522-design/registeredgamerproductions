@@ -32,8 +32,20 @@ const API_BASE = resolveApiBase();
 // (credentials: "include"). We also mirror any non-HttpOnly token we may
 // hold in localStorage as a Bearer header for environments that strip
 // third-party cookies (e.g. some in-app browsers / iframes).
-function authHeaders(extra = {}) {
+// Resolve the Supabase access token (the worker authenticates the user from
+// this Bearer token via its getSupabaseUser fallback). Falls back to any
+// locally-stored worker session token.
+async function authHeaders(extra = {}) {
   const headers = { ...extra };
+  try {
+    const { supabase } = await import("@/lib/supabaseClient");
+    const { data } = await supabase.auth.getSession();
+    const token = data?.session?.access_token;
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+      return headers;
+    }
+  } catch (_) {}
   try {
     const token = localStorage.getItem("gp_session_token");
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -45,7 +57,7 @@ async function request(path, { method = "GET", body, headers } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     credentials: "include",
-    headers: authHeaders({
+    headers: await authHeaders({
       ...(body ? { "Content-Type": "application/json" } : {}),
       ...headers,
     }),
@@ -138,44 +150,51 @@ const functions = {
   },
 };
 
-// ---- Auth ----
+// ---- Auth (Supabase-backed) ----
+// Supabase handles auth natively (Google/Facebook OAuth + email/password),
+// independent of the Worker. We normalize the Supabase user into the shape
+// the app already expects ({ id, email, full_name, avatar_url, role }).
+import { supabase } from "@/lib/supabaseClient";
+import {
+  signInWithProvider as sbSignInWithProvider,
+  signInWithEmail as sbSignInWithEmail,
+  signUpWithEmail as sbSignUpWithEmail,
+} from "@/lib/supabaseAuth";
+
+function normalizeSupabaseUser(u) {
+  if (!u) return null;
+  const meta = u.user_metadata || {};
+  return {
+    id: u.id,
+    email: u.email,
+    full_name: meta.full_name || meta.name || (u.email ? u.email.split("@")[0] : ""),
+    avatar_url: meta.avatar_url || meta.picture || "",
+    role: undefined, // resolved by AuthContext via isAdmin/profile
+  };
+}
+
 const auth = {
   async me() {
-    const data = await request(`/auth/me`);
-    return data?.user || null;
+    const { data } = await supabase.auth.getUser();
+    return normalizeSupabaseUser(data?.user);
   },
   async isAuthenticated() {
     try { return !!(await this.me()); } catch { return false; }
   },
   loginWithProvider(provider = "google", next = "/") {
-    const p = provider.toLowerCase() === "gmail" ? "google" : provider.toLowerCase();
-    // API_BASE must be an absolute worker URL. If it's missing, navigating to a
-    // relative "/auth/google" just hits the app's own router and 404s — so stop
-    // and tell the user clearly instead of producing a confusing Page Not Found.
-    // API_BASE must point to the Cloudflare Worker — NOT the app's own origin.
-    // If it's empty, or accidentally set to the app domain, OAuth would loop
-    // back to the React app and 404. Block that and report it clearly.
-    const sameOrigin = (() => { try { return new URL(API_BASE).origin === window.location.origin; } catch { return false; } })();
-    if (!API_BASE || !/^https?:\/\//.test(API_BASE) || sameOrigin) {
-      alert("Login is temporarily unavailable: the backend (worker) URL is not configured correctly. Please contact the site admin.");
-      console.error("Cannot start OAuth: VITE_CF_API_URL is empty, not absolute, or points at the app origin.", { API_BASE });
-      return;
-    }
-    // Send the app's full origin so the worker redirects back to the app
-    // (not the worker domain) after OAuth — prevents a 404 landing page.
-    const origin = window.location.origin;
-    window.location.href = `${API_BASE}/auth/${p}?next=${encodeURIComponent(next)}&origin=${encodeURIComponent(origin)}`;
+    sbSignInWithProvider(provider, next).catch((e) => {
+      console.error("OAuth sign-in failed", e);
+      alert(e?.message || "Login failed. Please try again.");
+    });
   },
   async loginWithEmail(email, password) {
-    const data = await request(`/auth/login`, { method: "POST", body: { email, password } });
-    return data?.user || null;
+    return sbSignInWithEmail(email, password);
   },
   async registerWithEmail(email, password, full_name) {
-    const data = await request(`/auth/register`, { method: "POST", body: { email, password, full_name } });
-    return data?.user || null;
+    return sbSignUpWithEmail(email, password, { full_name });
   },
   async logout(redirectUrl = "/") {
-    try { await request(`/auth/logout`, { method: "POST" }); } catch (_) {}
+    try { await supabase.auth.signOut(); } catch (_) {}
     try {
       localStorage.removeItem("gp_session_token");
       localStorage.removeItem("impersonation_session");
