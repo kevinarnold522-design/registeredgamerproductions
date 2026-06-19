@@ -225,7 +225,8 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
 
   useEffect(() => {
     const load = async () => {
-      const [listings, profiles] = await Promise.all([getActiveListings(), base44.entities.UserProfile.list()]);
+      const [listings, profilesRes] = await Promise.all([getActiveListings(), base44.entities.UserProfile.list()]);
+      const profiles = Array.isArray(profilesRes) ? profilesRes : (profilesRes?.data || profilesRes?.records || []);
       setSellerProfiles(Object.fromEntries(profiles.map(p => [p.user_email, p])));
       // Deduplicate by id
       const seen = new Set();
