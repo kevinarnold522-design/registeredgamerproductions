@@ -152,7 +152,10 @@ export default function Profile() {
         isOwnProfileValue = false;
         setUser(me);
       } else {
-        emailToLoad = me?.email;
+        // Viewing your own profile: wait until the logged-in user is available
+        // before deciding. Bailing early would permanently hide the upload buttons.
+        if (!me?.email) { return; }
+        emailToLoad = me.email;
         isOwnProfileValue = true;
         setUser(me);
       }
