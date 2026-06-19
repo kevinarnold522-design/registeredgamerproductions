@@ -42,6 +42,20 @@ function encodeValue(key, value) {
   return value;
 }
 
+// Decode a row coming back from a typed D1 table: JSON columns are stored as
+// strings, so parse them back into arrays/objects for the frontend.
+function decodeRow(row) {
+  if (!row) return row;
+  const out = { ...row };
+  for (const key of JSON_COLUMNS) {
+    const v = out[key];
+    if (typeof v === "string" && v.length) {
+      try { out[key] = JSON.parse(v); } catch { /* leave as-is */ }
+    }
+  }
+  return out;
+}
+
 // ---- Base44 backup mirror (best-effort, never blocks the primary write) ----
 async function mirrorToBase44(env, op, entityName, idOrData, maybeData) {
   if (env.BASE44_BACKUP_ENABLED !== "true" || !env.BASE44_SERVICE_TOKEN || !env.BASE44_APP_ID) return;
@@ -99,15 +113,18 @@ export async function updateRecord(env, entityName, id, data) {
     const values = cols.map((c) => encodeValue(c, patch[c]));
     await env.DB.prepare(`UPDATE ${table} SET ${setClause} WHERE id = ?`)
       .bind(...values, id).run();
-  } else {
-    const row = await env.DB.prepare(`SELECT data FROM entity_records WHERE id = ?`).bind(id).first();
-    const merged = { ...(row ? JSON.parse(row.data) : {}), ...patch };
-    await env.DB.prepare(`UPDATE entity_records SET data = ?, updated_date = ? WHERE id = ?`)
-      .bind(JSON.stringify(merged), now, id).run();
+    await mirrorToBase44(env, "update", entityName, id, patch);
+    const fresh = await env.DB.prepare(`SELECT * FROM ${table} WHERE id = ?`).bind(id).first();
+    return decodeRow(fresh) || { id, ...patch };
   }
 
+  const row = await env.DB.prepare(`SELECT data FROM entity_records WHERE id = ?`).bind(id).first();
+  const merged = { ...(row ? JSON.parse(row.data) : {}), ...patch };
+  await env.DB.prepare(`UPDATE entity_records SET data = ?, updated_date = ? WHERE id = ?`)
+    .bind(JSON.stringify(merged), now, id).run();
+
   await mirrorToBase44(env, "update", entityName, id, patch);
-  return { id, ...patch };
+  return merged;
 }
 
 export async function deleteRecord(env, entityName, id) {
@@ -130,7 +147,7 @@ export async function listRecords(env, entityName, filter = {}, limit = 50) {
     const { results } = await env.DB.prepare(
       `SELECT * FROM ${table} ${where} ORDER BY created_date DESC LIMIT ?`
     ).bind(...values, limit).all();
-    return results || [];
+    return (results || []).map(decodeRow);
   }
   const { results } = await env.DB.prepare(
     `SELECT data FROM entity_records WHERE entity_name = ? ORDER BY created_date DESC LIMIT ?`
