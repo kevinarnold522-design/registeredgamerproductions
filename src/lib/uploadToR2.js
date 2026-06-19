@@ -29,15 +29,18 @@ async function invokeUpload(payload) {
       headers ? { headers } : {}
     );
   } catch (e) {
-    // The worker returns HTML (a 404 page) when it isn't deployed/reachable,
-    // which surfaces here as a non-JSON / failed request. Give a clear message.
-    if (e?.status === 404 || e?.isNetworkError || typeof e?.data === "string") {
-      throw new Error("Upload service is unreachable. The backend isn't deployed yet — please try again later.");
-    }
-    throw e;
+    // Surface the EXACT error so the user can see what actually went wrong.
+    const status = e?.status != null ? ` (status ${e.status})` : "";
+    const serverMsg =
+      e?.data?.error ||
+      (typeof e?.data === "string" ? e.data.slice(0, 300) : "") ||
+      e?.message ||
+      "Unknown upload error";
+    throw new Error(`Upload failed${status}: ${serverMsg}`);
   }
   if (!res?.data?.file_url) {
-    throw new Error(res?.data?.error || "Upload failed — the server did not return a file URL.");
+    const detail = res?.data?.error || (typeof res?.data === "string" ? res.data.slice(0, 300) : "") || "the server did not return a file URL.";
+    throw new Error(`Upload failed: ${detail}`);
   }
   return res.data;
 }
