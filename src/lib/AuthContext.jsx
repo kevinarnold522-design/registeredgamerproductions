@@ -13,30 +13,6 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [isGhostSession, setIsGhostSession] = useState(false);
 
-  useEffect(() => {
-    initAuth();
-    // Supabase drives auth — react to sign-in / sign-out (e.g. after the
-    // OAuth redirect back to the app) without needing a manual reload.
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setIsAuthenticated(false);
-        return;
-      }
-      if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
-        const u = session.user;
-        const meta = u.user_metadata || {};
-        buildUser({
-          id: u.id,
-          email: u.email,
-          full_name: meta.full_name || meta.name || u.email?.split('@')[0],
-          avatar_url: meta.avatar_url || meta.picture || '',
-        }).catch(() => {});
-      }
-    });
-    return () => { try { sub?.subscription?.unsubscribe(); } catch (_) {} };
-  }, []);
-
   // Build the full app user from the worker's auth user + their UserProfile.
   const buildUser = async (cfUser) => {
     const formattedUser = {
@@ -121,6 +97,31 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     }
   };
+
+  useEffect(() => {
+    initAuth();
+    // Supabase drives auth — react to sign-in / sign-out (e.g. after the
+    // OAuth redirect back to the app) without needing a manual reload.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
+      }
+      if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+        const u = session.user;
+        const meta = u.user_metadata || {};
+        buildUser({
+          id: u.id,
+          email: u.email,
+          full_name: meta.full_name || meta.name || u.email?.split('@')[0],
+          avatar_url: meta.avatar_url || meta.picture || '',
+        }).catch(() => {});
+      }
+    });
+    return () => { try { sub?.subscription?.unsubscribe(); } catch (_) {} };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const logout = async () => {
     try {
