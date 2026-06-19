@@ -18,9 +18,9 @@ function createStubClient() {
     auth: {
       getSession: async () => noSession,
       getUser: async () => noUser,
-      signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error("Authentication is not configured.") }),
-      signInWithOAuth: async () => ({ data: null, error: new Error("Authentication is not configured.") }),
-      signUp: async () => ({ data: { user: null, session: null }, error: new Error("Authentication is not configured.") }),
+      signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error("Sign-in is temporarily unavailable. Please try again shortly.") }),
+      signInWithOAuth: async () => ({ data: null, error: new Error("Sign-in is temporarily unavailable. Please try again shortly.") }),
+      signUp: async () => ({ data: { user: null, session: null }, error: new Error("Sign-in is temporarily unavailable. Please try again shortly.") }),
       signOut: async () => ({ error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     },
