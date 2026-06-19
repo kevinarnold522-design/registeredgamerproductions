@@ -145,7 +145,10 @@ export async function handleAuth(parts, request, env) {
 
     const url = new URL(request.url);
     const next = url.searchParams.get("next") || "/";
-    const state = `${sub}:${encodeURIComponent(next)}:${genId()}`;
+    const origin = url.searchParams.get("origin") || "";
+    // Carry the app origin through state so the callback can redirect back
+    // to the app domain (not the worker), avoiding a 404 landing page.
+    const state = `${sub}:${encodeURIComponent(next)}:${encodeURIComponent(origin)}:${genId()}`;
 
     const params = new URLSearchParams({
       client_id: cfg.clientId,
@@ -162,8 +165,9 @@ export async function handleAuth(parts, request, env) {
     const url = new URL(request.url);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state") || "";
-    const [provider, nextEnc] = state.split(":");
+    const [provider, nextEnc, originEnc] = state.split(":");
     const next = nextEnc ? decodeURIComponent(nextEnc) : "/";
+    const stateOrigin = originEnc ? decodeURIComponent(originEnc) : "";
     const cfg = providerConfig(provider, env);
     if (!code || !cfg) return json({ error: "Invalid OAuth callback" }, 400);
 
@@ -200,7 +204,10 @@ export async function handleAuth(parts, request, env) {
     });
 
     const { token, maxAge } = await createSession(env, user.id);
-    const dest = `${appBaseUrl(env, request)}${next}`;
+    // Prefer the app origin passed at login start, then APP_BASE_URL, then
+    // the worker origin — so users land back on the app, not a 404 page.
+    const base = stateOrigin || appBaseUrl(env, request);
+    const dest = `${base}${next}`;
     return new Response(null, {
       status: 302,
       headers: { Location: dest, "Set-Cookie": sessionCookie(token, maxAge) },

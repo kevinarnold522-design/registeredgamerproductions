@@ -45,16 +45,15 @@ export const AuthProvider = ({ children }) => {
     setUser(formattedUser);
     setIsAuthenticated(true);
 
-    // Log login once per browser session.
+    // Log login once per browser session — fully fire-and-forget so a failed
+    // (or 404) logLogin call can never surface as an error during sign-in.
     try {
       const key = `login_logged_${formattedUser.email}`;
       if (!sessionStorage.getItem(key)) {
         sessionStorage.setItem(key, "1");
-        await base44.functions.invoke('logLogin', {});
+        base44.functions.invoke('logLogin', {}).catch(() => {});
       }
-    } catch (e) {
-      console.error("Failed to log login", e);
-    }
+    } catch (_) {}
 
     if (isAdmin(cfUser.email)) blockAdsForAdmin();
   };

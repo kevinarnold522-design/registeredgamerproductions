@@ -135,7 +135,10 @@ const auth = {
   },
   loginWithProvider(provider = "google", next = "/") {
     const p = provider.toLowerCase() === "gmail" ? "google" : provider.toLowerCase();
-    window.location.href = `${API_BASE}/auth/${p}?next=${encodeURIComponent(next)}`;
+    // Send the app's full origin so the worker redirects back to the app
+    // (not the worker domain) after OAuth — prevents a 404 landing page.
+    const origin = window.location.origin;
+    window.location.href = `${API_BASE}/auth/${p}?next=${encodeURIComponent(next)}&origin=${encodeURIComponent(origin)}`;
   },
   async loginWithEmail(email, password) {
     const data = await request(`/auth/login`, { method: "POST", body: { email, password } });
