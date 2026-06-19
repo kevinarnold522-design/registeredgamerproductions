@@ -37,43 +37,75 @@ export default function AdminDashboard({ user, profile }) {
   const [transferTargets, setTransferTargets] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // Recompute stats whenever the user/listing/order lists change so the
+  // overview cards always reflect the live data.
+  const recomputeStats = useCallback((profiles, listings, orders) => {
+    const totalRev = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.amount || 0), 0);
+    const totalComm = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.commission || 0), 0);
+    const totalViews = listings.reduce((s, l) => s + (Number(l.views) || 0), 0);
+    const totalDownloads = listings.reduce((s, l) => s + (Number(l.downloads) || 0), 0);
+    const ghostAccounts = profiles.filter(p => p.is_managed_account === true).length;
+    setStats({
+      users: profiles.length,
+      ghostAccounts,
+      regularUsers: profiles.length - ghostAccounts,
+      listings: listings.length,
+      orders: orders.length,
+      revenue: totalRev,
+      commission: totalComm,
+      views: totalViews,
+      downloads: totalDownloads,
+    });
+  }, []);
+
   useEffect(() => {
+    let mounted = true;
     const load = async () => {
       const [profiles, listings, orders, feedbackList] = await Promise.all([
-        base44.entities.UserProfile.list(),
-        base44.entities.Listing.list(),
-        base44.entities.Order.list(),
+        base44.entities.UserProfile.list("-created_date", 1000),
+        base44.entities.Listing.list("-created_date", 1000),
+        base44.entities.Order.list("-created_date", 1000),
         base44.entities.Feedback.filter({ status: "new" }),
       ]);
+      if (!mounted) return;
       setFeedbacksCount(feedbackList.length);
-      const totalRev = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.amount || 0), 0);
-      const totalComm = orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.commission || 0), 0);
-      const totalViews = listings.reduce((s, l) => s + (Number(l.views) || 0), 0);
-      const totalDownloads = listings.reduce((s, l) => s + (Number(l.downloads) || 0), 0);
       setAllUsers(profiles);
       setAllListings(listings);
       setAllOrders(orders);
       setPendingVerifications(profiles.filter(p => p.verification_status === "pending"));
-      
-      // Count ghost accounts separately but include them in total users (they're live accounts)
-      const ghostAccounts = profiles.filter(p => p.is_managed_account === true).length;
-      const regularUsers = profiles.length - ghostAccounts;
-      
-      setStats({ 
-        users: profiles.length, // Total includes ghost accounts (they're live users)
-        ghostAccounts,
-        regularUsers,
-        listings: listings.length, 
-        orders: orders.length,
-        revenue: totalRev,
-        commission: totalComm,
-        views: totalViews,
-        downloads: totalDownloads
-      });
+      recomputeStats(profiles, listings, orders);
       setLoading(false);
     };
     load();
-  }, []);
+
+    // Realtime: keep the user list & counts in sync as accounts are created,
+    // updated, or removed — no manual refresh needed.
+    const applyUserEvent = (event) => {
+      setAllUsers((prev) => {
+        let next = prev;
+        if (event.type === "delete") {
+          next = prev.filter((u) => u.id !== event.data?.id && u.id !== event.id);
+        } else if (event.type === "create") {
+          if (!prev.some((u) => u.id === event.data?.id)) next = [event.data, ...prev];
+        } else if (event.type === "update") {
+          next = prev.map((u) => (u.id === event.data?.id ? { ...u, ...event.data } : u));
+        }
+        setPendingVerifications(next.filter((p) => p.verification_status === "pending"));
+        setStats((s) => {
+          const ghostAccounts = next.filter((p) => p.is_managed_account === true).length;
+          return { ...s, users: next.length, ghostAccounts, regularUsers: next.length - ghostAccounts };
+        });
+        return next;
+      });
+    };
+
+    let unsub = () => {};
+    try {
+      unsub = base44.entities.UserProfile.subscribe(applyUserEvent);
+    } catch (_) {}
+
+    return () => { mounted = false; try { unsub(); } catch (_) {} };
+  }, [recomputeStats]);
 
   const approveVerification = async (profileId) => {
     await base44.entities.UserProfile.update(profileId, { verification_status: "approved", is_verified: true });

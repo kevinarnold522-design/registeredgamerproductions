@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Plus, Eye, UserX, Shield, Sparkles, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { invokeAdminFn } from "@/lib/invokeAdminFn";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { toast } from "sonner";
 import { isAdmin } from "@/lib/constants";
 
@@ -17,6 +19,7 @@ export default function GhostAccountsPanel() {
     avatar_url: "",
   });
   const [creating, setCreating] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     loadGhosts();
@@ -24,7 +27,7 @@ export default function GhostAccountsPanel() {
 
   const loadGhosts = async () => {
     try {
-      const res = await base44.functions.invoke("createManagedAccount", { action: "list" });
+      const res = await invokeAdminFn("createManagedAccount", { action: "list" });
       setGhosts(res.data.accounts || []);
     } catch (e) {
       toast.error("Failed to load managed accounts");
@@ -44,7 +47,7 @@ export default function GhostAccountsPanel() {
         ? newGhost.email 
         : `${newGhost.username.toLowerCase().replace(/\s+/g, '_')}@gamerproductions.com`;
       
-      const res = await base44.functions.invoke("createManagedAccount", {
+      const res = await invokeAdminFn("createManagedAccount", {
         action: "create",
         email: email,
         username: newGhost.username,
@@ -74,7 +77,7 @@ export default function GhostAccountsPanel() {
 
   const handleImpersonate = async (ghost) => {
     try {
-      const res = await base44.functions.invoke("createManagedAccount", {
+      const res = await invokeAdminFn("createManagedAccount", {
         action: "impersonate",
         target_email: ghost.user_email,
       });
@@ -168,6 +171,33 @@ export default function GhostAccountsPanel() {
               </div>
 
               <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {newGhost.avatar_url
+                      ? <img src={newGhost.avatar_url} className="w-full h-full object-cover" alt="" />
+                      : <span className="text-white font-black text-xl">{newGhost.username?.[0]?.toUpperCase() || "?"}</span>}
+                  </div>
+                  <label className="flex-1 cursor-pointer">
+                    <div className="px-3 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-xs font-semibold text-center hover:border-purple-500 transition-colors">
+                      {uploadingAvatar ? "Uploading..." : newGhost.avatar_url ? "Change Profile Picture" : "Upload Profile Picture"}
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingAvatar(true);
+                        try {
+                          const { file_url } = await uploadFileToR2(file, "ghost-avatars");
+                          setNewGhost(g => ({ ...g, avatar_url: file_url }));
+                        } catch (err) {
+                          toast.error("Image upload failed");
+                        } finally {
+                          setUploadingAvatar(false);
+                          e.target.value = "";
+                        }
+                      }} />
+                  </label>
+                </div>
                 <div>
                   <label className="text-gray-400 text-xs font-semibold mb-1 block">Username *</label>
                   <input value={newGhost.username} onChange={e => setNewGhost(g => ({ ...g, username: e.target.value }))}
@@ -198,7 +228,7 @@ export default function GhostAccountsPanel() {
               </div>
 
               <div className="flex gap-2 mt-5">
-                <button onClick={handleCreate} disabled={creating || !newGhost.username}
+                <button onClick={handleCreate} disabled={creating || uploadingAvatar || !newGhost.username}
                   className="flex-1 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold disabled:opacity-50 transition-colors">
                   {creating ? "Creating..." : "Create & Redirect"}
                 </button>

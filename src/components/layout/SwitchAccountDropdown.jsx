@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Repeat, Search, X, User, Shield } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { invokeAdminFn } from "@/lib/invokeAdminFn";
 
 // Admin-only quick account switcher. Lists all created/managed accounts and
 // signs in as the picked one instantly (no login prompt) via the impersonation session.
@@ -17,7 +18,7 @@ export default function SwitchAccountDropdown({ currentUser, collapsed = false }
     setLoading(true);
     // include_all:true => list every account (not just managed), so the admin
     // can switch into any account, including manually created / ghost ones.
-    base44.functions.invoke("createManagedAccount", { action: "list", include_all: true })
+    invokeAdminFn("createManagedAccount", { action: "list", include_all: true })
       .then(res => { if (res.data?.success) setAccounts(res.data.accounts || []); })
       .catch(() => {})
       .finally(() => { setLoading(false); setLoaded(true); });

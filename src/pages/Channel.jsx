@@ -135,12 +135,27 @@ export default function Channel() {
     setTimeout(() => setSavedSocial(false), 3000);
   };
 
+  const updateMedia = async (field, value) => {
+    let accessToken, headers;
+    try {
+      const { supabase } = await import("@/lib/supabaseClient");
+      const { data } = await supabase.auth.getSession();
+      accessToken = data?.session?.access_token;
+      if (accessToken) headers = { Authorization: `Bearer ${accessToken}` };
+    } catch (_) {}
+    const res = await base44.functions.invoke(
+      "updateProfileMedia",
+      { profile_id: profile.id, field, value, accessToken },
+      headers ? { headers } : {}
+    );
+    if (res.data?.profile) setProfile(res.data.profile);
+  };
+
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !profile?.id) return;
     const { file_url } = await uploadFileToR2(file, "channel-covers");
-    const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: file_url });
-    setProfile(res.data.profile);
+    await updateMedia("banner_url", file_url);
     e.target.value = "";
   };
 
@@ -153,8 +168,7 @@ export default function Channel() {
 
   const handleRemoveCover = async () => {
     if (!profile?.id) return;
-    const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: "" });
-    setProfile(res.data.profile);
+    await updateMedia("banner_url", "");
   };
 
   if (loading) return (
@@ -259,8 +273,8 @@ export default function Channel() {
                     const file = e.target.files[0];
                     if (!file || !profile?.id) return;
                     const { file_url } = await uploadFileToR2(file, "channel-avatars");
-                    await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
-                    setProfile(prev => ({ ...prev, avatar_url: file_url }));
+                    await updateMedia("avatar_url", file_url);
+                    e.target.value = "";
                   }} />
                 </label>
               )}

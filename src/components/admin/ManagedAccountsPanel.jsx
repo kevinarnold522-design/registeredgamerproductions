@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Plus, Search, Shield, LogOut, ExternalLink, X, CheckCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { invokeAdminFn } from "@/lib/invokeAdminFn";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -13,11 +15,13 @@ export default function ManagedAccountsPanel() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     username: "",
     display_name: "",
     account_type: "regular",
+    avatar_url: "",
   });
 
   useEffect(() => {
@@ -34,7 +38,7 @@ export default function ManagedAccountsPanel() {
   const loadAccounts = async () => {
     setLoading(true);
     try {
-      const response = await base44.functions.invoke('createManagedAccount', { action: 'list' });
+      const response = await invokeAdminFn('createManagedAccount', { action: 'list' });
       if (response.data.success) {
         setAccounts(response.data.accounts);
       }
@@ -46,52 +50,41 @@ export default function ManagedAccountsPanel() {
   };
 
   const handleCreate = async () => {
-    if (!formData.email || !formData.username) {
-      toast.error("Email and username are required");
+    if (!formData.username) {
+      toast.error("Username is required");
       return;
     }
 
     setCreating(true);
     try {
-      const response = await base44.functions.invoke('createManagedAccount', {
+      const response = await invokeAdminFn('createManagedAccount', {
         action: 'create',
         ...formData,
       });
 
       if (response.data.success) {
+        const createdEmail = response.data.email || formData.email;
         toast.success("Account created successfully!");
         setShowCreateModal(false);
-        setFormData({ email: "", username: "", display_name: "", account_type: "regular" });
-        loadAccounts();
-        
-        // Auto-impersonate and redirect to the new account's channel page
-        try {
-          // Perform impersonation
-          const impResponse = await base44.functions.invoke('createManagedAccount', {
-            action: 'impersonate',
-            target_email: formData.email,
-          });
-          
-          if (impResponse.data.success) {
-            const impersonationData = {
-              isImpersonating: true,
-              isGhostLogin: true,
-              isPersistent: true,
-              originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
-              targetEmail: formData.email,
-              targetUsername: formData.username,
-              targetDisplayName: formData.display_name || formData.username,
-              targetAccountType: formData.account_type,
-            };
-            localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
-            
-            // Redirect to channel page with new account flag
-            window.location.href = `/channel?email=${encodeURIComponent(formData.email)}&new_account=1`;
-          }
-        } catch (error) {
-          // If impersonation fails, still redirect to channel
-          window.location.href = `/channel?email=${encodeURIComponent(formData.email)}&new_account=1`;
-        }
+
+        const impersonationData = {
+          isImpersonating: true,
+          isGhostLogin: true,
+          isPersistent: true,
+          originalUser: { email: currentUser?.email, full_name: currentUser?.full_name },
+          targetEmail: createdEmail,
+          targetUsername: formData.username,
+          targetDisplayName: formData.display_name || formData.username,
+          targetAvatar: formData.avatar_url,
+          targetAccountType: formData.account_type,
+        };
+        localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
+        setFormData({ email: "", username: "", display_name: "", account_type: "regular", avatar_url: "" });
+
+        // Redirect to the new account's channel page
+        window.location.href = `/channel?email=${encodeURIComponent(createdEmail)}&new_account=1`;
+      } else {
+        toast.error(response.data.error || "Failed to create account");
       }
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to create account");
@@ -102,7 +95,7 @@ export default function ManagedAccountsPanel() {
 
   const handleLoginAsGhost = async (account) => {
     try {
-      const response = await base44.functions.invoke('loginAsGhost', {
+      const response = await invokeAdminFn('loginAsGhost', {
         target_email: account.user_email,
       });
 
@@ -133,7 +126,7 @@ export default function ManagedAccountsPanel() {
 
   const handleImpersonate = async (account) => {
     try {
-      const response = await base44.functions.invoke('createManagedAccount', {
+      const response = await invokeAdminFn('createManagedAccount', {
         action: 'impersonate',
         target_email: account.user_email,
       });
@@ -355,8 +348,36 @@ export default function ManagedAccountsPanel() {
             </div>
 
             <div className="space-y-3">
+              {/* Avatar upload */}
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {formData.avatar_url
+                    ? <img src={formData.avatar_url} className="w-full h-full object-cover" alt="" />
+                    : <span className="text-white font-black text-xl">{formData.username?.[0]?.toUpperCase() || "?"}</span>}
+                </div>
+                <label className="flex-1 cursor-pointer">
+                  <div className="px-3 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-300 text-xs font-semibold text-center hover:border-purple-600 transition-colors">
+                    {uploadingAvatar ? "Uploading..." : formData.avatar_url ? "Change Profile Picture" : "Upload Profile Picture"}
+                  </div>
+                  <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingAvatar(true);
+                      try {
+                        const { file_url } = await uploadFileToR2(file, "ghost-avatars");
+                        setFormData(f => ({ ...f, avatar_url: file_url }));
+                      } catch (err) {
+                        toast.error("Image upload failed");
+                      } finally {
+                        setUploadingAvatar(false);
+                        e.target.value = "";
+                      }
+                    }} />
+                </label>
+              </div>
               <div>
-                <label className="text-gray-400 text-xs font-semibold mb-1 block">Email *</label>
+                <label className="text-gray-400 text-xs font-semibold mb-1 block">Email (auto-generated if empty)</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -411,7 +432,7 @@ export default function ManagedAccountsPanel() {
               </button>
               <button
                 onClick={handleCreate}
-                disabled={creating}
+                disabled={creating || uploadingAvatar || !formData.username}
                 className="flex-1 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold transition-colors disabled:opacity-50"
               >
                 {creating ? "Creating..." : "Create Account"}
