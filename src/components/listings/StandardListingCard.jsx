@@ -52,6 +52,19 @@ export default function StandardListingCard({ listing: initialListing, user, pro
 
   useEffect(() => { setListing(initialListing); }, [initialListing]);
 
+  // Realtime: keep this card's stats (views, likes, comments) in sync live
+  useEffect(() => {
+    if (!listing?.id) return;
+    const unsubscribe = base44.entities.Listing.subscribe((event) => {
+      if (event?.data?.id !== listing.id) return;
+      if (event.type === "update") {
+        setListing((prev) => ({ ...prev, ...event.data }));
+        if (typeof event.data.views === "number") setViewCount(event.data.views);
+      }
+    });
+    return unsubscribe;
+  }, [listing?.id]);
+
   const glow = resolveGlow(listing);
   const isFree = listing.price === 0 || listing.is_free;
   const heightClass = SIZE_HEIGHTS[listing.card_size] || "h-48";

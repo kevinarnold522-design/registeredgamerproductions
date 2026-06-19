@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Eye, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import RepostButton from "@/components/shared/RepostButton";
@@ -8,6 +8,12 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
   const [likeCount, setLikeCount] = useState(listing.likes || 0);
   const [saved, setSaved] = useState(false);
   const [commentCount, setCommentCount] = useState(listing.comments_count || 0);
+
+  // Keep counts in sync when the listing updates in real time (unless the user just toggled their own like)
+  useEffect(() => {
+    if (!liked) setLikeCount(listing.likes || 0);
+    setCommentCount(listing.comments_count || 0);
+  }, [listing.likes, listing.comments_count]);
 
   const handleLike = async (e) => {
     e.preventDefault(); e.stopPropagation();
@@ -40,51 +46,59 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
 
   const iconSize = compact ? "w-3 h-3 theme-glow-icon" : "w-3.5 h-3.5 theme-glow-icon";
   const textSize = compact ? "text-[9px]" : "text-[10px]";
-  const gap = compact ? "gap-2" : "gap-3";
-  const actionClass = `theme-glow-action flex items-center gap-0.5 ${textSize} rounded-lg px-1 py-0.5`;
+  // Fixed-width count so numbers line up across every listing card
+  const countWidth = compact ? "min-w-[22px]" : "min-w-[26px]";
+  const actionClass = `theme-glow-action flex items-center justify-center gap-0.5 ${textSize} rounded-lg px-1 py-0.5`;
+  const statClass = `${actionClass}`;
 
   return (
-    <div className={`flex items-center ${gap} flex-wrap`} onClick={e => e.preventDefault()}>
-      {/* Views */}
-      <span className={`${actionClass} text-gray-400`}>
-        <Eye className={iconSize} />
-        <span>{(listing.views || 0).toLocaleString()}</span>
-      </span>
+    <div className="flex items-center justify-between w-full" onClick={e => e.preventDefault()}>
+      {/* Left cluster: count metrics, evenly aligned */}
+      <div className="flex items-center gap-3">
+        {/* Views */}
+        <span className={`${statClass} text-gray-400`}>
+          <Eye className={iconSize} />
+          <span className={`${countWidth} text-left tabular-nums`}>{(listing.views || 0).toLocaleString()}</span>
+        </span>
 
-      {/* Hearts */}
-      <button onClick={handleLike} className={`${actionClass} transition-colors`}
-        style={{ color: liked ? "#ec4899" : "rgba(216,180,254,0.82)" }}>
-        <Heart className={iconSize} style={{ fill: liked ? "#ec4899" : "none" }} />
-        <span>{likeCount}</span>
-      </button>
-
-      {/* Comments */}
-      <a href={`/listing?id=${listing.id}#comments`} onClick={e => e.stopPropagation()}
-        className={`${actionClass} text-gray-400 hover:text-purple-200 transition-colors`}>
-        <MessageCircle className={iconSize} />
-        <span>{commentCount}</span>
-      </a>
-
-      {/* Share */}
-      <button onClick={handleShare} className={`${actionClass} text-gray-400 hover:text-cyan-200 transition-colors`} title="Share">
-        <Share2 className={iconSize} />
-      </button>
-
-      {/* Save to Favourites */}
-      <button onClick={handleFav} className={`${actionClass} transition-colors`}
-        style={{ color: saved ? "#f59e0b" : "rgba(216,180,254,0.82)" }} title="Save to Favourites">
-        <Bookmark className={iconSize} style={{ fill: saved ? "#f59e0b" : "none" }} />
-      </button>
-
-      {/* Repost */}
-      {!hideRepost && <RepostButton item={listing} type="listing" user={user} profile={profile} compact={compact} />}
-
-      {/* Report */}
-      {!hideReport && (
-        <button onClick={handleReport} className={`${actionClass} text-gray-500 hover:text-red-300 transition-colors`} title="Report">
-          <Flag className={iconSize} />
+        {/* Hearts */}
+        <button onClick={handleLike} className={`${statClass} transition-colors`}
+          style={{ color: liked ? "#ec4899" : "rgba(216,180,254,0.82)" }}>
+          <Heart className={iconSize} style={{ fill: liked ? "#ec4899" : "none" }} />
+          <span className={`${countWidth} text-left tabular-nums`}>{likeCount}</span>
         </button>
-      )}
+
+        {/* Comments */}
+        <a href={`/listing?id=${listing.id}#comments`} onClick={e => e.stopPropagation()}
+          className={`${statClass} text-gray-400 hover:text-purple-200 transition-colors`}>
+          <MessageCircle className={iconSize} />
+          <span className={`${countWidth} text-left tabular-nums`}>{commentCount}</span>
+        </a>
+      </div>
+
+      {/* Right cluster: actions */}
+      <div className="flex items-center gap-2">
+        {/* Share */}
+        <button onClick={handleShare} className={`${actionClass} text-gray-400 hover:text-cyan-200 transition-colors`} title="Share">
+          <Share2 className={iconSize} />
+        </button>
+
+        {/* Save to Favourites */}
+        <button onClick={handleFav} className={`${actionClass} transition-colors`}
+          style={{ color: saved ? "#f59e0b" : "rgba(216,180,254,0.82)" }} title="Save to Favourites">
+          <Bookmark className={iconSize} style={{ fill: saved ? "#f59e0b" : "none" }} />
+        </button>
+
+        {/* Repost */}
+        {!hideRepost && <RepostButton item={listing} type="listing" user={user} profile={profile} compact={compact} />}
+
+        {/* Report */}
+        {!hideReport && (
+          <button onClick={handleReport} className={`${actionClass} text-gray-500 hover:text-red-300 transition-colors`} title="Report">
+            <Flag className={iconSize} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
