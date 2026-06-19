@@ -11,13 +11,14 @@ Deno.serve(async (req) => {
         }
 
         const body = await req.json().catch(() => ({}));
-        const { action, email, username, avatar_url, display_name, account_type, target_email } = body;
+        const { action, email, username, avatar_url, display_name, account_type, target_email, include_all } = body;
 
-        // List all managed accounts
+        // List accounts. By default only managed accounts; pass include_all:true
+        // to list EVERY account so an admin can switch into any of them.
         if (action === 'list') {
-            const managedAccounts = await base44.entities.UserProfile.filter({ 
-                is_managed_account: true 
-            });
+            const managedAccounts = include_all
+                ? await base44.entities.UserProfile.list('-created_date', 1000)
+                : await base44.entities.UserProfile.filter({ is_managed_account: true });
             
             // Get counts for each account
             const accountsWithStats = await Promise.all(

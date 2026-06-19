@@ -15,7 +15,9 @@ export default function SwitchAccountDropdown({ currentUser, collapsed = false }
   useEffect(() => {
     if (!open || loaded) return;
     setLoading(true);
-    base44.functions.invoke("createManagedAccount", { action: "list" })
+    // include_all:true => list every account (not just managed), so the admin
+    // can switch into any account, including manually created / ghost ones.
+    base44.functions.invoke("createManagedAccount", { action: "list", include_all: true })
       .then(res => { if (res.data?.success) setAccounts(res.data.accounts || []); })
       .catch(() => {})
       .finally(() => { setLoading(false); setLoaded(true); });
