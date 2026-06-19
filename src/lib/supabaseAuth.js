@@ -1,50 +1,27 @@
-import { supabase } from "@/lib/supabaseClient";
-
-// ── Supabase Auth helpers ──
-// OAuth providers map to Supabase's provider ids. Configure each provider's
-// client id/secret in the Supabase dashboard (Authentication > Providers).
-const PROVIDER_MAP = {
-  google: "google",
-  gmail: "google",
-  facebook: "facebook",
-  yahoo: "yahoo",
-};
+// =====================================================================
+// Auth helpers — now backed by the Cloudflare Worker (not Supabase).
+// Kept at this path so existing imports keep working. OAuth providers
+// redirect to the worker's /auth/<provider> route; email/password hit
+// the worker's /auth/login + /auth/register endpoints.
+// =====================================================================
+import { cf } from "@/lib/cfClient";
 
 export async function signInWithProvider(provider, next = "/") {
-  if (!supabase) throw new Error("Supabase is not configured");
-  const supaProvider = PROVIDER_MAP[provider.toLowerCase()] || provider.toLowerCase();
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: supaProvider,
-    options: { redirectTo: `${window.location.origin}${next}` },
-  });
-  if (error) throw error;
+  cf.auth.loginWithProvider(provider, next);
 }
 
 export async function signInWithEmail(email, password) {
-  if (!supabase) throw new Error("Supabase is not configured");
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  return data;
+  return cf.auth.loginWithEmail(email, password);
 }
 
 export async function signUpWithEmail(email, password, metadata = {}) {
-  if (!supabase) throw new Error("Supabase is not configured");
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: { data: metadata },
-  });
-  if (error) throw error;
-  return data;
+  return cf.auth.registerWithEmail(email, password, metadata.full_name);
 }
 
 export async function signOut() {
-  if (!supabase) return;
-  await supabase.auth.signOut();
+  await cf.auth.logout();
 }
 
 export async function getCurrentUser() {
-  if (!supabase) return null;
-  const { data } = await supabase.auth.getUser();
-  return data?.user || null;
+  try { return await cf.auth.me(); } catch { return null; }
 }

@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { isAdmin } from '@/lib/constants';
-import { supabase } from '@/lib/supabaseClient';
 
 const AuthContext = createContext();
 
@@ -15,34 +14,21 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     initAuth();
-
-    // Only subscribe to Supabase auth if the client is available
-    if (supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session?.user) {
-          handleSetUser(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      });
-      return () => subscription?.unsubscribe();
-    }
   }, []);
 
-  const handleSetUser = async (supaUser) => {
+  // Build the full app user from the worker's auth user + their UserProfile.
+  const buildUser = async (cfUser) => {
     const formattedUser = {
-      id: supaUser.id,
-      email: supaUser.email,
-      full_name: supaUser.user_metadata?.full_name || supaUser.email?.split('@')[0],
-      avatar_url: supaUser.user_metadata?.avatar_url,
-      isSupabase: true
+      id: cfUser.id,
+      email: cfUser.email,
+      full_name: cfUser.full_name || cfUser.email?.split('@')[0],
+      avatar_url: cfUser.avatar_url,
+      role: cfUser.role || (isAdmin(cfUser.email) ? 'admin' : 'user'),
     };
 
-    // Merge in the stored UserProfile so real account details (username,
-    // avatar, account_type, etc.) actually show up instead of just the bare auth object.
+    // Merge in the stored UserProfile so real account details show up.
     try {
-      const profiles = await base44.entities.UserProfile.filter({ user_email: supaUser.email });
+      const profiles = await base44.entities.UserProfile.filter({ user_email: cfUser.email });
       if (profiles && profiles.length > 0) {
         const p = profiles[0];
         formattedUser.profile = p;
@@ -50,7 +36,7 @@ export const AuthProvider = ({ children }) => {
         formattedUser.avatar_url = p.avatar_url || formattedUser.avatar_url;
         formattedUser.username = p.username;
         formattedUser.account_type = p.account_type;
-        formattedUser.role = p.user_email && isAdmin(p.user_email) ? 'admin' : 'user';
+        formattedUser.role = isAdmin(p.user_email) ? 'admin' : (cfUser.role || 'user');
       }
     } catch (e) {
       console.error('Failed to load user profile', e);
@@ -58,8 +44,8 @@ export const AuthProvider = ({ children }) => {
 
     setUser(formattedUser);
     setIsAuthenticated(true);
-    
-    // Log login once per browser session to avoid repeated auth refresh calls
+
+    // Log login once per browser session.
     try {
       const key = `login_logged_${formattedUser.email}`;
       if (!sessionStorage.getItem(key)) {
@@ -69,10 +55,8 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.error("Failed to log login", e);
     }
-    
-    if (isAdmin(supaUser.email)) {
-      blockAdsForAdmin();
-    }
+
+    if (isAdmin(cfUser.email)) blockAdsForAdmin();
   };
 
   const blockAdsForAdmin = () => {
@@ -87,49 +71,30 @@ export const AuthProvider = ({ children }) => {
   const initAuth = async () => {
     setIsLoadingAuth(true);
     try {
-      // Check for persistent ghost session first
+      // Persistent ghost/impersonation session takes priority.
       const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
-      
-      // If in persistent ghost session, use ghost account data
       if (impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent) {
-        // Fetch ghost account's actual profile data
-        const ghostProfile = await base44.entities.UserProfile.filter({ 
-          user_email: impersonationData.targetEmail 
-        }).catch(() => []);
-        
-        const ghostUser = {
+        const ghostProfile = await base44.entities.UserProfile
+          .filter({ user_email: impersonationData.targetEmail }).catch(() => []);
+        setUser({
           email: impersonationData.targetEmail,
           full_name: impersonationData.targetUsername,
           isGhostAccount: true,
           ghostData: impersonationData,
-          // Use actual profile data if available
-          ...(ghostProfile.length > 0 ? ghostProfile[0] : {})
-        };
-        setUser(ghostUser);
+          ...(ghostProfile.length > 0 ? ghostProfile[0] : {}),
+        });
         setIsAuthenticated(true);
         setIsGhostSession(true);
         setIsLoadingAuth(false);
         return;
       }
-      
-      // Try Supabase session first if available
-      if (supabase) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          await handleSetUser(session.user);
-          setIsLoadingAuth(false);
-          return;
-        }
-      }
-      // Fallback to Base44 auth, but don't let public pages get stuck waiting forever
-      const currentUser = await Promise.race([
+
+      // Current user from the Cloudflare session cookie (don't hang public pages).
+      const cfUser = await Promise.race([
         base44.auth.me().catch(() => null),
         new Promise(resolve => setTimeout(() => resolve(null), 3500)),
       ]);
-      if (currentUser) {
-        setUser(currentUser);
-        setIsAuthenticated(true);
-      }
+      if (cfUser) await buildUser(cfUser);
     } catch (e) {
       console.error("Auth init error", e);
     } finally {
@@ -139,37 +104,20 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Check if this is a ghost session logout
-      const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
-      const isGhostLogout = impersonationData.isImpersonating && impersonationData.isGhostLogin;
-      
-      // Clear ghost session
       localStorage.removeItem('impersonation_session');
-      localStorage.removeItem('base44_access_token');
-      localStorage.removeItem('base44_token');
-      
-      // Sign out of Supabase (the live auth provider). Never call the old
-      // base44.auth.logout — that hits the dead /api/apps/auth/logout route (404).
-      if (supabase) await supabase.auth.signOut();
+      localStorage.removeItem('gp_session_token');
     } catch (e) {
       console.error("Logout cleanup failed", e);
-    } finally {
-      setUser(null);
-      setIsAuthenticated(false);
-      setIsGhostSession(false);
-      window.location.href = '/';
     }
+    setUser(null);
+    setIsAuthenticated(false);
+    setIsGhostSession(false);
+    // Worker clears the session cookie, then redirects home.
+    await base44.auth.logout('/');
   };
 
   const navigateToLogin = async (provider) => {
-    if (supabase && (!provider || provider === 'google')) {
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin }
-      });
-    } else {
-      base44.auth.redirectToLogin(window.location.pathname);
-    }
+    base44.auth.loginWithProvider(provider || 'google', window.location.pathname);
   };
 
   return (
@@ -179,6 +127,7 @@ export const AuthProvider = ({ children }) => {
       isLoadingAuth,
       isLoadingPublicSettings,
       authError,
+      isGhostSession,
       logout,
       navigateToLogin,
       initAuth

@@ -180,16 +180,11 @@ export default function Profile() {
     return file_url;
   };
 
-  // Invoke a backend function with the current Supabase login token attached.
-  const invokeAuthed = async (fn, payload) => {
-    let headers = {};
-    try {
-      const { supabase } = await import("@/lib/supabaseClient");
-      const { data } = await supabase.auth.getSession();
-      const token = data?.session?.access_token;
-      if (token) headers.Authorization = `Bearer ${token}`;
-    } catch (_) {}
-    return base44.functions.invoke(fn, payload, { headers });
+  // Persist a profile field through the Cloudflare Worker entity layer.
+  const updateProfileField = async (field, value) => {
+    const updated = await base44.entities.UserProfile.update(profile.id, { [field]: value });
+    setProfile(updated);
+    return updated;
   };
 
   const handleAvatarUpload = async (e) => {
@@ -197,8 +192,7 @@ export default function Profile() {
     if (!file) return;
     try {
       const file_url = await uploadToR2(file, "profile-avatars");
-      const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "avatar_url", value: file_url });
-      setProfile(res.data.profile);
+      await updateProfileField("avatar_url", file_url);
       toast.success("Avatar updated");
     } catch (error) {
       toast.error("Failed to upload avatar");
@@ -210,8 +204,7 @@ export default function Profile() {
     if (!file) return;
     try {
       const file_url = await uploadToR2(file, "profile-banners");
-      const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: file_url });
-      setProfile(res.data.profile);
+      await updateProfileField("banner_url", file_url);
       e.target.value = "";
       toast.success("Cover photo updated");
     } catch (error) {
@@ -221,15 +214,13 @@ export default function Profile() {
 
   const handleRemoveBanner = async () => {
     if (!profile?.id) return;
-    const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: "" });
-    setProfile(res.data.profile);
+    await updateProfileField("banner_url", "");
     toast.success("Cover photo removed");
   };
 
   const handleThemeChange = async (themeColor) => {
     if (!profile?.id) return;
-    const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "profile_theme_color", value: themeColor });
-    setProfile(res.data.profile);
+    await updateProfileField("profile_theme_color", themeColor);
   };
 
   if (loading) return <div className="min-h-screen bg-gray-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>;

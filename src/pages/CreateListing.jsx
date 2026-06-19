@@ -453,10 +453,7 @@ export default function CreateListing() {
       <h2 className="text-xl font-black text-white mb-2">Sign in to post</h2>
       <p className="text-gray-400 text-sm mb-6 max-w-sm">You need to be logged in to create a listing, add a game, or post.</p>
       <button
-        onClick={async () => {
-          const { supabase } = await import("@/lib/supabaseClient");
-          await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.href } });
-        }}
+        onClick={() => base44.auth.loginWithProvider("google", window.location.pathname + window.location.search)}
         className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity"
       >
         Sign in with Google

@@ -1,62 +1,13 @@
-/* LEGACY BACKUP - DO NOT MODIFY. 
-   Used for reference during Supabase migration. 
-*/import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
+// =====================================================================
+// Backend client — Cloudflare Worker only.
+// The whole app imports `base44` from here. We now back it entirely with
+// the Cloudflare Worker (auth + D1 database + functions + R2 storage).
+// Supabase and the legacy Base44 SDK are no longer used.
+//
+// `base44` keeps the same shape the app already calls (entities.*,
+// functions.invoke, auth.*) so existing pages keep working unchanged.
+// =====================================================================
+import { cf } from "@/lib/cfClient";
 
-const { appId, functionsVersion, appBaseUrl } = appParams;
-
-// Resolve token: prefer URL param (already extracted by app-params), 
-// then fall back to whatever is stored in localStorage
-function resolveToken() {
-  if (appParams.token) return appParams.token;
-  try {
-    return (
-      localStorage.getItem('base44_access_token') ||
-      localStorage.getItem('base44_token') ||
-      null
-    );
-  } catch (_) {
-    return null;
-  }
-}
-
-export const base44 = createClient({
-  appId,
-  token: resolveToken(),
-  functionsVersion,
-  appBaseUrl,
-  requiresAuth: false,
-});
-
-/* ──────────────────────────────────────────────────────────────
-   AUTH MIGRATION OVERRIDE (Supabase is the live auth provider).
-   The old base44.auth.logout / redirectToLogin hit dead Base44
-   routes (e.g. /api/apps/auth/logout → 404). We override them here
-   so EVERY component that still calls base44.auth.* routes through
-   Supabase instead. Single permanent fix point.
-   ────────────────────────────────────────────────────────────── */
-import { supabase } from '@/lib/supabaseClient';
-
-if (base44?.auth) {
-  base44.auth.logout = async (redirectUrl = '/') => {
-    try {
-      localStorage.removeItem('impersonation_session');
-      localStorage.removeItem('base44_access_token');
-      localStorage.removeItem('base44_token');
-      if (supabase) await supabase.auth.signOut();
-    } catch (e) {
-      console.error('Logout failed', e);
-    } finally {
-      window.location.href = redirectUrl || '/';
-    }
-  };
-
-  base44.auth.redirectToLogin = async (nextUrl) => {
-    if (supabase) {
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: nextUrl || window.location.href },
-      });
-    }
-  };
-}
+export const base44 = cf;
+export default base44;
