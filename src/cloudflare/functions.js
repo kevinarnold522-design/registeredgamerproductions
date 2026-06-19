@@ -7,7 +7,6 @@
 // ALL 27 Base44 functions from MIGRATION_MANIFEST.json are ported here.
 // =====================================================================
 import { createRecord, updateRecord, deleteRecord, listRecords } from "./db.js";
-import { getSessionUser } from "./auth.js";
 import { getSupabaseUser } from "./supabaseAuth.js";
 
 const MASTER_EMAIL = "kevinarnold522@gmail.com";
@@ -54,13 +53,9 @@ export async function handleFunction(name, body, env, request) {
 // Shared helpers
 // ─────────────────────────────────────────────────────────────────────
 
-// Resolve the current user from the request. Try the Worker's own session
-// (HttpOnly cookie or Bearer token) first, then fall back to a Supabase
-// access token — this is what image uploads send, so the fallback fixes 401.
+// Resolve the current user from the request — Supabase access token only.
 async function getUser(env, request) {
   if (!request) return null;
-  const sessionUser = await getSessionUser(env, request);
-  if (sessionUser) return sessionUser;
   return getSupabaseUser(env, request);
 }
 
