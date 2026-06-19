@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
+import { useAuth } from "@/lib/AuthContext";
+import { uploadFileToR2 } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Star, Zap, Gem, Crown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -93,6 +95,7 @@ const COUNTRIES = [
 ];
 
 export default function Profile() {
+  const { user: authUser } = useAuth();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [listings, setListings] = useState([]);
@@ -139,8 +142,8 @@ export default function Profile() {
         return;
       }
       
-      // Normal flow (not ghost session)
-      const me = await base44.auth.me().catch(() => null);
+      // Normal flow (not ghost session) — current user comes from Supabase auth
+      const me = authUser;
       let emailToLoad;
       let isOwnProfileValue;
       
@@ -167,30 +170,23 @@ export default function Profile() {
       setLoading(false);
     };
     init();
-  }, [targetEmail]);
+  }, [targetEmail, authUser]);
 
   const uploadToR2 = async (file, folder) => {
-    if ((file.type || "").startsWith("image/")) {
-      const res = await base44.integrations.Core.UploadFile({ file });
-      return res.file_url;
-    }
+    const { file_url } = await uploadFileToR2(file, folder);
+    return file_url;
+  };
 
-    return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const res = await base44.functions.invoke("uploadToR2", {
-          fileName: file.name,
-          contentType: file.type || "application/octet-stream",
-          dataUrl: reader.result,
-          folder,
-        });
-        resolve(res.data.file_url);
-      } catch (error) { reject(error); }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-    });
+  // Invoke a backend function with the current Supabase login token attached.
+  const invokeAuthed = async (fn, payload) => {
+    let headers = {};
+    try {
+      const { supabase } = await import("@/lib/supabaseClient");
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+      if (token) headers.Authorization = `Bearer ${token}`;
+    } catch (_) {}
+    return base44.functions.invoke(fn, payload, { headers });
   };
 
   const handleAvatarUpload = async (e) => {
@@ -211,7 +207,7 @@ export default function Profile() {
     if (!file) return;
     try {
       const file_url = await uploadToR2(file, "profile-banners");
-      const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: file_url });
+      const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: file_url });
       setProfile(res.data.profile);
       e.target.value = "";
       toast.success("Cover photo updated");
@@ -222,7 +218,7 @@ export default function Profile() {
 
   const handleRemoveBanner = async () => {
     if (!profile?.id) return;
-    const res = await base44.functions.invoke("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: "" });
+    const res = await invokeAuthed("updateProfileMedia", { profile_id: profile.id, field: "banner_url", value: "" });
     setProfile(res.data.profile);
     toast.success("Cover photo removed");
   };
