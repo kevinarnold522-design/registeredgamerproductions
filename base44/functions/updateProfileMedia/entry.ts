@@ -8,8 +8,8 @@ const ALLOWED_FIELDS = ['avatar_url', 'banner_url'];
 async function getSupabaseUser(req) {
   const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
   if (!token) return null;
-  const url = Deno.env.get('SUPABASE_URL') || Deno.env.get('VITE_SUPABASE_URL');
-  const key = Deno.env.get('SUPABASE_KEY') || Deno.env.get('VITE_SUPABASE_ANON_KEY');
+  const url = Deno.env.get('VITE_SUPABASE_URL');
+  const key = Deno.env.get('VITE_SUPABASE_ANON_KEY');
   if (!url || !key) return null;
   try {
     const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
