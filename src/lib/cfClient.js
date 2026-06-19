@@ -138,9 +138,13 @@ const auth = {
     // API_BASE must be an absolute worker URL. If it's missing, navigating to a
     // relative "/auth/google" just hits the app's own router and 404s — so stop
     // and tell the user clearly instead of producing a confusing Page Not Found.
-    if (!API_BASE || !/^https?:\/\//.test(API_BASE)) {
-      alert("Login is temporarily unavailable: the backend URL is not configured. Please try again shortly.");
-      console.error("Cannot start OAuth: VITE_CF_API_URL is empty or not an absolute URL.", { API_BASE });
+    // API_BASE must point to the Cloudflare Worker — NOT the app's own origin.
+    // If it's empty, or accidentally set to the app domain, OAuth would loop
+    // back to the React app and 404. Block that and report it clearly.
+    const sameOrigin = (() => { try { return new URL(API_BASE).origin === window.location.origin; } catch { return false; } })();
+    if (!API_BASE || !/^https?:\/\//.test(API_BASE) || sameOrigin) {
+      alert("Login is temporarily unavailable: the backend (worker) URL is not configured correctly. Please contact the site admin.");
+      console.error("Cannot start OAuth: VITE_CF_API_URL is empty, not absolute, or points at the app origin.", { API_BASE });
       return;
     }
     // Send the app's full origin so the worker redirects back to the app
