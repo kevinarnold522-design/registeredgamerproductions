@@ -8,6 +8,7 @@ import MarqueeTicker from "@/components/home/MarqueeTicker";
 import CategoryCards from "@/components/home/CategoryCards";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import GuestAuthDock from "@/components/home/GuestAuthDock";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
@@ -250,6 +251,9 @@ export default function Home() {
           </div>
         </>
       )}
+
+      {/* Earn Now / Get Started / Log In — floating lower-left dock for guests */}
+      {!showSplash && !isLoadingAuth && !isAuthenticated && <GuestAuthDock />}
 
       {/* "Sign in to block ads" floating sign — guests only, after 3 min, no close button */}
       {showAdSign && !isAuthenticated && (

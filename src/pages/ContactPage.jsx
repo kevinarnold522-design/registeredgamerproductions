@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Gamepad2, Mail, MessageSquare, Send, CheckCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
@@ -78,8 +79,8 @@ export default function ContactPage() {
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm resize-none" />
             </div>
             <div className="bg-gray-800/60 rounded-xl p-4 text-sm text-gray-400">
-              <p className="font-semibold text-gray-300 mb-1">📧 Direct Contact</p>
-              <p>You can also email us directly at: <a href="mailto:support@gamerproductions.com" className="text-purple-400 underline">support@gamerproductions.com</a></p>
+              <p className="font-semibold text-gray-300 mb-1">💬 Reach Us on Facebook</p>
+              <p>You can also message us directly on Facebook: <a href={OFFICIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline font-semibold">@Gamer.Productions</a></p>
             </div>
             <button type="submit" disabled={sending}
               className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black hover:opacity-90 transition-opacity disabled:opacity-50">

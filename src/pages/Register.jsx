@@ -188,18 +188,25 @@ export default function Register() {
                 <p className="text-purple-400 text-sm mt-1 font-semibold">{ACCOUNT_TYPES.find(t => t.id === accountType)?.label}</p>
               </div>
 
-              {/* Social Providers */}
-              <div className="grid grid-cols-2 gap-3 mb-5">
+              {/* Social Providers — 3 email providers only */}
+              <div className="space-y-3 mb-5">
                 <button onClick={() => handleSocialLogin()}
-                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-white text-gray-800 hover:bg-gray-100 transition-all">
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-white text-gray-800 hover:bg-gray-100 transition-all">
                   <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.5 35.3 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.1C9.5 36.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.3 5.3C43.1 34.7 44 29.7 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
                   Continue with Google
                 </button>
-                <button onClick={() => base44.auth.loginWithProvider("microsoft", "/")}
-                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-all">
-                  <svg width="18" height="18" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
-                  Continue with Microsoft
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => handleSocialLogin()}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 border border-gray-700 text-white hover:bg-gray-800 transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#6001D2" d="M3 4h4.2l2.8 6.9L12.9 4H17l-5.1 11.8V20H8.1v-4.2L3 4z"/><circle fill="#6001D2" cx="18.5" cy="17.5" r="2"/><path fill="#6001D2" d="M17.3 4h3.6l-1.4 7.4h-2.9z"/></svg>
+                    Yahoo
+                  </button>
+                  <button onClick={() => handleSocialLogin()}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 border border-gray-700 text-white hover:bg-gray-800 transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22 6v12a2 2 0 0 1-2 2h-1V8.6l-7 5.2-7-5.2V20H4a2 2 0 0 1-2-2V6c0-.3.1-.6.2-.8L12 12.5l9.8-7.3c.1.2.2.5.2.8z"/><path fill="#EA4335" d="M2 6l10 7.5L22 6c0-1.1-.9-2-2-2H4C2.9 4 2 4.9 2 6z"/></svg>
+                    Gmail
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center gap-3 mb-5">

@@ -137,26 +137,7 @@ export default function Navbar() {
 
             {/* Right */}
             <div className="flex items-center gap-2">
-              {!authenticated && <EarnNowButton />}
-              {!authenticated && <button
-                onClick={() => setShowSignUpModal(true)}
-                className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-sm font-black transition-all shadow-lg radiant-glow"
-                style={{
-                  background: "linear-gradient(135deg, #ff6a00, #ee0979, #ff6a00)",
-                  backgroundSize: "200% 200%",
-                  animation: "fire-shift 2s ease infinite",
-                  boxShadow: "0 0 20px rgba(238,9,121,0.5), 0 0 40px rgba(255,106,0,0.3)",
-                }}
-              >
-Get Started
-              </button>}
               <style>{`@keyframes fire-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }`}</style>
-              {!authenticated && <button
-                onClick={() => setShowLoginModal(true)}
-                className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 text-white text-sm font-black hover:from-gray-700 hover:to-gray-600 transition-all shadow-lg radiant-glow"
-              >
-                Log In
-              </button>}
               {authenticated && <button
                 onClick={() => navigate('/dashboard')}
                 className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-700 text-white text-sm font-black transition-all shadow-lg"
@@ -187,23 +168,11 @@ Get Started
               </button>
             )
           ))}
-            {!authenticated ? <button
-              onClick={() => { setMenuOpen(false); setShowLoginModal(true); }}
-              className="mt-2 text-center px-4 py-2 rounded-lg border border-gray-700 text-gray-300 font-semibold"
-            >
-              Log In
-            </button> : <button
+            {authenticated && <button
               onClick={() => { setMenuOpen(false); navigate('/dashboard'); }}
               className="mt-2 text-center px-4 py-2 rounded-lg bg-purple-700 text-white font-semibold"
             >
               Dashboard
-            </button>}
-            {!authenticated && <button
-              onClick={() => { setMenuOpen(false); setShowSignUpModal(true); }}
-              className="text-center px-4 py-2 rounded-lg text-white font-semibold"
-              style={{ background: "linear-gradient(135deg, #ff6a00, #ee0979)" }}
-            >
-Get Started
             </button>}
           </div>
         )}
