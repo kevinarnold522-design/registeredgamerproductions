@@ -5,7 +5,7 @@
 -- Every table includes the Base44 built-in columns so records replicate cleanly:
 --   id, created_date, updated_date, created_by_id
 --
--- Apply with:  wrangler d1 execute gamer_productions --file=./cloudflare/schema.sql
+-- Apply with:  wrangler d1 execute gp --file=./cloudflare/schema.sql
 -- =====================================================================
 
 PRAGMA foreign_keys = OFF;

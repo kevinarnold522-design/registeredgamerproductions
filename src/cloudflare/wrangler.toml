@@ -10,8 +10,8 @@ compatibility_flags = ["nodejs_compat"]
 # ---- D1 database binding ----
 [[d1_databases]]
 binding = "DB"
-database_name = "gamer_productions"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"   # from: wrangler d1 create gamer_productions
+database_name = "gp"
+database_id = "1f45c382-7d39-4532-8320-0f162b588a9b"
 
 # ---- R2 bucket binding (media storage) ----
 [[r2_buckets]]
