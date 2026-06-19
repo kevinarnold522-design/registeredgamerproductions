@@ -748,88 +748,32 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
         )}
       </AnimatePresence>
 
-      <div className="md:hidden mb-3">
-        <button onClick={() => setMobileFeedOpen(true)} className="w-full py-3 rounded-2xl bg-purple-900/40 border border-purple-700/40 text-purple-200 text-sm font-black">
-          Open {categoryName} Feed
-        </button>
-      </div>
-
-      {/* Two-column layout with draggable divider */}
-      <div ref={containerRef} className="flex flex-col md:flex-row gap-3 md:gap-0 md:min-h-[700px]">
-        {/* LEFT: scrollable subcards column */}
-        <div
-          className="flex-shrink-0 grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-col gap-2 overflow-visible md:overflow-x-hidden md:overflow-y-auto pr-0 md:pr-2 pb-2 md:pb-0"
-          style={{ width: typeof window !== 'undefined' && window.innerWidth < 768 ? "100%" : sidebarWidth, maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? "none" : 700 }}
-        >
-          {filteredItems.length === 0 && (
-            <div className="text-center py-8 text-gray-600 text-xs">No matches</div>
-          )}
-          {filteredItems.map((item, i) => (
-            <SubcardItem
-              key={item.id}
-              item={{ ...item, _userEmail: userEmail }}
-              cat={cat} index={i}
-              canAdmin={canAdmin || isAccountMod}
-              canDelete={canDelete}
-              isAccountMod={isAccountMod && !canAdmin}
-              onItemUpdate={handleItemUpdate}
-              onDelete={() => handleDelete(item.id)}
-              onRequestDelete={() => handleRequestDelete()}
-              user={user}
-              userProfile={userProfile}
-              activeSubcat={null}
-              onSetActiveSubcat={() => {}}
-            />
-          ))}
-        </div>
-
-        {/* Drag handle */}
-        <div
-          onMouseDown={onDragStart}
-          onTouchStart={onDragStart}
-          className="hidden md:flex flex-shrink-0 h-3 md:h-auto md:w-3 items-center justify-center cursor-col-resize group mx-1"
-          title="Drag to resize"
-        >
-          <div className="h-1 w-16 md:w-1 md:h-16 rounded-full bg-gray-700 group-hover:bg-purple-500 transition-colors flex items-center justify-center">
-            <GripVertical className="w-3 h-3 text-gray-500 group-hover:text-purple-300" />
-          </div>
-        </div>
-
-        {/* RIGHT: listings/posts feed for this category */}
-        <div className="hidden md:flex flex-1 min-w-0 h-[700px] bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden flex-col">
-          <div className="px-4 py-3 border-b border-gray-800 flex-shrink-0 flex items-center justify-between">
-            <div>
-              <p className="text-white text-sm font-black">{categoryName} Feed</p>
-              <p className="text-gray-600 text-[10px]">Latest listings & posts · Click a card on the left to browse its landing page</p>
-            </div>
-            {user && (
-              <a href={`/create-listing?cat=${encodeURIComponent(cat)}`}
-                className="text-xs font-bold px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-700/40 text-purple-300 hover:bg-purple-900/60 transition-colors">
-                {cat === "premium_mods" ? "Sell Premium Mod" : "Post"}
-              </a>
-            )}
-          </div>
-          <CategoryFeed cat={cat} user={user} userProfile={userProfile} />
-        </div>
+      {/* Subcategory cards grid (category-specific feeds removed — a single
+          global "All categories" newsfeed is shown on the category page instead) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+        {filteredItems.length === 0 && (
+          <div className="col-span-full text-center py-8 text-gray-600 text-xs">No matches</div>
+        )}
+        {filteredItems.map((item, i) => (
+          <SubcardItem
+            key={item.id}
+            item={{ ...item, _userEmail: userEmail }}
+            cat={cat} index={i}
+            canAdmin={canAdmin || isAccountMod}
+            canDelete={canDelete}
+            isAccountMod={isAccountMod && !canAdmin}
+            onItemUpdate={handleItemUpdate}
+            onDelete={() => handleDelete(item.id)}
+            onRequestDelete={() => handleRequestDelete()}
+            user={user}
+            userProfile={userProfile}
+            activeSubcat={null}
+            onSetActiveSubcat={() => {}}
+          />
+        ))}
       </div>
 
       <AnimatePresence>
-        {mobileFeedOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="md:hidden fixed inset-0 z-50 bg-black/75" onClick={() => setMobileFeedOpen(false)}>
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "tween", duration: 0.25 }} onClick={e => e.stopPropagation()} className="absolute left-0 right-0 bottom-0 h-[82vh] bg-gray-900 rounded-t-3xl border-t border-purple-700/40 overflow-hidden flex flex-col">
-              <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between flex-shrink-0">
-                <div>
-                  <p className="text-white text-sm font-black">{categoryName} Feed</p>
-                  <p className="text-gray-600 text-[10px]">Latest listings & posts</p>
-                </div>
-                <button onClick={() => setMobileFeedOpen(false)} className="w-8 h-8 rounded-xl bg-gray-800 text-gray-300 flex items-center justify-center">×</button>
-              </div>
-              <CategoryFeed cat={cat} user={user} userProfile={userProfile} />
-            </motion.div>
-          </motion.div>
-        )}
-
-        
         {showAdd && <AddSubcategoryModal cat={cat} onClose={() => setShowAdd(false)} onAdded={handleAdded} />}
       </AnimatePresence>
     </div>
