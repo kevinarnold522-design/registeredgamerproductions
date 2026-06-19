@@ -54,15 +54,27 @@ async function authHeaders(extra = {}) {
 }
 
 async function request(path, { method = "GET", body, headers } = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    credentials: "include",
-    headers: await authHeaders({
-      ...(body ? { "Content-Type": "application/json" } : {}),
-      ...headers,
-    }),
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      credentials: "include",
+      headers: await authHeaders({
+        ...(body ? { "Content-Type": "application/json" } : {}),
+        ...headers,
+      }),
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (networkErr) {
+    // fetch() rejects with "Failed to fetch" on network/CORS/offline errors.
+    // Wrap it in a clean, catchable error so callers' .catch() handlers can
+    // degrade gracefully instead of the raw TypeError crashing the UI.
+    const err = new Error("Network request failed. Please check your connection and try again.");
+    err.status = 0;
+    err.isNetworkError = true;
+    err.cause = networkErr;
+    throw err;
+  }
   const text = await res.text();
   let data;
   try { data = text ? JSON.parse(text) : null; } catch { data = text; }
@@ -105,15 +117,33 @@ function applySort(rows, sort) {
 function makeEntity(name) {
   return {
     async list(sort, limit) {
-      const rows = await request(`/entities/${name}${toQuery({}, limit)}`);
+      let rows;
+      try {
+        rows = await request(`/entities/${name}${toQuery({}, limit)}`);
+      } catch (e) {
+        if (e.isNetworkError) return []; // degrade gracefully on network failure
+        throw e;
+      }
       return applySort(rows || [], sort).slice(0, limit || (rows || []).length);
     },
     async filter(query = {}, sort, limit) {
-      const rows = await request(`/entities/${name}${toQuery(query, limit)}`);
+      let rows;
+      try {
+        rows = await request(`/entities/${name}${toQuery(query, limit)}`);
+      } catch (e) {
+        if (e.isNetworkError) return []; // degrade gracefully on network failure
+        throw e;
+      }
       return applySort(rows || [], sort).slice(0, limit || (rows || []).length);
     },
     async get(id) {
-      const rows = await request(`/entities/${name}${toQuery({ id }, 1)}`);
+      let rows;
+      try {
+        rows = await request(`/entities/${name}${toQuery({ id }, 1)}`);
+      } catch (e) {
+        if (e.isNetworkError) return null; // degrade gracefully on network failure
+        throw e;
+      }
       return (rows && rows[0]) || null;
     },
     create(data) {
