@@ -7,6 +7,7 @@
 // ALL 27 Base44 functions from MIGRATION_MANIFEST.json are ported here.
 // =====================================================================
 import { createRecord, updateRecord, deleteRecord, listRecords } from "./db.js";
+import { getSupabaseUser } from "./supabaseAuth.js";
 
 const MASTER_EMAIL = "kevinarnold522@gmail.com";
 const ADMIN_EMAILS = ["kevinjersey2019@gmail.com", "arnoldk137@gmail.com", "kevinarnold522@gmail.com"];
@@ -49,9 +50,17 @@ export async function handleFunction(name, body, env, request) {
 // Shared helpers
 // ─────────────────────────────────────────────────────────────────────
 
-// Resolve the current user from the request via Base44 (auth stays on Base44).
+// Resolve the current user from the request. Auth now runs on Supabase:
+// verify the bearer token there first, then fall back to Base44 for any
+// legacy tokens still in circulation.
 async function getUser(env, request) {
   if (!request) return null;
+
+  // 1) Supabase access token (primary auth)
+  const supaUser = await getSupabaseUser(env, request);
+  if (supaUser) return supaUser;
+
+  // 2) Legacy Base44 token fallback
   const authHeader = request.headers.get("Authorization") || request.headers.get("api_key");
   if (!authHeader || !env.BASE44_APP_ID) return null;
   try {

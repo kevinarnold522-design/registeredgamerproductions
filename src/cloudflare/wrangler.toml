@@ -24,6 +24,8 @@ BASE44_BACKUP_ENABLED = "true"
 R2_PUBLIC_URL = "https://media.gamer.productions"
 
 # ---- Secrets (set via: wrangler secret put NAME) ----
+#   SUPABASE_URL              (https://smymannqqogtshvsiqyp.supabase.co)
+#   SUPABASE_KEY              (Supabase anon / publishable key — verifies user tokens)
 #   STRIPE_SECRET_KEY
 #   STRIPE_PUBLISHABLE_KEY
 #   PAYPAL_CLIENT_ID
