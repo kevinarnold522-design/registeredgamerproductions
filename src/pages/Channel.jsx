@@ -88,7 +88,8 @@ export default function Channel() {
 
   useEffect(() => {
     const init = async () => {
-      const me = await base44.auth.me();
+      let me = null;
+      try { me = await base44.auth.me(); } catch (_) { me = null; }
       const ghostSession = (() => {
         try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
       })();
@@ -97,19 +98,35 @@ export default function Channel() {
       setUser(ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me);
       setTargetEmail(email);
       if (email) {
-        const [profiles, myVideos, myPosts, myListings] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_email: email }),
-          base44.entities.VideoPost.filter({ creator_email: email }),
-          base44.entities.ChannelPost.filter({ creator_email: email }),
-          base44.entities.Listing.filter({ seller_email: email }),
-        ]);
-        const p = profiles[0] || null;
-        setProfile(p);
-        setChannelTheme(p?.profile_theme_style || "default");
-        setSocialLinks(p?.social_links || {});
-        setVideos(myVideos.filter(v => v.status === "active"));
-        setListings(myListings.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
-        setPosts(myPosts.filter(post => post.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+        try {
+          const [profiles, myVideos, myPosts, myListings] = await Promise.all([
+            base44.entities.UserProfile.filter({ user_email: email }),
+            base44.entities.VideoPost.filter({ creator_email: email }),
+            base44.entities.ChannelPost.filter({ creator_email: email }),
+            base44.entities.Listing.filter({ seller_email: email }),
+          ]);
+          let p = profiles[0] || null;
+          // If the logged-in owner has no profile row yet (fresh Supabase
+          // sign-up), create one so Edit Profile + avatar/cover uploads work.
+          const ownerNoProfile = !p && me?.email && !viewEmail && email === me.email;
+          if (ownerNoProfile) {
+            try {
+              p = await base44.entities.UserProfile.create({
+                user_email: me.email,
+                username: (me.email.split("@")[0] || "gamer").replace(/\s+/g, "_"),
+                display_name: me.full_name || me.email.split("@")[0],
+                account_type: "regular",
+                avatar_url: me.avatar_url || "",
+              });
+            } catch (_) { /* ignore; page stays usable */ }
+          }
+          setProfile(p);
+          setChannelTheme(p?.profile_theme_style || "default");
+          setSocialLinks(p?.social_links || {});
+          setVideos(myVideos.filter(v => v.status === "active"));
+          setListings(myListings.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+          setPosts(myPosts.filter(post => post.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+        } catch (_) { /* keep page usable even if a fetch fails */ }
       }
       setLoading(false);
     };
