@@ -21,11 +21,24 @@ async function invokeUpload(payload) {
     accessToken = data?.session?.access_token;
     if (accessToken) headers = { Authorization: `Bearer ${accessToken}` };
   } catch (_) {}
-  const res = await base44.functions.invoke(
-    "uploadToR2",
-    { ...payload, accessToken },
-    headers ? { headers } : {}
-  );
+  let res;
+  try {
+    res = await base44.functions.invoke(
+      "uploadToR2",
+      { ...payload, accessToken },
+      headers ? { headers } : {}
+    );
+  } catch (e) {
+    // The worker returns HTML (a 404 page) when it isn't deployed/reachable,
+    // which surfaces here as a non-JSON / failed request. Give a clear message.
+    if (e?.status === 404 || e?.isNetworkError || typeof e?.data === "string") {
+      throw new Error("Upload service is unreachable. The backend isn't deployed yet — please try again later.");
+    }
+    throw e;
+  }
+  if (!res?.data?.file_url) {
+    throw new Error(res?.data?.error || "Upload failed — the server did not return a file URL.");
+  }
   return res.data;
 }
 
