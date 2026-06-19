@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-
-// Base URL of the Cloudflare auth Worker (set VITE_AUTH_BASE_URL for prod;
-// falls back to same-origin /auth routes).
-const AUTH_BASE = import.meta.env.VITE_AUTH_BASE_URL || "";
+import { signInWithEmail, signUpWithEmail, signInWithProvider } from "@/lib/supabaseAuth";
 
 // ── Brand logos ──
 const GoogleLogo = () => (
@@ -33,29 +30,32 @@ export default function EmailLoginModal({ isOpen, onClose, onSwitchToSignUp }) {
     setLoading(true);
     setMessage("");
     try {
-      const res = await fetch(`${AUTH_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage(data.error || "Login failed.");
-      } else {
-        setMessage("Signed in! Redirecting...");
-        window.location.href = "/";
-      }
+      await signInWithEmail(email, password);
+      setMessage("Signed in! Redirecting...");
+      window.location.href = "/";
     } catch (err) {
-      setMessage(err.message || "Something went wrong.");
+      // If the account doesn't exist yet, offer to create it
+      if (/invalid login credentials/i.test(err.message || "")) {
+        try {
+          await signUpWithEmail(email, password);
+          setMessage("Account created! Check your email to confirm, then sign in.");
+        } catch (signupErr) {
+          setMessage(signupErr.message || "Login failed.");
+        }
+      } else {
+        setMessage(err.message || "Something went wrong.");
+      }
     }
     setLoading(false);
   };
 
-  const handleSocialLogin = (provider) => {
+  const handleSocialLogin = async (provider) => {
     setMessage(`Connecting to ${provider}...`);
-    const next = encodeURIComponent("/");
-    window.location.href = `${AUTH_BASE}/auth/${provider.toLowerCase()}?next=${next}`;
+    try {
+      await signInWithProvider(provider, "/");
+    } catch (err) {
+      setMessage(err.message || `Could not connect to ${provider}.`);
+    }
   };
 
   return (
