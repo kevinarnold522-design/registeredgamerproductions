@@ -100,6 +100,7 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
         </div>
       ) : (
         <>
+        <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {paged.map((listing, i) => {
             const anim = listing.card_animation || "fade";
@@ -162,7 +163,6 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
             );
           })}
         </div>
-        <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
         </>
       )}
     </div>

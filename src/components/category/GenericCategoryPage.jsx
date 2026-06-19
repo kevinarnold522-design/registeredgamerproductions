@@ -382,21 +382,21 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           </div>
         ) : cat === "games" ? (
           <>
+          <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {paged.map((l, i) => (
               <GameCoverCard key={l.id} l={l} i={i} user={user} profile={profile} />
             ))}
           </div>
-          <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
           </>
         ) : (
           <>
+          <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {paged.map((l) => (
               <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
             ))}
           </div>
-          <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
           </>
         )}
       </div>
