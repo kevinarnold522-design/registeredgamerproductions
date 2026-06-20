@@ -8,6 +8,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { uploadFileToR2, uploadFileWithFallback } from "@/lib/uploadToR2";
+import { updateProfileMedia } from "@/lib/updateProfileMedia";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import PostCard from "@/components/channel/PostCard";
 import ChannelThemePicker, { THEMES, buildProfileTheme } from "@/components/channel/ChannelThemePicker";
@@ -154,8 +155,7 @@ export default function Channel() {
   };
 
   const updateMedia = async (field, value) => {
-    // The owner updates their own profile directly via the SDK.
-    const updated = await base44.entities.UserProfile.update(profile.id, { [field]: value });
+    const updated = await updateProfileMedia(profile.id, { [field]: value });
     setProfile(updated || ((p) => ({ ...p, [field]: value })));
   };
 

@@ -1,17 +1,16 @@
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabaseClient";
 import { compressImage } from "@/lib/compressImage";
 
 // =====================================================================
-// Upload helper used by listings, profiles, posts, and AI listing images.
-// Primary path: Base44 built-in storage.
-// Backup path: existing backend R2 uploader, so uploads do not fail just
-// because one network route has a temporary problem.
+// Supabase-only upload helper used by listings, profiles, posts, covers,
+// videos, and AI listing images. No Base44 upload, no R2 upload, no backend.
 // =====================================================================
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
 export const MAX_UPLOAD_LABEL = "25MB";
 
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
+const SUPABASE_BUCKETS = ["gamerproductionsmedia", "uploads", "public"];
 
 export function validateUploadSize(file) {
   return file && file.size <= MAX_UPLOAD_BYTES;
@@ -28,71 +27,44 @@ function validateFile(file) {
   }
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function safePath(folder, file) {
+  const extension = (file.name || "upload").split(".").pop() || "bin";
+  const safeFolder = String(folder || "uploads").replace(/[^a-zA-Z0-9/_-]/g, "-");
+  const randomId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `${safeFolder}/${randomId}.${extension.toLowerCase()}`;
 }
 
-async function uploadToBase44WithRetry(file) {
-  let lastError;
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      if (!file_url) throw new Error("Upload returned no URL.");
-      return file_url;
-    } catch (error) {
-      lastError = error;
-      if (attempt < 3) await sleep(700 * attempt);
+async function uploadToSupabase(file, folder) {
+  const path = safePath(folder, file);
+  let lastError = null;
+
+  for (const bucket of SUPABASE_BUCKETS) {
+    const { error } = await supabase.storage.from(bucket).upload(path, file, {
+      cacheControl: "31536000",
+      upsert: false,
+      contentType: file.type || "application/octet-stream",
+    });
+
+    if (!error) {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      if (!data?.publicUrl) throw new Error("Supabase upload returned no public URL.");
+      return { file_url: data.publicUrl, source: "supabase", bucket, path };
     }
+
+    lastError = error;
   }
-  throw lastError;
+
+  throw new Error(lastError?.message || "Supabase upload failed. Please check the storage bucket settings.");
 }
 
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Could not read the selected file."));
-    reader.readAsDataURL(file);
-  });
-}
-
-async function uploadToBackendR2(file, folder) {
-  const dataUrl = await fileToDataUrl(file);
-  const response = await base44.functions.invoke("uploadToR2", {
-    fileName: file.name || "upload",
-    contentType: file.type || "application/octet-stream",
-    dataUrl,
-    folder,
-  });
-  const fileUrl = response?.data?.file_url;
-  if (!fileUrl) throw new Error(response?.data?.error || "Backup upload failed.");
-  return fileUrl;
-}
-
-// Main entry point. Returns { file_url, source }.
 export async function uploadFileWithFallback(file, folder = "uploads") {
   validateFile(file);
-
   const isImage = (file.type || "").startsWith("image/");
   const toUpload = isImage ? await compressImage(file) : file;
-
-  try {
-    const fileUrl = await uploadToBase44WithRetry(toUpload);
-    return { file_url: fileUrl, source: "base44" };
-  } catch (primaryError) {
-    console.warn("Primary upload failed, trying backup uploader:", primaryError?.message);
-  }
-
-  try {
-    const fileUrl = await uploadToBackendR2(toUpload, folder);
-    return { file_url: fileUrl, source: "r2" };
-  } catch (backupError) {
-    console.error("All upload routes failed:", backupError?.message);
-    throw new Error("Upload failed. Please try a smaller file or refresh the page and upload again.");
-  }
+  return uploadToSupabase(toUpload, folder);
 }
 
-// Backwards-compatible wrapper: existing callers expect { file_url }.
+// Backwards-compatible name used by existing components.
 export async function uploadFileToR2(file, folder = "uploads") {
   const { file_url } = await uploadFileWithFallback(file, folder);
   return { file_url };

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Edit2, User, Mail, Globe, Store, Trophy, Gamepad2, Palette, Camera } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { uploadFileWithFallback } from "@/lib/uploadToR2";
+import { updateProfileMedia } from "@/lib/updateProfileMedia";
 
 const FAVORITE_GAME_OPTIONS = [
   { name: "NBA 2K" },
@@ -115,7 +116,7 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
       const { file_url } = await uploadFileWithFallback(file, "channel-avatars");
       // Optimistic: show new avatar immediately.
       setAvatarUrl(file_url);
-      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
+      await updateProfileMedia(profile.id, { avatar_url: file_url });
       onSaved?.({ ...profile, avatar_url: file_url });
     } catch (err) {
       setError(err?.message || "Could not upload picture. Please try again.");

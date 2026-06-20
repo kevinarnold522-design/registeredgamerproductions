@@ -23,6 +23,7 @@ import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
 import ReelCreator from "@/components/shared/ReelCreator";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 import EditProfileModal from "@/components/profile/EditProfileModal";
+import { updateProfileMedia } from "@/lib/updateProfileMedia";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 
 const COUNTRIES = [
@@ -179,9 +180,9 @@ export default function Profile() {
     init();
   }, [targetEmail, authUser]);
 
-  // Persist a profile field through the entity layer (timeout-protected).
+  // Persist profile media/theme fields through Supabase only.
   const updateProfileField = async (field, value) => {
-    const updated = await base44.entities.UserProfile.update(profile.id, { [field]: value });
+    const updated = await updateProfileMedia(profile.id, { [field]: value });
     setProfile(updated);
     return updated;
   };
@@ -221,7 +222,7 @@ export default function Profile() {
       const { file_url } = await uploadFileWithFallback(file, "profile-avatars");
       const avatarUrls = [file_url, ...(profile.avatar_urls || []).filter(url => url !== file_url)].slice(0, 6);
       setProfile(p => ({ ...p, avatar_url: file_url, avatar_urls: avatarUrls }));
-      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url, avatar_urls: avatarUrls });
+      await updateProfileMedia(profile.id, { avatar_url: file_url, avatar_urls: avatarUrls });
       toast.success("Profile picture updated", { id: loadingId });
     } catch (error) {
       toast.error(error?.message || "Failed to upload profile picture", { id: loadingId });

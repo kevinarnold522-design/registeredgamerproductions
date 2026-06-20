@@ -1,6 +1,5 @@
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabaseClient";
 
-// Reject if the write takes too long, so the UI never gets stuck "saving".
 function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
@@ -8,18 +7,15 @@ function withTimeout(promise, ms, label) {
   ]);
 }
 
-/**
- * Persist profile media fields (avatar_url, avatar_urls, banner_url) through
- * the Cloudflare Worker. The worker authenticates from the session cookie.
- *
- * @param {string} profileId
- * @param {object} updates - e.g. { avatar_url, avatar_urls } or { banner_url }
- * @returns {Promise<object>} the updated profile
- */
 export async function updateProfileMedia(profileId, updates) {
-  return withTimeout(
-    base44.entities.UserProfile.update(profileId, updates),
-    20000,
-    "Saving profile"
-  );
+  const save = supabase
+    .from("user_profiles")
+    .update({ ...updates, updated_date: new Date().toISOString() })
+    .eq("id", profileId)
+    .select()
+    .single();
+
+  const { data, error } = await withTimeout(save, 20000, "Saving profile");
+  if (error) throw error;
+  return data;
 }
