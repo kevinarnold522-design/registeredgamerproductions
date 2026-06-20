@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import { compressImage } from "@/lib/compressImage";
-import { getBase44Direct } from "@/lib/base44Direct";
+import { base44 } from "@/api/base44Client";
 
 // =====================================================================
 // Supabase-only upload helper used by listings, profiles, posts, covers,
@@ -52,8 +52,9 @@ async function prepareSupabaseUpload(file, folder) {
     contentType: file.type || "application/octet-stream",
   };
 
-  // Ask the reliable Base44-hosted function for a signed Supabase upload URL.
-  const res = await getBase44Direct().functions.invoke("createSupabaseUpload", payload);
+  // Ask the backend for a signed Supabase upload URL using the app's
+  // AUTHENTICATED client so the function passes its sign-in check.
+  const res = await base44.functions.invoke("createSupabaseUpload", payload);
   const data = res?.data || res;
   if (isValidUploadInfo(data)) return { ...data, source: "base44" };
   throw new Error(data?.error || "Could not prepare Supabase upload.");

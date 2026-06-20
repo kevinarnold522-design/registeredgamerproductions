@@ -16,8 +16,8 @@ const SOCIALS = [
 
 export default function GamerSocialsBar({ className = "" }) {
   return (
-    <div className={`flex items-center justify-center gap-2 flex-wrap opacity-100 px-24 ${className}`}>
-      <span className="text-[10px] font-black uppercase tracking-[0.25em] text-purple-300/80 mr-1">Follow Us</span>
+    <div className={`flex items-center justify-start sm:justify-center gap-2 flex-nowrap overflow-x-auto opacity-100 px-3 sm:px-6 ${className}`}>
+      <span className="text-[10px] font-black uppercase tracking-[0.25em] text-purple-300/80 mr-1 flex-shrink-0">Follow Us</span>
       {SOCIALS.map((item) => {
         const Icon = item.icon;
         const external = item.href.startsWith("http");
@@ -27,7 +27,7 @@ export default function GamerSocialsBar({ className = "" }) {
             href={item.href}
             target={external ? "_blank" : undefined}
             rel={external ? "noopener noreferrer" : undefined}
-            className="theme-glow-action inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-950/70 border border-purple-500/25 text-xs font-bold text-gray-300 hover:text-white transition-all">
+            className="theme-glow-action inline-flex flex-shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-950/70 border border-purple-500/25 text-xs font-bold text-gray-300 hover:text-white transition-all whitespace-nowrap">
             
             {item.brand ?
             <BrandLogo brand={item.brand} label={item.label} className="w-3.5 h-3.5" /> :
