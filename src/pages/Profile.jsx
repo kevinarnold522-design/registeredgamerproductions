@@ -24,6 +24,7 @@ import ReelCreator from "@/components/shared/ReelCreator";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import { updateProfileMedia } from "@/lib/updateProfileMedia";
+import { getProfileByEmail } from "@/lib/getProfileByEmail";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 
 const COUNTRIES = [
@@ -128,16 +129,16 @@ export default function Profile() {
         const ghostEmail = impersonationData.targetEmail;
         
         // Fetch ghost account's profile and listings
-        const [profiles, listingsData] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_email: ghostEmail }),
+        const [ghostProfile, listingsData] = await Promise.all([
+          getProfileByEmail(ghostEmail),
           base44.entities.Listing.filter({ seller_email: ghostEmail }),
         ]);
         
-        if (profiles.length > 0) {
-          setProfile(profiles[0]);
+        if (ghostProfile) {
+          setProfile(ghostProfile);
           setUser({
             email: ghostEmail,
-            full_name: profiles[0].username || impersonationData.targetUsername,
+            full_name: ghostProfile.username || impersonationData.targetUsername,
             isGhostAccount: true,
             ghostData: impersonationData,
           });
@@ -170,11 +171,11 @@ export default function Profile() {
       
       setIsOwnProfile(isOwnProfileValue);
       
-      const [profiles, listingsData] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_email: emailToLoad }),
+      const [loadedProfile, listingsData] = await Promise.all([
+        getProfileByEmail(emailToLoad),
         base44.entities.Listing.filter({ seller_email: emailToLoad }),
       ]);
-      if (profiles.length > 0) setProfile(profiles[0]);
+      if (loadedProfile) setProfile(loadedProfile);
       setListings(listingsData.filter(l => l.status === "active"));
       setLoading(false);
     };
