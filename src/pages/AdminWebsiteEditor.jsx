@@ -5,9 +5,10 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import {
   Shield, Save, RefreshCw, Type, Palette, Link2, Globe, Eye,
-  Check, Edit3, Plus, Trash2, Layout, ArrowLeft, Megaphone
+  Check, Edit3, Plus, Trash2, Layout, ArrowLeft, Megaphone, Bot
 } from "lucide-react";
 import HtmlAdManager from "@/components/admin/HtmlAdManager";
+import WebsiteAIBuilder from "@/components/admin/WebsiteAIBuilder";
 
 const DEFAULT_COLORS = {
   primary: "#a855f7",
@@ -124,6 +125,7 @@ export default function AdminWebsiteEditor() {
   const removeLink = (id) => setCustomLinks(l => l.filter(x => x.id !== id));
 
   const tabs = [
+    { id: "ai", label: "AI Builder", icon: Bot },
     { id: "content", label: "Text Content", icon: Type },
     { id: "colors", label: "Colors", icon: Palette },
     { id: "links", label: "Nav Links", icon: Link2 },
@@ -167,6 +169,11 @@ export default function AdminWebsiteEditor() {
             </button>
           ))}
         </div>
+
+        {/* AI BUILDER TAB */}
+        {activeTab === "ai" && (
+          <WebsiteAIBuilder content={content} setContent={setContent} editableSections={EDITABLE_SECTIONS} />
+        )}
 
         {/* CONTENT TAB */}
         {activeTab === "content" && (
