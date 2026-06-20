@@ -45,6 +45,40 @@ Deno.serve(async (req) => {
     }
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
 
+    // The tables were just created, so PostgREST's schema cache may be stale,
+    // which makes writes fail with "Could not find the table ... in the schema
+    // cache" even though the table exists. Ask PostgREST to reload its schema
+    // cache, then give it a moment to apply before writing.
+    try {
+      await fetch(`${url}/rest/v1/rpc/`, {
+        method: 'POST',
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+          'Content-Profile': 'public',
+        },
+      });
+    } catch (_) {}
+    try {
+      await supabase.rpc('reload_schema_cache');
+    } catch (_) {}
+    // Brief wait so the reload notification is processed.
+    await new Promise((r) => setTimeout(r, 2500));
+
+    async function upsertChunk(name, chunk) {
+      // Retry on stale schema-cache errors — the tables were just created.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const { error } = await supabase.from(name).upsert(chunk, { onConflict: 'id' });
+        if (!error) return;
+        if (/schema cache|could not find the table/i.test(error.message) && attempt < 3) {
+          await new Promise((r) => setTimeout(r, 2000));
+          continue;
+        }
+        throw new Error(error.message);
+      }
+    }
+
     const summary = {};
     for (const name of ENTITIES) {
       try {
@@ -55,8 +89,7 @@ Deno.serve(async (req) => {
         let migrated = 0;
         for (let i = 0; i < rows.length; i += 200) {
           const chunk = rows.slice(i, i + 200);
-          const { error } = await supabase.from(name).upsert(chunk, { onConflict: 'id' });
-          if (error) throw new Error(error.message);
+          await upsertChunk(name, chunk);
           migrated += chunk.length;
         }
         summary[name] = { migrated };

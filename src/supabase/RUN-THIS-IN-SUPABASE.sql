@@ -82,6 +82,11 @@ begin
   end loop;
 end $$;
 
+-- Force PostgREST to reload its schema cache so writes to the new tables work
+-- immediately (otherwise upserts fail with "could not find the table in the
+-- schema cache" even though the table exists).
+notify pgrst, 'reload schema';
+
 -- Confirm all 36 tables now exist (should return 36 rows):
 select tablename from pg_tables
 where schemaname = 'public'
