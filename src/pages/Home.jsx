@@ -13,28 +13,42 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
 
+// Retry a lazy import once on chunk-load failure (recovers from stale
+// Vite chunks after a deploy instead of crashing the page).
+const lazyWithRetry = (importer) =>
+  lazy(() =>
+    importer().catch((err) => {
+      if (!sessionStorage.getItem("chunk_reloaded")) {
+        sessionStorage.setItem("chunk_reloaded", "1");
+        window.location.reload();
+        return new Promise(() => {});
+      }
+      throw err;
+    })
+  );
+
 // Below-the-fold sections are lazy-loaded so the page paints faster
-const BusinessModelSection = lazy(() => import("@/components/home/BusinessModelSection"));
-const MovingDashboard = lazy(() => import("@/components/home/MovingDashboard"));
-const LiveStreamSection = lazy(() => import("@/components/home/LiveStreamSection"));
-const HowWeHelpSection = lazy(() => import("@/components/home/HowWeHelpSection"));
-const PaidModsSection = lazy(() => import("@/components/home/PaidModsSection"));
-const ModdingSection = lazy(() => import("@/components/home/ModdingSection"));
-const MonetizationBadge = lazy(() => import("@/components/home/MonetizationBadge"));
-const VideosSection = lazy(() => import("@/components/home/VideosSection"));
-const FeaturedGames = lazy(() => import("@/components/home/FeaturedGames"));
-const CommunitySection = lazy(() => import("@/components/home/CommunitySection"));
-const Footer = lazy(() => import("@/components/home/Footer"));
-const FeedbackWidget = lazy(() => import("@/components/shared/FeedbackWidget"));
-const AdminLinkScanner = lazy(() => import("@/components/admin/AdminLinkScanner"));
-const DailyRewards = lazy(() => import("@/components/rewards/DailyRewards"));
-const DailyRewardPopup = lazy(() => import("@/components/rewards/DailyRewardPopup"));
-const AdminApprovalPanel = lazy(() => import("@/components/community/AdminApprovalPanel"));
-const ListingOfWeek = lazy(() => import("@/components/home/ListingOfWeek"));
-const VerifiedBadgeBanner = lazy(() => import("@/components/home/VerifiedBadgeBanner"));
-const First10KBanner = lazy(() => import("@/components/home/First10KBanner"));
-const FirstLoginTutorial = lazy(() => import("@/components/tutorial/FirstLoginTutorial"));
-const AllCategoriesNewsfeed = lazy(() => import("@/components/home/AllCategoriesNewsfeed"));
+const BusinessModelSection = lazyWithRetry(() => import("@/components/home/BusinessModelSection"));
+const MovingDashboard = lazyWithRetry(() => import("@/components/home/MovingDashboard"));
+const LiveStreamSection = lazyWithRetry(() => import("@/components/home/LiveStreamSection"));
+const HowWeHelpSection = lazyWithRetry(() => import("@/components/home/HowWeHelpSection"));
+const PaidModsSection = lazyWithRetry(() => import("@/components/home/PaidModsSection"));
+const ModdingSection = lazyWithRetry(() => import("@/components/home/ModdingSection"));
+const MonetizationBadge = lazyWithRetry(() => import("@/components/home/MonetizationBadge"));
+const VideosSection = lazyWithRetry(() => import("@/components/home/VideosSection"));
+const FeaturedGames = lazyWithRetry(() => import("@/components/home/FeaturedGames"));
+const CommunitySection = lazyWithRetry(() => import("@/components/home/CommunitySection"));
+const Footer = lazyWithRetry(() => import("@/components/home/Footer"));
+const FeedbackWidget = lazyWithRetry(() => import("@/components/shared/FeedbackWidget"));
+const AdminLinkScanner = lazyWithRetry(() => import("@/components/admin/AdminLinkScanner"));
+const DailyRewards = lazyWithRetry(() => import("@/components/rewards/DailyRewards"));
+const DailyRewardPopup = lazyWithRetry(() => import("@/components/rewards/DailyRewardPopup"));
+const AdminApprovalPanel = lazyWithRetry(() => import("@/components/community/AdminApprovalPanel"));
+const ListingOfWeek = lazyWithRetry(() => import("@/components/home/ListingOfWeek"));
+const VerifiedBadgeBanner = lazyWithRetry(() => import("@/components/home/VerifiedBadgeBanner"));
+const First10KBanner = lazyWithRetry(() => import("@/components/home/First10KBanner"));
+const FirstLoginTutorial = lazyWithRetry(() => import("@/components/tutorial/FirstLoginTutorial"));
+const AllCategoriesNewsfeed = lazyWithRetry(() => import("@/components/home/AllCategoriesNewsfeed"));
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
@@ -43,6 +57,10 @@ export default function Home() {
   const [showTutorial, setShowTutorial] = useState(false);
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
   useScrollReveal();
+
+  // Page mounted successfully — clear the chunk-retry guard so a future
+  // stale-chunk failure can reload again.
+  useEffect(() => { sessionStorage.removeItem("chunk_reloaded"); }, []);
 
   useEffect(() => {
     if (isAuthenticated && user) {
