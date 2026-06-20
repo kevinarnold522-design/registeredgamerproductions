@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
@@ -107,7 +107,9 @@ export default function Profile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [bannerLoaded, setBannerLoaded] = useState(false);
+  const avatarInputRef = useRef(null);
   const navigate = useNavigate();
 
   const params = new URLSearchParams(window.location.search);
@@ -207,6 +209,25 @@ export default function Profile() {
     if (!profile?.id) return;
     await updateProfileField("banner_url", "");
     toast.success("Cover photo removed");
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile?.id) return;
+    e.target.value = "";
+    setAvatarUploading(true);
+    const loadingId = toast.loading("Uploading profile picture...");
+    try {
+      const { file_url } = await uploadFileWithFallback(file, "profile-avatars");
+      const avatarUrls = [file_url, ...(profile.avatar_urls || []).filter(url => url !== file_url)].slice(0, 6);
+      setProfile(p => ({ ...p, avatar_url: file_url, avatar_urls: avatarUrls }));
+      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url, avatar_urls: avatarUrls });
+      toast.success("Profile picture updated", { id: loadingId });
+    } catch (error) {
+      toast.error(error?.message || "Failed to upload profile picture", { id: loadingId });
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   const handleThemeChange = async (themeColor) => {
@@ -405,12 +426,16 @@ export default function Profile() {
                 </motion.button>
               )}
               {isOwnProfile && (
-                <button
-                  onClick={() => setShowEditModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-600/50 text-purple-200 text-sm font-bold hover:bg-purple-800/50 transition-colors"
-                >
-                  <Camera className="w-4 h-4" /> Edit Profile Picture
-                </button>
+                <>
+                  <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-600/50 text-purple-200 text-sm font-bold hover:bg-purple-800/50 transition-colors disabled:opacity-50"
+                  >
+                    <Camera className="w-4 h-4" /> {avatarUploading ? "Uploading..." : "Edit Profile Picture"}
+                  </button>
+                </>
               )}
               {isOwnProfile && (
                 <button
