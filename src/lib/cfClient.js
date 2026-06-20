@@ -132,9 +132,21 @@ function applySort(rows, sort) {
 async function entityOp(entity, op, payload = {}) {
   // Pass the Supabase access token in the body — the dependable auth path for
   // write operations (header forwarding is not guaranteed in all environments).
+  const isWrite = op === "create" || op === "update" || op === "delete";
   let accessToken = "";
   try {
-    const { data } = await supabase.auth.getSession();
+    let { data } = await supabase.auth.getSession();
+    // For writes, make sure the token is fresh — an expired/stale access token
+    // makes the proxy reject the save with 401, which is exactly why profile
+    // covers/avatars "saved" but reverted on refresh. Refresh it first so a
+    // valid token always reaches the server.
+    if (isWrite) {
+      const exp = data?.session?.expires_at ? data.session.expires_at * 1000 : 0;
+      if (!data?.session || (exp && exp - Date.now() < 60000)) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (refreshed?.data?.session) data = refreshed.data;
+      }
+    }
     accessToken = data?.session?.access_token || "";
   } catch (_) {}
   const res = await request(`/functions/entityProxy`, {
