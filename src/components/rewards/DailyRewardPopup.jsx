@@ -202,6 +202,14 @@ export default function DailyRewardPopup({ user, onClose }) {
           >
             {isFirstTime ? "Start My Journey! 🚀" : "Let's Go! 🎮"}
           </button>
+
+          {/* Bottom dismiss button */}
+          <button
+            onClick={handleClose}
+            className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-gray-900 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors text-sm font-bold"
+          >
+            <X className="w-4 h-4" /> Close
+          </button>
         </motion.div>
       </motion.div>
     </AnimatePresence>

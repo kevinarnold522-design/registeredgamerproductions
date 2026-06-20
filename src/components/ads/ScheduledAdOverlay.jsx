@@ -63,6 +63,13 @@ export default function ScheduledAdOverlay({ listing, adsDisabled = false }) {
           <h3 className="text-white text-2xl font-black mt-2">{activeAd.title}</h3>
           {activeAd.body && <p className="text-gray-400 text-sm mt-2">{activeAd.body}</p>}
           {activeAd.cta_url && <a href={activeAd.cta_url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-black">{activeAd.cta_label || "Open"}</a>}
+          {/* Bottom dismiss button */}
+          <button
+            onClick={() => setActiveAd(null)}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors text-sm font-bold"
+          >
+            <X className="w-4 h-4" /> Close
+          </button>
         </div>
       </div>
     </div>

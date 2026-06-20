@@ -253,6 +253,16 @@ export default function FirstLoginTutorial({ onComplete }) {
               {currentStep < ACTIVITIES.length - 1 && <ArrowRight className="w-4 h-4" />}
             </button>
           </div>
+
+          {/* Bottom dismiss button */}
+          <div className="px-6 pb-6 bg-gray-900/30">
+            <button
+              onClick={handleFinish}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-900 border border-gray-700 text-gray-300 hover:text-white hover:bg-gray-800 transition-colors text-sm font-bold"
+            >
+              <X className="w-4 h-4" /> Close
+            </button>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
