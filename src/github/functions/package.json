@@ -1,0 +1,7 @@
+{
+  "name": "gamer-productions-main-portable-functions",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Main GitHub portable backend function adapters for Vercel, Supabase Edge Functions, and Cloudflare."
+}
