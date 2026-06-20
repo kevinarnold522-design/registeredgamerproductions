@@ -195,7 +195,7 @@ export default function Profile() {
       // Optimistic: show the new cover instantly.
       setProfile(p => ({ ...p, banner_url: file_url }));
       await updateProfileField("banner_url", file_url);
-      toast.success(`Cover photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
+      toast.success(`Cover photo updated${source === "r2" ? " (backup storage)" : ""}`, { id: loadingId });
     } catch (error) {
       toast.error(error?.message || "Failed to upload cover photo", { id: loadingId });
     } finally {

@@ -178,7 +178,7 @@ export default function Channel() {
       const { file_url, source } = await uploadFileWithFallback(file, "channel-covers");
       setProfile(p => ({ ...p, banner_url: file_url })); // optimistic
       await updateMedia("banner_url", file_url);
-      toast.success(`Cover photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
+      toast.success(`Cover photo updated${source === "r2" ? " (backup storage)" : ""}`, { id: loadingId });
     } catch (err) {
       toast.error(err?.message || "Failed to upload cover photo", { id: loadingId });
     }
@@ -303,7 +303,7 @@ export default function Channel() {
                       const { file_url, source } = await uploadFileWithFallback(file, "channel-avatars");
                       setProfile(p => ({ ...p, avatar_url: file_url })); // optimistic
                       await updateMedia("avatar_url", file_url);
-                      toast.success(`Profile photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
+                      toast.success(`Profile photo updated${source === "r2" ? " (backup storage)" : ""}`, { id: loadingId });
                     } catch (err) {
                       toast.error(err?.message || "Failed to upload profile photo", { id: loadingId });
                     }

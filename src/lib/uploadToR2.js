@@ -3,9 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { compressImage } from "@/lib/compressImage";
 
 // =====================================================================
-// Hybrid image upload: try Cloudflare R2 first, fall back to Supabase
-// Storage (bucket: base44-images) if R2 fails for any reason.
-// Returns { file_url, source } where source is 'r2' | 'supabase'.
+// Hybrid image upload: Supabase Storage is the PRIMARY handler
+// (bucket: base44-images). Cloudflare R2 is used only as a fallback
+// if Supabase fails. Returns { file_url, source } ('supabase' | 'r2').
 // =====================================================================
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
@@ -114,17 +114,17 @@ export async function uploadFileWithFallback(file, folder = "uploads") {
   const isImage = (file.type || "").startsWith("image/");
   const toUpload = isImage ? await compressImage(file) : file;
 
-  // 1) Try Cloudflare R2 first.
+  // 1) Supabase Storage is the primary handler.
   try {
-    const url = await uploadToCloudflareR2(toUpload, folder);
-    return { file_url: url, source: "r2" };
-  } catch (r2Err) {
-    console.warn("R2 upload failed, falling back to Supabase:", r2Err?.message);
+    const url = await uploadToSupabase(toUpload, folder);
+    return { file_url: url, source: "supabase" };
+  } catch (supaErr) {
+    console.warn("Supabase upload failed, falling back to R2:", supaErr?.message);
   }
 
-  // 2) Fall back to Supabase Storage.
-  const url = await uploadToSupabase(toUpload, folder);
-  return { file_url: url, source: "supabase" };
+  // 2) Fall back to Cloudflare R2.
+  const url = await uploadToCloudflareR2(toUpload, folder);
+  return { file_url: url, source: "r2" };
 }
 
 // Backwards-compatible wrapper: existing callers expect { file_url }.
