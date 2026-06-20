@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import { useAuth } from "@/lib/AuthContext";
-import { uploadFileToR2 } from "@/lib/uploadToR2";
+import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Star, Zap, Gem, Crown } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -106,6 +106,8 @@ export default function Profile() {
   const [showTransition, setShowTransition] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const [bannerLoaded, setBannerLoaded] = useState(false);
   const navigate = useNavigate();
 
   const params = new URLSearchParams(window.location.search);
@@ -175,40 +177,29 @@ export default function Profile() {
     init();
   }, [targetEmail, authUser]);
 
-  const uploadToR2 = async (file, folder) => {
-    const { file_url } = await uploadFileToR2(file, folder);
-    return file_url;
-  };
-
-  // Persist a profile field through the Cloudflare Worker entity layer.
+  // Persist a profile field through the entity layer (timeout-protected).
   const updateProfileField = async (field, value) => {
     const updated = await base44.entities.UserProfile.update(profile.id, { [field]: value });
     setProfile(updated);
     return updated;
   };
 
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const file_url = await uploadToR2(file, "profile-avatars");
-      await updateProfileField("avatar_url", file_url);
-      toast.success("Avatar updated");
-    } catch (error) {
-      toast.error("Failed to upload avatar");
-    }
-  };
-
   const handleBannerUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    e.target.value = "";
+    setBannerUploading(true);
+    const loadingId = toast.loading("Uploading cover photo...");
     try {
-      const file_url = await uploadToR2(file, "profile-banners");
+      const { file_url, source } = await uploadFileWithFallback(file, "profile-banners");
+      // Optimistic: show the new cover instantly.
+      setProfile(p => ({ ...p, banner_url: file_url }));
       await updateProfileField("banner_url", file_url);
-      e.target.value = "";
-      toast.success("Cover photo updated");
+      toast.success(`Cover photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
     } catch (error) {
-      toast.error("Failed to upload cover photo");
+      toast.error(error?.message || "Failed to upload cover photo", { id: loadingId });
+    } finally {
+      setBannerUploading(false);
     }
   };
 
@@ -266,9 +257,21 @@ export default function Profile() {
         {/* Banner */}
         <div className="relative h-48 md:h-64 overflow-hidden" style={{ background: `linear-gradient(90deg, ${profile?.profile_theme_color || "#581c87"}, #831843, #111827)` }}>
           {profile?.banner_url ? (
-            <img src={profile.banner_url} alt="Profile cover" className="absolute inset-0 w-full h-full object-cover object-center" />
+            <img
+              key={profile.banner_url}
+              src={profile.banner_url}
+              alt="Profile cover"
+              onLoad={() => setBannerLoaded(true)}
+              onError={(e) => { e.currentTarget.style.display = "none"; setBannerLoaded(true); }}
+              className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-300 ${bannerLoaded ? "opacity-100" : "opacity-0"}`}
+            />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-r from-purple-900/60 to-pink-900/40" />
+          )}
+          {(bannerUploading || (profile?.banner_url && !bannerLoaded)) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/60 animate-pulse">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-gray-950/80 to-transparent" />
           {isOwnProfile && (

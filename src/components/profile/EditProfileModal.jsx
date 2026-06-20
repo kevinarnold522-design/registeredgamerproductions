@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Check, Edit2, User, Mail, Globe, Store, Trophy, Gamepad2, Palette, Camera } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { uploadFileToR2 } from "@/lib/uploadToR2";
+import { uploadFileWithFallback } from "@/lib/uploadToR2";
 
 const FAVORITE_GAME_OPTIONS = [
   { name: "NBA 2K" },
@@ -108,18 +108,19 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !profile?.id) return;
+    e.target.value = "";
     setError("");
     setUploadingAvatar(true);
     try {
-      const { file_url } = await uploadFileToR2(file, "channel-avatars");
-      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
+      const { file_url } = await uploadFileWithFallback(file, "channel-avatars");
+      // Optimistic: show new avatar immediately.
       setAvatarUrl(file_url);
+      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
       onSaved?.({ ...profile, avatar_url: file_url });
     } catch (err) {
       setError(err?.message || "Could not upload picture. Please try again.");
     } finally {
       setUploadingAvatar(false);
-      e.target.value = "";
     }
   };
   const [isTier1, setIsTier1] = useState(false);
@@ -346,12 +347,21 @@ export default function EditProfileModal({ profile, user, onClose, onSaved }) {
                   ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                   : <User className="w-10 h-10 text-gray-600" />}
               </div>
+              {uploadingAvatar && (
+                <div className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
               <label className={`absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-purple-600 border-2 border-gray-950 flex items-center justify-center cursor-pointer hover:bg-purple-700 transition-colors ${uploadingAvatar ? "opacity-60 pointer-events-none" : ""}`}>
                 <Camera className="w-4 h-4 text-white" />
                 <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
               </label>
             </div>
-            <p className="text-gray-500 text-xs mt-2">{uploadingAvatar ? "Uploading..." : "Tap the camera to change your profile picture"}</p>
+            <label className={`mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-xs font-bold cursor-pointer hover:bg-purple-600/30 transition-colors ${uploadingAvatar ? "opacity-60 pointer-events-none" : ""}`}>
+              <Camera className="w-3.5 h-3.5" />
+              {uploadingAvatar ? "Uploading..." : "Update Profile Picture"}
+              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            </label>
           </div>
 
           <div className="space-y-4">

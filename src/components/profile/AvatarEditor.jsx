@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
 import { Camera, Trash2, Upload, Smile, Plus, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { uploadFileToR2 } from "@/lib/uploadToR2";
+import { toast } from "sonner";
+import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import { updateProfileMedia } from "@/lib/updateProfileMedia";
 import { AnimatePresence, motion } from "framer-motion";
 import AvatarPickerModal from "@/components/community/AvatarPickerModal";
@@ -29,19 +30,21 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = ""; // reset input early so the same file can be re-picked
     setUploading(true);
     setShowMenu(false);
+    const loadingId = toast.loading("Uploading profile photo...");
     try {
-      const { file_url } = await uploadFileToR2(file, "profile-avatars");
-      // Add to avatar_urls array
+      const { file_url, source } = await uploadFileWithFallback(file, "profile-avatars");
       const newUrls = [file_url, ...allAvatars.filter(u => u !== file_url)].slice(0, 6);
-      await updateProfileMedia(profile.id, { avatar_url: file_url, avatar_urls: newUrls });
+      // Optimistic UI: show the new photo instantly before the DB confirms.
       onUpdated({ ...profile, avatar_url: file_url, avatar_urls: newUrls });
+      await updateProfileMedia(profile.id, { avatar_url: file_url, avatar_urls: newUrls });
+      toast.success(`Profile photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
     } catch (err) {
-      alert(`Profile photo upload failed: ${err.message}`);
+      toast.error(err?.message || "Profile photo upload failed", { id: loadingId });
     } finally {
       setUploading(false);
-      e.target.value = "";
     }
   };
 

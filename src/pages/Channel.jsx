@@ -6,7 +6,8 @@ import {
   MessageCircle, Share2, Image as ImageIcon, X, Send, Gamepad2, Package, Video, Sparkles, CircleDollarSign
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { uploadFileToR2 } from "@/lib/uploadToR2";
+import { toast } from "sonner";
+import { uploadFileToR2, uploadFileWithFallback } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import PostCard from "@/components/channel/PostCard";
 import ChannelThemePicker, { THEMES, buildProfileTheme } from "@/components/channel/ChannelThemePicker";
@@ -171,9 +172,16 @@ export default function Channel() {
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !profile?.id) return;
-    const { file_url } = await uploadFileToR2(file, "channel-covers");
-    await updateMedia("banner_url", file_url);
     e.target.value = "";
+    const loadingId = toast.loading("Uploading cover photo...");
+    try {
+      const { file_url, source } = await uploadFileWithFallback(file, "channel-covers");
+      setProfile(p => ({ ...p, banner_url: file_url })); // optimistic
+      await updateMedia("banner_url", file_url);
+      toast.success(`Cover photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
+    } catch (err) {
+      toast.error(err?.message || "Failed to upload cover photo", { id: loadingId });
+    }
   };
 
   const handleStartMessage = () => {
@@ -289,9 +297,16 @@ export default function Channel() {
                   <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                     const file = e.target.files[0];
                     if (!file || !profile?.id) return;
-                    const { file_url } = await uploadFileToR2(file, "channel-avatars");
-                    await updateMedia("avatar_url", file_url);
                     e.target.value = "";
+                    const loadingId = toast.loading("Uploading profile photo...");
+                    try {
+                      const { file_url, source } = await uploadFileWithFallback(file, "channel-avatars");
+                      setProfile(p => ({ ...p, avatar_url: file_url })); // optimistic
+                      await updateMedia("avatar_url", file_url);
+                      toast.success(`Profile photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
+                    } catch (err) {
+                      toast.error(err?.message || "Failed to upload profile photo", { id: loadingId });
+                    }
                   }} />
                 </label>
               )}

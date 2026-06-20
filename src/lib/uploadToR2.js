@@ -1,8 +1,13 @@
 import { supabase } from "@/lib/supabaseClient";
+import { base44 } from "@/api/base44Client";
 import { compressImage } from "@/lib/compressImage";
 
-// Image uploads now go directly to Supabase Storage (bucket: base44-images).
-// Non-image files keep going (compression is skipped for them).
+// =====================================================================
+// Hybrid image upload: try Cloudflare R2 first, fall back to Supabase
+// Storage (bucket: base44-images) if R2 fails for any reason.
+// Returns { file_url, source } where source is 'r2' | 'supabase'.
+// =====================================================================
+
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
 export const MAX_UPLOAD_LABEL = "5MB";
 export const STORAGE_BUCKET = "base44-images";
@@ -11,6 +16,18 @@ const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp
 
 export function validateUploadSize(file) {
   return file && file.size <= MAX_UPLOAD_BYTES;
+}
+
+// Strict client-side validation. Throws a clear error if invalid.
+function validateFile(file) {
+  if (!file) throw new Error("No file selected.");
+  const isImage = (file.type || "").startsWith("image/");
+  if (isImage && !ALLOWED_IMAGE_TYPES.includes((file.type || "").toLowerCase())) {
+    throw new Error("Only PNG, JPG, and WEBP images are allowed.");
+  }
+  if (!validateUploadSize(file)) {
+    throw new Error(`File is too large. Maximum size is ${MAX_UPLOAD_LABEL}.`);
+  }
 }
 
 function uuid() {
@@ -25,42 +42,93 @@ function extensionFor(file) {
   return map[file.type] || "bin";
 }
 
-// Uploads a file to Supabase Storage and returns its public URL.
-export async function uploadFileToR2(file, folder = "uploads") {
-  if (!file) throw new Error("No file selected");
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not read the selected file."));
+    reader.readAsDataURL(file);
+  });
+}
 
-  const isImage = (file.type || "").startsWith("image/");
-
-  // Client-side validation for images: type + size.
-  if (isImage && !ALLOWED_IMAGE_TYPES.includes((file.type || "").toLowerCase())) {
-    throw new Error("Only PNG, JPG, and WEBP images are allowed.");
+async function getAccessToken() {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data?.session?.access_token || "";
+  } catch {
+    return "";
   }
-  if (!validateUploadSize(file)) {
-    throw new Error(`File is too large. Maximum size is ${MAX_UPLOAD_LABEL}.`);
-  }
+}
 
-  // Compress images before uploading to save space.
-  const toUpload = isImage ? await compressImage(file) : file;
+// Reject a promise if it takes longer than `ms` — guarantees R2 never hangs
+// the whole upload; we fail fast to the Supabase fallback instead.
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms)),
+  ]);
+}
 
-  const ext = extensionFor(toUpload);
+// ---- R2 upload via the existing backend function ----
+async function uploadToCloudflareR2(file, folder) {
+  const dataUrl = await fileToDataUrl(file);
+  const accessToken = await getAccessToken();
+  const res = await withTimeout(
+    base44.functions.invoke("uploadToR2", {
+      fileName: file.name || `${uuid()}.${extensionFor(file)}`,
+      contentType: file.type || "application/octet-stream",
+      dataUrl,
+      folder,
+      accessToken,
+    }),
+    20000,
+    "R2 upload"
+  );
+  const url = res?.data?.file_url;
+  if (!url) throw new Error(res?.data?.error || "R2 upload returned no URL.");
+  return url;
+}
+
+// ---- Supabase Storage upload (fallback) ----
+async function uploadToSupabase(file, folder) {
+  const ext = extensionFor(file);
   const path = `${folder}/${uuid()}.${ext}`;
-
   const { error } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .upload(path, toUpload, {
+    .upload(path, file, {
       cacheControl: "3600",
       upsert: false,
-      contentType: toUpload.type || file.type || "application/octet-stream",
+      contentType: file.type || "application/octet-stream",
     });
-
-  if (error) {
-    throw new Error(`Upload failed: ${error.message || "Could not upload to storage."}`);
-  }
-
+  if (error) throw new Error(error.message || "Supabase upload failed.");
   const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-  if (!data?.publicUrl) {
-    throw new Error("Upload failed: could not resolve the public URL.");
+  if (!data?.publicUrl) throw new Error("Could not resolve the Supabase public URL.");
+  return data.publicUrl;
+}
+
+// Main entry point. Returns { file_url, source }.
+export async function uploadFileWithFallback(file, folder = "uploads") {
+  validateFile(file);
+
+  // Compress images before uploading to save space.
+  const isImage = (file.type || "").startsWith("image/");
+  const toUpload = isImage ? await compressImage(file) : file;
+
+  // 1) Try Cloudflare R2 first.
+  try {
+    const url = await uploadToCloudflareR2(toUpload, folder);
+    return { file_url: url, source: "r2" };
+  } catch (r2Err) {
+    console.warn("R2 upload failed, falling back to Supabase:", r2Err?.message);
   }
 
-  return { file_url: data.publicUrl };
+  // 2) Fall back to Supabase Storage.
+  const url = await uploadToSupabase(toUpload, folder);
+  return { file_url: url, source: "supabase" };
+}
+
+// Backwards-compatible wrapper: existing callers expect { file_url }.
+export async function uploadFileToR2(file, folder = "uploads") {
+  const { file_url } = await uploadFileWithFallback(file, folder);
+  return { file_url };
 }
