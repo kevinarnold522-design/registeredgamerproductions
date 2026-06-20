@@ -1,16 +1,21 @@
-// Vercel serverless migration template for Base44 backend functions.
-// Copy one live Base44 function at a time and adapt its handler into this function.
+/* global process */
+import { invokePortableFunction } from "../shared/portableFunctionProxy.js";
 
+// Vercel adapter template for every registered Base44 backend function.
+// Recommended final path: /api/base44-functions/[...name].js
+// Required env: BASE44_FUNCTION_BASE_URL
 export default async function handler(req, res) {
   try {
-    const payload = req.body || {};
-    return res.status(200).json({
-      ok: true,
-      message: "Replace this template with a migrated Base44 function handler.",
-      payload
+    const name = Array.isArray(req.query.name) ? req.query.name.join("/") : req.query.name;
+    const result = await invokePortableFunction({
+      functionName: name || req.body?.functionName || req.body?.name,
+      payload: req.body || {},
+      request: { headers: req.headers },
+      env: process.env,
     });
+    return res.status(result.status || 200).json(result.body);
   } catch (error) {
-    console.error(error);
+    console.error("Vercel function adapter error", error);
     return res.status(500).json({ error: error.message });
   }
 }

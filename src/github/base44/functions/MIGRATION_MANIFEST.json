@@ -1,16 +1,29 @@
 {
-  "revision_date": "2026-06-18",
-  "purpose": "Base44 backend function migration manifest for future Cloudflare Workers or Vercel Functions porting.",
+  "revision_date": "2026-06-20",
+  "purpose": "Portable backend function handoff for running the app's Base44 backend functions through Vercel, Supabase Edge Functions, Cloudflare Workers, or Cloudflare Pages Functions.",
   "runtime_notes": {
-    "base44_current_runtime": "Deno backend functions",
-    "cloudflare_target": "Workers with fetch handlers",
-    "vercel_target": "Serverless/Edge functions",
-    "auth_note": "Replace createClientFromRequest(req) with the target backend's Base44 service/client adapter before deploy.",
-    "secrets_required": ["STRIPE_SECRET_KEY", "STRIPE_PUBLISHABLE_KEY", "PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"]
+    "base44_current_runtime": "Deno backend functions in /functions",
+    "vercel_target": "Serverless API route at /api/base44-functions?function=<name>, with optional catch-all /api/base44-functions/[...name] in a deployed Vercel repo",
+    "supabase_target": "Supabase Edge Function named base44-functions",
+    "cloudflare_worker_target": "Worker route that accepts /functions/<functionName>",
+    "cloudflare_pages_target": "Pages Functions catch-all route",
+    "compatibility_strategy": "The adapters preserve function names, POST payload shape, auth headers, and JSON responses. They proxy to BASE44_FUNCTION_BASE_URL until individual functions are fully ported into the target platform."
   },
+  "secrets_required": [
+    "BASE44_FUNCTION_BASE_URL",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_PUBLISHABLE_KEY",
+    "PAYPAL_CLIENT_ID",
+    "PAYPAL_CLIENT_SECRET",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_URL",
+    "VITE_SUPABASE_ANON_KEY"
+  ],
   "functions": [
     "adminGhostAccounts",
+    "adminUpdateEntity",
     "api/hello",
+    "api/register",
     "biweeklyReport",
     "capturePaypalPayment",
     "captureTier1Payment",
@@ -19,6 +32,7 @@
     "copyrightViolationAlert",
     "createManagedAccount",
     "createPaypalOrder",
+    "createSupabaseUpload",
     "createTier1Order",
     "dailyUpdatesEmail",
     "deleteListingPermanent",
@@ -33,6 +47,9 @@
     "sendDailyRewardEmail",
     "sendOrderNotification",
     "sendPaypalGuideEmail",
+    "setKevinTestProfilePicture",
+    "test",
+    "testSupabaseListingUpload",
     "updateProfileMedia",
     "uploadToR2",
     "verifyPaymentStatus"
