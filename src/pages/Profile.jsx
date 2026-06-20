@@ -5,7 +5,7 @@ import { isAdmin } from "@/lib/constants";
 import { useAuth } from "@/lib/AuthContext";
 import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Star, Zap, Gem, Crown } from "lucide-react";
+import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Star, Zap, Gem, Crown, Camera } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
@@ -403,6 +403,14 @@ export default function Profile() {
                 >
                   <Film className="w-4 h-4" /> Create Reel
                 </motion.button>
+              )}
+              {isOwnProfile && (
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-600/50 text-purple-200 text-sm font-bold hover:bg-purple-800/50 transition-colors"
+                >
+                  <Camera className="w-4 h-4" /> Edit Profile Picture
+                </button>
               )}
               {isOwnProfile && (
                 <button

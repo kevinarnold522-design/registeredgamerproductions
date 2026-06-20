@@ -51,26 +51,27 @@ export default function AIListingAssistant({ form, setForm, images, setImages })
     setBusy(true);
     setDone(false);
     setResult(null);
-    const uploaded = [];
-    for (const file of files) {
-      if (file.size > MAX_UPLOAD_BYTES) {
-        alert(`AI image uploads must be ${MAX_UPLOAD_LABEL} or smaller.`);
-        setBusy(false);
-        return;
+
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        if (file.size > MAX_UPLOAD_BYTES) {
+          alert(`AI image uploads must be ${MAX_UPLOAD_LABEL} or smaller.`);
+          return;
+        }
+        const { file_url } = await uploadFileToR2(file, "ai-listing-images");
+        uploaded.push(file_url);
       }
-      const { file_url } = await uploadFileToR2(file, "ai-listing-images");
-      uploaded.push(file_url);
-    }
 
-    // Build context from any answered follow-up questions + multi-line prompts
-    const answerContext = Object.entries(answers)
-      .filter(([, v]) => v && String(v).trim())
-      .map(([k, v]) => `${k}: ${v}`)
-      .join("\n");
+      // Build context from any answered follow-up questions + multi-line prompts
+      const answerContext = Object.entries(answers)
+        .filter(([, v]) => v && String(v).trim())
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n");
 
-    const res = await base44.integrations.Core.InvokeLLM({
-      file_urls: uploaded,
-      prompt: `You are an expert gaming marketplace listing assistant. The seller may give you MULTIPLE separate notes or prompts at once — read ALL of them and combine into ONE accurate, high-converting, SEO-friendly, honest, gaming-specific listing.
+      const res = await base44.integrations.Core.InvokeLLM({
+        file_urls: uploaded,
+        prompt: `You are an expert gaming marketplace listing assistant. The seller may give you MULTIPLE separate notes or prompts at once — read ALL of them and combine into ONE accurate, high-converting, SEO-friendly, honest, gaming-specific listing.
 
 Decide the BEST main category from this exact list of ids: games, modding, premium_mods, store, buy_sell, paid_tools, content_streaming. Recommend the most fitting subcategory too.
 
@@ -83,30 +84,34 @@ Extra answers from the seller:
 ${answerContext || "(none)"}
 
 Current selected category: ${form.category}. Only override it if a different category clearly fits better.`,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          description: { type: "string" },
-          price: { type: "number" },
-          product_type: { type: "string", enum: ["digital", "physical"] },
-          category: { type: "string", enum: ["games", "modding", "premium_mods", "store", "buy_sell", "paid_tools", "content_streaming"] },
-          game_name: { type: "string" },
-          tags: { type: "array", items: { type: "string" } },
-          keywords: { type: "array", items: { type: "string" } },
-          condition: { type: "string" },
-          digital_subcategory: { type: "string" },
-          physical_subcategory: { type: "string" },
-          modding_subcategory: { type: "string" },
-          tool_target_game: { type: "string" },
-          recommendation_note: { type: "string", description: "A short friendly note recommending what to review before publishing" },
+        response_json_schema: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            description: { type: "string" },
+            price: { type: "number" },
+            product_type: { type: "string", enum: ["digital", "physical"] },
+            category: { type: "string", enum: ["games", "modding", "premium_mods", "store", "buy_sell", "paid_tools", "content_streaming"] },
+            game_name: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+            keywords: { type: "array", items: { type: "string" } },
+            condition: { type: "string" },
+            digital_subcategory: { type: "string" },
+            physical_subcategory: { type: "string" },
+            modding_subcategory: { type: "string" },
+            tool_target_game: { type: "string" },
+            recommendation_note: { type: "string", description: "A short friendly note recommending what to review before publishing" },
+          },
         },
-      },
-    });
+      });
 
-    if (uploaded.length) setImages([...(images || []), ...uploaded]);
-    setResult(res);
-    setBusy(false);
+      if (uploaded.length) setImages([...(images || []), ...uploaded]);
+      setResult(res);
+    } catch (error) {
+      alert(error?.message || "Could not upload your AI listing image. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   // Apply all recommended fields into the listing form
