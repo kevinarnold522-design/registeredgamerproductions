@@ -263,5 +263,9 @@ const auth = {
   },
 };
 
-export const cf = { entities, functions, auth, API_BASE };
+// Entities now live permanently in Supabase Postgres (all reads + writes go
+// straight to Supabase). The Worker-backed `entities` proxy above is retired.
+import { supabaseEntities } from "@/lib/supabaseEntities";
+
+export const cf = { entities: supabaseEntities, functions, auth, API_BASE };
 export default cf;
