@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import { compressImage } from "@/lib/compressImage";
+import { getBase44Direct } from "@/lib/base44Direct";
 
 // =====================================================================
 // Supabase-only upload helper used by listings, profiles, posts, covers,
@@ -56,6 +57,10 @@ async function authHeaders() {
   return headers;
 }
 
+function isValidUploadInfo(data) {
+  return data && data.token && data.path && data.publicUrl;
+}
+
 async function prepareSupabaseUpload(file, folder) {
   const payload = {
     fileName: file.name || "upload",
@@ -66,6 +71,7 @@ async function prepareSupabaseUpload(file, folder) {
   const headers = await authHeaders();
   let lastError = null;
 
+  // 1) Try the external Vercel/Cloudflare endpoints (used on the published site).
   for (const endpoint of externalUploadEndpoints()) {
     try {
       const response = await fetch(endpoint.url, {
@@ -75,11 +81,21 @@ async function prepareSupabaseUpload(file, folder) {
         body: JSON.stringify(payload),
       });
       const data = await response.json().catch(() => ({}));
-      if (response.ok && data?.token && data?.path && data?.publicUrl) return { ...data, source: endpoint.source };
+      if (response.ok && isValidUploadInfo(data)) return { ...data, source: endpoint.source };
       lastError = new Error(data?.error || `${endpoint.source} upload preparation failed.`);
     } catch (error) {
       lastError = error;
     }
+  }
+
+  // 2) Fallback to the reliable Base44-hosted function (works in preview + always deployed).
+  try {
+    const res = await getBase44Direct().functions.invoke("createSupabaseUpload", payload);
+    const data = res?.data || res;
+    if (isValidUploadInfo(data)) return { ...data, source: "base44" };
+    lastError = new Error(data?.error || "Could not prepare Supabase upload.");
+  } catch (error) {
+    lastError = error;
   }
 
   throw lastError || new Error("Could not prepare Supabase upload.");
