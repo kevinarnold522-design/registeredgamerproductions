@@ -5,8 +5,9 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import {
   Shield, Save, RefreshCw, Type, Palette, Link2, Globe, Eye,
-  Check, Edit3, Plus, Trash2, Layout, ArrowLeft
+  Check, Edit3, Plus, Trash2, Layout, ArrowLeft, Megaphone
 } from "lucide-react";
+import HtmlAdManager from "@/components/admin/HtmlAdManager";
 
 const DEFAULT_COLORS = {
   primary: "#a855f7",
@@ -127,6 +128,7 @@ export default function AdminWebsiteEditor() {
     { id: "colors", label: "Colors", icon: Palette },
     { id: "links", label: "Nav Links", icon: Link2 },
     { id: "pages", label: "Landing Pages", icon: Layout },
+    { id: "ads", label: "Ads", icon: Megaphone },
   ];
 
   return (
@@ -255,6 +257,11 @@ export default function AdminWebsiteEditor() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ADS TAB */}
+        {activeTab === "ads" && (
+          <HtmlAdManager user={authUser} />
         )}
 
         {/* PAGES TAB */}

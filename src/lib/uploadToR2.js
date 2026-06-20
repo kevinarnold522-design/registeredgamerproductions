@@ -1,77 +1,66 @@
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabaseClient";
 import { compressImage } from "@/lib/compressImage";
 
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
-export const MAX_UPLOAD_LABEL = "25MB";
+// Image uploads now go directly to Supabase Storage (bucket: base44-images).
+// Non-image files keep going (compression is skipped for them).
+export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
+export const MAX_UPLOAD_LABEL = "5MB";
+export const STORAGE_BUCKET = "base44-images";
+
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
 export function validateUploadSize(file) {
   return file && file.size <= MAX_UPLOAD_BYTES;
 }
 
-// Upload through the backend uploadToR2 function. It verifies the Supabase
-// access token, which we send BOTH as a Bearer header and inside the request
-// body (`accessToken`) — the SDK does not reliably forward custom headers, so
-// the body is the dependable path and prevents 401 "Unauthorized" upload errors.
-async function invokeUpload(payload) {
-  let headers;
-  let accessToken;
-  try {
-    const { supabase } = await import("@/lib/supabaseClient");
-    const { data } = await supabase.auth.getSession();
-    accessToken = data?.session?.access_token;
-    if (accessToken) headers = { Authorization: `Bearer ${accessToken}` };
-  } catch (_) {}
-  let res;
-  try {
-    res = await base44.functions.invoke(
-      "uploadToR2",
-      { ...payload, accessToken },
-      headers ? { headers } : {}
-    );
-  } catch (e) {
-    // Surface the EXACT error so the user can see what actually went wrong.
-    const status = e?.status != null ? ` (status ${e.status})` : "";
-    const serverMsg =
-      e?.data?.error ||
-      (typeof e?.data === "string" ? e.data.slice(0, 300) : "") ||
-      e?.message ||
-      "Unknown upload error";
-    throw new Error(`Upload failed${status}: ${serverMsg}`);
-  }
-  if (!res?.data?.file_url) {
-    const detail = res?.data?.error || (typeof res?.data === "string" ? res.data.slice(0, 300) : "") || "the server did not return a file URL.";
-    throw new Error(`Upload failed: ${detail}`);
-  }
-  return res.data;
+function uuid() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function extensionFor(file) {
+  const fromName = (file.name || "").split(".").pop();
+  if (fromName && fromName.length <= 5) return fromName.toLowerCase();
+  const map = { "image/png": "png", "image/jpeg": "jpg", "image/jpg": "jpg", "image/webp": "webp" };
+  return map[file.type] || "bin";
+}
+
+// Uploads a file to Supabase Storage and returns its public URL.
 export async function uploadFileToR2(file, folder = "uploads") {
-  if (!file) {
-    throw new Error("No file selected");
+  if (!file) throw new Error("No file selected");
+
+  const isImage = (file.type || "").startsWith("image/");
+
+  // Client-side validation for images: type + size.
+  if (isImage && !ALLOWED_IMAGE_TYPES.includes((file.type || "").toLowerCase())) {
+    throw new Error("Only PNG, JPG, and WEBP images are allowed.");
   }
   if (!validateUploadSize(file)) {
-    throw new Error(`File upload limit is ${MAX_UPLOAD_LABEL}.`);
+    throw new Error(`File is too large. Maximum size is ${MAX_UPLOAD_LABEL}.`);
   }
 
-  // Compress images before uploading; all file types go to Cloudflare R2.
-  const toUpload = (file.type || "").startsWith("image/") ? await compressImage(file) : file;
+  // Compress images before uploading to save space.
+  const toUpload = isImage ? await compressImage(file) : file;
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const data = await invokeUpload({
-          fileName: toUpload.name || file.name,
-          contentType: toUpload.type || file.type || "application/octet-stream",
-          dataUrl: reader.result,
-          folder,
-        });
-        resolve({ file_url: data.file_url });
-      } catch (error) {
-        reject(error);
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(toUpload);
-  });
+  const ext = extensionFor(toUpload);
+  const path = `${folder}/${uuid()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, toUpload, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: toUpload.type || file.type || "application/octet-stream",
+    });
+
+  if (error) {
+    throw new Error(`Upload failed: ${error.message || "Could not upload to storage."}`);
+  }
+
+  const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+  if (!data?.publicUrl) {
+    throw new Error("Upload failed: could not resolve the public URL.");
+  }
+
+  return { file_url: data.publicUrl };
 }
