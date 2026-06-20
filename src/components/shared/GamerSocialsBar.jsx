@@ -16,7 +16,7 @@ const SOCIALS = [
 
 export default function GamerSocialsBar({ className = "" }) {
   return (
-    <div className={`flex items-center justify-center gap-2 flex-wrap px-48 ${className}`}>
+    <div className={`flex items-center justify-center gap-2 flex-wrap px-12 ${className}`}>
       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-purple-300/80 mr-1">Follow Us</span>
       {SOCIALS.map((item) => {
         const Icon = item.icon;
