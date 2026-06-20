@@ -106,6 +106,13 @@ async function uploadToSupabase(file, folder) {
   return data.publicUrl;
 }
 
+// ---- Base44 built-in storage (most reliable; no external bucket needed) ----
+async function uploadToBase44(file) {
+  const { file_url } = await base44.integrations.Core.UploadFile({ file });
+  if (!file_url) throw new Error("Upload returned no URL.");
+  return file_url;
+}
+
 // Main entry point. Returns { file_url, source }.
 export async function uploadFileWithFallback(file, folder = "uploads") {
   validateFile(file);
@@ -114,7 +121,15 @@ export async function uploadFileWithFallback(file, folder = "uploads") {
   const isImage = (file.type || "").startsWith("image/");
   const toUpload = isImage ? await compressImage(file) : file;
 
-  // 1) Supabase Storage is the primary handler.
+  // 1) Base44 built-in storage — always available, no bucket config required.
+  try {
+    const url = await uploadToBase44(toUpload);
+    return { file_url: url, source: "base44" };
+  } catch (b44Err) {
+    console.warn("Base44 upload failed, trying Supabase:", b44Err?.message);
+  }
+
+  // 2) Supabase Storage fallback.
   try {
     const url = await uploadToSupabase(toUpload, folder);
     return { file_url: url, source: "supabase" };
@@ -122,7 +137,7 @@ export async function uploadFileWithFallback(file, folder = "uploads") {
     console.warn("Supabase upload failed, falling back to R2:", supaErr?.message);
   }
 
-  // 2) Fall back to Cloudflare R2.
+  // 3) Cloudflare R2 fallback.
   const url = await uploadToCloudflareR2(toUpload, folder);
   return { file_url: url, source: "r2" };
 }

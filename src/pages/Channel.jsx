@@ -154,19 +154,9 @@ export default function Channel() {
   };
 
   const updateMedia = async (field, value) => {
-    let accessToken, headers;
-    try {
-      const { supabase } = await import("@/lib/supabaseClient");
-      const { data } = await supabase.auth.getSession();
-      accessToken = data?.session?.access_token;
-      if (accessToken) headers = { Authorization: `Bearer ${accessToken}` };
-    } catch (_) {}
-    const res = await base44.functions.invoke(
-      "updateProfileMedia",
-      { profile_id: profile.id, field, value, accessToken },
-      headers ? { headers } : {}
-    );
-    if (res.data?.profile) setProfile(res.data.profile);
+    // The owner updates their own profile directly via the SDK.
+    const updated = await base44.entities.UserProfile.update(profile.id, { [field]: value });
+    setProfile(updated || ((p) => ({ ...p, [field]: value })));
   };
 
   const handleCoverUpload = async (e) => {
