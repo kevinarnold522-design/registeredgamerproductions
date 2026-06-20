@@ -1,11 +1,16 @@
 import { supabase } from "@/lib/supabaseClient";
 import { compressImage } from "@/lib/compressImage";
-import { base44 } from "@/api/base44Client";
 
 // =====================================================================
-// Supabase-only upload helper used by listings, profiles, posts, covers,
-// videos, and AI listing images. It requests a signed Supabase upload URL
-// so browser uploads are not blocked by storage bucket permissions.
+// Direct Supabase Storage upload helper used by listings, profiles,
+// posts, covers, videos, and AI listing images.
+//
+// ROOT-CAUSE FIX: the app's `base44` client routes every functions.invoke
+// call to the Cloudflare Worker, which does NOT host `createSupabaseUpload`
+// (it returned 405), so the old signed-URL flow could never work in the
+// browser. The bucket is public and allows authenticated uploads, so we
+// now upload the file straight to Supabase Storage and read back its
+// public URL — no backend function in the path.
 // =====================================================================
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
@@ -40,39 +45,33 @@ function friendlyStorageError(error) {
   return message;
 }
 
-function isValidUploadInfo(data) {
-  return data && data.token && data.path && data.publicUrl;
-}
-
-async function prepareSupabaseUpload(file, folder) {
-  const payload = {
-    fileName: file.name || "upload",
-    folder,
-    size: file.size || 0,
-    contentType: file.type || "application/octet-stream",
-  };
-
-  // Ask the backend for a signed Supabase upload URL using the app's
-  // AUTHENTICATED client so the function passes its sign-in check.
-  const res = await base44.functions.invoke("createSupabaseUpload", payload);
-  const data = res?.data || res;
-  if (isValidUploadInfo(data)) return { ...data, source: "base44" };
-  throw new Error(data?.error || "Could not prepare Supabase upload.");
+// Build a safe, unique storage path: <folder>/<timestamp>-<rand>.<ext>
+function buildPath(folder, file) {
+  const safeFolder = String(folder || "uploads").replace(/[^a-zA-Z0-9/_-]/g, "-");
+  const name = String(file.name || "upload");
+  const ext = (name.includes(".") ? name.split(".").pop() : "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+  const rand = Math.random().toString(36).slice(2, 10);
+  return `${safeFolder}/${Date.now()}-${rand}.${ext}`;
 }
 
 async function uploadToSupabase(file, folder) {
-  const uploadInfo = await prepareSupabaseUpload(file, folder);
+  const path = buildPath(folder, file);
 
-  const { error } = await supabase.storage.from(uploadInfo.bucket || SUPABASE_BUCKET).uploadToSignedUrl(
-    uploadInfo.path,
-    uploadInfo.token,
-    file,
-    { contentType: file.type || "application/octet-stream" }
-  );
+  const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(path, file, {
+    contentType: file.type || "application/octet-stream",
+    upsert: false,
+    cacheControl: "3600",
+  });
 
-  if (error) throw new Error(friendlyStorageError(error));
+  if (error) {
+    console.error("Supabase storage upload failed", { path, message: error.message });
+    throw new Error(friendlyStorageError(error));
+  }
 
-  return { file_url: uploadInfo.publicUrl, source: uploadInfo.source || "supabase", bucket: uploadInfo.bucket || SUPABASE_BUCKET, path: uploadInfo.path };
+  const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
+  if (!data?.publicUrl) throw new Error("Upload succeeded but no public URL was returned.");
+
+  return { file_url: data.publicUrl, source: "supabase", bucket: SUPABASE_BUCKET, path };
 }
 
 export async function uploadFileWithFallback(file, folder = "uploads") {

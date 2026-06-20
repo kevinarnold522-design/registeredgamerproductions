@@ -110,6 +110,7 @@ export default function Profile() {
   const [bannerUploading, setBannerUploading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [bannerLoaded, setBannerLoaded] = useState(false);
+  const [bannerPreview, setBannerPreview] = useState(null);
   const avatarInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -191,11 +192,16 @@ export default function Profile() {
     const file = e.target.files[0];
     if (!file) return;
     e.target.value = "";
+    // Instant local preview the moment the cover is selected.
+    const localPreview = URL.createObjectURL(file);
+    setBannerPreview(localPreview);
+    setBannerLoaded(true);
     setBannerUploading(true);
     const loadingId = toast.loading("Uploading cover photo...");
     try {
       const { file_url, source } = await uploadFileWithFallback(file, "profile-banners");
-      // Optimistic: show the new cover instantly.
+      // Swap the preview for the real saved cover.
+      setBannerLoaded(false);
       setProfile(p => ({ ...p, banner_url: file_url }));
       await updateProfileField("banner_url", file_url);
       toast.success(`Cover photo updated${source === "r2" ? " (backup storage)" : ""}`, { id: loadingId });
@@ -203,6 +209,8 @@ export default function Profile() {
       toast.error(error?.message || "Failed to upload cover photo", { id: loadingId });
     } finally {
       setBannerUploading(false);
+      setBannerPreview(null);
+      URL.revokeObjectURL(localPreview);
     }
   };
 
@@ -278,7 +286,13 @@ export default function Profile() {
       <div className={user ? "pt-16" : ""}>
         {/* Banner */}
         <div className="relative h-48 md:h-64 overflow-hidden" style={{ background: `linear-gradient(90deg, ${profile?.profile_theme_color || "#581c87"}, #831843, #111827)` }}>
-          {profile?.banner_url ? (
+          {bannerPreview ? (
+            <img
+              src={bannerPreview}
+              alt="Cover preview"
+              className="absolute inset-0 w-full h-full object-cover object-center"
+            />
+          ) : profile?.banner_url ? (
             <img
               key={profile.banner_url}
               src={profile.banner_url}

@@ -17,6 +17,7 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const [preview, setPreview] = useState(null);
   const fileRef = useRef(null);
 
   // Merge avatar_url into avatar_urls array
@@ -31,13 +32,16 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = ""; // reset input early so the same file can be re-picked
+    // Instant local preview the moment the file is selected.
+    const localPreview = URL.createObjectURL(file);
+    setPreview(localPreview);
     setUploading(true);
     setShowMenu(false);
     const loadingId = toast.loading("Uploading profile photo...");
     try {
       const { file_url, source } = await uploadFileWithFallback(file, "profile-avatars");
       const newUrls = [file_url, ...allAvatars.filter(u => u !== file_url)].slice(0, 6);
-      // Optimistic UI: show the new photo instantly before the DB confirms.
+      // Swap the optimistic preview for the real saved URL.
       onUpdated({ ...profile, avatar_url: file_url, avatar_urls: newUrls });
       await updateProfileMedia(profile.id, { avatar_url: file_url, avatar_urls: newUrls });
       toast.success(`Profile photo updated${source === "r2" ? " (backup storage)" : ""}`, { id: loadingId });
@@ -45,6 +49,8 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
       toast.error(err?.message || "Profile photo upload failed", { id: loadingId });
     } finally {
       setUploading(false);
+      setPreview(null);
+      URL.revokeObjectURL(localPreview);
     }
   };
 
@@ -71,7 +77,11 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
         className="relative w-20 h-20 cursor-pointer"
         onClick={() => !showGallery && setShowMenu(s => !s)}
       >
-        <MultiAvatarDisplay images={allAvatars} size={80} rounded="rounded-2xl" interval={3000} showDots={allAvatars.length > 1} />
+        {preview ? (
+          <img src={preview} alt="Selected preview" className="w-20 h-20 rounded-2xl object-cover" />
+        ) : (
+          <MultiAvatarDisplay images={allAvatars} size={80} rounded="rounded-2xl" interval={3000} showDots={allAvatars.length > 1} />
+        )}
 
         {/* Camera overlay */}
         <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
