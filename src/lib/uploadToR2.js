@@ -1,10 +1,11 @@
 import { supabase } from "@/lib/supabaseClient";
+import { base44 } from "@/api/base44Client";
 import { compressImage } from "@/lib/compressImage";
 
 // =====================================================================
 // Supabase-only upload helper used by listings, profiles, posts, covers,
-// videos, and AI listing images. No Base44 upload, no R2 upload, no backend.
-// Required Supabase bucket: gamerproductionsmedia
+// videos, and AI listing images. It requests a signed Supabase upload URL
+// so browser uploads are not blocked by storage bucket permissions.
 // =====================================================================
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
@@ -48,18 +49,28 @@ function friendlyStorageError(error) {
 }
 
 async function uploadToSupabase(file, folder) {
-  const path = safePath(folder, file);
-  const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(path, file, {
-    cacheControl: "31536000",
-    upsert: false,
+  const response = await base44.functions.invoke("createSupabaseUpload", {
+    fileName: file.name || "upload",
+    folder,
+    size: file.size || 0,
     contentType: file.type || "application/octet-stream",
   });
 
+  const uploadInfo = response?.data;
+  if (!uploadInfo?.token || !uploadInfo?.path || !uploadInfo?.publicUrl) {
+    throw new Error(uploadInfo?.error || "Could not prepare Supabase upload.");
+  }
+
+  const { error } = await supabase.storage.from(uploadInfo.bucket || SUPABASE_BUCKET).uploadToSignedUrl(
+    uploadInfo.path,
+    uploadInfo.token,
+    file,
+    { contentType: file.type || "application/octet-stream" }
+  );
+
   if (error) throw new Error(friendlyStorageError(error));
 
-  const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
-  if (!data?.publicUrl) throw new Error("Supabase upload returned no public URL.");
-  return { file_url: data.publicUrl, source: "supabase", bucket: SUPABASE_BUCKET, path };
+  return { file_url: uploadInfo.publicUrl, source: "supabase", bucket: uploadInfo.bucket || SUPABASE_BUCKET, path: uploadInfo.path };
 }
 
 export async function uploadFileWithFallback(file, folder = "uploads") {
