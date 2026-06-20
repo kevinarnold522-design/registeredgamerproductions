@@ -40,7 +40,7 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
       // Optimistic UI: show the new photo instantly before the DB confirms.
       onUpdated({ ...profile, avatar_url: file_url, avatar_urls: newUrls });
       await updateProfileMedia(profile.id, { avatar_url: file_url, avatar_urls: newUrls });
-      toast.success(`Profile photo updated${source === "supabase" ? " (backup storage)" : ""}`, { id: loadingId });
+      toast.success(`Profile photo updated${source === "r2" ? " (backup storage)" : ""}`, { id: loadingId });
     } catch (err) {
       toast.error(err?.message || "Profile photo upload failed", { id: loadingId });
     } finally {
