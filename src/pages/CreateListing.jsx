@@ -259,11 +259,17 @@ export default function CreateListing() {
       return;
     }
     setUploadingImages(true);
-    for (const file of files) {
-      const file_url = await uploadToR2(file, "listing-images");
-      setImages(prev => [...prev, file_url]);
+    try {
+      for (const file of files) {
+        const file_url = await uploadToR2(file, "listing-images");
+        setImages(prev => [...prev, file_url]);
+      }
+    } catch (err) {
+      alert(err?.message || "Image upload failed. Please try again.");
+    } finally {
+      setUploadingImages(false);
+      e.target.value = "";
     }
-    setUploadingImages(false);
   };
 
   const handleVideoUpload = async (e) => {
@@ -275,9 +281,15 @@ export default function CreateListing() {
       return;
     }
     setUploadingImages(true);
-    const file_url = await uploadToR2(file, "listing-videos");
-    setForm(f => ({ ...f, video_url: file_url }));
-    setUploadingImages(false);
+    try {
+      const file_url = await uploadToR2(file, "listing-videos");
+      setForm(f => ({ ...f, video_url: file_url }));
+    } catch (err) {
+      alert(err?.message || "Video upload failed. Please try again.");
+    } finally {
+      setUploadingImages(false);
+      e.target.value = "";
+    }
   };
 
   const handleDownloadFileUpload = async (e) => {
@@ -289,9 +301,15 @@ export default function CreateListing() {
       return;
     }
     setUploadingImages(true);
-    const file_url = await uploadToR2(file, "listing-downloads");
-    setForm(f => ({ ...f, download_url: file_url }));
-    setUploadingImages(false);
+    try {
+      const file_url = await uploadToR2(file, "listing-downloads");
+      setForm(f => ({ ...f, download_url: file_url }));
+    } catch (err) {
+      alert(err?.message || "File upload failed. Please try again.");
+    } finally {
+      setUploadingImages(false);
+      e.target.value = "";
+    }
   };
 
   const removeImage = (idx) => setImages(images.filter((_, i) => i !== idx));

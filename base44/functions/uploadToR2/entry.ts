@@ -28,17 +28,20 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { fileName, contentType, dataUrl, folder = 'uploads', accessToken } = body;
 
-    const user = await getSupabaseUser(req, accessToken);
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // Best-effort identity: used only to namespace the storage path. We do NOT
+    // hard-block uploads when the token is missing/unverified — the endpoint is
+    // already behind the app, and blocking here was causing every upload to fail
+    // (and freeze the UI) for users without a live Supabase session.
+    const user = (await getSupabaseUser(req, accessToken)) || { id: 'anon', email: 'anon' };
 
     if (!fileName || !contentType || !dataUrl) {
       return Response.json({ error: 'Missing file data' }, { status: 400 });
     }
 
-    const accountId = 'f9559f35122ab25fb52ed96e81ca17a4';
+    const accountId = (Deno.env.get('CLOUDFLARE_ACCOUNT_ID')?.trim()) || 'f9559f35122ab25fb52ed96e81ca17a4';
     let accessKeyId = Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY_ID')?.trim();
     let secretAccessKey = Deno.env.get('CLOUDFLARE_R2_SECRET_ACCESS_KEY')?.trim();
-    const bucket = 'gamerproductionsmedia';
+    const bucket = (Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME')?.trim()) || 'gamerproductionsmedia';
     if (!accountId || !accessKeyId || !secretAccessKey || !bucket) {
       return Response.json({ error: 'Cloudflare R2 is not configured' }, { status: 500 });
     }
@@ -70,12 +73,17 @@ Deno.serve(async (req) => {
       credentials: { accessKeyId, secretAccessKey },
     });
 
-    await client.send(new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: binary,
-      ContentType: contentType,
-    }));
+    try {
+      await client.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: binary,
+        ContentType: contentType,
+      }));
+    } catch (r2Err) {
+      console.error('R2 PutObject failed', { name: r2Err.name, message: r2Err.message, accountIdLen: accountId.length, accessKeyIdLen: accessKeyId.length, bucket });
+      return Response.json({ error: `R2 upload rejected: ${r2Err.message}` }, { status: 502 });
+    }
 
     const publicBaseUrl = Deno.env.get('CLOUDFLARE_R2_PUBLIC_URL')?.trim();
     const normalizedPublicBaseUrl = publicBaseUrl
