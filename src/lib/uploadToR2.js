@@ -81,7 +81,7 @@ async function uploadToCloudflareR2(file, folder) {
       folder,
       accessToken,
     }),
-    20000,
+    7000,
     "R2 upload"
   );
   const url = res?.data?.file_url;
