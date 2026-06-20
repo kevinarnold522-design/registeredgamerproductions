@@ -263,9 +263,10 @@ const auth = {
   },
 };
 
-// Entities now live permanently in Supabase Postgres (all reads + writes go
-// straight to Supabase). The Worker-backed `entities` proxy above is retired.
-import { supabaseEntities } from "@/lib/supabaseEntities";
-
-export const cf = { entities: supabaseEntities, functions, auth, API_BASE };
+// Entities are served by the `entityProxy` backend function, which reads and
+// writes the real persistent Base44 entities database (where all existing
+// profiles, listings, posts, etc. actually live). The Supabase tables were
+// empty, which is why every page loaded forever — so we use the proxy `entities`
+// client defined above as the single, reliable data layer.
+export const cf = { entities, functions, auth, API_BASE };
 export default cf;
