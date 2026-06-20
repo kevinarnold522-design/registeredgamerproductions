@@ -122,40 +122,59 @@ function applySort(rows, sort) {
 }
 
 // ---- Entity proxy: cf.entities.<Entity>.method(...) ----
+// All entity operations route through the `entityProxy` backend function, which
+// reads/writes the REAL persistent Base44 entities database via the service role.
+//
+// Why: the Cloudflare Worker's /entities/* routes return HTML (the React app),
+// never real data, so direct entity reads silently returned nothing — that is
+// why profiles, listings, and posts "disappeared" on every refresh. Going
+// through the backend function is the single reliable, persistent path.
+async function entityOp(entity, op, payload = {}) {
+  // Pass the Supabase access token in the body — the dependable auth path for
+  // write operations (header forwarding is not guaranteed in all environments).
+  let accessToken = "";
+  try {
+    const { data } = await supabase.auth.getSession();
+    accessToken = data?.session?.access_token || "";
+  } catch (_) {}
+  const res = await request(`/functions/entityProxy`, {
+    method: "POST",
+    body: { entity, op, accessToken, ...payload },
+  });
+  if (res && res.error) throw new Error(res.error);
+  return res ? res.result : null;
+}
+
 function makeEntity(name) {
   return {
     async list(sort, limit) {
-      let rows;
       try {
-        rows = await request(`/entities/${name}${toQuery({}, limit)}`);
+        const rows = await entityOp(name, "list", { sort, limit });
+        return applySort(rows || [], sort).slice(0, limit || (rows || []).length);
       } catch (e) {
-        if (e.isNetworkError) return []; // degrade gracefully on network failure
+        if (e.isNetworkError) return [];
         throw e;
       }
-      return applySort(rows || [], sort).slice(0, limit || (rows || []).length);
     },
     async filter(query = {}, sort, limit) {
-      let rows;
       try {
-        rows = await request(`/entities/${name}${toQuery(query, limit)}`);
+        const rows = await entityOp(name, "filter", { query, sort, limit });
+        return applySort(rows || [], sort).slice(0, limit || (rows || []).length);
       } catch (e) {
-        if (e.isNetworkError) return []; // degrade gracefully on network failure
+        if (e.isNetworkError) return [];
         throw e;
       }
-      return applySort(rows || [], sort).slice(0, limit || (rows || []).length);
     },
     async get(id) {
-      let rows;
       try {
-        rows = await request(`/entities/${name}${toQuery({ id }, 1)}`);
+        return await entityOp(name, "get", { id });
       } catch (e) {
-        if (e.isNetworkError) return null; // degrade gracefully on network failure
+        if (e.isNetworkError) return null;
         throw e;
       }
-      return (rows && rows[0]) || null;
     },
     create(data) {
-      return request(`/entities/${name}`, { method: "POST", body: data });
+      return entityOp(name, "create", { data });
     },
     async bulkCreate(items = []) {
       const out = [];
@@ -163,10 +182,10 @@ function makeEntity(name) {
       return out;
     },
     update(id, data) {
-      return request(`/entities/${name}/${id}`, { method: "PUT", body: data });
+      return entityOp(name, "update", { id, data });
     },
     delete(id) {
-      return request(`/entities/${name}/${id}`, { method: "DELETE" });
+      return entityOp(name, "delete", { id });
     },
   };
 }

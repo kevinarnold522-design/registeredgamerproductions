@@ -91,9 +91,9 @@ export default function AvatarEditor({ profile, onUpdated, user }) {
           }
         </div>
 
-        {/* Always-visible camera badge so the upload action is discoverable */}
-        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-purple-600 border-2 border-gray-950 flex items-center justify-center shadow-lg">
-          <Camera className="w-3.5 h-3.5 text-white" />
+        {/* Always-visible camera badge — clearly tappable on desktop, tablet & mobile */}
+        <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-purple-600 border-2 border-gray-950 flex items-center justify-center shadow-lg shadow-purple-900/50 hover:bg-purple-500 active:scale-95 transition-all ring-2 ring-purple-400/40">
+          <Camera className="w-4 h-4 text-white" />
         </div>
 
         {/* Count badge */}
