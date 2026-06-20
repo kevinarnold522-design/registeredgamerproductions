@@ -19,6 +19,7 @@ export async function handleFunction(name, body, env, request) {
     case "adminUpdateEntity":      return adminUpdateEntity(body, env, request);
     case "getPaypalConfig":        return getPaypalConfig(body, env);
     case "createPaypalOrder":      return createPaypalOrder(body, env, request);
+    case "createSupabaseUpload":   return createSupabaseUpload(body, env, request);
     case "capturePaypalPayment":   return capturePaypalPayment(body, env, request);
     case "verifyPaymentStatus":    return verifyPaymentStatus(body, env);
     case "completePayment":        return completePayment(body, env);
@@ -743,12 +744,19 @@ async function logLogin(_body, env, request) {
 }
 
 async function updateProfileMedia(body, env, request) {
-  const ALLOWED_FIELDS = ["avatar_url", "banner_url"];
+  const ALLOWED_FIELDS = ["avatar_url", "avatar_urls", "banner_url", "profile_theme_color"];
   const user = await getUser(env, request);
   if (!user) return { status: 401, body: { error: "Unauthorized" } };
 
   const { profile_id, field, value } = body;
-  if (!profile_id || !ALLOWED_FIELDS.includes(field)) return { status: 400, body: { error: "Invalid profile media update" } };
+  const updates = body.updates || (field ? { [field]: value } : null);
+  if (!profile_id || !updates || typeof updates !== "object") return { status: 400, body: { error: "Invalid profile media update" } };
+
+  const safeUpdates = {};
+  for (const [key, val] of Object.entries(updates)) {
+    if (ALLOWED_FIELDS.includes(key)) safeUpdates[key] = val;
+  }
+  if (Object.keys(safeUpdates).length === 0) return { status: 400, body: { error: "No allowed profile media fields" } };
 
   const profile = (await listRecords(env, "UserProfile", { id: profile_id }, 1))[0];
   if (!profile) return { status: 404, body: { error: "Profile not found" } };
@@ -756,7 +764,7 @@ async function updateProfileMedia(body, env, request) {
   const owner = String(profile.user_email || "").toLowerCase() === String(user.email || "").toLowerCase();
   if (!isAdmin(user) && !owner) return { status: 403, body: { error: "Forbidden" } };
 
-  const updated = await updateRecord(env, "UserProfile", profile_id, { [field]: value || "" });
+  const updated = await updateRecord(env, "UserProfile", profile_id, safeUpdates);
   return { status: 200, body: { success: true, profile: updated } };
 }
 
@@ -916,6 +924,57 @@ async function apiRegister(body, env) {
   ).bind(userId, email, full_name || email.split("@")[0], passwordHash, now, now).run();
 
   return { status: 200, body: { success: true, user: { id: userId, email } } };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Supabase Storage upload — returns signed upload tokens for browser uploads
+// ─────────────────────────────────────────────────────────────────────
+
+const SUPABASE_MEDIA_BUCKET = "gamerproductionsmedia";
+const SUPABASE_MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+
+function safeSupabasePath(folder, fileName) {
+  const originalName = String(fileName || "upload").replace(/[^a-zA-Z0-9._-]/g, "-");
+  const extension = originalName.includes(".") ? originalName.split(".").pop() : "bin";
+  const safeFolder = String(folder || "uploads").replace(/[^a-zA-Z0-9/_-]/g, "-");
+  return `${safeFolder}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${String(extension || "bin").toLowerCase()}`;
+}
+
+async function createSupabaseUpload(body, env, request) {
+  const user = await getUser(env, request);
+  if (!user) return { status: 401, body: { error: "Please sign in before uploading." } };
+
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || "https://smymannqqogtshvsiqyp.supabase.co";
+  if (!serviceKey) return { status: 500, body: { error: "Supabase upload service is not configured." } };
+
+  const size = Number(body.size || 0);
+  if (size > SUPABASE_MAX_UPLOAD_BYTES) return { status: 400, body: { error: "File is too large. Maximum size is 25MB." } };
+
+  const path = safeSupabasePath(body.folder, body.fileName);
+  const headers = { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" };
+
+  const signedRes = await fetch(`${supabaseUrl}/storage/v1/object/upload/sign/${SUPABASE_MEDIA_BUCKET}/${encodeURIComponent(path).replace(/%2F/g, "/")}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ upsert: false }),
+  });
+  const signed = await signedRes.json().catch(() => ({}));
+  if (!signedRes.ok) {
+    console.error("Supabase signed upload failed", signed);
+    return { status: signedRes.status, body: { error: signed?.message || signed?.error || "Could not prepare Supabase upload." } };
+  }
+
+  return {
+    status: 200,
+    body: {
+      bucket: SUPABASE_MEDIA_BUCKET,
+      path,
+      token: signed.token,
+      signedUrl: signed.signedURL || signed.signedUrl,
+      publicUrl: `${supabaseUrl}/storage/v1/object/public/${SUPABASE_MEDIA_BUCKET}/${path}`,
+    },
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────

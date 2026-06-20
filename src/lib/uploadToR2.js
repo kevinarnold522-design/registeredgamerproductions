@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabaseClient";
-import { base44 } from "@/api/base44Client";
 import { compressImage } from "@/lib/compressImage";
 
 // =====================================================================
@@ -29,14 +28,6 @@ function validateFile(file) {
   }
 }
 
-function safePath(folder, file) {
-  const originalName = String(file.name || "upload").replace(/[^a-zA-Z0-9._-]/g, "-");
-  const extension = originalName.includes(".") ? originalName.split(".").pop() : "bin";
-  const safeFolder = String(folder || "uploads").replace(/[^a-zA-Z0-9/_-]/g, "-");
-  const randomId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  return `${safeFolder}/${randomId}.${String(extension || "bin").toLowerCase()}`;
-}
-
 function friendlyStorageError(error) {
   const message = error?.message || "Supabase upload failed.";
   if (/bucket not found/i.test(message)) {
@@ -48,18 +39,54 @@ function friendlyStorageError(error) {
   return message;
 }
 
-async function uploadToSupabase(file, folder) {
-  const response = await base44.functions.invoke("createSupabaseUpload", {
+function externalUploadEndpoints() {
+  const endpoints = [];
+  const vercelBase = (import.meta.env.VITE_VERCEL_API_URL || window.location.origin || "").replace(/\/$/, "");
+  const cloudflareBase = (import.meta.env.VITE_CF_API_URL || "https://website-connected-gamerproductions.kevinarnold522.workers.dev").replace(/\/$/, "");
+  if (vercelBase) endpoints.push({ source: "vercel", url: `${vercelBase}/api/base44-functions?function=createSupabaseUpload` });
+  if (cloudflareBase) endpoints.push({ source: "cloudflare", url: `${cloudflareBase}/functions/createSupabaseUpload` });
+  return endpoints;
+}
+
+async function authHeaders() {
+  const headers = { "Content-Type": "application/json" };
+  const { data } = await supabase.auth.getSession();
+  const token = data?.session?.access_token;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+async function prepareSupabaseUpload(file, folder) {
+  const payload = {
     fileName: file.name || "upload",
     folder,
     size: file.size || 0,
     contentType: file.type || "application/octet-stream",
-  });
+  };
+  const headers = await authHeaders();
+  let lastError = null;
 
-  const uploadInfo = response?.data;
-  if (!uploadInfo?.token || !uploadInfo?.path || !uploadInfo?.publicUrl) {
-    throw new Error(uploadInfo?.error || "Could not prepare Supabase upload.");
+  for (const endpoint of externalUploadEndpoints()) {
+    try {
+      const response = await fetch(endpoint.url, {
+        method: "POST",
+        credentials: "include",
+        headers,
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data?.token && data?.path && data?.publicUrl) return { ...data, source: endpoint.source };
+      lastError = new Error(data?.error || `${endpoint.source} upload preparation failed.`);
+    } catch (error) {
+      lastError = error;
+    }
   }
+
+  throw lastError || new Error("Could not prepare Supabase upload.");
+}
+
+async function uploadToSupabase(file, folder) {
+  const uploadInfo = await prepareSupabaseUpload(file, folder);
 
   const { error } = await supabase.storage.from(uploadInfo.bucket || SUPABASE_BUCKET).uploadToSignedUrl(
     uploadInfo.path,
@@ -70,7 +97,7 @@ async function uploadToSupabase(file, folder) {
 
   if (error) throw new Error(friendlyStorageError(error));
 
-  return { file_url: uploadInfo.publicUrl, source: "supabase", bucket: uploadInfo.bucket || SUPABASE_BUCKET, path: uploadInfo.path };
+  return { file_url: uploadInfo.publicUrl, source: uploadInfo.source || "supabase", bucket: uploadInfo.bucket || SUPABASE_BUCKET, path: uploadInfo.path };
 }
 
 export async function uploadFileWithFallback(file, folder = "uploads") {
