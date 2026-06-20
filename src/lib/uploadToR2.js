@@ -4,13 +4,14 @@ import { compressImage } from "@/lib/compressImage";
 // =====================================================================
 // Supabase-only upload helper used by listings, profiles, posts, covers,
 // videos, and AI listing images. No Base44 upload, no R2 upload, no backend.
+// Required Supabase bucket: gamerproductionsmedia
 // =====================================================================
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
 export const MAX_UPLOAD_LABEL = "25MB";
 
+const SUPABASE_BUCKET = "gamerproductionsmedia";
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
-const SUPABASE_BUCKETS = ["gamerproductionsmedia", "uploads", "public"];
 
 export function validateUploadSize(file) {
   return file && file.size <= MAX_UPLOAD_BYTES;
@@ -28,33 +29,37 @@ function validateFile(file) {
 }
 
 function safePath(folder, file) {
-  const extension = (file.name || "upload").split(".").pop() || "bin";
+  const originalName = String(file.name || "upload").replace(/[^a-zA-Z0-9._-]/g, "-");
+  const extension = originalName.includes(".") ? originalName.split(".").pop() : "bin";
   const safeFolder = String(folder || "uploads").replace(/[^a-zA-Z0-9/_-]/g, "-");
   const randomId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  return `${safeFolder}/${randomId}.${extension.toLowerCase()}`;
+  return `${safeFolder}/${randomId}.${String(extension || "bin").toLowerCase()}`;
+}
+
+function friendlyStorageError(error) {
+  const message = error?.message || "Supabase upload failed.";
+  if (/bucket not found/i.test(message)) {
+    return "Supabase storage bucket is missing. Run cloudflare/supabase-storage-setup.sql once in Supabase SQL Editor, then try uploading again.";
+  }
+  if (/row-level security|not authorized|unauthorized|permission/i.test(message)) {
+    return "Supabase storage permission blocked the upload. Run cloudflare/supabase-storage-setup.sql once in Supabase SQL Editor, then try again while logged in.";
+  }
+  return message;
 }
 
 async function uploadToSupabase(file, folder) {
   const path = safePath(folder, file);
-  let lastError = null;
+  const { error } = await supabase.storage.from(SUPABASE_BUCKET).upload(path, file, {
+    cacheControl: "31536000",
+    upsert: false,
+    contentType: file.type || "application/octet-stream",
+  });
 
-  for (const bucket of SUPABASE_BUCKETS) {
-    const { error } = await supabase.storage.from(bucket).upload(path, file, {
-      cacheControl: "31536000",
-      upsert: false,
-      contentType: file.type || "application/octet-stream",
-    });
+  if (error) throw new Error(friendlyStorageError(error));
 
-    if (!error) {
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      if (!data?.publicUrl) throw new Error("Supabase upload returned no public URL.");
-      return { file_url: data.publicUrl, source: "supabase", bucket, path };
-    }
-
-    lastError = error;
-  }
-
-  throw new Error(lastError?.message || "Supabase upload failed. Please check the storage bucket settings.");
+  const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
+  if (!data?.publicUrl) throw new Error("Supabase upload returned no public URL.");
+  return { file_url: data.publicUrl, source: "supabase", bucket: SUPABASE_BUCKET, path };
 }
 
 export async function uploadFileWithFallback(file, folder = "uploads") {
