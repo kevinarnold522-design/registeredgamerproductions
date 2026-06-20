@@ -122,6 +122,31 @@ function makeEntity(name) {
       if (error) throw new Error(error.message);
       return { id };
     },
+
+    // Realtime subscription — mirrors the old SDK's signature. Calls the
+    // handler with { id, type: 'create'|'update'|'delete', data } and returns
+    // an unsubscribe function.
+    subscribe(handler) {
+      const channel = supabase
+        .channel(`realtime-${name}-${Math.random().toString(36).slice(2)}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: name },
+          (payload) => {
+            const typeMap = { INSERT: "create", UPDATE: "update", DELETE: "delete" };
+            const row = payload.new && Object.keys(payload.new).length ? payload.new : payload.old;
+            handler({
+              id: row?.id,
+              type: typeMap[payload.eventType] || payload.eventType,
+              data: flatten(row),
+            });
+          }
+        )
+        .subscribe();
+      return () => {
+        try { supabase.removeChannel(channel); } catch (_) {}
+      };
+    },
   };
 }
 
