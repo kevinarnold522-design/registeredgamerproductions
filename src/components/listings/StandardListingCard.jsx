@@ -10,8 +10,8 @@ import CardEditPencil from "@/components/listings/CardEditPencil";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { formatListingPrice } from "@/lib/currency";
 
-// Wider + shorter (landscape) card: image on the left, details on the right.
-const SIZE_HEIGHTS = { sm: "h-28", md: "h-32", lg: "h-40" };
+// Vertical card: image on top, details below. Wider than before.
+const SIZE_HEIGHTS = { sm: "h-40", md: "h-48", lg: "h-56" };
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -111,14 +111,14 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       onTouchEnd={() => setTimeout(() => setTouchActive(false), 600)}
       onTouchCancel={() => setTouchActive(false)}
       style={{ "--std-glow": glow }}
-      className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group flex ${touchActive ? "std-touch-active" : ""}`}
+      className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group flex flex-col ${touchActive ? "std-touch-active" : ""}`}
     >
-      {/* LEFT: Image */}
-      <a href={`/listing?id=${listing.id}`} className="relative block w-2/5 flex-shrink-0">
+      {/* TOP: Image */}
+      <a href={`/listing?id=${listing.id}`} className="relative block w-full">
         {listing.images?.length > 0 ? (
-          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass={`${heightClass} h-full`} />
+          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass={heightClass} />
         ) : (
-          <div className={`${heightClass} w-full h-full flex items-center justify-center bg-gray-800/60`}><Package className="w-9 h-9 text-purple-300 icon-glow-hover" /></div>
+          <div className={`${heightClass} w-full flex items-center justify-center bg-gray-800/60`}><Package className="w-9 h-9 text-purple-300 icon-glow-hover" /></div>
         )}
         {isFree && (
           <span className="absolute top-2 left-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
@@ -128,7 +128,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
         </span>
       </a>
 
-      {/* RIGHT: Content */}
+      {/* BOTTOM: Content */}
       <div className="relative flex-1 min-w-0 flex flex-col p-3">
         {/* Inline card editor pencil — owner/admin only */}
         <CardEditPencil listing={listing} user={user} onSaved={setListing} />
