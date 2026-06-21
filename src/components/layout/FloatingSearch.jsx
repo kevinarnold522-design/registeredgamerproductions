@@ -14,7 +14,7 @@ export default function FloatingSearch() {
   };
 
   return (
-    <div className="sticky top-0 z-[60] w-full bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 px-4 py-2">
+    <div className="sticky top-0 z-40 w-full bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 px-4 py-2">
       <form
         onSubmit={submit}
         className="max-w-md mx-auto flex items-center gap-2 rounded-2xl border border-purple-500/60 bg-gray-900 px-4 py-2.5"
