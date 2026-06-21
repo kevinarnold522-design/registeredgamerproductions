@@ -163,6 +163,10 @@ export default function ShootingStars() {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.01;
         this.bob = Math.random() * Math.PI * 2;
+        // ~40% of astronauts carry a balloon
+        this.hasBalloon = Math.random() < 0.4;
+        const balloonColors = ["#f472b6", "#f87171", "#facc15", "#4ade80", "#60a5fa", "#c084fc"];
+        this.balloonColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
       }
       draw() {
         this.bob += 0.04;
@@ -170,6 +174,32 @@ export default function ShootingStars() {
         const s = this.size;
         ctx.save();
         ctx.translate(this.x, this.y + Math.sin(this.bob) * 4);
+
+        // Balloon (drawn upright, before the astronaut tumble-rotation)
+        if (this.hasBalloon) {
+          ctx.save();
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = this.balloonColor;
+          // String
+          ctx.strokeStyle = "rgba(226,232,240,0.7)";
+          ctx.lineWidth = s * 0.05;
+          ctx.beginPath();
+          ctx.moveTo(s * 0.5, -s * 0.2);
+          ctx.quadraticCurveTo(s * 0.9, -s * 1.0, s * 0.8, -s * 1.7);
+          ctx.stroke();
+          // Balloon body
+          ctx.fillStyle = this.balloonColor;
+          ctx.beginPath();
+          ctx.ellipse(s * 0.8, -s * 2.0, s * 0.45, s * 0.55, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Highlight
+          ctx.fillStyle = "rgba(255,255,255,0.45)";
+          ctx.beginPath();
+          ctx.ellipse(s * 0.68, -s * 2.15, s * 0.13, s * 0.18, -0.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
         ctx.rotate(this.angle + Math.sin(this.bob) * 0.1);
         ctx.shadowBlur = 8;
         ctx.shadowColor = "#a855f7";
@@ -365,6 +395,125 @@ export default function ShootingStars() {
       twinkleDir: Math.random() > 0.5 ? 1 : -1,
     }));
 
+    // Moons — different shapes: full, crescent, gibbous, half
+    class Moon {
+      constructor() { this.reset(true); }
+      reset(initial = false) {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.dx = (Math.random() - 0.5) * 0.18;
+        this.dy = (Math.random() - 0.5) * 0.18;
+        this.size = Math.random() * 14 + 10;
+        this.shape = ["full", "crescent", "gibbous", "half"][Math.floor(Math.random() * 4)];
+        const tones = ["#e2e8f0", "#fcd34d", "#cbd5e1", "#fed7aa", "#d1d5db"];
+        this.color = tones[Math.floor(Math.random() * tones.length)];
+        this.glow = ["#fde68a", "#c4b5fd", "#a5f3fc"][Math.floor(Math.random() * 3)];
+      }
+      draw() {
+        const s = this.size;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = this.glow;
+        // Base disc
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(0, 0, s, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Carve the shape with a shadow-colored overlay
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(5,5,16,0.92)";
+        if (this.shape === "crescent") {
+          ctx.beginPath();
+          ctx.arc(s * 0.5, 0, s * 0.95, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (this.shape === "half") {
+          ctx.beginPath();
+          ctx.rect(0, -s, s, s * 2);
+          ctx.fill();
+        } else if (this.shape === "gibbous") {
+          ctx.beginPath();
+          ctx.arc(s * 0.85, 0, s * 0.85, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // full moon — add craters
+          ctx.fillStyle = "rgba(0,0,0,0.12)";
+          ctx.beginPath(); ctx.arc(-s * 0.3, -s * 0.2, s * 0.22, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(s * 0.25, s * 0.3, s * 0.16, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(s * 0.1, -s * 0.4, s * 0.1, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x < -s) this.x = canvas.width + s;
+        if (this.x > canvas.width + s) this.x = -s;
+        if (this.y < -s) this.y = canvas.height + s;
+        if (this.y > canvas.height + s) this.y = -s;
+      }
+    }
+    const moons = Array.from({ length: 4 }, () => new Moon());
+
+    // Mini planets — colorful orbs, some ringed
+    class Planet {
+      constructor() { this.reset(true); }
+      reset(initial = false) {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.dx = (Math.random() - 0.5) * 0.22;
+        this.dy = (Math.random() - 0.5) * 0.22;
+        this.size = Math.random() * 9 + 6;
+        const palettes = [
+          ["#f97316", "#7c2d12"], ["#22d3ee", "#155e75"], ["#a855f7", "#581c87"],
+          ["#34d399", "#065f46"], ["#f472b6", "#831843"], ["#facc15", "#854d0e"],
+        ];
+        const p = palettes[Math.floor(Math.random() * palettes.length)];
+        this.core = p[0]; this.edge = p[1];
+        this.hasRing = Math.random() < 0.45;
+        this.ringAngle = (Math.random() - 0.5) * 0.8;
+      }
+      draw() {
+        const s = this.size;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+
+        // Ring behind
+        if (this.hasRing) {
+          ctx.save();
+          ctx.rotate(this.ringAngle);
+          ctx.strokeStyle = this.core + "aa";
+          ctx.lineWidth = s * 0.18;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = this.core;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, s * 1.7, s * 0.55, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Planet body with shaded gradient
+        const grad = ctx.createRadialGradient(-s * 0.3, -s * 0.3, s * 0.2, 0, 0, s);
+        grad.addColorStop(0, this.core);
+        grad.addColorStop(1, this.edge);
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = this.core;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, s, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x < -s * 2) this.x = canvas.width + s * 2;
+        if (this.x > canvas.width + s * 2) this.x = -s * 2;
+        if (this.y < -s * 2) this.y = canvas.height + s * 2;
+        if (this.y > canvas.height + s * 2) this.y = -s * 2;
+      }
+    }
+    const planets = Array.from({ length: 5 }, () => new Planet());
+
     // Shooting stars
     const shootingColors = ["#c084fc", "#a855f7", "#9333ea", "#d8b4fe", "#7c3aed", "#e9d5ff"];
 
@@ -522,6 +671,12 @@ export default function ShootingStars() {
         ctx.fill();
         ctx.restore();
       }
+
+      // Draw moons
+      for (const m of moons) m.draw();
+
+      // Draw mini planets
+      for (const pl of planets) pl.draw();
 
       // Draw mini asteroids
       for (const ast of asteroids) ast.draw();
