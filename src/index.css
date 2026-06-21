@@ -391,3 +391,14 @@ body {
     background: transparent;
   }
 }
+
+/* ─── Camouflage opaque section backgrounds so the space scene shows through ─── */
+/* Solid dark Tailwind fills become translucent (logos, text & buttons keep their own styles) */
+.bg-gray-950 { background-color: rgba(3, 7, 18, 0.55) !important; }
+.bg-gray-900 { background-color: rgba(17, 24, 39, 0.5) !important; }
+.bg-gray-900\/95 { background-color: rgba(17, 24, 39, 0.6) !important; }
+.bg-gray-950\/95 { background-color: rgba(3, 7, 18, 0.6) !important; }
+.bg-black { background-color: rgba(0, 0, 0, 0.45) !important; }
+.bg-\[\#030712\] { background-color: rgba(3, 7, 18, 0.5) !important; }
+.bg-\[\#050510\] { background-color: rgba(5, 5, 16, 0.5) !important; }
+.bg-\[\#020208\] { background-color: rgba(2, 2, 8, 0.5) !important; }

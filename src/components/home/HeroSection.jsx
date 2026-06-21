@@ -126,7 +126,7 @@ export default function HeroSection() {
     <section className="relative flex flex-col items-center justify-center overflow-hidden pt-16">
       {/* Background */}
       <div className="absolute inset-0" style={{
-        background: "radial-gradient(ellipse at 60% 40%, rgba(139,92,246,0.18) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.12) 0%, transparent 50%), #030712"
+        background: "radial-gradient(ellipse at 60% 40%, rgba(139,92,246,0.18) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.12) 0%, transparent 50%), rgba(3,7,18,0.35)"
       }} />
       {/* Futuristic grid overlay */}
       <div className="absolute inset-0 opacity-[0.04]" style={{
