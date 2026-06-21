@@ -94,26 +94,26 @@ export default function Navbar() {
       >
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-24">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link to="/" className="flex items-center gap-3 group">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
+                className={`w-24 h-24 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
                 animate={{ rotate: [0, -2, 2, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
                 style={{
                   boxShadow: controllerCycling
-                    ? "0 0 16px rgba(168,85,247,0.5)"
-                    : "0 0 6px rgba(168,85,247,0.25)",
+                    ? "0 0 32px rgba(168,85,247,0.5)"
+                    : "0 0 14px rgba(168,85,247,0.25)",
                   transition: "box-shadow 0.4s ease",
                 }}
               >
-                <Gamepad2 className={`w-5 h-5 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
+                <Gamepad2 className={`w-14 h-14 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
               </motion.div>
               <div className="hidden sm:block">
-                <span className="font-black text-white text-sm">Gamer</span>
-                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-sm">.Productions</span>
+                <span className="font-black text-white text-2xl">Gamer</span>
+                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-2xl">.Productions</span>
               </div>
             </Link>
 
