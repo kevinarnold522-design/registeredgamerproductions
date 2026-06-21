@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, Megaphone } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { isAdmin } from "@/lib/constants";
 
 const AD_DELAY_MS = 5 * 60 * 1000; // 5 minutes after the user first visits
 const SETTINGS_KEY = "html_ad";
@@ -25,8 +26,23 @@ function AdHtml({ html }) {
 export default function GlobalHtmlAd() {
   const [ad, setAd] = useState(null);
   const [show, setShow] = useState(false);
+  const [exempt, setExempt] = useState(false);
+
+  // Ad-free option bans ALL ad codes for the user (admin-set no_ads,
+  // account moderators, and admins never see ad codes).
+  useEffect(() => {
+    base44.auth.me().then((me) => {
+      if (!me) return;
+      if (isAdmin(me.email)) { setExempt(true); return; }
+      base44.entities.UserProfile.filter({ user_email: me.email }).then((p) => {
+        const prof = p[0];
+        if (prof && (prof.no_ads === true || prof.moderator_type === "account_moderator")) setExempt(true);
+      }).catch(() => {});
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
+    if (exempt) return;
     base44.entities.SiteSettings.filter({ key: SETTINGS_KEY })
       .then((rows) => {
         const row = rows?.[0];
@@ -34,15 +50,15 @@ export default function GlobalHtmlAd() {
         if (row && row.ad_enabled !== false && row.ad_html_code) setAd(row);
       })
       .catch(() => {});
-  }, []);
+  }, [exempt]);
 
   useEffect(() => {
-    if (!ad) return;
+    if (!ad || exempt) return;
     const timer = setTimeout(() => setShow(true), AD_DELAY_MS);
     return () => clearTimeout(timer);
   }, [ad]);
 
-  if (!ad || !show) return null;
+  if (!ad || !show || exempt) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
