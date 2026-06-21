@@ -385,6 +385,9 @@ body {
 
   body {
     @apply text-foreground;
+    background: transparent;
+  }
+  html {
     background: #050510;
   }
 }

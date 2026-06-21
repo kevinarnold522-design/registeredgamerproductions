@@ -164,7 +164,7 @@ export default function ShootingStars() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 0, width: "100vw", height: "100vh" }}
+      style={{ zIndex: 1, width: "100vw", height: "100vh" }}
     />
   );
 }
