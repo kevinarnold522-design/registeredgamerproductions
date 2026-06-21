@@ -25,7 +25,7 @@ export default function SidebarLayout({ children }) {
 
   return (
     <>
-      <div className={user ? "lg:ml-[var(--sidebar-offset)]" : ""} style={user ? { "--sidebar-offset": `${offset}px`, transition: "margin-left 0.25s ease" } : undefined}>
+      <div>
         <FloatingSearch />
         {children}
       </div>

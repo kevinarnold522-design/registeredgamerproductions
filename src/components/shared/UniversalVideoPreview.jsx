@@ -26,10 +26,11 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     if (playing) {
       return (
         <iframe
-          src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1`}
+          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`}
           title="Preview"
-          className={className}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          className={`w-full h-full ${className}`}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
         />
       );
