@@ -300,7 +300,10 @@ export default function AuthNavbar({ user, profile }) {
                   : <User className="w-5 h-5 text-white" />
                 }
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-gray-950" />
+              <span className="absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-gray-950" />
+              <span className="absolute -bottom-1 -right-1">
+                <GamerCheckmark isVerified={isManagingAsGhost ? ghostAccountData?.is_verified : profile?.is_verified} userEmail={isManagingAsGhost ? ghostAccountEmail : user?.email} size="sm" showTooltip={false} />
+              </span>
             </div>
             {s && (
               <div className="flex-1 min-w-0">
@@ -308,7 +311,6 @@ export default function AuthNavbar({ user, profile }) {
                   <p className="text-white font-black text-xs truncate">
                     {isManagingAsGhost ? ghostAccountData?.username : (profile?.username || user?.full_name || "Gamer")}
                   </p>
-                  <GamerCheckmark isVerified={isManagingAsGhost ? ghostAccountData?.is_verified : profile?.is_verified} userEmail={isManagingAsGhost ? ghostAccountEmail : user?.email} size="sm" showTooltip={false} />
                 </div>
                 <div className={`mt-1 inline-flex items-center border border-input px-2 py-0.5 text-xs rounded font-black capitalize ${userTypeColor}`}>
                   {userTypeLabel}

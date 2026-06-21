@@ -5,7 +5,6 @@ import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
 import ListingSellerBadge from "@/components/listings/ListingSellerBadge";
-import StickySearchBar from "@/components/shared/StickySearchBar";
 import Pagination from "@/components/shared/Pagination";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
@@ -216,7 +215,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <StickySearchBar />
       {/* Hero */}
       <div className="relative py-14 px-4" style={{ background: `linear-gradient(135deg, #060008, #030712)` }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: meta.grid, backgroundSize: "50px 50px" }} />

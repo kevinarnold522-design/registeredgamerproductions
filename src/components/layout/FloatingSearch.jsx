@@ -1,8 +1,18 @@
-import React, { useState } from "react";
-import { Search, Facebook, Instagram, Youtube } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Search, Facebook, Instagram, Youtube, Gamepad2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { OFFICIAL_LINKS } from "@/lib/officialLinks";
+
+const CONTROLLER_COLORS = [
+  "from-purple-600 to-pink-600",
+  "from-blue-500 to-cyan-500",
+  "from-green-500 to-emerald-500",
+  "from-yellow-500 to-orange-500",
+  "from-red-500 to-pink-500",
+  "from-indigo-500 to-violet-500",
+];
 
 const SOCIALS = [
   { label: "YouTube", href: OFFICIAL_LINKS.youtube, icon: Youtube, color: "text-red-300" },
@@ -14,7 +24,13 @@ const SOCIALS = [
 
 export default function FloatingSearch() {
   const [query, setQuery] = useState("");
+  const [colorIdx, setColorIdx] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const t = setInterval(() => setColorIdx(i => (i + 1) % CONTROLLER_COLORS.length), 3000);
+    return () => clearInterval(t);
+  }, []);
 
   const submit = (e) => {
     e?.preventDefault?.();
@@ -26,6 +42,15 @@ export default function FloatingSearch() {
   return (
     <div className="sticky top-0 z-40 w-full bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 px-4 py-2">
       <div className="max-w-3xl mx-auto flex items-center gap-3">
+        <motion.div
+          aria-hidden
+          className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br ${CONTROLLER_COLORS[colorIdx]} transition-all duration-500`}
+          animate={{ rotate: [0, -6, 6, -4, 4, 0], y: [0, -3, 0] }}
+          transition={{ rotate: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }, y: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
+          style={{ boxShadow: "0 0 16px rgba(168,85,247,0.5), 0 0 32px rgba(236,72,153,0.3)" }}
+        >
+          <Gamepad2 className="w-5 h-5 text-white" />
+        </motion.div>
         <form
           onSubmit={submit}
           className="flex-1 min-w-0 flex items-center gap-2 rounded-2xl border border-purple-500/60 bg-gray-900 px-4 py-2.5"
