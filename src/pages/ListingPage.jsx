@@ -27,6 +27,8 @@ import ListingPageEditor from "@/components/listings/ListingPageEditor";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 import BuyUnlockModal from "@/components/payments/BuyUnlockModal";
+import RepostButton from "@/components/shared/RepostButton";
+import ListingReportButton from "@/components/shared/ListingReportButton";
 import { useDwellTracker } from "@/components/listings/useDwellTracker";
 import { getListingYouTubeId } from "@/lib/youtube";
 
@@ -512,6 +514,10 @@ export default function ListingPage() {
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all text-sm font-semibold ${copied ? "border-green-500 bg-green-900/30 text-green-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:border-blue-500/50 hover:text-blue-300"}`}>
                 <Share2 className="w-4 h-4" /> {copied ? "Copied!" : `Share ${formatCount(listing.shares || 0)}`}
               </button>
+              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-gray-700 bg-gray-900">
+                <RepostButton item={listing} type="listing" user={user} profile={profile} />
+              </div>
+              <ListingReportButton listingId={listing.id} position="static" />
               <div className="theme-glow-action flex items-center gap-1.5 text-purple-300 text-sm ml-auto rounded-lg px-1.5 py-0.5">
                 <Eye className="w-4 h-4 theme-glow-icon" /> {formatCount(listing.views || 0)}
               </div>
