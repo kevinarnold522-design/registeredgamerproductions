@@ -94,12 +94,12 @@ export default function Navbar() {
         
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-24">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-24 h-24 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br mx-1 px-2 my-2 py-3 ${colorCycles[colorIdx]}`}
+                className={`w-12 h-12 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
                 animate={{ rotate: [0, -2, 2, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
                 style={{
@@ -109,7 +109,7 @@ export default function Navbar() {
                   transition: "box-shadow 0.4s ease"
                 }}>
                 
-                <Gamepad2 className={`w-14 h-14 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
+                <Gamepad2 className={`w-7 h-7 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
               </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-2xl">Gamer</span>
@@ -213,11 +213,11 @@ export default function Navbar() {
               <div className="flex flex-col items-center my-4">
                 <motion.span
                 aria-label="Gamer Productions"
-                className="w-20 h-20 mb-2 flex items-center justify-center text-6xl"
+                className="w-32 h-32 mb-2 flex items-center justify-center"
                 animate={{ scale: [1, 1.06, 1], rotate: [0, -4, 4, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 style={{ filter: "drop-shadow(0 0 18px rgba(168,85,247,0.7))" }}>
-                <Gamepad2 className="w-12 h-12 text-white" /></motion.span>
+                <Gamepad2 className="w-24 h-24 text-white" /></motion.span>
                 <span className="text-2xl font-black text-white tracking-tight">Welcome to <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Gamer.Productions</span></span>
                 <span className="text-gray-500 text-xs mt-1">The #1 Gaming Hub Community</span>
               </div>
