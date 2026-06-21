@@ -1,13 +1,13 @@
 import React from "react";
 import BrandLogo from "@/components/shared/BrandLogo";
 
-// Real download-host branding (logo + official-ish color) for the file hosts
-// listings can be hosted on. mediafire/mega have simple-icons logos; modsfire
-// and sharemods don't, so they fall back to a colored monogram chip.
+// Real download-host branding (logo + official color) for the file hosts
+// listings can be hosted on. MediaFire, MEGA and Modsfire use real logo
+// images; sharemods falls back to a colored monogram chip.
 export const DOWNLOAD_HOSTS = {
-  mediafire: { label: "MediaFire", color: "#1299F3", brand: "mediafire" },
-  mega: { label: "MEGA", color: "#D9272E", brand: "mega" },
-  modsfire: { label: "Modsfire", color: "#FF6A00", brand: null, mono: "MF" },
+  mediafire: { label: "MediaFire", color: "#1299F3", logoUrl: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/a3c58d1cd_generated_image.png" },
+  mega: { label: "MEGA", color: "#D9272E", logoUrl: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/c053485af_generated_image.png" },
+  modsfire: { label: "Modsfire", color: "#FF6A00", logoUrl: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/d87cd41f7_generated_image.png" },
   sharemods: { label: "Sharemods", color: "#22C55E", brand: null, mono: "SM" },
 };
 
@@ -26,10 +26,12 @@ export default function DownloadHostBadge({ host, size = "md", showLabel = true 
       className={`inline-flex items-center rounded-lg font-bold border ${s.wrap}`}
       style={{ background: `${h.color}22`, borderColor: `${h.color}66`, color: "#fff" }}
     >
-      <span className={`inline-flex items-center justify-center rounded ${s.chip}`} style={{ background: h.color }}>
-        {h.brand
-          ? <BrandLogo brand={h.brand} label={h.label} className={s.logo} />
-          : <span className="text-[8px] font-black text-white leading-none">{h.mono}</span>}
+      <span className={`inline-flex items-center justify-center overflow-hidden rounded bg-white ${s.chip}`} style={h.logoUrl ? undefined : { background: h.color }}>
+        {h.logoUrl
+          ? <img src={h.logoUrl} alt={h.label} className={`${s.chip} object-cover`} loading="lazy" />
+          : h.brand
+            ? <BrandLogo brand={h.brand} label={h.label} className={s.logo} />
+            : <span className="text-[8px] font-black text-white leading-none">{h.mono}</span>}
       </span>
       {showLabel && <span className="truncate">{h.label}</span>}
     </span>
