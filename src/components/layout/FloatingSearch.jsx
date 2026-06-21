@@ -40,7 +40,7 @@ export default function FloatingSearch() {
   };
 
   return (
-    <div className="sticky top-0 z-40 w-full bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 px-4 py-2">
+    <div className="sticky top-16 z-30 w-full bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 px-4 py-2">
       <div className="max-w-3xl mx-auto flex items-center gap-3">
         <motion.div
           aria-hidden
