@@ -212,6 +212,41 @@ a[href]:not(.no-glow):hover,
   filter: drop-shadow(0 0 8px rgba(168,85,247,0.35));
 }
 
+/* ─── Traveling glow that circles around the card edges ─── */
+@property --std-edge-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes std-edge-orbit {
+  0%   { --std-edge-angle: 0deg; }
+  100% { --std-edge-angle: 360deg; }
+}
+.std-edge-glow::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--std-edge-angle),
+    transparent 0deg,
+    rgba(var(--std-glow, 168,85,247), 0) 40deg,
+    rgba(var(--std-glow, 168,85,247), 1) 90deg,
+    rgba(34,211,238, 0.9) 110deg,
+    rgba(var(--std-glow, 168,85,247), 0) 150deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  filter: drop-shadow(0 0 6px rgba(var(--std-glow, 168,85,247), 0.8));
+  animation: std-edge-orbit 3s linear infinite;
+}
+
 /* ─── STANDARDIZED LISTING CARD: glass + glow + blazing fire edges ─── */
 @keyframes std-card-fire {
   0%, 100% { opacity: 0.65; filter: blur(6px) brightness(1); }

@@ -98,7 +98,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       onTouchEnd={() => setTimeout(() => setTouchActive(false), 600)}
       onTouchCancel={() => setTouchActive(false)}
       style={{ "--std-glow": glow }}
-      className={`std-listing-card rounded-2xl overflow-hidden group ${touchActive ? "std-touch-active" : ""}`}
+      className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group ${touchActive ? "std-touch-active" : ""}`}
     >
       <ListingReportButton listingId={listing.id} />
 
