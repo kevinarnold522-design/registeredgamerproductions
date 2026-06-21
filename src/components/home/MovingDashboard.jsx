@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat, CalendarDays, Tags } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import ListingEngagementBar from "@/components/community/ListingEngagementBar";
-import ListingReportButton from "@/components/shared/ListingReportButton";
 import MascotShowcase from "@/components/shared/MascotShowcase";
+import StandardListingCard from "@/components/listings/StandardListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
-import { formatListingPrice } from "@/lib/currency";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
 const CP = {
@@ -46,146 +44,13 @@ function ScrollRow({ children, speed = 30, reverse = false }) {
   );
 }
 
-function FireBurst() {
-  return null;
-}
-
-function CardActions({ item, user, profile }) {
-  return <div className="mt-1.5"><ListingEngagementBar listing={item} user={user} profile={profile} compact hideReport /></div>;
-}
-
-function OwnerPill({ item }) {
-  const date = item.created_date ? new Date(item.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently";
+// Standardized superglow card (same design as the modding community listings),
+// wrapped at a fixed width so it fits inside the horizontal scroll rows.
+function ScrollCard({ item, user, profile }) {
   return (
-    <div className="theme-glow-action mt-1 inline-flex items-center gap-2 max-w-full rounded-xl px-1.5 py-1 bg-black/20 border border-cyan-400/20">
-      <CalendarDays className="w-3.5 h-3.5 theme-glow-icon flex-shrink-0" />
-      <span className="min-w-0 text-left">
-        <span className="block text-[8px] uppercase tracking-wider text-cyan-300/70 font-black">Posted Date</span>
-        <span className="block text-[10px] text-cyan-100/85 truncate">{date}</span>
-      </span>
+    <div className="w-56 flex-shrink-0">
+      <StandardListingCard listing={item} user={user} profile={profile} />
     </div>
-  );
-}
-
-function PlacementBadges({ item }) {
-  const badges = [item.category, item.modding_subcategory, ...(item.subcategories || [])].filter(Boolean).slice(0, 3);
-  if (badges.length === 0) return null;
-  return <div className="mt-1 flex flex-wrap gap-1">{badges.map(b => <span key={b} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-[8px] font-black text-purple-200"><Tags className="w-2 h-2" />{b}</span>)}</div>;
-}
-
-function ModCard({ mod, user, profile, owner }) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(mod.likes || 0);
-
-  const handleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setLiked(l => !l);
-    setLikeCount(c => liked ? c - 1 : c + 1);
-    base44.entities.Listing.update(mod.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
-  };
-
-  const glow = listingGlow(mod);
-  return (
-    <motion.a
-      href={`/listing?id=${mod.id}`}
-      whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(245,197,24,0.4), 0 0 80px rgba(245,197,24,0.1)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className={`relative w-52 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block ${glow.className}`}
-      style={{
-        ...glow.style,
-        background: "rgba(18,8,0,0.55)",
-        border: "1px solid rgba(245,197,24,0.35)",
-        backdropFilter: "blur(18px)",
-        boxShadow: "0 4px 24px rgba(245,197,24,0.08), inset 0 0 20px rgba(245,197,24,0.03)",
-      }}
-    >
-      <FireBurst />
-      <ListingReportButton listingId={mod.id} />
-      <div className="relative h-32 overflow-hidden">
-        {mod.images?.[0] ? (
-          <img src={mod.images[0]} alt={mod.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="flex items-center justify-center h-full" style={{ background: "linear-gradient(135deg, #1a0a00, #0a0500)" }}>
-            <Package className="w-10 h-10 text-amber-300" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: CP.yellow }} />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: CP.pink }} />
-        {mod.is_premium && (
-          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: `${CP.yellow}30`, border: `1px solid ${CP.yellow}60`, color: CP.yellow }}>PREMIUM</div>
-        )}
-        <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1 py-0.5 rounded text-[8px]" style={{ background: "rgba(0,0,0,0.7)", color: CP.cyan }}>
-          <Eye className="w-2 h-2 theme-glow-icon" /> {(mod.views || 0).toLocaleString()}
-        </div>
-      </div>
-      <div className="p-3">
-        <p className="text-white font-bold text-xs truncate">{mod.title}</p>
-        <OwnerPill item={mod} owner={owner} />
-        <PlacementBadges item={mod} />
-        <p className="font-black mt-0.5 text-xs" style={{ color: CP.yellow }}>{mod.price > 0 ? formatListingPrice(mod.price, mod.currency) : "FREE"}</p>
-        <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
-          <Download className="w-2.5 h-2.5 theme-glow-icon" /><span className="text-[8px]">{(mod.downloads || 0).toLocaleString()} downloads</span>
-        </div>
-        <CardActions item={mod} liked={liked} likeCount={likeCount} onLike={handleLike} user={user} profile={profile} />
-      </div>
-    </motion.a>
-  );
-}
-
-function ProductCard({ product, user, profile, owner }) {
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(product.likes || 0);
-
-  const handleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setLiked(l => !l);
-    setLikeCount(c => liked ? c - 1 : c + 1);
-    base44.entities.Listing.update(product.id, { likes: liked ? likeCount - 1 : likeCount + 1 }).catch(() => {});
-  };
-
-  const glow = listingGlow(product);
-  return (
-    <motion.a
-      href={`/listing?id=${product.id}`}
-      whileHover={{ scale: 1.05, y: -6, boxShadow: "0 0 40px rgba(0,212,255,0.35), 0 0 80px rgba(0,212,255,0.08)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className={`relative w-48 flex-shrink-0 rounded-2xl overflow-hidden group cursor-pointer block ${glow.className}`}
-      style={{
-        ...glow.style,
-        background: "rgba(0,18,8,0.55)",
-        border: "1px solid rgba(0,212,255,0.3)",
-        backdropFilter: "blur(18px)",
-        boxShadow: "0 4px 24px rgba(0,212,255,0.07), inset 0 0 20px rgba(0,212,255,0.03)",
-      }}
-    >
-      <FireBurst />
-      <ListingReportButton listingId={product.id} />
-      <div className="h-28 overflow-hidden relative">
-        {product.images?.[0] ? (
-          <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="flex items-center justify-center h-full" style={{ background: "linear-gradient(135deg, #001a0a, #000d05)" }}><Package className="w-9 h-9 text-green-300" /></div>
-        )}
-        <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2" style={{ borderColor: CP.cyan }} />
-        <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2" style={{ borderColor: CP.pink }} />
-        <div className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1 py-0.5 rounded text-[8px]" style={{ background: "rgba(0,0,0,0.7)", color: CP.cyan }}>
-          <Eye className="w-2 h-2 theme-glow-icon" /> {(product.views || 0).toLocaleString()}
-        </div>
-      </div>
-      <div className="p-3">
-        <p className="text-white font-bold text-xs truncate">{product.title}</p>
-        <OwnerPill item={product} owner={owner} />
-        <PlacementBadges item={product} />
-        <p className="font-black mt-0.5 text-xs" style={{ color: "#4ade80" }}>{(!product.price || product.price === 0 || product.is_free) ? "FREE" : formatListingPrice(product.price, product.currency)}</p>
-        <div className="flex items-center gap-1 mt-1" style={{ color: `${CP.cyan}80` }}>
-          <Download className="w-2 h-2 theme-glow-icon" /><span className="text-[8px]">{(product.downloads || 0).toLocaleString()}</span>
-        </div>
-        <CardActions item={product} liked={liked} likeCount={likeCount} onLike={handleLike} user={user} profile={profile} />
-      </div>
-    </motion.a>
   );
 }
 
@@ -298,7 +163,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Monitor} label="PC GAME LISTINGS" color={CP.cyan} />
           <ScrollRow speed={38}>
-            {pcGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} owner={sellerProfiles[g.seller_email]} />)}
+            {pcGames.map((g, i) => <ScrollCard key={i} item={g} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
@@ -308,7 +173,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Smartphone} label="MOBILE GAME LISTINGS" color={CP.pink} />
           <ScrollRow speed={42} reverse>
-            {mobileGames.map((g, i) => <ProductCard key={i} product={g} user={user} profile={profile} owner={sellerProfiles[g.seller_email]} />)}
+            {mobileGames.map((g, i) => <ScrollCard key={i} item={g} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
@@ -324,7 +189,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="PREMIUM MODS — Paid" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {paidMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} owner={sellerProfiles[m.seller_email]} />)}
+            {paidMods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
