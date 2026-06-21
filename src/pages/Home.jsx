@@ -242,7 +242,6 @@ export default function Home() {
               <HowWeHelpSection />
 
               <PaidModsSection />
-              <ModdingSection currentUser={user} currentProfile={profile} />
               <MonetizationBadge />
 
               {/* Official socials — right below the Get Monetized section */}
