@@ -347,7 +347,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + m) this.y = -m;
       }
     }
-    const asteroids = Array.from({ length: 11 }, () => new Asteroid());
+    const asteroids = Array.from({ length: 26 }, () => new Asteroid());
 
     // Elastic collision resolution between asteroids — makes them clash
     function resolveAsteroidCollisions() {
@@ -375,8 +375,8 @@ export default function ShootingStars() {
             a.x -= nx * overlap; a.y -= ny * overlap;
             b.x += nx * overlap; b.y += ny * overlap;
             // Spark flash at the contact point
-            a.flash = 8; b.flash = 8;
-            spawnSparks(a.x + nx * a.size, a.y + ny * a.size, 10);
+            a.flash = 10; b.flash = 10;
+            spawnSparks(a.x + nx * a.size, a.y + ny * a.size, 18);
           }
         }
       }

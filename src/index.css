@@ -420,3 +420,11 @@ body {
 
 /* Pure-black hex fills → deep purple/pink blend */
 .bg-\[\#000\], .bg-\[\#000000\], .bg-\[\#010101\], .bg-\[\#0a0a0a\] { background-color: rgba(56, 16, 72, 0.4) !important; }
+
+/* Catch-all remaining dark fills → alternating purple & pink tints */
+.bg-\[\#111\], .bg-\[\#111111\], .bg-\[\#181818\], .bg-\[\#1a1a1a\], .bg-\[\#0d0d0d\] { background-color: rgba(74, 22, 96, 0.42) !important; }
+.bg-\[\#1f1f2e\], .bg-\[\#171723\], .bg-\[\#13131f\], .bg-\[\#0c0c16\] { background-color: rgba(88, 24, 104, 0.42) !important; }
+.bg-zinc-800, .bg-neutral-800, .bg-slate-800, .bg-gray-800 { background-color: rgba(96, 28, 110, 0.4) !important; }
+/* Pink-leaning panels for variety */
+.bg-gray-800\/90, .bg-gray-800\/80, .bg-gray-800\/70, .bg-gray-800\/60, .bg-gray-800\/50 { background-color: rgba(120, 30, 92, 0.38) !important; }
+.bg-\[\#14101f\], .bg-\[\#12101a\] { background-color: rgba(122, 32, 96, 0.4) !important; }
