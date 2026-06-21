@@ -5,6 +5,12 @@ let activeListingsPromise = null;
 const profileCache = new Map();
 const CACHE_MS = 60000;
 
+// Bust the listings cache whenever any listing changes, so edits
+// (e.g. currency) propagate to all pages immediately instead of after 60s.
+try {
+  base44.entities.Listing.subscribe(() => { activeListingsCache = null; });
+} catch { /* subscription unsupported — falls back to time-based expiry */ }
+
 export async function getActiveListings() {
   const now = Date.now();
   if (activeListingsCache && now - activeListingsCache.time < CACHE_MS) {

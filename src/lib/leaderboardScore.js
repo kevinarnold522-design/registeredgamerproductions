@@ -33,13 +33,14 @@ export async function computeLeaderboard({ tab = "community" } = {}) {
       .sort((a, b) => b.score - a.score);
   }
 
-  const [posts, channelPosts, listings, ratings, profiles, orders] = await Promise.all([
+  const [posts, channelPosts, listings, ratings, profiles, orders, tournaments] = await Promise.all([
     base44.entities.CommunityPost.list("-created_date", 1000).catch(() => []),
     base44.entities.ChannelPost.list("-created_date", 1000).catch(() => []),
     base44.entities.Listing.list("-created_date", 1000).catch(() => []),
     base44.entities.PostRating.list("-created_date", 1000).catch(() => []),
     base44.entities.UserProfile.list("-created_date", 1000).catch(() => []),
     base44.entities.Order.filter({ payment_status: "paid" }, "-created_date", 500).catch(() => []),
+    base44.entities.Tournament.list("-created_date", 200).catch(() => []),
   ]);
 
   const isMod = (cat) => cat === "modding" || cat === "premium_mods";
@@ -69,14 +70,14 @@ export async function computeLeaderboard({ tab = "community" } = {}) {
   (tab === "modding" ? activePosts.filter((p) => modText(p.content)) : activePosts).forEach((post) => {
     if (!post.author_email) return;
     const e = seed(post.author_email, post.author_username, post.author_avatar);
-    e.posts += 1; e.likes += post.likes || 0; e.score += 10 + (post.likes || 0) * 5;
+    e.posts += 1; e.likes += post.likes || 0; e.score += 10 + (post.likes || 0) * 5 + (post.shares_count || post.shares || 0) * 2;
   });
 
   // Channel posts (gaming newsfeed)
   (tab === "modding" ? activeChannelPosts.filter((p) => modText(`${p.caption || ""} ${(p.tags || []).join(" ")}`)) : activeChannelPosts).forEach((post) => {
     if (!post.creator_email) return;
     const e = seed(post.creator_email, post.creator_username, post.creator_avatar);
-    e.posts += 1; e.likes += post.likes || 0; e.score += 10 + (post.likes || 0) * 5;
+    e.posts += 1; e.likes += post.likes || 0; e.score += 10 + (post.likes || 0) * 5 + (post.shares_count || post.shares || 0) * 2;
   });
 
   // Listings — points belong to the CURRENT seller_email (moves on transfer)
@@ -85,13 +86,21 @@ export async function computeLeaderboard({ tab = "community" } = {}) {
     if (tab === "modding" && !isMod(l.category)) return;
     const e = seed(l.seller_email, l.seller_username);
     e.posts += 1; e.likes += l.likes || 0;
-    e.score += 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2;
+    e.score += 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2 + (l.shares || 0) * 2;
   });
 
   // Physical sales
   orders.forEach((o) => {
     if (!o.seller_email) return;
     seed(o.seller_email, o.seller_username).score += 1000;
+  });
+
+  // Tournament wins — +1000 each (realtime, folded into community/modding score)
+  tournaments.forEach((t) => {
+    if (!Array.isArray(t.participants)) return;
+    t.participants.forEach((p) => {
+      if (p.email && p.winner) seed(p.email, p.username, p.avatar_url).score += 1000;
+    });
   });
 
   // Ratings — resolve author by content id (active community post OR listing only)
