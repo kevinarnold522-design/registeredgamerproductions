@@ -299,13 +299,17 @@ export default function ShootingStars() {
         this.dy = Math.sin(dir) * speed;
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.04;
-        // Pre-generate an irregular rocky outline
-        this.verts = Array.from({ length: 9 }, (_, i) => {
-          const a = (i / 9) * Math.PI * 2;
-          const rad = 1 + (Math.random() - 0.5) * 0.5;
+        // Oblong/elliptical squash so rocks look rounded but stretched
+        this.stretchX = 1 + Math.random() * 0.6;
+        this.stretchY = 1 - Math.random() * 0.35;
+        // Pre-generate a smooth, mostly-round rocky outline (low variance = circular)
+        this.verts = Array.from({ length: 14 }, (_, i) => {
+          const a = (i / 14) * Math.PI * 2;
+          const rad = 1 + (Math.random() - 0.5) * 0.16;
           return { x: Math.cos(a) * rad, y: Math.sin(a) * rad };
         });
-        const shades = ["#6b7280", "#78716c", "#57534e", "#52525b", "#44403c"];
+        // Dark yellowish rock tones
+        const shades = ["#a16207", "#854d0e", "#713f12", "#92710b", "#6b5310"];
         this.color = shades[Math.floor(Math.random() * shades.length)];
         this.flash = 0;
       }
@@ -315,13 +319,18 @@ export default function ShootingStars() {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
+        ctx.scale(this.stretchX, this.stretchY);
         ctx.shadowBlur = this.flash > 0 ? 16 : 6;
-        ctx.shadowColor = this.flash > 0 ? "#fbbf24" : "#a855f7";
+        ctx.shadowColor = this.flash > 0 ? "#fbbf24" : "#ca8a04";
         ctx.fillStyle = this.color;
         ctx.beginPath();
+        // Smooth rounded outline through the vertices
         this.verts.forEach((v, i) => {
           const px = v.x * s, py = v.y * s;
-          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          const next = this.verts[(i + 1) % this.verts.length];
+          const nx = next.x * s, ny = next.y * s;
+          if (i === 0) ctx.moveTo((px + nx) / 2, (py + ny) / 2);
+          else ctx.quadraticCurveTo(px, py, (px + nx) / 2, (py + ny) / 2);
         });
         ctx.closePath();
         ctx.fill();
@@ -843,8 +852,19 @@ export default function ShootingStars() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 1, width: "100vw", height: "100vh" }}
+      aria-hidden="true"
+      className="pointer-events-none select-none"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 1,
+        touchAction: "none",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+      }}
     />
   );
 }
