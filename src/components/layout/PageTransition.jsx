@@ -51,13 +51,17 @@ export default function PageTransition() {
               className="absolute left-1/2 top-1/2"
               style={{ color: r.color }}
             >
-              <div className="relative flex items-center">
-                {/* Exhaust trail — points back toward bottom-right */}
+              <div className="relative flex items-center justify-center">
+                {/* Exhaust trail — sits behind the rocket, toward bottom-right */}
                 <div
-                  className="absolute left-full ml-1 h-1.5 rounded-full"
+                  className="absolute h-2 rounded-full"
                   style={{
-                    width: r.size * 3,
-                    background: `linear-gradient(270deg, transparent, ${r.color})`,
+                    width: r.size * 3.5,
+                    top: "50%",
+                    left: "50%",
+                    transform: "translateY(-50%) rotate(-45deg)",
+                    transformOrigin: "left center",
+                    background: `linear-gradient(90deg, ${r.color}, transparent)`,
                     filter: "blur(2px)",
                   }}
                 />
@@ -65,7 +69,7 @@ export default function PageTransition() {
                   style={{
                     width: r.size,
                     height: r.size,
-                    transform: "rotate(-45deg)",
+                    transform: "rotate(-90deg)",
                     filter: `drop-shadow(0 0 10px ${r.color}) drop-shadow(0 0 20px ${r.color})`,
                   }}
                 />
