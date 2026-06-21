@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Package, Star, Eye, TrendingUp, Zap, Download, Monitor, Smartphone, ExternalLink, Heart, MessageCircle, Share2, Flag, Bookmark, Repeat, CalendarDays, Tags } from "lucide-react";
+import { Package, TrendingUp, Zap, Monitor, Smartphone, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import StandardListingCard from "@/components/listings/StandardListingCard";
@@ -14,14 +14,6 @@ const CP = {
   purple: "#a855f7",
   darkBg: "#050008",
 };
-
-function listingGlow(item) {
-  const colors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
-  return {
-    className: `listing-glow-frame ${item?.card_glow_style === "radiant" ? "listing-glow-radiant" : item?.card_glow_style === "solid" ? "listing-glow-solid" : "listing-glow-lines"} ${item?.card_glow_speed === "fast" ? "listing-glow-fast" : item?.card_glow_speed === "cycle" ? "listing-glow-cycle" : ""}`,
-    style: { "--listing-glow-color": item?.card_glow_color === "custom" ? (item?.card_glow_hex || "#a855f7") : colors[item?.card_glow_color || "purple"] }
-  };
-}
 
 function ScrollRow({ children, speed = 30, reverse = false }) {
   return (
@@ -199,7 +191,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="FREE MODS — Community" color="#4ade80" />
           <ScrollRow speed={38}>
-            {freeMods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} owner={sellerProfiles[m.seller_email]} />)}
+            {freeMods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
@@ -209,7 +201,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="TOP MODS" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {mods.map((m, i) => <ModCard key={i} mod={m} user={user} profile={profile} owner={sellerProfiles[m.seller_email]} />)}
+            {mods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
@@ -219,7 +211,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div>
           <SectionLabel icon={TrendingUp} label="MARKETPLACE LISTINGS" color="#4ade80" />
           <ScrollRow speed={45}>
-            {products.map((p, i) => <ProductCard key={i} product={p} user={user} profile={profile} owner={sellerProfiles[p.seller_email]} />)}
+            {products.map((p, i) => <ScrollCard key={i} item={p} user={user} profile={profile} />)}
           </ScrollRow>
         </div>
       )}
