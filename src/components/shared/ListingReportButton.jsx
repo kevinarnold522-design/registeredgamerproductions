@@ -8,11 +8,13 @@ export default function ListingReportButton({ listingId, className = "", positio
     e.stopPropagation();
     window.open(`/contact?report=${listingId}`, "_blank");
   };
+  // position="static" renders inline (e.g. next to the download icon); otherwise absolute-pinned.
+  const isStatic = position === "static";
   return (
     <button
       onClick={handleReport}
       title="Report this listing"
-      className={`absolute ${position} z-20 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-gray-300 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center transition-all ${className}`}
+      className={`${isStatic ? "relative" : `absolute ${position}`} z-20 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-gray-300 hover:text-red-400 hover:border-red-500/50 flex items-center justify-center transition-all ${className}`}
     >
       <Flag className="w-3.5 h-3.5" />
     </button>

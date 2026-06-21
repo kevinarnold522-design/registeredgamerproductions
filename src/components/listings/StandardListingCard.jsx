@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Package, CalendarDays, Star, Clock } from "lucide-react";
+import { Eye, Package, CalendarDays, Star, Clock, Download } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
 import RepostButton from "@/components/shared/RepostButton";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import CardEditPencil from "@/components/listings/CardEditPencil";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { formatListingPrice } from "@/lib/currency";
 
-// Map glow color id -> "r,g,b" used by the --std-glow CSS var (matches resolveGlow)
-const SIZE_HEIGHTS = { sm: "h-36", md: "h-48", lg: "h-60" };
+// Wider + shorter (landscape) card: image on the left, details on the right.
+const SIZE_HEIGHTS = { sm: "h-28", md: "h-32", lg: "h-40" };
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -97,6 +98,8 @@ export default function StandardListingCard({ listing: initialListing, user, pro
     return () => observer.disconnect();
   }, [listing?.id]);
 
+  const hasDownload = listing.download_url || listing.external_link;
+
   return (
     <motion.div
       ref={cardRef}
@@ -108,81 +111,93 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       onTouchEnd={() => setTimeout(() => setTouchActive(false), 600)}
       onTouchCancel={() => setTouchActive(false)}
       style={{ "--std-glow": glow }}
-      className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group ${touchActive ? "std-touch-active" : ""}`}
+      className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group flex ${touchActive ? "std-touch-active" : ""}`}
     >
-      {/* Flag/report — moved to bottom-left of the card */}
-      <ListingReportButton listingId={listing.id} position="bottom-2 left-2" />
-
-      {/* Inline card editor pencil — owner/admin only, top-left */}
-      <CardEditPencil listing={listing} user={user} onSaved={setListing} />
-
-      {/* Repost — pinned top-right of the card */}
-      <div className="absolute top-2 right-2 z-20 bg-black/60 rounded-lg px-1 py-0.5 backdrop-blur-sm">
-        <RepostButton item={listing} type="listing" user={user} profile={profile} compact />
-      </div>
-
-      {/* Publisher header — avatar + name, top-left */}
-      <a
-        href={`/channel?email=${encodeURIComponent(listing.seller_email || "")}`}
-        onClick={(e) => e.stopPropagation()}
-        className="flex items-center gap-2 px-3 py-2 border-b border-purple-900/30 hover:bg-purple-900/20 transition-colors"
-      >
-        <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
-          {sellerAvatar
-            ? <img src={sellerAvatar} className="w-full h-full object-cover" alt="" />
-            : <span className="text-white text-xs font-bold">{(listing.seller_username || "G")[0].toUpperCase()}</span>}
-        </div>
-        <span className="text-white text-xs font-bold truncate">{listing.seller_username || "Gamer"}</span>
-      </a>
-
-      {/* Image */}
-      <a href={`/listing?id=${listing.id}`} className="block relative">
+      {/* LEFT: Image */}
+      <a href={`/listing?id=${listing.id}`} className="relative block w-2/5 flex-shrink-0">
         {listing.images?.length > 0 ? (
-          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass={heightClass} />
+          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass={`${heightClass} h-full`} />
         ) : (
-          <div className={`${heightClass} w-full flex items-center justify-center bg-gray-800/60`}><Package className="w-10 h-10 text-purple-300 icon-glow-hover" /></div>
+          <div className={`${heightClass} w-full h-full flex items-center justify-center bg-gray-800/60`}><Package className="w-9 h-9 text-purple-300 icon-glow-hover" /></div>
         )}
         {isFree && (
-          <span className="absolute top-3 right-3 z-10 text-xs font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
+          <span className="absolute top-2 left-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         )}
-        <span className="theme-glow-action absolute bottom-3 right-3 z-10 flex items-center gap-1 text-xs bg-black/70 text-cyan-300 font-bold px-2 py-1 rounded-full">
+        <span className="theme-glow-action absolute bottom-2 left-2 z-10 flex items-center gap-1 text-[10px] bg-black/70 text-cyan-300 font-bold px-1.5 py-0.5 rounded-full">
           <Eye className="w-3 h-3 icon-glow-hover" />{viewCount.toLocaleString()}
         </span>
       </a>
 
-      {/* Content */}
-      <div className="p-4">
-        <a href={`/listing?id=${listing.id}`} className="block">
-          <p className="text-purple-400 text-xs font-semibold mb-1 capitalize">{listing.card_category_label || subcategory || listing.modding_subcategory || listing.digital_subcategory || listing.game_name || "Listing"}</p>
-          <h3 className="text-white font-bold text-sm line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</h3>
-          <div className="flex items-center gap-3 flex-wrap mt-1">
-            <p className="theme-glow-action inline-flex items-center gap-1.5 text-gray-400 text-xs rounded-lg px-1.5 py-0.5">
-              <CalendarDays className="w-3 h-3 icon-glow-hover" /> {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}
-            </p>
-            {stay && (
-              <p className="theme-glow-action inline-flex items-center gap-1 text-cyan-300 text-xs rounded-lg px-1.5 py-0.5" title="Average stay time">
-                <Clock className="w-3 h-3 icon-glow-hover" /> {stay} avg
-              </p>
-            )}
-          </div>
+      {/* RIGHT: Content */}
+      <div className="relative flex-1 min-w-0 flex flex-col p-3">
+        {/* Inline card editor pencil — owner/admin only */}
+        <CardEditPencil listing={listing} user={user} onSaved={setListing} />
 
-          <div className="flex items-center justify-between mt-3">
-            <span className={`font-black text-sm ${isFree ? "text-green-400" : "text-yellow-400"}`}>
-              {isFree ? "FREE" : formatListingPrice(listing.price, listing.currency)}
-            </span>
+        {/* Repost — pinned top-right */}
+        <div className="absolute top-1.5 right-1.5 z-20 bg-black/60 rounded-lg px-1 py-0.5 backdrop-blur-sm">
+          <RepostButton item={listing} type="listing" user={user} profile={profile} compact />
+        </div>
+
+        {/* Publisher */}
+        <a
+          href={`/channel?email=${encodeURIComponent(listing.seller_email || "")}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-2 mb-1.5 pr-8 hover:opacity-80 transition-opacity"
+        >
+          <div className="w-5 h-5 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+            {sellerAvatar
+              ? <img src={sellerAvatar} className="w-full h-full object-cover" alt="" />
+              : <span className="text-white text-[9px] font-bold">{(listing.seller_username || "G")[0].toUpperCase()}</span>}
+          </div>
+          <span className="text-gray-300 text-[11px] font-bold truncate">{listing.seller_username || "Gamer"}</span>
+        </a>
+
+        <a href={`/listing?id=${listing.id}`} className="block">
+          <p className="text-purple-400 text-[10px] font-semibold capitalize truncate">{listing.card_category_label || subcategory || listing.modding_subcategory || listing.digital_subcategory || listing.game_name || "Listing"}</p>
+          <h3 className="text-white font-bold text-sm line-clamp-2 leading-tight group-hover:text-purple-300 transition-colors">{listing.title}</h3>
+          <p className="theme-glow-action inline-flex items-center gap-1 text-gray-500 text-[10px] mt-1">
+            <CalendarDays className="w-3 h-3 icon-glow-hover" /> {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}
+            {stay && <span className="text-cyan-300 ml-1 inline-flex items-center gap-0.5"><Clock className="w-3 h-3" /> {stay}</span>}
+          </p>
+        </a>
+
+        {/* Download host badge — real logo */}
+        {listing.download_host && (
+          <div className="mt-1.5">
+            <DownloadHostBadge host={listing.download_host} size="sm" />
+          </div>
+        )}
+
+        {/* Price + Flag + Download row, pushed to the bottom */}
+        <div className="flex items-center justify-between gap-2 mt-auto pt-2">
+          <span className={`font-black text-sm ${isFree ? "text-green-400" : "text-yellow-400"}`}>
+            {isFree ? "FREE" : formatListingPrice(listing.price, listing.currency)}
+          </span>
+          <div className="flex items-center gap-1.5">
             {onReview && (
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onReview(listing); }}
                 className="flex items-center gap-1 text-[10px] text-purple-400 hover:text-purple-300 font-semibold transition-colors"
               >
-                <Star className="w-3 h-3 icon-glow-hover" /> Reviews
+                <Star className="w-3 h-3 icon-glow-hover" />
               </button>
             )}
+            {/* Flag/report — sits next to the download icon */}
+            <ListingReportButton listingId={listing.id} position="static" />
+            {hasDownload && (
+              <a
+                href={`/listing?id=${listing.id}`}
+                onClick={(e) => e.stopPropagation()}
+                title="Download"
+                className="w-7 h-7 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+              </a>
+            )}
           </div>
-          {listing.seller_username && <p className="text-gray-600 text-xs mt-1">by @{listing.seller_username}</p>}
-        </a>
+        </div>
 
-        <div className="mt-4 pt-3 border-t border-purple-900/30">
+        <div className="mt-2 pt-2 border-t border-purple-900/30">
           <ListingEngagementBar listing={listing} user={user} profile={profile} compact hideReport hideRepost />
         </div>
       </div>

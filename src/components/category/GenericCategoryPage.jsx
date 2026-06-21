@@ -380,7 +380,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         ) : (
           <>
           <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {paged.map((l) => (
               <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
             ))}

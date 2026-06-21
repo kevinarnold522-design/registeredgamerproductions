@@ -9,6 +9,7 @@ import CategoryCards from "@/components/home/CategoryCards";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import GuestAuthDock from "@/components/home/GuestAuthDock";
+import { Gamepad2, Wrench } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
@@ -49,6 +50,7 @@ const VerifiedBadgeBanner = lazyWithRetry(() => import("@/components/home/Verifi
 const First10KBanner = lazyWithRetry(() => import("@/components/home/First10KBanner"));
 const FirstLoginTutorial = lazyWithRetry(() => import("@/components/tutorial/FirstLoginTutorial"));
 const AllCategoriesNewsfeed = lazyWithRetry(() => import("@/components/home/AllCategoriesNewsfeed"));
+const CategoryMovingDashboard = lazyWithRetry(() => import("@/components/home/CategoryMovingDashboard"));
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
@@ -230,6 +232,31 @@ export default function Home() {
                   <AllCategoriesNewsfeed user={user} profile={profile} />
                 </aside>
               </div>
+
+              {/* Games moving dashboard */}
+              <CategoryMovingDashboard
+                title="Games"
+                subtitle="Fresh game listings across PC, console & mobile."
+                accent="#a855f7"
+                icon={Gamepad2}
+                filterFn={(l) => l.category === "games"}
+                viewAllHref="/category?cat=games"
+                user={user}
+                profile={profile}
+              />
+
+              {/* Tools moving dashboard */}
+              <CategoryMovingDashboard
+                title="Tools"
+                subtitle="Premium utilities, launchers, automation & creator software."
+                accent="#f472b6"
+                icon={Wrench}
+                filterFn={(l) => l.category === "paid_tools"}
+                viewAllHref="/category?cat=paid_tools"
+                user={user}
+                profile={profile}
+                reverse
+              />
 
               {/* Listing of the Week — right after marketplace listings */}
               <ListingOfWeek />

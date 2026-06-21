@@ -40,7 +40,7 @@ function ScrollRow({ children, speed = 30, reverse = false }) {
 // wrapped at a fixed width so it fits inside the horizontal scroll rows.
 function ScrollCard({ item, user, profile }) {
   return (
-    <div className="w-56 flex-shrink-0">
+    <div className="w-[420px] max-w-[88vw] flex-shrink-0">
       <StandardListingCard listing={item} user={user} profile={profile} />
     </div>
   );

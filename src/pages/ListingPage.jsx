@@ -15,6 +15,7 @@ import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import BrandLogo from "@/components/shared/BrandLogo";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { CATEGORIES } from "@/lib/constants";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
 import { formatListingPrice } from "@/lib/currency";
@@ -639,17 +640,12 @@ export default function ListingPage() {
               </div>
             </div>
 
-            {listing.download_host && (() => {
-              const hosts = { mediafire: { label: "Mediafire", color: "#1E90FF" }, modsfire: { label: "Modsfire", color: "#FF4500" }, mega: { label: "Mega", color: "#D9272D" }, sharemods: { label: "Sharemods", color: "#22C55E" } };
-              const h = hosts[listing.download_host];
-              if (!h) return null;
-              return (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border" style={{ borderColor: `${h.color}55`, background: `${h.color}15` }}>
-                  <span className="w-3 h-3 rounded-full" style={{ background: h.color }} />
-                  <span className="text-xs font-bold" style={{ color: h.color }}>Hosted on {h.label}</span>
-                </div>
-              );
-            })()}
+            {listing.download_host && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500 text-xs font-bold uppercase tracking-wider">Hosted on</span>
+                <DownloadHostBadge host={listing.download_host} size="md" />
+              </div>
+            )}
 
             <div className="flex flex-col gap-3">
               {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} purchased={purchased} />}
