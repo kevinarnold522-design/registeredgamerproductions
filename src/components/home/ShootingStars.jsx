@@ -163,8 +163,8 @@ export default function ShootingStars() {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.01;
         this.bob = Math.random() * Math.PI * 2;
-        // Every astronaut carries a balloon
-        this.hasBalloon = true;
+        // Not every astronaut needs a balloon — some float without one.
+        this.hasBalloon = Math.random() > 0.35;
         const balloonColors = ["#f472b6", "#f87171", "#facc15", "#4ade80", "#60a5fa", "#c084fc"];
         this.balloonColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
         // Different colored space suits
@@ -265,6 +265,7 @@ export default function ShootingStars() {
 
     // Spark bursts emitted when two asteroids clash
     const sparks = [];
+    const asteroidParticles = [];
     function spawnSparks(x, y, count = 14) {
       for (let i = 0; i < count; i++) {
         const a = Math.random() * Math.PI * 2;
@@ -277,6 +278,22 @@ export default function ShootingStars() {
           decay: Math.random() * 0.04 + 0.02,
           color: ["#fde68a", "#fb923c", "#f87171", "#fcd34d"][Math.floor(Math.random() * 4)],
           r: Math.random() * 1.6 + 0.6,
+        });
+      }
+    }
+
+    function spawnAsteroidParticles(x, y, color, count = 10) {
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = Math.random() * 1.8 + 0.6;
+        asteroidParticles.push({
+          x, y,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          life: 1,
+          decay: Math.random() * 0.03 + 0.02,
+          color,
+          r: Math.random() * 2.2 + 0.8,
         });
       }
     }
@@ -386,11 +403,41 @@ export default function ShootingStars() {
             const overlap = (minDist - dist) / 2;
             a.x -= nx * overlap; a.y -= ny * overlap;
             b.x += nx * overlap; b.y += ny * overlap;
+            const impactX = a.x + nx * a.size;
+            const impactY = a.y + ny * a.size;
+            const impactBX = b.x - nx * b.size;
+            const impactBY = b.y - ny * b.size;
             // Spark flash at the contact point
             a.flash = 10; b.flash = 10;
-            spawnSparks(a.x + nx * a.size, a.y + ny * a.size, 18);
+            spawnAsteroidParticles(impactX, impactY, a.color, Math.max(8, Math.round((a.size + b.size) / 2)));
+            spawnAsteroidParticles(impactBX, impactBY, b.color, Math.max(8, Math.round((a.size + b.size) / 2)));
+            spawnSparks(impactX, impactY, 18);
           }
         }
+      }
+    }
+
+    function drawAsteroidParticles() {
+      for (let i = asteroidParticles.length - 1; i >= 0; i--) {
+        const p = asteroidParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.94;
+        p.vy *= 0.94;
+        p.life -= p.decay;
+        if (p.life <= 0) {
+          asteroidParticles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
     }
 
@@ -827,6 +874,7 @@ export default function ShootingStars() {
 
       // Draw mini asteroids — resolve clashes, render, then spark bursts
       resolveAsteroidCollisions();
+      drawAsteroidParticles();
       for (const ast of asteroids) ast.draw();
       drawSparks();
 

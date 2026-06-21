@@ -374,7 +374,12 @@ export default function ListingPage() {
   };
 
   const adminUser = user && isAdmin(user.email);
-  const isOwner = user && listing && user.email === listing.seller_email;
+  const isOwner = user && listing && (
+    user.email === listing.seller_email ||
+    user.email === listing.created_by ||
+    user.id === listing.created_by_id ||
+    user.id === listing.created_by
+  );
   const canEdit = adminUser || isOwner;
   const canPageEdit = canEdit && (adminUser || tier1Active || profile?.page_editor_enabled);
 

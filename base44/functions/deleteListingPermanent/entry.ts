@@ -46,7 +46,11 @@ Deno.serve(async (req) => {
     if (!listing) return Response.json({ error: 'Listing not found' }, { status: 404 });
 
     const isAdmin = String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
-    const isOwner = String(listing.seller_email || '').toLowerCase() === String(user.email || '').toLowerCase();
+    const isOwner =
+      String(listing.seller_email || '').toLowerCase() === String(user.email || '').toLowerCase() ||
+      String(listing.created_by || '').toLowerCase() === String(user.email || '').toLowerCase() ||
+      String(listing.created_by_id || '') === String(user.id || '') ||
+      String(listing.created_by_id || '') === String(user.email || '');
     if (!isAdmin && !isOwner) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')?.trim() || 'f9559f35122ab25fb52ed96e81ca17a4';
@@ -106,6 +110,20 @@ Deno.serve(async (req) => {
         for (const row of rows) await base44.asServiceRole.entities[entityName].delete(row.id);
       } catch (error) {
         console.error('Related cleanup failed', { entityName, error: error.message });
+      }
+    }
+
+    // Also explicitly remove the listing from the dedicated Supabase-backed tables
+    // used by the frontend so deleted records do not reappear after refresh.
+    const supabaseUrl = Deno.env.get('VITE_SUPABASE_URL') || Deno.env.get('SUPABASE_URL');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (supabaseUrl && serviceKey) {
+      try {
+        const { createClient } = await import('npm:@supabase/supabase-js@2');
+        const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+        await supabase.from('Listing').delete().eq('id', listing_id);
+      } catch (error) {
+        console.error('Supabase listing cleanup failed', error.message);
       }
     }
 

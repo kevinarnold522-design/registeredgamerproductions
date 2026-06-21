@@ -658,6 +658,23 @@ async function moderateListing(body, env) {
   return { status: 200, body: { success: true, status } };
 }
 
+async function deleteSupabaseRows(env, entityName, query = {}) {
+  const url = env.VITE_SUPABASE_URL || env.SUPABASE_URL;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+
+  try {
+    const { createClient } = await import("npm:@supabase/supabase-js@2");
+    const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { error } = await supabase.from(entityName).delete().match(query);
+    if (error) {
+      console.error("Supabase cleanup failed", entityName, error.message);
+    }
+  } catch (e) {
+    console.error("Supabase cleanup error", entityName, e.message);
+  }
+}
+
 async function deleteListingPermanent(body, env, request) {
   const user = await getUser(env, request);
   if (!user) return { status: 401, body: { error: "Unauthorized" } };
@@ -668,7 +685,11 @@ async function deleteListingPermanent(body, env, request) {
   const listing = (await listRecords(env, "Listing", { id: listing_id }, 1))[0];
   if (!listing) return { status: 404, body: { error: "Listing not found" } };
 
-  const owner = String(listing.seller_email || "").toLowerCase() === String(user.email || "").toLowerCase();
+  const owner =
+    String(listing.seller_email || "").toLowerCase() === String(user.email || "").toLowerCase() ||
+    String(listing.created_by || "").toLowerCase() === String(user.email || "").toLowerCase() ||
+    String(listing.created_by_id || "") === String(user.id || "") ||
+    String(listing.created_by_id || "") === String(user.email || "");
   if (!isAdmin(user) && !owner) return { status: 403, body: { error: "Forbidden" } };
 
   // Delete media from the Worker's R2 bucket binding
@@ -703,10 +724,12 @@ async function deleteListingPermanent(body, env, request) {
     try {
       const rows = await listRecords(env, entityName, query, 1000);
       for (const row of rows) await deleteRecord(env, entityName, row.id);
+      await deleteSupabaseRows(env, entityName, query);
     } catch (e) { console.error("Related cleanup failed", entityName, e.message); }
   }
 
   await deleteRecord(env, "Listing", listing_id);
+  await deleteSupabaseRows(env, "Listing", { id: listing_id });
   return { status: 200, body: { success: true, deletedFiles } };
 }
 

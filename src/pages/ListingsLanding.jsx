@@ -37,7 +37,8 @@ export default function ListingsLanding({ mode = "mine" }) {
   const filtered = items.filter(l => !q || `${l.title || ""} ${l.description || ""} ${l.category || ""}`.toLowerCase().includes(q.toLowerCase()));
 
   const deleteListing = async (listing) => {
-    const canDelete = adminUser || listing.seller_email === user?.email;
+    const isOwner = user && (user.email === listing.seller_email || user.email === listing.created_by || user.id === listing.created_by_id);
+    const canDelete = adminUser || isOwner;
     if (!canDelete) return;
     if (!window.confirm("Are you sure you want to permanently delete this listing and its files?")) return;
     await base44.functions.invoke("deleteListingPermanent", { listing_id: listing.id });
@@ -75,7 +76,8 @@ export default function ListingsLanding({ mode = "mine" }) {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {filtered.map(l => {
-              const canManage = adminUser || l.seller_email === user?.email;
+              const isOwner = user && (user.email === l.seller_email || user.email === l.created_by || user.id === l.created_by_id);
+              const canManage = adminUser || isOwner;
               return (
                 <div key={l.id} className="rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-all">
                   <a href={`/listing?id=${l.id}`} className="block">
