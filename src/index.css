@@ -393,27 +393,30 @@ body {
   }
 }
 
-/* ─── Strip opaque section backgrounds so the space scene shows through fully ─── */
-/* Solid dark Tailwind fills become heavily translucent (logos, text & buttons keep their own styles) */
-.bg-gray-950 { background-color: rgba(3, 7, 18, 0.3) !important; }
-.bg-gray-900 { background-color: rgba(17, 24, 39, 0.28) !important; }
-.bg-gray-900\/95 { background-color: rgba(17, 24, 39, 0.35) !important; }
-.bg-gray-950\/95 { background-color: rgba(3, 7, 18, 0.35) !important; }
-.bg-black { background-color: transparent !important; }
-.bg-\[\#030712\] { background-color: rgba(3, 7, 18, 0.25) !important; }
-.bg-\[\#050510\] { background-color: rgba(5, 5, 16, 0.25) !important; }
-.bg-\[\#020208\] { background-color: rgba(2, 2, 8, 0.25) !important; }
+/* ─── Recolor opaque dark section backgrounds to purple/pink tones ─── */
+/* Solid dark Tailwind fills become translucent purple/pink (logos, text & buttons keep their own styles) */
+.bg-gray-950 { background-color: rgba(46, 16, 64, 0.42) !important; }
+.bg-gray-900 { background-color: rgba(60, 20, 78, 0.4) !important; }
+.bg-gray-900\/95 { background-color: rgba(60, 20, 78, 0.46) !important; }
+.bg-gray-950\/95 { background-color: rgba(46, 16, 64, 0.46) !important; }
+.bg-black { background-color: rgba(40, 12, 56, 0.32) !important; }
+.bg-\[\#030712\] { background-color: rgba(46, 16, 64, 0.38) !important; }
+.bg-\[\#050510\] { background-color: rgba(48, 16, 66, 0.38) !important; }
+.bg-\[\#020208\] { background-color: rgba(44, 14, 60, 0.38) !important; }
 
 /* Opacity-suffixed dark fills */
-.bg-gray-950\/90, .bg-gray-950\/80 { background-color: rgba(3, 7, 18, 0.32) !important; }
-.bg-gray-950\/70, .bg-gray-950\/60, .bg-gray-950\/50 { background-color: rgba(3, 7, 18, 0.28) !important; }
-.bg-gray-900\/90, .bg-gray-900\/80 { background-color: rgba(17, 24, 39, 0.3) !important; }
-.bg-gray-900\/70, .bg-gray-900\/60, .bg-gray-900\/50 { background-color: rgba(17, 24, 39, 0.26) !important; }
-.bg-black\/90, .bg-black\/80, .bg-black\/70 { background-color: rgba(0, 0, 0, 0.12) !important; }
-.bg-black\/60, .bg-black\/50, .bg-black\/40 { background-color: rgba(0, 0, 0, 0.08) !important; }
+.bg-gray-950\/90, .bg-gray-950\/80 { background-color: rgba(46, 16, 64, 0.44) !important; }
+.bg-gray-950\/70, .bg-gray-950\/60, .bg-gray-950\/50 { background-color: rgba(52, 18, 70, 0.4) !important; }
+.bg-gray-900\/90, .bg-gray-900\/80 { background-color: rgba(66, 22, 84, 0.42) !important; }
+.bg-gray-900\/70, .bg-gray-900\/60, .bg-gray-900\/50 { background-color: rgba(72, 24, 90, 0.38) !important; }
+.bg-black\/90, .bg-black\/80, .bg-black\/70 { background-color: rgba(60, 18, 78, 0.3) !important; }
+.bg-black\/60, .bg-black\/50, .bg-black\/40 { background-color: rgba(70, 22, 88, 0.22) !important; }
 
 /* Other dark hex / named fills */
-.bg-\[\#0a0a0f\], .bg-\[\#0a0a14\], .bg-\[\#0f0f1a\], .bg-\[\#070710\], .bg-\[\#0b0b14\] { background-color: rgba(10, 10, 20, 0.25) !important; }
-.bg-\[\#1a1a2e\], .bg-\[\#12121e\], .bg-\[\#14101f\] { background-color: rgba(20, 16, 36, 0.28) !important; }
-.bg-slate-950, .bg-zinc-950, .bg-neutral-950 { background-color: rgba(3, 7, 18, 0.3) !important; }
-.bg-slate-900, .bg-zinc-900, .bg-neutral-900 { background-color: rgba(17, 24, 39, 0.28) !important; }
+.bg-\[\#0a0a0f\], .bg-\[\#0a0a14\], .bg-\[\#0f0f1a\], .bg-\[\#070710\], .bg-\[\#0b0b14\] { background-color: rgba(50, 16, 70, 0.4) !important; }
+.bg-\[\#1a1a2e\], .bg-\[\#12121e\], .bg-\[\#14101f\] { background-color: rgba(70, 24, 92, 0.42) !important; }
+.bg-slate-950, .bg-zinc-950, .bg-neutral-950 { background-color: rgba(46, 16, 64, 0.42) !important; }
+.bg-slate-900, .bg-zinc-900, .bg-neutral-900 { background-color: rgba(64, 22, 84, 0.4) !important; }
+
+/* Pure-black hex fills → deep purple/pink blend */
+.bg-\[\#000\], .bg-\[\#000000\], .bg-\[\#010101\], .bg-\[\#0a0a0a\] { background-color: rgba(56, 16, 72, 0.4) !important; }
