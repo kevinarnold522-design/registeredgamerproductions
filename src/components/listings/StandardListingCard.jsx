@@ -49,8 +49,18 @@ export default function StandardListingCard({ listing: initialListing, user, pro
   const [listing, setListing] = useState(initialListing);
   const [viewCount, setViewCount] = useState(initialListing.views || 0);
   const [touchActive, setTouchActive] = useState(false);
+  const [sellerAvatar, setSellerAvatar] = useState(initialListing.seller_avatar || "");
 
   useEffect(() => { setListing(initialListing); }, [initialListing]);
+
+  // Resolve publisher avatar from their profile when not embedded on the listing
+  useEffect(() => {
+    if (initialListing.seller_avatar) { setSellerAvatar(initialListing.seller_avatar); return; }
+    if (!initialListing.seller_email) return;
+    base44.entities.UserProfile.filter({ user_email: initialListing.seller_email })
+      .then((rows) => { if (rows[0]?.avatar_url) setSellerAvatar(rows[0].avatar_url); })
+      .catch(() => {});
+  }, [initialListing.seller_email, initialListing.seller_avatar]);
 
   // Realtime: keep this card's stats (views, likes, comments) in sync live
   useEffect(() => {
@@ -100,7 +110,8 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       style={{ "--std-glow": glow }}
       className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group ${touchActive ? "std-touch-active" : ""}`}
     >
-      <ListingReportButton listingId={listing.id} />
+      {/* Flag/report — moved to bottom-left of the card */}
+      <ListingReportButton listingId={listing.id} position="bottom-2 left-2" />
 
       {/* Inline card editor pencil — owner/admin only, top-left */}
       <CardEditPencil listing={listing} user={user} onSaved={setListing} />
@@ -109,6 +120,20 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       <div className="absolute top-2 right-2 z-20 bg-black/60 rounded-lg px-1 py-0.5 backdrop-blur-sm">
         <RepostButton item={listing} type="listing" user={user} profile={profile} compact />
       </div>
+
+      {/* Publisher header — avatar + name, top-left */}
+      <a
+        href={`/channel?email=${encodeURIComponent(listing.seller_email || "")}`}
+        onClick={(e) => e.stopPropagation()}
+        className="flex items-center gap-2 px-3 py-2 border-b border-purple-900/30 hover:bg-purple-900/20 transition-colors"
+      >
+        <div className="w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+          {sellerAvatar
+            ? <img src={sellerAvatar} className="w-full h-full object-cover" alt="" />
+            : <span className="text-white text-xs font-bold">{(listing.seller_username || "G")[0].toUpperCase()}</span>}
+        </div>
+        <span className="text-white text-xs font-bold truncate">{listing.seller_username || "Gamer"}</span>
+      </a>
 
       {/* Image */}
       <a href={`/listing?id=${listing.id}`} className="block relative">
