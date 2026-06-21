@@ -18,6 +18,18 @@ export default function AdminUserLogs({ users = [] }) {
     base44.entities.LoginHistory.list("-login_date", 500)
       .then((items) => setLogs(items || []))
       .finally(() => setLoading(false));
+
+    // Live: new logins appear at the top of the admin logs instantly
+    const unsubscribe = base44.entities.LoginHistory.subscribe((event) => {
+      if (event.type === "create") {
+        setLogs((prev) => [event.data, ...prev].slice(0, 500));
+      } else if (event.type === "update") {
+        setLogs((prev) => prev.map((l) => (l.id === event.id ? { ...l, ...event.data } : l)));
+      } else if (event.type === "delete") {
+        setLogs((prev) => prev.filter((l) => l.id !== event.id));
+      }
+    });
+    return unsubscribe;
   }, []);
 
   const userByEmail = useMemo(() => {
@@ -99,8 +111,14 @@ export default function AdminUserLogs({ users = [] }) {
                 const latest = latestByEmail[user.user_email];
                 return (
                   <tr key={user.id} className="border-t border-gray-800 hover:bg-gray-800/30">
-                    <td className="px-4 py-3 text-white text-xs font-bold">{user.username || user.display_name || "—"}</td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{user.user_email}</td>
+                    <td className="px-4 py-3 text-xs font-bold">
+                      <a href={`/profile?email=${encodeURIComponent(user.user_email)}`} className="text-white hover:text-purple-300 transition-colors">
+                        {user.username || user.display_name || "—"}
+                      </a>
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      <a href={`/profile?email=${encodeURIComponent(user.user_email)}`} className="text-gray-400 hover:text-purple-300 transition-colors">{user.user_email}</a>
+                    </td>
                     <td className="px-4 py-3 text-gray-300 text-xs">{formatDate(latest?.login_date)}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{latest?.ip_address || "—"}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs capitalize">{latest?.device_type || "—"}</td>
@@ -142,8 +160,12 @@ export default function AdminUserLogs({ users = [] }) {
                   return (
                     <tr key={log.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                       <td className="px-4 py-3 text-gray-300 text-xs whitespace-nowrap">{formatDate(log.login_date)}</td>
-                      <td className="px-4 py-3 text-white text-xs font-bold">{user?.username || "—"}</td>
-                      <td className="px-4 py-3 text-gray-400 text-xs">{log.user_email}</td>
+                      <td className="px-4 py-3 text-xs font-bold">
+                        <a href={`/profile?email=${encodeURIComponent(log.user_email || "")}`} className="text-white hover:text-purple-300 transition-colors">{user?.username || "—"}</a>
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        <a href={`/profile?email=${encodeURIComponent(log.user_email || "")}`} className="text-gray-400 hover:text-purple-300 transition-colors">{log.user_email}</a>
+                      </td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{log.ip_address || "—"}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs capitalize">{log.device_type || "—"}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{log.browser || "—"}</td>

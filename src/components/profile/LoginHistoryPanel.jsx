@@ -15,6 +15,19 @@ export default function LoginHistoryPanel({ userEmail }) {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    // Live: new logins for this user show up instantly
+    const unsubscribe = base44.entities.LoginHistory.subscribe((event) => {
+      if (event.data?.user_email !== userEmail) return;
+      if (event.type === "create") {
+        setHistory((prev) => [event.data, ...prev].slice(0, 50));
+      } else if (event.type === "update") {
+        setHistory((prev) => prev.map((l) => (l.id === event.id ? { ...l, ...event.data } : l)));
+      } else if (event.type === "delete") {
+        setHistory((prev) => prev.filter((l) => l.id !== event.id));
+      }
+    });
+    return unsubscribe;
   }, [userEmail]);
 
   const getDeviceIcon = (type) => {

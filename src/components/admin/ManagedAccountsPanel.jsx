@@ -36,6 +36,22 @@ export default function ManagedAccountsPanel() {
     loadAccounts();
   }, [showAllUsers]);
 
+  // Live: every new/edited/deleted account reflects instantly in the panel
+  useEffect(() => {
+    const unsubscribe = base44.entities.UserProfile.subscribe((event) => {
+      setAccounts((prev) => {
+        if (event.type === "delete") return prev.filter((a) => a.id !== event.id);
+        const row = { ...event.data, stats: event.data.stats || { listings: 0, posts: 0, following: 0 } };
+        // Respect the current Managed-only vs All-users toggle
+        if (!showAllUsers && row.is_managed_account !== true) return prev;
+        const exists = prev.some((a) => a.id === event.id);
+        if (exists) return prev.map((a) => (a.id === event.id ? { ...a, ...row } : a));
+        return [row, ...prev];
+      });
+    });
+    return unsubscribe;
+  }, [showAllUsers]);
+
   const loadAccounts = async () => {
     setLoading(true);
     try {

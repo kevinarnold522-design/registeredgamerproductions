@@ -20,11 +20,22 @@ export default function UsersLanding() {
       setUser(me);
       const myProfiles = await base44.entities.UserProfile.filter({ user_email: me.email });
       setProfile(myProfiles[0] || null);
-      const rows = await base44.entities.UserProfile.list("-created_date", 200);
+      const rows = await base44.entities.UserProfile.list("-created_date", 1000);
       setUsers(rows);
       setLoading(false);
     };
     load();
+
+    // Live: new registrations / profile edits / bans appear instantly
+    const unsubscribe = base44.entities.UserProfile.subscribe((event) => {
+      setUsers((prev) => {
+        if (event.type === "delete") return prev.filter((u) => u.id !== event.id);
+        const exists = prev.some((u) => u.id === event.id);
+        if (exists) return prev.map((u) => (u.id === event.id ? { ...u, ...event.data } : u));
+        return [event.data, ...prev];
+      });
+    });
+    return unsubscribe;
   }, []);
 
   const handleBanChange = (id, isBanned) => {
