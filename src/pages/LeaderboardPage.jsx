@@ -7,6 +7,7 @@ import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { computeLeaderboard } from "@/lib/leaderboardScore";
+import GamerCheckmark from "@/components/shared/GamerCheckmark";
 
 const TABS = [
   { id: "community", label: "Community", icon: Users },
@@ -59,6 +60,7 @@ function LeaderRow({ entry, rank, tab }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
+          <GamerCheckmark isVerified={entry.is_verified} userEmail={entry.email} size="sm" showTooltip={false} />
           {rank === 0 && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-yellow-900/50 border border-yellow-500/40 text-yellow-300 font-black inline-flex items-center gap-0.5"><Star className="w-2.5 h-2.5" /> Top Contributor</span>}
         </div>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -68,9 +70,6 @@ function LeaderRow({ entry, rank, tab }) {
           <span className="text-gray-500 text-[10px] flex items-center gap-1">
             <Heart className="w-2.5 h-2.5" /> {entry.likes} likes
           </span>
-          {entry.is_verified && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-900/50 border border-purple-700/40 text-purple-300 font-bold inline-flex items-center gap-0.5"><Award className="w-2.5 h-2.5" /> Verified</span>
-          )}
         </div>
       </div>
 
@@ -211,8 +210,10 @@ export default function LeaderboardPage() {
                         }
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
-                        {entry.is_verified && <span className="text-[9px] text-purple-300 inline-flex items-center gap-0.5"><Award className="w-2.5 h-2.5" /> Verified</span>}
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
+                          <GamerCheckmark isVerified={entry.is_verified} userEmail={entry.email} size="sm" showTooltip={false} />
+                        </div>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="font-black text-base" style={{ background: "linear-gradient(135deg,#a855f7,#ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
