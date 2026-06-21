@@ -260,16 +260,43 @@ export default function ShootingStars() {
     }
     const astronauts = Array.from({ length: 5 }, () => new Astronaut());
 
-    // Mini asteroids — irregular rocky chunks tumbling slowly across space
+    // Spark bursts emitted when two asteroids clash
+    const sparks = [];
+    function spawnSparks(x, y, count = 14) {
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = Math.random() * 3 + 1;
+        sparks.push({
+          x, y,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          life: 1,
+          decay: Math.random() * 0.04 + 0.02,
+          color: ["#fde68a", "#fb923c", "#f87171", "#fcd34d"][Math.floor(Math.random() * 4)],
+          r: Math.random() * 1.6 + 0.6,
+        });
+      }
+    }
+
+    // Mini asteroids — irregular rocky chunks drifting & colliding in space.
+    // Varied sizes (small pebbles to large boulders) that physically clash.
     class Asteroid {
       constructor() { this.reset(true); }
       reset(initial = false) {
-        this.fromLeft = Math.random() > 0.5;
-        this.x = this.fromLeft ? -50 : canvas.width + 50;
+        // Wide size range so the field has big & small rocks
+        this.size = Math.random() * 22 + 5;
+        this.mass = this.size * this.size;
+        this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.dx = (Math.random() * 0.5 + 0.2) * (this.fromLeft ? 1 : -1);
-        this.dy = (Math.random() - 0.5) * 0.3;
-        this.size = Math.random() * 7 + 4;
+        if (initial !== true && Math.random() > 0.5) {
+          this.fromLeft = Math.random() > 0.5;
+          this.x = this.fromLeft ? -50 : canvas.width + 50;
+          this.y = Math.random() * canvas.height;
+        }
+        const speed = Math.random() * 0.6 + 0.25;
+        const dir = Math.random() * Math.PI * 2;
+        this.dx = Math.cos(dir) * speed;
+        this.dy = Math.sin(dir) * speed;
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.04;
         // Pre-generate an irregular rocky outline
@@ -278,8 +305,9 @@ export default function ShootingStars() {
           const rad = 1 + (Math.random() - 0.5) * 0.5;
           return { x: Math.cos(a) * rad, y: Math.sin(a) * rad };
         });
-        const shades = ["#6b7280", "#78716c", "#57534e", "#52525b"];
+        const shades = ["#6b7280", "#78716c", "#57534e", "#52525b", "#44403c"];
         this.color = shades[Math.floor(Math.random() * shades.length)];
+        this.flash = 0;
       }
       draw() {
         this.angle += this.spin;
@@ -287,8 +315,8 @@ export default function ShootingStars() {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = "#a855f7";
+        ctx.shadowBlur = this.flash > 0 ? 16 : 6;
+        ctx.shadowColor = this.flash > 0 ? "#fbbf24" : "#a855f7";
         ctx.fillStyle = this.color;
         ctx.beginPath();
         this.verts.forEach((v, i) => {
@@ -308,12 +336,70 @@ export default function ShootingStars() {
         ctx.fill();
         ctx.restore();
 
+        if (this.flash > 0) this.flash--;
         this.x += this.dx;
         this.y += this.dy;
-        if (this.x < -80 || this.x > canvas.width + 80) this.reset();
+        // Wrap around the screen edges so they keep clashing
+        const m = s + 10;
+        if (this.x < -m) this.x = canvas.width + m;
+        if (this.x > canvas.width + m) this.x = -m;
+        if (this.y < -m) this.y = canvas.height + m;
+        if (this.y > canvas.height + m) this.y = -m;
       }
     }
-    const asteroids = Array.from({ length: 7 }, () => new Asteroid());
+    const asteroids = Array.from({ length: 11 }, () => new Asteroid());
+
+    // Elastic collision resolution between asteroids — makes them clash
+    function resolveAsteroidCollisions() {
+      for (let i = 0; i < asteroids.length; i++) {
+        for (let j = i + 1; j < asteroids.length; j++) {
+          const a = asteroids[i], b = asteroids[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = a.size + b.size;
+          if (dist > 0 && dist < minDist) {
+            // Normalized collision axis
+            const nx = dx / dist, ny = dy / dist;
+            // Relative velocity along the normal
+            const rvx = a.dx - b.dx, rvy = a.dy - b.dy;
+            const vn = rvx * nx + rvy * ny;
+            if (vn > 0) {
+              const imp = (2 * vn) / (a.mass + b.mass);
+              a.dx -= imp * b.mass * nx;
+              a.dy -= imp * b.mass * ny;
+              b.dx += imp * a.mass * nx;
+              b.dy += imp * a.mass * ny;
+            }
+            // Separate so they don't overlap/stick
+            const overlap = (minDist - dist) / 2;
+            a.x -= nx * overlap; a.y -= ny * overlap;
+            b.x += nx * overlap; b.y += ny * overlap;
+            // Spark flash at the contact point
+            a.flash = 8; b.flash = 8;
+            spawnSparks(a.x + nx * a.size, a.y + ny * a.size, 10);
+          }
+        }
+      }
+    }
+
+    function drawSparks() {
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const p = sparks[i];
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.96; p.vy *= 0.96;
+        p.life -= p.decay;
+        if (p.life <= 0) { sparks.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
 
     // Background spaceships — sleek UFO-style saucers gliding by
     class Spaceship {
@@ -727,8 +813,10 @@ export default function ShootingStars() {
       // Draw mini planets
       for (const pl of planets) pl.draw();
 
-      // Draw mini asteroids
+      // Draw mini asteroids — resolve clashes, render, then spark bursts
+      resolveAsteroidCollisions();
       for (const ast of asteroids) ast.draw();
+      drawSparks();
 
       // Draw background spaceships
       for (const sp of spaceships) sp.draw();

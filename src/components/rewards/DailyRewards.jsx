@@ -82,6 +82,32 @@ export default function DailyRewards({ user, profile }) {
     setCelebrationItem(currentReward);
     setShowCelebration(true);
     setTimeout(() => setShowCelebration(false), 3000);
+    // Sync the streak into the DailyReward entity so points & the streak
+    // tracker stay in sync across the app.
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const existing = await base44.entities.DailyReward.filter({ user_email: user.email });
+      if (existing[0]) {
+        const history = Array.from(new Set([...(existing[0].streak_history || []), today]));
+        await base44.entities.DailyReward.update(existing[0].id, {
+          current_streak: newStreak,
+          longest_streak: Math.max(existing[0].longest_streak || 0, newStreak),
+          last_checkin_date: today,
+          total_checkins: (existing[0].total_checkins || 0) + 1,
+          streak_history: history,
+          reward_unlocked: newStreak >= 365,
+        });
+      } else {
+        await base44.entities.DailyReward.create({
+          user_email: user.email,
+          current_streak: newStreak,
+          longest_streak: newStreak,
+          last_checkin_date: today,
+          total_checkins: 1,
+          streak_history: [today],
+        });
+      }
+    } catch (_) {}
     // Show PayPal setup prompt at 365 consecutive days
     if (newStreak === 365) {
       setTimeout(() => setShowPaypalSetup(true), 3500);

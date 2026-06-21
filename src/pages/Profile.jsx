@@ -20,6 +20,11 @@ import ListingSortControl, { sortListings } from "@/components/profile/ListingSo
 import StandardListingCard from "@/components/listings/StandardListingCard";
 import UserPointsBadge from "@/components/profile/UserPointsBadge";
 import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
+import FollowButton from "@/components/social/FollowButton";
+import InviteFollowButton from "@/components/social/InviteFollowButton";
+import SendGiftModal from "@/components/gifts/SendGiftModal";
+import GiftInbox from "@/components/gifts/GiftInbox";
+import { Gift as GiftIcon } from "lucide-react";
 import ReelCreator from "@/components/shared/ReelCreator";
 import AccountTypeTransitionModal from "@/components/account/AccountTypeTransitionModal";
 import EditProfileModal from "@/components/profile/EditProfileModal";
@@ -110,6 +115,7 @@ export default function Profile() {
   const [showReelCreator, setShowReelCreator] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showGiftModal, setShowGiftModal] = useState(false);
   const [sortOrder, setSortOrder] = useState("newest");
   const [bannerUploading, setBannerUploading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -429,6 +435,31 @@ export default function Profile() {
               )}
             </div>
             <div className="flex flex-col gap-2">
+              {/* Visitor actions — follow, gift, invite */}
+              {!isOwnProfile && profile?.user_email && (
+                <>
+                  <FollowButton
+                    currentUserEmail={user?.email}
+                    targetEmail={profile.user_email}
+                    targetUsername={profile.username}
+                    size="md"
+                  />
+                  {user?.email && user.email !== profile.user_email && (
+                    <button
+                      onClick={() => setShowGiftModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-white"
+                      style={{ background: "linear-gradient(90deg,#db2777,#7c3aed)", boxShadow: "0 0 15px rgba(219,39,119,0.4)" }}
+                    >
+                      <GiftIcon className="w-4 h-4" /> Send Gift
+                    </button>
+                  )}
+                  <InviteFollowButton targetEmail={profile.user_email} targetUsername={profile.username} size="md" />
+                </>
+              )}
+              {/* Own profile — invite others to follow you */}
+              {isOwnProfile && profile?.user_email && (
+                <InviteFollowButton targetEmail={profile.user_email} targetUsername={profile.username} size="md" />
+              )}
               {isOwnProfile && (
                 <motion.button
                   onClick={() => setShowStudio(true)}
@@ -524,6 +555,9 @@ export default function Profile() {
             )}
           </div>
 
+          {/* Gifts received */}
+          {profile?.user_email && <GiftInbox userEmail={profile.user_email} />}
+
           {/* Gaming Accounts */}
           <GamingAccountsPanel profile={profile} isOwnProfile={isOwnProfile} onUpdated={setProfile} />
 
@@ -563,6 +597,16 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      {/* Send Gift Modal */}
+      <SendGiftModal
+        open={showGiftModal}
+        onClose={() => setShowGiftModal(false)}
+        sender={user}
+        senderProfile={ownProfile}
+        recipientEmail={profile?.user_email}
+        recipientUsername={profile?.username}
+      />
 
       {/* Transition Modal */}
       {showTransition && (

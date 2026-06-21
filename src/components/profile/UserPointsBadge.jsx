@@ -1,53 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Trophy, Star } from "lucide-react";
+import { computeUserPoints } from "@/lib/userPoints";
+import { computeLeaderboard } from "@/lib/leaderboardScore";
 
 export default function UserPointsBadge({ userEmail }) {
   const [pts, setPts] = useState(0);
   const [rank, setRank] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const recompute = useCallback(async () => {
     if (!userEmail) return;
-    const calc = async () => {
-      try {
-        const [posts, ratings, listing] = await Promise.all([
-          base44.entities.CommunityPost.filter({ author_email: userEmail }),
-          base44.entities.PostRating.filter({ user_email: userEmail }),
-          base44.entities.Listing.filter({ seller_email: userEmail }),
-        ]);
-        let score = 0;
-        score += posts.filter(p => p.status === "active").length * 10;
-        score += ratings.length * 5; // 5pts per heart/rating given
-        score += listing.filter(l => l.status === "active").length * 20;
-        // Add likes received
-        const myListingLikes = listing.reduce((s, l) => s + (l.likes || 0), 0);
-        score += myListingLikes * 5; // 5pts per heart received
-        setPts(score);
-
-        // Calculate rank — load all profiles for ranking
-        const allProfiles = await base44.entities.UserProfile.list("-updated_date", 100);
-        const scores = await Promise.all(allProfiles.map(async p => {
-          const [pp, pr, pl] = await Promise.all([
-            base44.entities.CommunityPost.filter({ author_email: p.user_email }),
-            base44.entities.PostRating.filter({ user_email: p.user_email }),
-            base44.entities.Listing.filter({ seller_email: p.user_email }),
-          ]);
-          let s = pp.filter(x => x.status === "active").length * 10;
-          s += pr.length * 5;
-          s += pl.filter(x => x.status === "active").length * 20;
-          s += pl.reduce((a, l) => a + (l.likes || 0), 0) * 5;
-          return { email: p.user_email, score: s };
-        }));
-        scores.sort((a, b) => b.score - a.score);
-        const myRank = scores.findIndex(s => s.email === userEmail) + 1;
-        setRank(myRank > 0 ? myRank : null);
-      } catch {}
-      setLoading(false);
-    };
-    calc();
+    try {
+      const score = await computeUserPoints(userEmail);
+      setPts(score);
+      // Rank from the shared leaderboard so it matches the leaderboard page
+      const board = await computeLeaderboard({ tab: "community" });
+      const idx = board.findIndex((e) => e.email === userEmail);
+      setRank(idx >= 0 ? idx + 1 : null);
+    } catch {}
+    setLoading(false);
   }, [userEmail]);
+
+  useEffect(() => {
+    recompute();
+    if (!userEmail) return;
+    // Live-update points as the user's activity & gifts change
+    const subs = ["CommunityPost", "ChannelPost", "Listing", "Tournament", "DailyReward", "Gift"]
+      .map((name) => {
+        try { return base44.entities[name].subscribe(() => recompute()); } catch { return null; }
+      });
+    return () => subs.forEach((u) => u && u());
+  }, [userEmail, recompute]);
 
   if (loading || pts === 0) return null;
 

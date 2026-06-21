@@ -9,6 +9,9 @@ import CategoryCards from "@/components/home/CategoryCards";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import GuestAuthDock from "@/components/home/GuestAuthDock";
+import HeyGamerWelcomeModal from "@/components/home/HeyGamerWelcomeModal";
+import HeyGamerBanner from "@/components/home/HeyGamerBanner";
+import { isNewJoiner } from "@/lib/isNewJoiner";
 import { Gamepad2, Wrench } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -209,6 +212,10 @@ export default function Home() {
           <div className="relative z-10">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
             {user && <AIAssistBanner user={user} />}
+            {/* New-joiner astronaut welcome banner */}
+            {user && profile && isNewJoiner(profile) && (
+              <HeyGamerBanner profile={profile} username={profile?.username || user?.full_name} />
+            )}
             <VideoHeroBanner />
             <HeroSection />
             <CategoryCards />
@@ -285,12 +292,18 @@ export default function Home() {
               <Footer />
               <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
               <AdminLinkScanner userEmail={user?.email} />
-              <DailyRewards user={user} profile={profile} />
-              {user && <DailyRewardPopup user={user} />}
+              {/* Activities (daily rewards) — new joiners only */}
+              {profile && isNewJoiner(profile) && <DailyRewards user={user} profile={profile} />}
+              {user && profile && isNewJoiner(profile) && <DailyRewardPopup user={user} />}
               <AdminApprovalPanel userEmail={user?.email} />
             </Suspense>
           </div>
         </>
+      )}
+
+      {/* New-joiner astronaut welcome popup (first visit) */}
+      {!showSplash && user && profile && isNewJoiner(profile) && (
+        <HeyGamerWelcomeModal userEmail={user.email} username={profile?.username || user?.full_name} />
       )}
 
       {/* Earn Now / Get Started / Log In — floating lower-left dock for guests */}
