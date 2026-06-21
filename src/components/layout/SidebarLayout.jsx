@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import FloatingSearch from "@/components/layout/FloatingSearch";
+import GlobalNavBurger from "@/components/layout/GlobalNavBurger";
 import { useAuth } from "@/lib/AuthContext";
 import { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from "@/components/layout/AuthNavbar";
 
@@ -25,6 +26,8 @@ export default function SidebarLayout({ children }) {
 
   return (
     <>
+      {/* Always-visible burger nav for logged-in users on EVERY page */}
+      <GlobalNavBurger />
       <div>
         <FloatingSearch />
         {children}

@@ -17,6 +17,7 @@ import AccountTypeTransitionModal from "@/components/account/AccountTypeTransiti
 import PostTypeModal from "@/components/listings/PostTypeModal";
 import SwitchAccountDropdown from "@/components/layout/SwitchAccountDropdown";
 import ScrollDownHint from "@/components/layout/ScrollDownHint";
+import { registerPageNavbar } from "@/lib/navbarPresence";
 
 export const SIDEBAR_WIDTH = 240;
 export const SIDEBAR_COLLAPSED_WIDTH = 56;
@@ -58,7 +59,7 @@ function NavLink({ link, collapsed, isMobile, location }) {
   return <Link to={link.href} className={cls} title={!show ? link.label : ""}>{content}</Link>;
 }
 
-export default function AuthNavbar({ user, profile }) {
+export default function AuthNavbar({ user, profile, isGlobal = false }) {
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem("sidebar_collapsed") === "true"; } catch { return false; }
   });
@@ -124,6 +125,14 @@ export default function AuthNavbar({ user, profile }) {
       base44.entities.Favorite.filter({ user_email: activeUserEmail }).then((r) => setFavCount(r.length)).catch(() => {});
     }
   }, [activeUserEmail]);
+
+  // Page-level navbars register their presence so the GLOBAL fallback burger
+  // doesn't render a duplicate on top of them.
+  useEffect(() => {
+    if (isGlobal) return;
+    const unregister = registerPageNavbar();
+    return unregister;
+  }, [isGlobal]);
 
   const toggleCollapsed = () => {
     setCollapsed(v => {
