@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Gamepad2 } from "lucide-react";
 import EmailLoginModal from "@/components/auth/EmailLoginModal.jsx";
 import EarnNowButton from "@/components/shared/EarnNowButton";
 
@@ -12,6 +14,16 @@ export default function GuestAuthDock() {
   return (
     <>
       <div className="fixed bottom-4 left-4 z-40 flex flex-col items-start gap-2">
+        <motion.button
+          onClick={() => navigate("/")}
+          className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600 cursor-pointer"
+          animate={{ rotate: [0, -3, 3, 0] }}
+          transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+          style={{ boxShadow: "0 0 22px rgba(168,85,247,0.6), 0 0 44px rgba(124,58,237,0.35)" }}
+          title="Home"
+        >
+          <Gamepad2 className="w-7 h-7 text-white" />
+        </motion.button>
         <EarnNowButton />
         <button
           onClick={() => navigate("/register")}
