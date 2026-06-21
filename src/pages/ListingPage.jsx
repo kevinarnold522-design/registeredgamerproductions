@@ -8,6 +8,7 @@ import { isAdmin } from "@/lib/constants";
 import CommentThread from "@/components/shared/CommentThread";
 import DownloadAdUnlock from "@/components/ads/DownloadAdUnlock";
 import ScheduledAdOverlay from "@/components/ads/ScheduledAdOverlay";
+import ListingPageAd from "@/components/ads/ListingPageAd";
 import SimilarListings from "@/components/shared/SimilarListings";
 import StickySearchBar from "@/components/shared/StickySearchBar";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
@@ -386,7 +387,8 @@ export default function ListingPage() {
     </div>
   );
 
-  const ytId = listing.youtube_video_id || (listing.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+  const ytSource = listing.youtube_url || listing.video_url || listing.preview_video_url || "";
+  const ytId = listing.youtube_video_id || ytSource.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1];
   const isFree = !listing.price || listing.price === 0 || listing.is_free;
   const hasDownload = listing.download_url || listing.external_link;
   const sellerTheme = buildProfileTheme(seller || {}, seller?.profile_theme_style || "default");
@@ -406,6 +408,7 @@ export default function ListingPage() {
         <DownloadAdUnlock onComplete={handleAdDone} />
       )}
       <ScheduledAdOverlay listing={listing} />
+      <ListingPageAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
 
       <div className="pt-20 max-w-7xl mx-auto px-4 pb-16">
         {/* Back + Edit */}

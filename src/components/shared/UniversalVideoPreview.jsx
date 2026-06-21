@@ -3,7 +3,9 @@ import { Play } from "lucide-react";
 
 function extractYouTubeId(url) {
   if (!url) return null;
-  const match = url.match(/(?:v=|youtu\.be\/|embed\/)([^&?/]+)/);
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
   return match ? match[1] : null;
 }
 
