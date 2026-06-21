@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Share2, X, Copy, Check, Facebook, Instagram, MessageCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { toast } from "sonner";
+import { copyToClipboard } from "@/lib/copyToClipboard";
 
-const BASE_URL = "https://gamerproductions.vercel.app";
+// Use the live site origin so shared links open the real app (not a stale domain).
+const BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
 
 // Build the share URL for any content type
 export function buildShareUrl(type, id) {
   const paths = {
-    listing: `/category?listing=${id}`,
+    listing: `/listing?id=${id}`,
     post: `/channel?post=${id}`,
     video: `/channel?video=${id}`,
     stream: `/category?cat=livestream&stream=${id}`,
@@ -88,9 +91,11 @@ export default function ShareButton({ type, id, title, compact = false }) {
   };
 
   const handleCopy = async () => {
-    navigator.clipboard.writeText(shareUrl);
+    const ok = await copyToClipboard(shareUrl);
+    if (!ok) { toast.error("Couldn't copy the link"); return; }
     await trackShare();
     setCopied(true);
+    toast.success("Link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 

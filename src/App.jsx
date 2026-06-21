@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 // Added "Navigate" to standard react-router-dom handling
@@ -162,6 +163,7 @@ function App() {
             <GlobalHtmlAd />
           </Router>
           <Toaster />
+          <SonnerToaster position="top-center" richColors />
         </QueryClientProvider>
       </AuthProvider>
     </LanguageProvider>
