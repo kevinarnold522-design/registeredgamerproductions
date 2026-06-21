@@ -36,7 +36,7 @@ export default function ShootingStars() {
     }));
 
     // Shooting stars
-    const shootingColors = ["#ffffff", "#c084fc", "#f472b6", "#38bdf8", "#fbbf24", "#34d399"];
+    const shootingColors = ["#c084fc", "#a855f7", "#9333ea", "#d8b4fe", "#7c3aed", "#e9d5ff"];
 
     class ShootingStar {
       constructor() { this.reset(true); }
@@ -138,9 +138,9 @@ export default function ShootingStars() {
         if (s.alpha <= 0.1) s.twinkleDir = 1;
         ctx.save();
         ctx.globalAlpha = s.alpha;
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#e9d5ff";
         ctx.shadowBlur = s.r > 1 ? 8 : 2;
-        ctx.shadowColor = "#a5b4fc";
+        ctx.shadowColor = "#c084fc";
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fill();
