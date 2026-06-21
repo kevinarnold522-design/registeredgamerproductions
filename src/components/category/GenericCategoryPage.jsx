@@ -15,7 +15,6 @@ import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import GameCoverCard from "@/components/category/GameCoverCard";
 import StandardListingCard from "@/components/listings/StandardListingCard";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
@@ -380,16 +379,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             <p className="text-xl font-bold mb-2 text-gray-400">No listings yet</p>
             <p className="text-sm">Be the first to add one!</p>
           </div>
-        ) : cat === "games" ? (
-          <>
-          <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paged.map((l, i) => (
-              <GameCoverCard key={l.id} l={l} i={i} user={user} profile={profile} />
-            ))}
-          </div>
-          <div className="mt-8"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
-          </>
         ) : (
           <>
           <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>

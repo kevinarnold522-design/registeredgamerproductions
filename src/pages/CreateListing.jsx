@@ -40,7 +40,6 @@ import AIListingAssistant from "@/components/listings/AIListingAssistant";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
-import { CURRENCY_OPTIONS } from "@/lib/currency";
 
 function extractYouTubeId(url) {
   if (!url) return null;
@@ -811,12 +810,6 @@ export default function CreateListing() {
                   <DollarSign className="w-4 h-4 inline mr-1" /> Set Price
                 </button>
               </div>
-              {form.category === "premium_mods" && (
-                <select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm mb-3">
-                  {CURRENCY_OPTIONS.map(option => <option key={option.code} value={option.code}>{option.label}</option>)}
-                </select>
-              )}
               {(form.price !== "0" && form.price !== 0) && (
                 <div className="space-y-3">
                   <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder="Enter price in ₱"
