@@ -35,6 +35,100 @@ export default function ShootingStars() {
       dy: (Math.random() - 0.5) * 0.15,
     }));
 
+    // Glowing suns (large radiant orbs drifting slowly)
+    const suns = Array.from({ length: 3 }, () => {
+      const palettes = [
+        ["#fde68a", "#f59e0b", "#b45309"],
+        ["#fca5a5", "#ef4444", "#7f1d1d"],
+        ["#c4b5fd", "#8b5cf6", "#4c1d95"],
+      ];
+      const p = palettes[Math.floor(Math.random() * palettes.length)];
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 70 + 50,
+        core: p[0], mid: p[1], edge: p[2],
+        dx: (Math.random() - 0.5) * 0.12,
+        dy: (Math.random() - 0.5) * 0.12,
+        pulse: Math.random() * Math.PI * 2,
+      };
+    });
+
+    // Drifting rockets
+    class Rocket {
+      constructor() { this.reset(true); }
+      reset(initial = false) {
+        this.fromLeft = Math.random() > 0.5;
+        this.x = this.fromLeft ? -80 : canvas.width + 80;
+        this.y = Math.random() * canvas.height;
+        this.speed = (Math.random() * 1.2 + 0.8) * (this.fromLeft ? 1 : -1);
+        this.bob = Math.random() * Math.PI * 2;
+        this.size = Math.random() * 10 + 16;
+        this.waitFrames = initial ? Math.random() * 400 : Math.random() * 600 + 200;
+      }
+      draw() {
+        if (this.waitFrames > 0) { this.waitFrames--; return; }
+        this.bob += 0.05;
+        const yOff = Math.sin(this.bob) * 8;
+        const px = this.x;
+        const py = this.y + yOff;
+        const s = this.size;
+        const facingRight = this.speed > 0;
+
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(facingRight ? 0.35 : -0.35 + Math.PI);
+
+        // Flame trail
+        const flameGrad = ctx.createLinearGradient(-s * 1.6, 0, -s * 0.5, 0);
+        flameGrad.addColorStop(0, "transparent");
+        flameGrad.addColorStop(0.5, "#f59e0b");
+        flameGrad.addColorStop(1, "#fde68a");
+        ctx.fillStyle = flameGrad;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "#f59e0b";
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.5, -s * 0.18);
+        ctx.lineTo(-s * (1.3 + Math.random() * 0.5), 0);
+        ctx.lineTo(-s * 0.5, s * 0.18);
+        ctx.closePath();
+        ctx.fill();
+
+        // Body
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "#a855f7";
+        ctx.fillStyle = "#e5e7eb";
+        ctx.beginPath();
+        ctx.moveTo(s * 0.7, 0);
+        ctx.lineTo(-s * 0.4, -s * 0.3);
+        ctx.lineTo(-s * 0.4, s * 0.3);
+        ctx.closePath();
+        ctx.fill();
+
+        // Nose
+        ctx.fillStyle = "#a855f7";
+        ctx.beginPath();
+        ctx.moveTo(s * 0.7, 0);
+        ctx.lineTo(s * 0.2, -s * 0.18);
+        ctx.lineTo(s * 0.2, s * 0.18);
+        ctx.closePath();
+        ctx.fill();
+
+        // Window
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "#22d3ee";
+        ctx.fillStyle = "#67e8f9";
+        ctx.beginPath();
+        ctx.arc(s * 0.05, 0, s * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        this.x += this.speed;
+        if (this.x < -150 || this.x > canvas.width + 150) this.reset();
+      }
+    }
+    const rockets = Array.from({ length: 4 }, () => new Rocket());
+
     // Shooting stars
     const shootingColors = ["#c084fc", "#a855f7", "#9333ea", "#d8b4fe", "#7c3aed", "#e9d5ff"];
 
@@ -131,6 +225,36 @@ export default function ShootingStars() {
         ctx.fill();
       }
 
+      // Draw glowing suns
+      for (const sun of suns) {
+        sun.x += sun.dx;
+        sun.y += sun.dy;
+        sun.pulse += 0.015;
+        if (sun.x < -sun.r) sun.x = canvas.width + sun.r;
+        if (sun.x > canvas.width + sun.r) sun.x = -sun.r;
+        if (sun.y < -sun.r) sun.y = canvas.height + sun.r;
+        if (sun.y > canvas.height + sun.r) sun.y = -sun.r;
+        const pulseR = sun.r * (1 + Math.sin(sun.pulse) * 0.06);
+        const glow = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, pulseR * 2.4);
+        glow.addColorStop(0, sun.core);
+        glow.addColorStop(0.18, sun.mid);
+        glow.addColorStop(0.5, sun.edge + "66");
+        glow.addColorStop(1, "transparent");
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(sun.x, sun.y, pulseR * 2.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = sun.core;
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = sun.mid;
+        ctx.beginPath();
+        ctx.arc(sun.x, sun.y, pulseR * 0.55, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
       // Draw twinkling background stars
       for (const s of bgStars) {
         s.alpha += s.twinkleSpeed * s.twinkleDir;
@@ -149,6 +273,9 @@ export default function ShootingStars() {
 
       // Draw shooting stars
       for (const ss of shootingStars) ss.draw();
+
+      // Draw rockets
+      for (const r of rockets) r.draw();
 
       animId = requestAnimationFrame(animate);
     };
