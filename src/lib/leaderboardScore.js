@@ -60,22 +60,27 @@ export async function computeLeaderboard({ tab = "community" } = {}) {
     scoreMap[p.user_email] = { email: p.user_email, username: p.username || p.display_name || p.user_email, posts: 0, likes: 0, score: 0, avatar_url: p.avatar_url || "" };
   });
 
+  // Only count live content — skip removed/deleted posts & listings
+  const activePosts = posts.filter((p) => p.status !== "removed" && p.status !== "deleted");
+  const activeChannelPosts = channelPosts.filter((p) => p.status !== "removed" && p.status !== "deleted");
+  const activeListings = listings.filter((l) => l.status !== "removed" && l.status !== "deleted");
+
   // Community posts
-  (tab === "modding" ? posts.filter((p) => modText(p.content)) : posts).forEach((post) => {
+  (tab === "modding" ? activePosts.filter((p) => modText(p.content)) : activePosts).forEach((post) => {
     if (!post.author_email) return;
     const e = seed(post.author_email, post.author_username, post.author_avatar);
     e.posts += 1; e.likes += post.likes || 0; e.score += 10 + (post.likes || 0) * 5;
   });
 
   // Channel posts (gaming newsfeed)
-  (tab === "modding" ? channelPosts.filter((p) => modText(`${p.caption || ""} ${(p.tags || []).join(" ")}`)) : channelPosts).forEach((post) => {
+  (tab === "modding" ? activeChannelPosts.filter((p) => modText(`${p.caption || ""} ${(p.tags || []).join(" ")}`)) : activeChannelPosts).forEach((post) => {
     if (!post.creator_email) return;
     const e = seed(post.creator_email, post.creator_username, post.creator_avatar);
     e.posts += 1; e.likes += post.likes || 0; e.score += 10 + (post.likes || 0) * 5;
   });
 
   // Listings — points belong to the CURRENT seller_email (moves on transfer)
-  listings.forEach((l) => {
+  activeListings.forEach((l) => {
     if (!l.seller_email) return;
     if (tab === "modding" && !isMod(l.category)) return;
     const e = seed(l.seller_email, l.seller_username);
@@ -89,10 +94,10 @@ export async function computeLeaderboard({ tab = "community" } = {}) {
     seed(o.seller_email, o.seller_username).score += 1000;
   });
 
-  // Ratings — resolve author by content id (community post OR listing)
+  // Ratings — resolve author by content id (active community post OR listing only)
   const authorByContentId = {};
-  posts.forEach((p) => { if (p.id) authorByContentId[p.id] = p.author_email; });
-  listings.forEach((l) => { if (l.id) authorByContentId[l.id] = l.seller_email; });
+  activePosts.forEach((p) => { if (p.id) authorByContentId[p.id] = p.author_email; });
+  activeListings.forEach((l) => { if (l.id) authorByContentId[l.id] = l.seller_email; });
   ratings.forEach((r) => {
     const author = authorByContentId[r.post_id];
     if (author && scoreMap[author]) scoreMap[author].score += (r.rating || 0) * 2;
