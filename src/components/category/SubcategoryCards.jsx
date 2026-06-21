@@ -5,6 +5,7 @@ import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical, Eye
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
+import { formatListingPrice } from "@/lib/currency";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
@@ -470,7 +471,7 @@ function VisibleListingRow({ item, userProfile }) {
         <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
         <p className="text-gray-500 text-[10px]">by @{item.seller_username} · Listing</p>
         <div className="flex items-center justify-between gap-2 mt-0.5">
-          <p className="font-black text-xs text-purple-300">{item.is_free || !item.price ? "FREE" : `₱${item.price}`}</p>
+          <p className="font-black text-xs text-purple-300">{item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}</p>
           <span className="flex items-center gap-1 text-[10px] text-cyan-300 font-bold"><Eye className="w-3 h-3" />{(item.views || 0).toLocaleString()}</span>
         </div>
       </div>

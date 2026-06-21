@@ -13,6 +13,7 @@ const NEWSFEED_TARGETS = [
 ];
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { CURRENCY_OPTIONS, getCurrencySymbol } from "@/lib/currency";
 import { isAdmin, CATEGORIES, GAMES_STORES } from "@/lib/constants";
 
 const DIGITAL_SUBCATEGORIES = [
@@ -812,9 +813,14 @@ export default function CreateListing() {
               </div>
               {(form.price !== "0" && form.price !== 0) && (
                 <div className="space-y-3">
-                  <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder="Enter price in ₱"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-
+                  <div className="flex gap-2">
+                    <select value={form.currency || "PHP"} onChange={e => setForm({ ...form, currency: e.target.value })}
+                      className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
+                      {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code} {c.symbol}</option>)}
+                    </select>
+                    <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder={`Enter price in ${getCurrencySymbol(form.currency || "PHP")}`}
+                      className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+                  </div>
                 </div>
               )}
             </div>

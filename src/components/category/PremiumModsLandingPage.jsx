@@ -6,6 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
+import { formatListingPrice } from "@/lib/currency";
 
 // Homepage-style premium mod game cards
 const PREMIUM_MOD_GAME_CARDS = [
@@ -164,7 +165,7 @@ export default function PremiumModsLandingPage({ user }) {
                       )}
                       <div className="flex items-center gap-1.5">
                         <DollarSign className="w-3 h-3 text-green-400" />
-                        <span className="text-green-400 font-bold text-sm">{l.price === 0 ? "FREE" : `₱${l.price?.toLocaleString()}`}</span>
+                        <span className="text-green-400 font-bold text-sm">{l.price === 0 ? "FREE" : formatListingPrice(l.price, l.currency)}</span>
                       </div>
                     </div>
                   </div>

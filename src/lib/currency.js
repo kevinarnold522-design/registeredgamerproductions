@@ -8,8 +8,8 @@ export function getCurrencySymbol(currency = "PHP") {
   return CURRENCY_OPTIONS.find(option => option.code === currency)?.symbol || "₱";
 }
 
-export function formatListingPrice(price) {
-  // All listings are standardized to Philippine Peso (₱), so always render ₱
-  // regardless of any legacy currency value stored on older listings.
-  return `₱${Number(price || 0).toLocaleString()}`;
+export function formatListingPrice(price, currency = "PHP") {
+  // Render the listing's chosen currency symbol (₱ / $ / €). Falls back to ₱.
+  const symbol = getCurrencySymbol(currency);
+  return `${symbol}${Number(price || 0).toLocaleString()}`;
 }

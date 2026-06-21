@@ -8,6 +8,7 @@ import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import CommunityPostCard from "./CommunityPostCard";
 import TieredMembershipModal from "./TieredMembershipModal";
 import ModeratorRequestModal from "./ModeratorRequestModal";
+import { formatListingPrice } from "@/lib/currency";
 
 function CaptainBadge() {
   return (
@@ -457,7 +458,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
                     }
                     <div className="p-2">
                       <p className="text-white text-xs font-bold line-clamp-1">{l.title}</p>
-                      <p className="text-purple-400 text-xs font-black mt-0.5">{l.is_free ? "FREE" : `₱${l.price}`}</p>
+                      <p className="text-purple-400 text-xs font-black mt-0.5">{l.is_free ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
                     </div>
                   </a>
                 ))}
