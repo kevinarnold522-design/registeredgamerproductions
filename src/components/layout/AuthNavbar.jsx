@@ -246,7 +246,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
                 transition: "box-shadow 0.4s ease, background 0.3s ease",
               }}
             >
-              <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/cf4a1e4eb_generated_image.png" alt="Gamer.Productions" className="w-full h-full object-cover rounded-lg" />
+              <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="Gamer.Productions" className="w-full h-full object-contain rounded-lg" />
             </motion.div>
             {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
           </Link>
@@ -391,7 +391,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
                 : "0 0 10px rgba(168,85,247,0.4)",
             }}
           >
-            <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/cf4a1e4eb_generated_image.png" alt="Gamer.Productions" className="w-full h-full object-cover rounded-lg" />
+            <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="Gamer.Productions" className="w-full h-full object-contain rounded-lg" />
           </motion.div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
