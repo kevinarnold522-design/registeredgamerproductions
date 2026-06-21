@@ -244,16 +244,17 @@ export default function Home() {
               <PaidModsSection />
               <ModdingSection currentUser={user} currentProfile={profile} />
               <MonetizationBadge />
+
+              {/* Official socials — right below the Get Monetized section */}
+              <div className="max-w-7xl mx-auto px-4 py-4">
+                <GamerSocialsBar />
+              </div>
+
               <FeaturedGames />
               <CommunitySection />
 
               {/* What GAMER Productions is — moved to bottom above footer */}
               <BusinessModelSection />
-
-              {/* Official socials — bottom of homepage */}
-              <div className="max-w-7xl mx-auto px-4 py-6">
-                <GamerSocialsBar />
-              </div>
 
               <Footer />
               <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />

@@ -38,7 +38,7 @@ export default function BrandLogo({ brand, label, className = "w-4 h-4", invert 
   return (
     <img
       src={`https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${slug}.svg`}
-      alt={label || brand}
+      alt=""
       className={className}
       style={invert ? { filter: "invert(1)", display: "inline-block" } : { display: "inline-block" }}
       loading="lazy"
