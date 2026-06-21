@@ -163,10 +163,13 @@ export default function ShootingStars() {
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.01;
         this.bob = Math.random() * Math.PI * 2;
-        // ~40% of astronauts carry a balloon
-        this.hasBalloon = Math.random() < 0.4;
+        // Every astronaut carries a balloon
+        this.hasBalloon = true;
         const balloonColors = ["#f472b6", "#f87171", "#facc15", "#4ade80", "#60a5fa", "#c084fc"];
         this.balloonColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+        // Different colored space suits
+        const suitColors = ["#f87171", "#fbbf24", "#4ade80", "#60a5fa", "#c084fc", "#f472b6", "#e2e8f0", "#22d3ee"];
+        this.suitColor = suitColors[Math.floor(Math.random() * suitColors.length)];
       }
       draw() {
         this.bob += 0.04;
@@ -211,13 +214,13 @@ export default function ShootingStars() {
         ctx.fill();
 
         // Body suit
-        ctx.fillStyle = "#e2e8f0";
+        ctx.fillStyle = this.suitColor;
         ctx.beginPath();
         ctx.roundRect(-s * 0.28, -s * 0.3, s * 0.56, s * 0.75, s * 0.18);
         ctx.fill();
 
         // Arms
-        ctx.strokeStyle = "#e2e8f0";
+        ctx.strokeStyle = this.suitColor;
         ctx.lineWidth = s * 0.18;
         ctx.lineCap = "round";
         ctx.beginPath();
@@ -258,7 +261,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + 60 || this.x < -60 || this.x > canvas.width + 60) this.reset();
       }
     }
-    const astronauts = Array.from({ length: 5 }, () => new Astronaut());
+    const astronauts = Array.from({ length: 10 }, () => new Astronaut());
 
     // Spark bursts emitted when two asteroids clash
     const sparks = [];
@@ -283,8 +286,8 @@ export default function ShootingStars() {
     class Asteroid {
       constructor() { this.reset(true); }
       reset(initial = false) {
-        // Wide size range so the field has big & small rocks
-        this.size = Math.random() * 22 + 5;
+        // Smaller size range — tiny pebbles to small rocks
+        this.size = Math.random() * 11 + 3;
         this.mass = this.size * this.size;
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
