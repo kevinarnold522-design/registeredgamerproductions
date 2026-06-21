@@ -16,6 +16,7 @@ export default function ManagedAccountsPanel() {
   const [creating, setCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showAllUsers, setShowAllUsers] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -33,17 +34,17 @@ export default function ManagedAccountsPanel() {
 
   useEffect(() => {
     loadAccounts();
-  }, []);
+  }, [showAllUsers]);
 
   const loadAccounts = async () => {
     setLoading(true);
     try {
-      const response = await invokeAdminFn('createManagedAccount', { action: 'list' });
+      const response = await invokeAdminFn('createManagedAccount', { action: 'list', include_all: showAllUsers });
       if (response.data.success) {
         setAccounts(response.data.accounts);
       }
     } catch (error) {
-      toast.error("Failed to load managed accounts");
+      toast.error("Failed to load accounts");
     } finally {
       setLoading(false);
     }
@@ -244,8 +245,8 @@ export default function ManagedAccountsPanel() {
         </div>
       </div>
 
-      <div className="mb-6">
-        <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5">
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
+        <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 flex-1">
           <Search className="w-4 h-4 text-gray-500" />
           <input
             type="text"
@@ -254,6 +255,21 @@ export default function ManagedAccountsPanel() {
             placeholder="Search by username or email..."
             className="flex-1 bg-transparent text-white text-sm outline-none placeholder-gray-600"
           />
+        </div>
+        {/* Toggle: managed accounts only vs EVERY user (so admins can log into any account) */}
+        <div className="flex bg-gray-900 border border-gray-800 rounded-xl p-1">
+          <button
+            onClick={() => setShowAllUsers(false)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${!showAllUsers ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}
+          >
+            Managed
+          </button>
+          <button
+            onClick={() => setShowAllUsers(true)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${showAllUsers ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}
+          >
+            All Users
+          </button>
         </div>
       </div>
 

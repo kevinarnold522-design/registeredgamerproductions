@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
+import { computeLeaderboard } from "@/lib/leaderboardScore";
 
 const TABS = [
   { id: "community", label: "Community", icon: Users },
@@ -105,140 +106,9 @@ export default function LeaderboardPage() {
 
   const loadLeaderboard = async (currentTab) => {
     setLoading(true);
-
-    if (currentTab === "tournaments") {
-      // Build leaderboard from tournaments — count wins/participations
-      const tournaments = await base44.entities.Tournament.list("-created_date", 200);
-      const scoreMap = {};
-      tournaments.forEach(t => {
-        if (!Array.isArray(t.participants)) return;
-        t.participants.forEach(p => {
-          if (!p.email) return;
-          if (!scoreMap[p.email]) scoreMap[p.email] = { email: p.email, username: p.username || p.email, wins: 0, participated: 0, score: 0, avatar_url: p.avatar_url || "" };
-          scoreMap[p.email].participated += 1;
-          if (p.winner) scoreMap[p.email].wins += 1;
-          scoreMap[p.email].score = scoreMap[p.email].wins * 100 + scoreMap[p.email].participated * 10;
-        });
-      });
-      const limit = user ? 100 : 10;
-      const sorted = Object.values(scoreMap).sort((a, b) => b.score - a.score).slice(0, limit).map(e => ({
-        ...e,
-        posts: e.participated,
-        likes: e.wins,
-        score: e.wins * 1000 + e.participated * 10,
-      }));
-      setLeaderboard(sorted);
-      setLoading(false);
-      return;
-    }
-
-    // For community & modding — aggregate from posts, channel posts, listings, ratings, and orders (physical sales)
-    const [posts, channelPosts, listings, ratings, profiles, orders] = await Promise.all([
-      base44.entities.CommunityPost.list("-created_date", 1000),
-      base44.entities.ChannelPost.list("-created_date", 1000).catch(() => []),
-      base44.entities.Listing.list("-created_date", 1000).catch(() => []),
-      base44.entities.PostRating.list("-created_date", 1000),
-      base44.entities.UserProfile.list("-created_date", 1000),
-      base44.entities.Order.filter({ payment_status: "paid" }, "-created_date", 500).catch(() => []),
-    ]);
-
-    // Filter posts by category for modding
-    const filteredPosts = currentTab === "modding"
-      ? posts.filter(p => {
-          const content = (p.content || "").toLowerCase();
-          return content.includes("mod") || content.includes("hack") || content.includes("patch") || content.includes("iso");
-        })
-      : posts;
-
-    const scoreMap = {};
-
-    // Seed EVERY registered user so all members appear on the leaderboard, even with 0 points
-    profiles.forEach(p => {
-      if (!p.user_email) return;
-      scoreMap[p.user_email] = {
-        email: p.user_email,
-        username: p.username || p.display_name || p.user_email,
-        posts: 0,
-        likes: 0,
-        score: 0,
-        avatar_url: p.avatar_url || "",
-      };
-    });
-
-    filteredPosts.forEach(post => {
-      const key = post.author_email;
-      if (!key) return;
-      if (!scoreMap[key]) scoreMap[key] = { email: key, username: post.author_username || key, posts: 0, likes: 0, score: 0, avatar_url: post.author_avatar || "" };
-      scoreMap[key].posts += 1;
-      scoreMap[key].likes += (post.likes || 0);
-      scoreMap[key].score += 10 + (post.likes || 0) * 5;
-    });
-
-    // Channel posts (gaming newsfeed) count toward Community ranking; in Modding only mod-related ones.
-    const filteredChannelPosts = currentTab === "modding"
-      ? channelPosts.filter(p => {
-          const hay = `${p.caption || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
-          return hay.includes("mod") || hay.includes("hack") || hay.includes("patch") || hay.includes("iso");
-        })
-      : channelPosts;
-    filteredChannelPosts.forEach(post => {
-      const key = post.creator_email;
-      if (!key) return;
-      if (!scoreMap[key]) scoreMap[key] = { email: key, username: post.creator_username || key, posts: 0, likes: 0, score: 0, avatar_url: post.creator_avatar || "" };
-      scoreMap[key].posts += 1;
-      scoreMap[key].likes += (post.likes || 0);
-      scoreMap[key].score += 10 + (post.likes || 0) * 5;
-    });
-
-    // Listings count as posts: modding tab → modding/premium mods only; community tab → all listings
-    listings.forEach(l => {
-      const key = l.seller_email;
-      if (!key) return;
-      const isMod = l.category === "modding" || l.category === "premium_mods";
-      if (currentTab === "modding" && !isMod) return;
-      if (!scoreMap[key]) scoreMap[key] = { email: key, username: l.seller_username || key, posts: 0, likes: 0, score: 0, avatar_url: "" };
-      scoreMap[key].posts += 1;
-      scoreMap[key].likes += (l.likes || 0);
-      scoreMap[key].score += 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2;
-    });
-
-    // Add 1000pts per completed physical product sale
-    orders.forEach(order => {
-      const key = order.seller_email;
-      if (!key) return;
-      if (!scoreMap[key]) scoreMap[key] = { email: key, username: order.seller_username || key, posts: 0, likes: 0, score: 0, avatar_url: "" };
-      scoreMap[key].score += 1000;
-    });
-
-    // Add rating scores — a rating's post_id may belong to a community post OR a listing.
-    const authorByContentId = {};
-    posts.forEach(p => { if (p.id) authorByContentId[p.id] = p.author_email; });
-    listings.forEach(l => { if (l.id) authorByContentId[l.id] = l.seller_email; });
-    ratings.forEach(r => {
-      const authorEmail = authorByContentId[r.post_id];
-      if (!authorEmail || !scoreMap[authorEmail]) return;
-      scoreMap[authorEmail].score += r.rating * 2;
-    });
-
-    // Enrich with profile data
-    const profileMap = {};
-    profiles.forEach(p => { profileMap[p.user_email] = p; });
-
+    const sorted = await computeLeaderboard({ tab: currentTab });
     const limit = user ? 100 : 10;
-    const sorted = Object.values(scoreMap)
-      .map(entry => {
-        const prof = profileMap[entry.email];
-        return {
-          ...entry,
-          username: prof?.username || prof?.display_name || entry.username,
-          avatar_url: prof?.avatar_url || entry.avatar_url,
-          is_verified: prof?.is_verified || false,
-        };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
-
-    setLeaderboard(sorted);
+    setLeaderboard(sorted.slice(0, limit));
     setLoading(false);
   };
 
