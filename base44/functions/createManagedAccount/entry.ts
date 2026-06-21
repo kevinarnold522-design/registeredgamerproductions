@@ -1,5 +1,4 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const ADMIN_EMAILS = [
     'kevinjersey2019@gmail.com',
@@ -7,18 +6,21 @@ const ADMIN_EMAILS = [
     'kevinarnold522@gmail.com',
 ];
 
+const SUPA_URL = () => {
+    const raw = Deno.env.get('VITE_SUPABASE_URL');
+    return (raw && raw.startsWith('http')) ? raw : 'https://smymannqqogtshvsiqyp.supabase.co';
+};
+
 // Verify the Supabase access token (auth migrated from Base44 -> Supabase).
-// Token can come from the Authorization header OR the request body — the SDK
-// does not reliably forward custom headers, so the body is the dependable path.
+// Token can come from the Authorization header OR the request body.
 async function getSupabaseUser(req, bodyToken) {
     const headerToken = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
     const token = headerToken || bodyToken || '';
     if (!token) return null;
-    const url = Deno.env.get('VITE_SUPABASE_URL');
     const key = Deno.env.get('VITE_SUPABASE_ANON_KEY');
-    if (!url || !key) return null;
+    if (!key) return null;
     try {
-        const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+        const supabase = createClient(SUPA_URL(), key, { auth: { persistSession: false, autoRefreshToken: false } });
         const { data: { user }, error } = await supabase.auth.getUser(token);
         if (error || !user) return null;
         return { id: user.id, email: user.email, role: (user.user_metadata || {}).role };
@@ -28,9 +30,16 @@ async function getSupabaseUser(req, bodyToken) {
     }
 }
 
+// Header columns are real columns; everything else lives inside the jsonb `data`.
+const HEADER = new Set(['id', 'created_date', 'updated_date', 'created_by_id', 'created_by']);
+function flatten(row) {
+    if (!row) return row;
+    const { data, ...header } = row;
+    return { ...(data || {}), ...header };
+}
+
 Deno.serve(async (req) => {
     try {
-        const base44 = createClientFromRequest(req);
         const body = await req.json().catch(() => ({}));
         const { action, email, username, avatar_url, display_name, account_type, target_email, include_all, accessToken } = body;
 
@@ -42,29 +51,41 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
         }
 
-        const db = base44.asServiceRole.entities;
+        const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        if (!serviceKey) {
+            return Response.json({ error: 'Missing SUPABASE_SERVICE_ROLE_KEY' }, { status: 500 });
+        }
+        const supabase = createClient(SUPA_URL(), serviceKey, { auth: { persistSession: false } });
+
+        // Helper: filter a table by a field inside the jsonb data column.
+        async function filterData(table, field, value) {
+            const { data, error } = await supabase.from(table).select('*').eq(`data->>${field}`, String(value));
+            if (error) throw new Error(error.message);
+            return (data || []).map(flatten);
+        }
 
         // List accounts. By default only managed accounts; pass include_all:true
         // to list EVERY account so an admin can switch into any of them.
         if (action === 'list') {
-            const managedAccounts = include_all
-                ? await db.UserProfile.list('-created_date', 1000)
-                : await db.UserProfile.filter({ is_managed_account: true });
+            let accounts;
+            if (include_all) {
+                const { data, error } = await supabase.from('UserProfile').select('*').order('created_date', { ascending: false }).limit(1000);
+                if (error) throw new Error(error.message);
+                accounts = (data || []).map(flatten);
+            } else {
+                accounts = await filterData('UserProfile', 'is_managed_account', true);
+            }
 
             const accountsWithStats = await Promise.all(
-                managedAccounts.map(async (account) => {
+                accounts.map(async (account) => {
                     const [listings, posts, follows] = await Promise.all([
-                        db.Listing.filter({ seller_email: account.user_email }).catch(() => []),
-                        db.CommunityPost.filter({ author_email: account.user_email }).catch(() => []),
-                        db.Follow.filter({ follower_email: account.user_email }).catch(() => []),
+                        filterData('Listing', 'seller_email', account.user_email).catch(() => []),
+                        filterData('CommunityPost', 'author_email', account.user_email).catch(() => []),
+                        filterData('Follow', 'follower_email', account.user_email).catch(() => []),
                     ]);
                     return {
                         ...account,
-                        stats: {
-                            listings: listings.length,
-                            posts: posts.length,
-                            following: follows.length,
-                        }
+                        stats: { listings: listings.length, posts: posts.length, following: follows.length },
                     };
                 })
             );
@@ -82,21 +103,12 @@ Deno.serve(async (req) => {
                 ? email
                 : `${username.toLowerCase().replace(/\s+/g, '_')}@gamerproductions.com`;
 
-            const existingUsers = await db.UserProfile.filter({ user_email: finalEmail });
+            const existingUsers = await filterData('UserProfile', 'user_email', finalEmail);
             if (existingUsers.length > 0) {
                 return Response.json({ error: 'Email already registered' }, { status: 400 });
             }
 
-            // Try to invite the auth user — but don't fail the whole create if the
-            // invite can't be sent (fake/placeholder emails will reject). The
-            // UserProfile is the real source of truth for managed accounts.
-            try {
-                await base44.users.inviteUser(finalEmail, 'user');
-            } catch (inviteErr) {
-                console.warn('inviteUser skipped for managed account', finalEmail, inviteErr.message);
-            }
-
-            const profile = await db.UserProfile.create({
+            const profileData = {
                 user_email: finalEmail,
                 username: username,
                 display_name: display_name || username,
@@ -105,12 +117,19 @@ Deno.serve(async (req) => {
                 is_managed_account: true,
                 managed_by_admin: user.email,
                 joined_date: new Date().toISOString(),
-            });
+            };
+
+            const { data: inserted, error } = await supabase
+                .from('UserProfile')
+                .insert({ created_by: user.email, data: profileData })
+                .select('*')
+                .single();
+            if (error) throw new Error(error.message);
 
             return Response.json({
                 success: true,
                 message: 'Managed account created successfully',
-                profile: profile,
+                profile: flatten(inserted),
                 email: finalEmail,
             });
         }
@@ -121,18 +140,19 @@ Deno.serve(async (req) => {
                 return Response.json({ error: 'Target email required' }, { status: 400 });
             }
 
-            const targetAccount = await db.UserProfile.filter({ user_email: target_email });
+            const targetAccount = await filterData('UserProfile', 'user_email', target_email);
             if (targetAccount.length === 0) {
                 return Response.json({ error: 'Account not found' }, { status: 404 });
             }
 
+            const t = targetAccount[0];
             return Response.json({
                 success: true,
                 target_email: target_email,
-                username: targetAccount[0].username,
-                display_name: targetAccount[0].display_name,
-                avatar_url: targetAccount[0].avatar_url,
-                account_type: targetAccount[0].account_type || 'regular',
+                username: t.username,
+                display_name: t.display_name,
+                avatar_url: t.avatar_url,
+                account_type: t.account_type || 'regular',
             });
         }
 
