@@ -1,18 +1,14 @@
 import React, { useState } from "react";
 import { Play } from "lucide-react";
+import { extractYouTubeId } from "@/lib/youtube";
 
-function extractYouTubeId(url) {
-  if (!url) return null;
-  const match = url.match(
-    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
-  );
-  return match ? match[1] : null;
-}
-
-// Universal preview: accepts a YouTube URL (-> iframe) or an uploaded video URL (-> <video>).
-// Falls back to a graceful placeholder on missing/broken media.
+// Universal preview: accepts a YouTube URL (-> thumbnail that loads the
+// embed on click) or an uploaded video URL (-> <video>).
+// The click-to-play approach renders reliably everywhere (thumbnails are
+// plain images and never blocked), then swaps to the real YouTube player.
 export default function UniversalVideoPreview({ url, poster, className = "" }) {
   const [errored, setErrored] = useState(false);
+  const [playing, setPlaying] = useState(false);
   if (!url) return null;
 
   const ytId = extractYouTubeId(url);
@@ -27,15 +23,35 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
   }
 
   if (ytId) {
+    if (playing) {
+      return (
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1`}
+          title="Preview"
+          className={className}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      );
+    }
     return (
-      <iframe
-        src={`https://www.youtube.com/embed/${ytId}`}
-        title="Preview"
-        className={className}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        onError={() => setErrored(true)}
-      />
+      <button
+        type="button"
+        onClick={() => setPlaying(true)}
+        className={`relative block w-full h-full group ${className}`}
+      >
+        <img
+          src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+          alt="Video preview"
+          className="w-full h-full object-cover"
+          onError={() => setErrored(true)}
+        />
+        <span className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition-colors">
+          <span className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+            <Play className="w-8 h-8 text-white fill-white ml-1" />
+          </span>
+        </span>
+      </button>
     );
   }
 

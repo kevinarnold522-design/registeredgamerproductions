@@ -27,6 +27,7 @@ import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 import BuyUnlockModal from "@/components/payments/BuyUnlockModal";
 import { useDwellTracker } from "@/components/listings/useDwellTracker";
+import { getListingYouTubeId } from "@/lib/youtube";
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -387,8 +388,8 @@ export default function ListingPage() {
     </div>
   );
 
-  const ytSource = listing.youtube_url || listing.video_url || listing.preview_video_url || "";
-  const ytId = listing.youtube_video_id || ytSource.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1];
+  const ytId = getListingYouTubeId(listing);
+  const ytEmbedUrl = ytId ? `https://www.youtube.com/watch?v=${ytId}` : "";
   const isFree = !listing.price || listing.price === 0 || listing.is_free;
   const hasDownload = listing.download_url || listing.external_link;
   const sellerTheme = buildProfileTheme(seller || {}, seller?.profile_theme_style || "default");
@@ -464,8 +465,7 @@ export default function ListingPage() {
           <div>
             <div className={`relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center mb-3 ${glowClass}`} style={glowStyle}>
               {ytId ? (
-                <iframe src={`https://www.youtube.com/embed/${ytId}`} title={listing.title} className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                <UniversalVideoPreview url={ytEmbedUrl} className="w-full h-full" />
               ) : listing.video_url ? (
                 <video src={listing.video_url} controls className="w-full h-full object-contain" />
               ) : listing.preview_video_url ? (
