@@ -94,56 +94,35 @@ export default function Navbar() {
         
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Burger — top-left, all options hidden until clicked */}
-            <button
-              className="p-2 -ml-1 mr-1 text-gray-300 hover:text-white"
-              onClick={() => setMenuOpen(!menuOpen)}
-              title="Menu">
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group mr-auto">
-              <motion.div
-                onClick={handleControllerClick}
-                className="w-14 h-14 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 overflow-hidden"
-                animate={{ rotate: [0, -2, 2, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
-                style={{
-                  boxShadow: controllerCycling ?
-                  "0 0 32px rgba(168,85,247,0.5)" :
-                  "0 0 14px rgba(168,85,247,0.25)",
-                  transition: "box-shadow 0.4s ease"
-                }}>
-                
-                <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/cf4a1e4eb_generated_image.png" alt="Gamer.Productions" className="w-full h-full object-cover" />
-              </motion.div>
-              <div className="hidden sm:block">
-                <span className="font-black text-white text-2xl">Gamer</span>
-                <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-2xl">.Productions</span>
-              </div>
-            </Link>
-
-            {/* Desktop Links (hidden — all options live in the burger menu) */}
-            <div className="hidden items-center gap-4">
-              {navLinks.map((link) =>
-              link.href.startsWith("#") ?
-              <a key={link.label} href={link.href}
-              className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
-                    {link.label}
-                  </a> :
-
-              <button key={link.label} onClick={() => navigate(link.href)}
-              className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
-                    {link.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-                    {link.label}
-                  </button>
-
-              )}
+          <div className="relative flex items-center h-20">
+            {/* LEFT: Burger + Logo */}
+            <div className="flex items-center flex-1 min-w-0">
+              <button
+                className="p-2 -ml-1 mr-1 text-gray-300 hover:text-white"
+                onClick={() => setMenuOpen(!menuOpen)}
+                title="Menu">
+                {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+              <Link to="/" className="flex items-center group">
+                <motion.div
+                  onClick={handleControllerClick}
+                  className="w-14 h-14 flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0"
+                  animate={{ rotate: [0, -2, 2, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
+                  style={{ filter: "drop-shadow(0 0 14px rgba(168,85,247,0.45))" }}>
+                  <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="Gamer.Productions" className="w-full h-full object-contain" />
+                </motion.div>
+              </Link>
             </div>
 
-            {/* Right */}
-            <div className="flex items-center gap-2">
+            {/* CENTER: Brand name */}
+            <Link to="/" className="hidden lg:flex items-center flex-shrink-0 whitespace-nowrap">
+              <span className="font-black text-white text-2xl">Gamer</span>
+              <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-2xl">.Productions</span>
+            </Link>
+
+            {/* RIGHT */}
+            <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
               <style>{`@keyframes fire-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }`}</style>
               <Link to="/about" className="hidden md:inline-block px-3 py-2 text-sm font-semibold text-gray-300 hover:text-purple-300 transition-colors">About Us</Link>
               <Link to="/privacy" className="hidden md:inline-block px-3 py-2 text-sm font-semibold text-gray-300 hover:text-purple-300 transition-colors">Privacy Policy</Link>
