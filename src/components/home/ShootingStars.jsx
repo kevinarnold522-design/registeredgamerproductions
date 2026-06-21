@@ -46,7 +46,7 @@ export default function ShootingStars() {
       return {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        r: Math.random() * 70 + 50,
+        r: Math.random() * 8 + 6,
         core: p[0], mid: p[1], edge: p[2],
         dx: (Math.random() - 0.5) * 0.12,
         dy: (Math.random() - 0.5) * 0.12,
@@ -54,7 +54,7 @@ export default function ShootingStars() {
       };
     });
 
-    // Drifting rockets
+    // Drifting rockets — classic capsule with fins, porthole & flame
     class Rocket {
       constructor() { this.reset(true); }
       reset(initial = false) {
@@ -63,63 +63,85 @@ export default function ShootingStars() {
         this.y = Math.random() * canvas.height;
         this.speed = (Math.random() * 1.2 + 0.8) * (this.fromLeft ? 1 : -1);
         this.bob = Math.random() * Math.PI * 2;
-        this.size = Math.random() * 10 + 16;
+        this.size = Math.random() * 8 + 14;
         this.waitFrames = initial ? Math.random() * 400 : Math.random() * 600 + 200;
       }
       draw() {
         if (this.waitFrames > 0) { this.waitFrames--; return; }
         this.bob += 0.05;
         const yOff = Math.sin(this.bob) * 8;
-        const px = this.x;
-        const py = this.y + yOff;
         const s = this.size;
         const facingRight = this.speed > 0;
 
         ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate(facingRight ? 0.35 : -0.35 + Math.PI);
+        ctx.translate(this.x, this.y + yOff);
+        // Point the nose in the travel direction (rocket drawn pointing up, rotate to horizontal)
+        ctx.rotate(facingRight ? Math.PI / 2 : -Math.PI / 2);
 
-        // Flame trail
-        const flameGrad = ctx.createLinearGradient(-s * 1.6, 0, -s * 0.5, 0);
-        flameGrad.addColorStop(0, "transparent");
-        flameGrad.addColorStop(0.5, "#f59e0b");
-        flameGrad.addColorStop(1, "#fde68a");
+        // Flame
+        const flicker = 0.7 + Math.random() * 0.6;
+        const flameGrad = ctx.createLinearGradient(0, s * 0.7, 0, s * (1.4 + flicker));
+        flameGrad.addColorStop(0, "#fde68a");
+        flameGrad.addColorStop(0.4, "#f59e0b");
+        flameGrad.addColorStop(1, "transparent");
         ctx.fillStyle = flameGrad;
-        ctx.shadowBlur = 18;
-        ctx.shadowColor = "#f59e0b";
+        ctx.shadowBlur = 16;
+        ctx.shadowColor = "#f97316";
         ctx.beginPath();
-        ctx.moveTo(-s * 0.5, -s * 0.18);
-        ctx.lineTo(-s * (1.3 + Math.random() * 0.5), 0);
-        ctx.lineTo(-s * 0.5, s * 0.18);
+        ctx.moveTo(-s * 0.22, s * 0.7);
+        ctx.quadraticCurveTo(0, s * (1.5 + flicker * 0.7), s * 0.22, s * 0.7);
         ctx.closePath();
         ctx.fill();
 
-        // Body
-        ctx.shadowBlur = 12;
+        // Fins
+        ctx.shadowBlur = 8;
         ctx.shadowColor = "#a855f7";
-        ctx.fillStyle = "#e5e7eb";
+        ctx.fillStyle = "#ef4444";
         ctx.beginPath();
-        ctx.moveTo(s * 0.7, 0);
-        ctx.lineTo(-s * 0.4, -s * 0.3);
-        ctx.lineTo(-s * 0.4, s * 0.3);
+        ctx.moveTo(-s * 0.28, s * 0.4);
+        ctx.lineTo(-s * 0.55, s * 0.78);
+        ctx.lineTo(-s * 0.28, s * 0.72);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(s * 0.28, s * 0.4);
+        ctx.lineTo(s * 0.55, s * 0.78);
+        ctx.lineTo(s * 0.28, s * 0.72);
         ctx.closePath();
         ctx.fill();
 
-        // Nose
+        // Body (rounded capsule)
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#c4b5fd";
+        ctx.fillStyle = "#f1f5f9";
+        ctx.beginPath();
+        ctx.moveTo(0, -s * 0.9);
+        ctx.quadraticCurveTo(s * 0.32, -s * 0.4, s * 0.28, s * 0.5);
+        ctx.lineTo(-s * 0.28, s * 0.5);
+        ctx.quadraticCurveTo(-s * 0.32, -s * 0.4, 0, -s * 0.9);
+        ctx.closePath();
+        ctx.fill();
+
+        // Nose cone tip
         ctx.fillStyle = "#a855f7";
         ctx.beginPath();
-        ctx.moveTo(s * 0.7, 0);
-        ctx.lineTo(s * 0.2, -s * 0.18);
-        ctx.lineTo(s * 0.2, s * 0.18);
+        ctx.moveTo(0, -s * 0.9);
+        ctx.quadraticCurveTo(s * 0.18, -s * 0.5, s * 0.1, -s * 0.35);
+        ctx.lineTo(-s * 0.1, -s * 0.35);
+        ctx.quadraticCurveTo(-s * 0.18, -s * 0.5, 0, -s * 0.9);
         ctx.closePath();
         ctx.fill();
 
-        // Window
+        // Porthole
         ctx.shadowBlur = 6;
         ctx.shadowColor = "#22d3ee";
-        ctx.fillStyle = "#67e8f9";
+        ctx.fillStyle = "#0e7490";
         ctx.beginPath();
-        ctx.arc(s * 0.05, 0, s * 0.12, 0, Math.PI * 2);
+        ctx.arc(0, -s * 0.05, s * 0.16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#a5f3fc";
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.05, s * 0.1, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
@@ -128,6 +150,85 @@ export default function ShootingStars() {
       }
     }
     const rockets = Array.from({ length: 4 }, () => new Rocket());
+
+    // Mini floating astronauts — slow drift + gentle spin
+    class Astronaut {
+      constructor() { this.reset(true); }
+      reset(initial = false) {
+        this.x = Math.random() * canvas.width;
+        this.y = initial ? Math.random() * canvas.height : -40;
+        this.dx = (Math.random() - 0.5) * 0.5;
+        this.dy = Math.random() * 0.4 + 0.15;
+        this.size = Math.random() * 5 + 9;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin = (Math.random() - 0.5) * 0.01;
+        this.bob = Math.random() * Math.PI * 2;
+      }
+      draw() {
+        this.bob += 0.04;
+        this.angle += this.spin;
+        const s = this.size;
+        ctx.save();
+        ctx.translate(this.x, this.y + Math.sin(this.bob) * 4);
+        ctx.rotate(this.angle + Math.sin(this.bob) * 0.1);
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "#a855f7";
+
+        // Backpack
+        ctx.fillStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.roundRect(-s * 0.5, -s * 0.35, s * 0.35, s * 0.8, s * 0.1);
+        ctx.fill();
+
+        // Body suit
+        ctx.fillStyle = "#e2e8f0";
+        ctx.beginPath();
+        ctx.roundRect(-s * 0.28, -s * 0.3, s * 0.56, s * 0.75, s * 0.18);
+        ctx.fill();
+
+        // Arms
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = s * 0.18;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.25, -s * 0.05);
+        ctx.lineTo(-s * 0.55, s * 0.2);
+        ctx.moveTo(s * 0.25, -s * 0.05);
+        ctx.lineTo(s * 0.55, -s * 0.25);
+        ctx.stroke();
+
+        // Legs
+        ctx.beginPath();
+        ctx.moveTo(-s * 0.1, s * 0.45);
+        ctx.lineTo(-s * 0.22, s * 0.75);
+        ctx.moveTo(s * 0.1, s * 0.45);
+        ctx.lineTo(s * 0.25, s * 0.72);
+        ctx.stroke();
+
+        // Helmet
+        ctx.fillStyle = "#f8fafc";
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.5, s * 0.32, 0, Math.PI * 2);
+        ctx.fill();
+        // Visor
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "#22d3ee";
+        ctx.fillStyle = "#155e75";
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.5, s * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#a5f3fc";
+        ctx.beginPath();
+        ctx.arc(s * 0.06, -s * 0.55, s * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.y > canvas.height + 60 || this.x < -60 || this.x > canvas.width + 60) this.reset();
+      }
+    }
+    const astronauts = Array.from({ length: 5 }, () => new Astronaut());
 
     // Shooting stars
     const shootingColors = ["#c084fc", "#a855f7", "#9333ea", "#d8b4fe", "#7c3aed", "#e9d5ff"];
@@ -276,6 +377,9 @@ export default function ShootingStars() {
 
       // Draw rockets
       for (const r of rockets) r.draw();
+
+      // Draw floating astronauts
+      for (const a of astronauts) a.draw();
 
       animId = requestAnimationFrame(animate);
     };
