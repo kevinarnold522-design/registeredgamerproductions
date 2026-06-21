@@ -44,7 +44,9 @@ import { TOP_FRANCHISES } from "@/lib/franchises";
 
 function extractYouTubeId(url) {
   if (!url) return null;
-  const match = url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
   return match ? match[1] : null;
 }
 
@@ -387,7 +389,7 @@ export default function CreateListing() {
       mod = modRes?.data;
     } catch (_) { mod = null; }
 
-    const ytId = extractYouTubeId(form.youtube_url);
+    const ytId = extractYouTubeId(form.youtube_url) || extractYouTubeId(form.preview_video_url);
     const priceVal = parseFloat(form.price) || 0;
     const existingListing = editId ? await base44.entities.Listing.get(editId) : null;
     const sellerEmail = existingListing?.seller_email || user.email;
