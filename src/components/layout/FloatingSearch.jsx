@@ -15,7 +15,11 @@ export default function FloatingSearch() {
 
   return (
     <div className="sticky top-0 z-[60] w-full bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 px-4 py-2">
-      <form onSubmit={submit} className="max-w-3xl mx-auto flex items-center gap-2 rounded-2xl border border-purple-700/50 bg-gray-900 px-4 py-2.5 shadow-lg shadow-purple-950/30">
+      <form
+        onSubmit={submit}
+        className="max-w-md mx-auto flex items-center gap-2 rounded-2xl border border-purple-500/60 bg-gray-900 px-4 py-2.5"
+        style={{ boxShadow: "0 0 16px rgba(168,85,247,0.45), inset 0 0 10px rgba(168,85,247,0.12)" }}
+      >
         <Search className="w-4 h-4 text-purple-300 flex-shrink-0" />
         <input
           value={query}

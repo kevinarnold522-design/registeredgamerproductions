@@ -94,12 +94,12 @@ export default function Navbar() {
         
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-12 h-12 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
                 animate={{ rotate: [0, -2, 2, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
                 style={{
@@ -109,7 +109,7 @@ export default function Navbar() {
                   transition: "box-shadow 0.4s ease"
                 }}>
                 
-                <Gamepad2 className={`w-7 h-7 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
+                <Gamepad2 className={`w-8 h-8 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
               </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-2xl">Gamer</span>
