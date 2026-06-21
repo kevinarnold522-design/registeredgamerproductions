@@ -375,6 +375,55 @@ export default function ShootingStars() {
           ctx.fill();
         });
         ctx.globalAlpha = 1;
+
+        // Tethered astronaut dangling below the saucer
+        const sway = Math.sin(this.bob * 1.3) * s * 0.5;
+        const tetherX = sway;
+        const tetherY = s * 2.6;
+        // Tether line
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "rgba(226,232,240,0.6)";
+        ctx.lineWidth = Math.max(1, s * 0.04);
+        ctx.beginPath();
+        ctx.moveTo(0, s * 0.2);
+        ctx.quadraticCurveTo(tetherX * 0.4, s * 1.4, tetherX, tetherY);
+        ctx.stroke();
+        // Mini astronaut
+        const a = s * 0.32;
+        ctx.save();
+        ctx.translate(tetherX, tetherY);
+        ctx.rotate(sway * 0.06);
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "#a855f7";
+        // Backpack
+        ctx.fillStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.roundRect(-a * 0.5, -a * 0.35, a * 0.35, a * 0.8, a * 0.1);
+        ctx.fill();
+        // Body
+        ctx.fillStyle = "#e2e8f0";
+        ctx.beginPath();
+        ctx.roundRect(-a * 0.28, -a * 0.3, a * 0.56, a * 0.75, a * 0.18);
+        ctx.fill();
+        // Arms + legs
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = a * 0.18;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(-a * 0.25, -a * 0.05); ctx.lineTo(-a * 0.55, a * 0.2);
+        ctx.moveTo(a * 0.25, -a * 0.05); ctx.lineTo(a * 0.55, -a * 0.2);
+        ctx.moveTo(-a * 0.1, a * 0.45); ctx.lineTo(-a * 0.22, a * 0.75);
+        ctx.moveTo(a * 0.1, a * 0.45); ctx.lineTo(a * 0.25, a * 0.72);
+        ctx.stroke();
+        // Helmet + visor
+        ctx.fillStyle = "#f8fafc";
+        ctx.beginPath(); ctx.arc(0, -a * 0.5, a * 0.32, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 5; ctx.shadowColor = "#22d3ee";
+        ctx.fillStyle = "#155e75";
+        ctx.beginPath(); ctx.arc(0, -a * 0.5, a * 0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#a5f3fc";
+        ctx.beginPath(); ctx.arc(a * 0.06, -a * 0.55, a * 0.07, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
         ctx.restore();
 
         this.x += this.speed;
@@ -403,7 +452,7 @@ export default function ShootingStars() {
         this.y = Math.random() * canvas.height;
         this.dx = (Math.random() - 0.5) * 0.18;
         this.dy = (Math.random() - 0.5) * 0.18;
-        this.size = Math.random() * 14 + 10;
+        this.size = Math.random() * 7 + 5;
         this.shape = ["full", "crescent", "gibbous", "half"][Math.floor(Math.random() * 4)];
         const tones = ["#e2e8f0", "#fcd34d", "#cbd5e1", "#fed7aa", "#d1d5db"];
         this.color = tones[Math.floor(Math.random() * tones.length)];
@@ -585,10 +634,10 @@ export default function ShootingStars() {
 
       // Deep space background gradient
       const bgGrad = ctx.createLinearGradient(0, 0, canvas.width * 0.3, canvas.height);
-      bgGrad.addColorStop(0, "#050510");
-      bgGrad.addColorStop(0.4, "#07051a");
-      bgGrad.addColorStop(0.7, "#040312");
-      bgGrad.addColorStop(1, "#020208");
+      bgGrad.addColorStop(0, "#1a1340");
+      bgGrad.addColorStop(0.4, "#241a52");
+      bgGrad.addColorStop(0.7, "#1c1342");
+      bgGrad.addColorStop(1, "#150e36");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 

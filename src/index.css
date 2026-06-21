@@ -399,7 +399,7 @@ body {
 .bg-gray-900 { background-color: rgba(17, 24, 39, 0.28) !important; }
 .bg-gray-900\/95 { background-color: rgba(17, 24, 39, 0.35) !important; }
 .bg-gray-950\/95 { background-color: rgba(3, 7, 18, 0.35) !important; }
-.bg-black { background-color: rgba(0, 0, 0, 0.2) !important; }
+.bg-black { background-color: transparent !important; }
 .bg-\[\#030712\] { background-color: rgba(3, 7, 18, 0.25) !important; }
 .bg-\[\#050510\] { background-color: rgba(5, 5, 16, 0.25) !important; }
 .bg-\[\#020208\] { background-color: rgba(2, 2, 8, 0.25) !important; }
@@ -409,8 +409,8 @@ body {
 .bg-gray-950\/70, .bg-gray-950\/60, .bg-gray-950\/50 { background-color: rgba(3, 7, 18, 0.28) !important; }
 .bg-gray-900\/90, .bg-gray-900\/80 { background-color: rgba(17, 24, 39, 0.3) !important; }
 .bg-gray-900\/70, .bg-gray-900\/60, .bg-gray-900\/50 { background-color: rgba(17, 24, 39, 0.26) !important; }
-.bg-black\/90, .bg-black\/80, .bg-black\/70 { background-color: rgba(0, 0, 0, 0.3) !important; }
-.bg-black\/60, .bg-black\/50, .bg-black\/40 { background-color: rgba(0, 0, 0, 0.22) !important; }
+.bg-black\/90, .bg-black\/80, .bg-black\/70 { background-color: rgba(0, 0, 0, 0.12) !important; }
+.bg-black\/60, .bg-black\/50, .bg-black\/40 { background-color: rgba(0, 0, 0, 0.08) !important; }
 
 /* Other dark hex / named fills */
 .bg-\[\#0a0a0f\], .bg-\[\#0a0a14\], .bg-\[\#0f0f1a\], .bg-\[\#070710\], .bg-\[\#0b0b14\] { background-color: rgba(10, 10, 20, 0.25) !important; }
