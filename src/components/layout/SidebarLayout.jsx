@@ -1,26 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import FloatingSearch from "@/components/layout/FloatingSearch";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import { useAuth } from "@/lib/AuthContext";
+import { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from "@/components/layout/AuthNavbar";
 
-// Logged-in users get a fixed top bar with a hamburger menu (no persistent left sidebar),
-// so pages only need top padding. Logged-out visitors get no offset.
+// Logged-in users get a persistent fixed LEFT sidebar on desktop (with the
+// animated controller), and a top hamburger bar on mobile/tablet.
 export default function SidebarLayout({ children }) {
   const { user } = useAuth();
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("sidebar_collapsed") === "true"; } catch { return false; }
+  });
 
-  // Logged-in users get a fixed top bar (hamburger menu) — no left offset, just top padding.
+  // Keep the page offset in sync when the sidebar is collapsed/expanded.
+  useEffect(() => {
+    const sync = () => {
+      try { setCollapsed(localStorage.getItem("sidebar_collapsed") === "true"); } catch {}
+    };
+    window.addEventListener("storage", sync);
+    const interval = setInterval(sync, 400);
+    return () => { window.removeEventListener("storage", sync); clearInterval(interval); };
+  }, []);
+
+  const offset = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+
   return (
     <>
-      <style>{`
-        :root { --sidebar-offset: 0px; }
-        .sidebar-page-offset { margin-left: 0; }
-      `}</style>
       <FloatingSearch />
-      {/* Official Follow Us bar — duplicated at the very top of the whole site */}
-      <div className="w-full bg-gray-950/80 border-b border-purple-900/30 py-2 px-4">
-        <GamerSocialsBar />
-      </div>
-      <div className="sidebar-page-offset">
+      <div className={user ? "lg:ml-[var(--sidebar-offset)]" : ""} style={user ? { "--sidebar-offset": `${offset}px`, transition: "margin-left 0.25s ease" } : undefined}>
         {children}
       </div>
     </>

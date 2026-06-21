@@ -363,8 +363,16 @@ export default function AuthNavbar({ user, profile }) {
 
   return (
     <>
-      {/* Top Bar — hamburger menu on all screen sizes */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
+      {/* Persistent fixed LEFT sidebar — desktop only */}
+      <aside
+        className="hidden lg:flex fixed top-0 left-0 bottom-0 z-50 bg-gray-950 border-r border-purple-900/30 flex-col"
+        style={{ width: w, transition: "width 0.25s ease" }}
+      >
+        {sidebarInner(false)}
+      </aside>
+
+      {/* Top Bar — hamburger menu (mobile/tablet only) */}
+      <nav className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
 
         <button onClick={() => setMobileOpen(true)} className="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-all" title="Menu">
           <Menu className="w-6 h-6" />
