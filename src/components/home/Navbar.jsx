@@ -8,41 +8,41 @@ import EarnNowButton from "@/components/shared/EarnNowButton";
 import ScrollDownHint from "@/components/layout/ScrollDownHint";
 
 const navLinks = [
-  { label: "Categories", href: "#categories" },
-  { label: "Games", href: "/category?cat=games" },
-  { label: "Modding", href: "/category?cat=modding" },
-  { label: "Premium Mods", href: "/category?cat=premium_mods" },
-  { label: "Tools", href: "/category?cat=paid_tools" },
-  { label: "Content", href: "/category?cat=content_streaming" },
-  { label: "Go Live", href: "/studio", live: true },
-  { label: "Tournaments", href: "/category?cat=tournaments" },
-  { label: "Marketplace", href: "/category?cat=buy_sell" },
-];
+{ label: "Categories", href: "#categories" },
+{ label: "Games", href: "/category?cat=games" },
+{ label: "Modding", href: "/category?cat=modding" },
+{ label: "Premium Mods", href: "/category?cat=premium_mods" },
+{ label: "Tools", href: "/category?cat=paid_tools" },
+{ label: "Content", href: "/category?cat=content_streaming" },
+{ label: "Go Live", href: "/studio", live: true },
+{ label: "Tournaments", href: "/category?cat=tournaments" },
+{ label: "Marketplace", href: "/category?cat=buy_sell" }];
+
 
 const accountTypes = [
-  {
-    id: "regular",
-    icon: <User className="w-5 h-5 text-blue-400" />,
-    label: "Gamer",
-    desc: "Browse, buy & share videos",
-    color: "border-blue-500/40 hover:border-blue-400/70 bg-blue-900/10",
-  },
-  {
-    id: "digital_creator",
-    icon: <Youtube className="w-5 h-5 text-red-400" />,
-    label: "Digital Creator",
-    desc: "Upload gameplay, mods, tutorials, streams, walkthroughs & missions. Earn $1/1K views + link shortener bonuses.",
-    color: "border-purple-500/40 hover:border-purple-400/70 bg-purple-900/10",
-    tags: ["Gameplay", "Mods", "Streams", "Walkthroughs", "Missions", "Highlights"],
-  },
-  {
-    id: "business",
-    icon: <Store className="w-5 h-5 text-green-400" />,
-    label: "Business / Seller",
-    desc: "List & sell gaming products or services",
-    color: "border-green-500/40 hover:border-green-400/70 bg-green-900/10",
-  },
-];
+{
+  id: "regular",
+  icon: <User className="w-5 h-5 text-blue-400" />,
+  label: "Gamer",
+  desc: "Browse, buy & share videos",
+  color: "border-blue-500/40 hover:border-blue-400/70 bg-blue-900/10"
+},
+{
+  id: "digital_creator",
+  icon: <Youtube className="w-5 h-5 text-red-400" />,
+  label: "Digital Creator",
+  desc: "Upload gameplay, mods, tutorials, streams, walkthroughs & missions. Earn $1/1K views + link shortener bonuses.",
+  color: "border-purple-500/40 hover:border-purple-400/70 bg-purple-900/10",
+  tags: ["Gameplay", "Mods", "Streams", "Walkthroughs", "Missions", "Highlights"]
+},
+{
+  id: "business",
+  icon: <Store className="w-5 h-5 text-green-400" />,
+  label: "Business / Seller",
+  desc: "List & sell gaming products or services",
+  color: "border-green-500/40 hover:border-green-400/70 bg-green-900/10"
+}];
+
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -56,18 +56,18 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const colorCycles = [
-    "from-purple-600 to-pink-600",   // default
-    "from-blue-500 to-cyan-500",
-    "from-green-500 to-emerald-500",
-    "from-yellow-500 to-orange-500",
-    "from-red-500 to-pink-500",
-    "from-indigo-500 to-violet-500",
-  ];
+  "from-purple-600 to-pink-600", // default
+  "from-blue-500 to-cyan-500",
+  "from-green-500 to-emerald-500",
+  "from-yellow-500 to-orange-500",
+  "from-red-500 to-pink-500",
+  "from-indigo-500 to-violet-500"];
+
   const [colorIdx, setColorIdx] = useState(0);
 
   const handleControllerClick = () => {
     setControllerCycling(true);
-    setColorIdx(i => (i + 1) % colorCycles.length);
+    setColorIdx((i) => (i + 1) % colorCycles.length);
     setTimeout(() => setControllerCycling(false), 600);
   };
   useEffect(() => {
@@ -90,8 +90,8 @@ export default function Navbar() {
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-40 bg-gray-950/95 backdrop-blur-md lg:bg-gray-950 border-b border-purple-900/40 shadow-lg shadow-purple-900/10"
-      >
+        className="fixed top-0 left-0 right-0 z-40 bg-gray-950/95 backdrop-blur-md lg:bg-gray-950 border-b border-purple-900/40 shadow-lg shadow-purple-900/10">
+        
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-24">
@@ -99,16 +99,16 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-3 group">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-24 h-24 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
+                className={`w-24 h-24 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br mx-1 px-2 my-2 py-3 ${colorCycles[colorIdx]}`}
                 animate={{ rotate: [0, -2, 2, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
                 style={{
-                  boxShadow: controllerCycling
-                    ? "0 0 32px rgba(168,85,247,0.5)"
-                    : "0 0 14px rgba(168,85,247,0.25)",
-                  transition: "box-shadow 0.4s ease",
-                }}
-              >
+                  boxShadow: controllerCycling ?
+                  "0 0 32px rgba(168,85,247,0.5)" :
+                  "0 0 14px rgba(168,85,247,0.25)",
+                  transition: "box-shadow 0.4s ease"
+                }}>
+                
                 <Gamepad2 className={`w-14 h-14 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
               </motion.div>
               <div className="hidden sm:block">
@@ -119,20 +119,20 @@ export default function Navbar() {
 
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-4">
-              {navLinks.map((link) => (
-                link.href.startsWith("#") ? (
-                  <a key={link.label} href={link.href}
-                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
+              {navLinks.map((link) =>
+              link.href.startsWith("#") ?
+              <a key={link.label} href={link.href}
+              className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
                     {link.label}
-                  </a>
-                ) : (
-                  <button key={link.label} onClick={() => navigate(link.href)}
-                    className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
+                  </a> :
+
+              <button key={link.label} onClick={() => navigate(link.href)}
+              className={`flex items-center gap-1 text-sm font-medium transition-colors ${link.live ? "text-red-400 hover:text-red-300" : "text-gray-400 hover:text-purple-400"}`}>
                     {link.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
                     {link.label}
                   </button>
-                )
-              ))}
+
+              )}
             </div>
 
             {/* Right */}
@@ -140,14 +140,14 @@ export default function Navbar() {
               <style>{`@keyframes fire-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }`}</style>
               {authenticated && <button
                 onClick={() => navigate('/dashboard')}
-                className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-700 text-white text-sm font-black transition-all shadow-lg"
-              >
+                className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-700 text-white text-sm font-black transition-all shadow-lg">
+                
                 Dashboard
               </button>}
               <button
                 className="md:hidden p-2 text-gray-400"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
+                onClick={() => setMenuOpen(!menuOpen)}>
+                
                 {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
@@ -155,47 +155,47 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu */}
-        {menuOpen && (
+        {menuOpen &&
         <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto">
-          {navLinks.map((link) => (
-            link.href.startsWith("#") ? (
-              <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
+          {navLinks.map((link) =>
+          link.href.startsWith("#") ?
+          <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
                 {link.label}
-              </a>
-            ) : (
-              <button key={link.label} onClick={() => { setMenuOpen(false); navigate(link.href); }} className="text-gray-300 hover:text-purple-400 font-medium py-1 text-left">
+              </a> :
+
+          <button key={link.label} onClick={() => {setMenuOpen(false);navigate(link.href);}} className="text-gray-300 hover:text-purple-400 font-medium py-1 text-left">
                 {link.label}
               </button>
-            )
-          ))}
+
+          )}
             {authenticated && <button
-              onClick={() => { setMenuOpen(false); navigate('/dashboard'); }}
-              className="mt-2 text-center px-4 py-2 rounded-lg bg-purple-700 text-white font-semibold"
-            >
+            onClick={() => {setMenuOpen(false);navigate('/dashboard');}}
+            className="mt-2 text-center px-4 py-2 rounded-lg bg-purple-700 text-white font-semibold">
+            
               Dashboard
             </button>}
           </div>
-        )}
+        }
       </motion.nav>
 
       {/* Sign Up Account Type Modal */}
       <AnimatePresence>
-        {showSignUpModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center px-4"
-            style={{ background: "rgba(0,0,0,0.85)" }}
-            onClick={() => setShowSignUpModal(false)}
-          >
+        {showSignUpModal &&
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.85)" }}
+          onClick={() => setShowSignUpModal(false)}>
+          
             <motion.div
-              initial={{ opacity: 0, scale: 0.92, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-gray-950 border border-purple-700/40 rounded-3xl p-7 w-full max-w-md shadow-2xl shadow-purple-900/30"
-            >
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-gray-950 border border-purple-700/40 rounded-3xl p-7 w-full max-w-md shadow-2xl shadow-purple-900/30">
+            
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Gamepad2 className="w-5 h-5 text-purple-400" />
@@ -212,12 +212,12 @@ export default function Navbar() {
               {/* GP Logo welcome signage */}
               <div className="flex flex-col items-center my-4">
                 <motion.span
-                  aria-label="Gamer Productions"
-                  className="w-20 h-20 mb-2 flex items-center justify-center text-6xl"
-                  animate={{ scale: [1, 1.06, 1], rotate: [0, -4, 4, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ filter: "drop-shadow(0 0 18px rgba(168,85,247,0.7))" }}
-                ><Gamepad2 className="w-12 h-12 text-white" /></motion.span>
+                aria-label="Gamer Productions"
+                className="w-20 h-20 mb-2 flex items-center justify-center text-6xl"
+                animate={{ scale: [1, 1.06, 1], rotate: [0, -4, 4, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                style={{ filter: "drop-shadow(0 0 18px rgba(168,85,247,0.7))" }}>
+                <Gamepad2 className="w-12 h-12 text-white" /></motion.span>
                 <span className="text-2xl font-black text-white tracking-tight">Welcome to <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Gamer.Productions</span></span>
                 <span className="text-gray-500 text-xs mt-1">The #1 Gaming Hub Community</span>
               </div>
@@ -226,50 +226,50 @@ export default function Navbar() {
               <p className="text-gray-500 text-sm mb-4">Choose your account type to get started:</p>
 
               <div className="space-y-3 mb-5">
-                {accountTypes.map((type) => (
-                  <button
-                    key={type.id}
-                    onClick={() => handleSignUp(type.id)}
-                    className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group ${type.color}`}
-                  >
+                {accountTypes.map((type) =>
+              <button
+                key={type.id}
+                onClick={() => handleSignUp(type.id)}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group ${type.color}`}>
+                
                     <div className="w-10 h-10 rounded-xl bg-gray-900 border border-gray-700 flex items-center justify-center flex-shrink-0">
                       {type.icon}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold text-sm">{type.label}</p>
                       <p className="text-gray-400 text-xs mt-0.5 leading-relaxed">{type.desc}</p>
-                      {type.tags && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {type.tags.map(t => <span key={t} className="text-[10px] bg-purple-900/40 border border-purple-700/30 text-purple-300 px-1.5 py-0.5 rounded-full">{t}</span>)}
+                      {type.tags &&
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                          {type.tags.map((t) => <span key={t} className="text-[10px] bg-purple-900/40 border border-purple-700/30 text-purple-300 px-1.5 py-0.5 rounded-full">{t}</span>)}
                         </div>
-                      )}
+                  }
                     </div>
                     <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
                   </button>
-                ))}
+              )}
               </div>
 
               <div className="border-t border-gray-800 pt-4 text-center">
                 <p className="text-gray-500 text-sm">
                   Already have an account?{" "}
                   <button
-                    onClick={() => { setShowSignUpModal(false); setShowLoginModal(true); }}
-                    className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"
-                  >
+                  onClick={() => {setShowSignUpModal(false);setShowLoginModal(true);}}
+                  className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+                  
                     Sign In →
                   </button>
                 </p>
               </div>
             </motion.div>
           </motion.div>
-        )}
+        }
       </AnimatePresence>
 
       <EmailLoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onSwitchToSignUp={() => setShowSignUpModal(true)}
-      />
-    </>
-  );
+        onSwitchToSignUp={() => setShowSignUpModal(true)} />
+      
+    </>);
+
 }
