@@ -95,8 +95,15 @@ export default function Navbar() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
+            {/* Burger — top-left, all options hidden until clicked */}
+            <button
+              className="p-2 -ml-1 mr-1 text-gray-300 hover:text-white"
+              onClick={() => setMenuOpen(!menuOpen)}
+              title="Menu">
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center gap-3 group mr-auto">
               <motion.div
                 onClick={handleControllerClick}
                 className={`w-14 h-14 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
@@ -117,8 +124,8 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* Desktop Links */}
-            <div className="hidden md:flex items-center gap-4">
+            {/* Desktop Links (hidden — all options live in the burger menu) */}
+            <div className="hidden items-center gap-4">
               {navLinks.map((link) =>
               link.href.startsWith("#") ?
               <a key={link.label} href={link.href}
@@ -144,19 +151,13 @@ export default function Navbar() {
                 
                 Dashboard
               </button>}
-              <button
-                className="md:hidden p-2 text-gray-400"
-                onClick={() => setMenuOpen(!menuOpen)}>
-                
-                {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
             </div>
           </div>
         </div>
 
         {/* Mobile menu */}
         {menuOpen &&
-        <div className="md:hidden bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto">
+        <div className="bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto">
           {navLinks.map((link) =>
           link.href.startsWith("#") ?
           <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>

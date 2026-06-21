@@ -39,10 +39,11 @@ export default function ManagedAccountsPanel() {
   const loadAccounts = async () => {
     setLoading(true);
     try {
-      const response = await invokeAdminFn('createManagedAccount', { action: 'list', include_all: showAllUsers });
-      if (response.data.success) {
-        setAccounts(response.data.accounts);
-      }
+      // Read accounts straight from the UserProfile entity so every created /
+      // ghost / managed account always reflects here (and in the switcher).
+      const all = await base44.entities.UserProfile.list("-created_date", 1000);
+      const rows = showAllUsers ? all : all.filter(a => a.is_managed_account === true);
+      setAccounts(rows.map(a => ({ ...a, stats: a.stats || { listings: 0, posts: 0, following: 0 } })));
     } catch (error) {
       toast.error("Failed to load accounts");
     } finally {
@@ -169,8 +170,8 @@ export default function ManagedAccountsPanel() {
   };
 
   const filteredAccounts = accounts.filter(acc =>
-    acc.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    acc.user_email.toLowerCase().includes(searchQuery.toLowerCase())
+    (acc.username || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (acc.user_email || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
@@ -301,7 +302,7 @@ export default function ManagedAccountsPanel() {
                     {account.avatar_url ? (
                       <img src={account.avatar_url} className="w-full h-full object-cover rounded-xl" alt="" />
                     ) : (
-                      <span className="text-white font-bold text-sm">{account.username[0]?.toUpperCase()}</span>
+                      <span className="text-white font-bold text-sm">{(account.username || "?")[0]?.toUpperCase()}</span>
                     )}
                   </div>
                   <div className="min-w-0">
@@ -315,7 +316,7 @@ export default function ManagedAccountsPanel() {
                     account.account_type === 'digital_creator' ? 'bg-purple-900/30 text-purple-400 border border-purple-700/30' :
                     'bg-gray-800 text-gray-400 border border-gray-700'
                   }`}>
-                    {account.account_type.replace('_', ' ')}
+                    {(account.account_type || "regular").replace('_', ' ')}
                   </span>
                 </div>
                 <div className="md:col-span-2 text-white text-sm font-semibold"><span className="md:hidden text-gray-500 text-xs mr-1">Listings:</span>{account.stats?.listings || 0}</div>
