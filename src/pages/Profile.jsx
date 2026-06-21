@@ -100,6 +100,9 @@ export default function Profile() {
   const { user: authUser } = useAuth();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  // The logged-in viewer's OWN profile — used for the navbar so it always
+  // reflects you, even while viewing someone else's profile.
+  const [ownProfile, setOwnProfile] = useState(null);
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
@@ -136,6 +139,7 @@ export default function Profile() {
         
         if (ghostProfile) {
           setProfile(ghostProfile);
+          setOwnProfile(ghostProfile);
           setUser({
             email: ghostEmail,
             full_name: ghostProfile.username || impersonationData.targetUsername,
@@ -158,6 +162,11 @@ export default function Profile() {
         emailToLoad = targetEmail;
         isOwnProfileValue = false;
         setUser(me);
+        // Viewing someone else: load YOUR own profile for the navbar so it
+        // keeps showing you, not the person whose profile you're visiting.
+        if (me?.email) {
+          getProfileByEmail(me.email).then((p) => p && setOwnProfile(p)).catch(() => {});
+        }
       } else {
         // Viewing your own profile: wait until the logged-in user is available
         // before deciding. Bailing early would permanently hide the upload buttons.
@@ -176,6 +185,8 @@ export default function Profile() {
         base44.entities.Listing.filter({ seller_email: emailToLoad }),
       ]);
       if (loadedProfile) setProfile(loadedProfile);
+      // When this IS your own profile, the loaded profile is also your nav profile.
+      if (isOwnProfileValue && loadedProfile) setOwnProfile(loadedProfile);
       setListings(listingsData.filter(l => l.status === "active"));
       setLoading(false);
     };
@@ -262,7 +273,7 @@ export default function Profile() {
   
   return (
     <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${profile?.profile_theme_color || "#030712"}, #030712 55%, #050510)` }}>
-      {user && <AuthNavbar user={user} profile={profile} />}
+      {user && <AuthNavbar user={user} profile={ownProfile || (isOwnProfile ? profile : null)} />}
       
       <AnimatePresence>
         {showStudio && (
