@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import { compressImage } from "@/lib/compressImage";
+import { cf } from "@/lib/cfClient";
 
 // =====================================================================
 // Direct Supabase Storage upload helper used by listings, profiles,
@@ -65,7 +66,11 @@ async function uploadToSupabase(file, folder) {
 
   if (error) {
     console.error("Supabase storage upload failed", { path, message: error.message });
-    throw new Error(friendlyStorageError(error));
+    const err = new Error(friendlyStorageError(error));
+    // Mark permission/RLS/auth failures so the caller can fall back to the
+    // server-side signed-upload path (works even without a browser session).
+    err.isPermissionError = /row-level security|not authorized|unauthorized|permission|jwt|token|401|403/i.test(error.message || "");
+    throw err;
   }
 
   const { data } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
@@ -74,11 +79,42 @@ async function uploadToSupabase(file, folder) {
   return { file_url: data.publicUrl, source: "supabase", bucket: SUPABASE_BUCKET, path };
 }
 
+// Server-issued signed upload URL (service role) — bypasses browser-session
+// RLS, so users whose Supabase session is missing/expired can still upload.
+async function uploadViaSignedUrl(file, folder) {
+  const res = await cf.functions.invoke("createSupabaseUpload", {
+    fileName: file.name || "upload",
+    folder,
+    size: file.size,
+  });
+  const info = res?.data;
+  if (!info?.signedUrl || !info?.path) {
+    throw new Error(info?.error || "Could not start upload. Please try again.");
+  }
+
+  const { error } = await supabase.storage
+    .from(info.bucket || SUPABASE_BUCKET)
+    .uploadToSignedUrl(info.path, info.token, file, {
+      contentType: file.type || "application/octet-stream",
+    });
+  if (error) throw new Error(friendlyStorageError(error));
+
+  if (!info.publicUrl) throw new Error("Upload succeeded but no public URL was returned.");
+  return { file_url: info.publicUrl, source: "supabase", bucket: info.bucket || SUPABASE_BUCKET, path: info.path };
+}
+
 export async function uploadFileWithFallback(file, folder = "uploads") {
   validateFile(file);
   const isImage = (file.type || "").startsWith("image/");
   const toUpload = isImage ? await compressImage(file) : file;
-  return uploadToSupabase(toUpload, folder);
+  try {
+    return await uploadToSupabase(toUpload, folder);
+  } catch (err) {
+    // Only fall back on permission/auth failures — keep real errors (too large,
+    // bucket missing, network) surfacing as-is.
+    if (!err?.isPermissionError) throw err;
+    return uploadViaSignedUrl(toUpload, folder);
+  }
 }
 
 // Backwards-compatible name used by existing components.
