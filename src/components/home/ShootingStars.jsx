@@ -230,6 +230,141 @@ export default function ShootingStars() {
     }
     const astronauts = Array.from({ length: 5 }, () => new Astronaut());
 
+    // Mini asteroids — irregular rocky chunks tumbling slowly across space
+    class Asteroid {
+      constructor() { this.reset(true); }
+      reset(initial = false) {
+        this.fromLeft = Math.random() > 0.5;
+        this.x = this.fromLeft ? -50 : canvas.width + 50;
+        this.y = Math.random() * canvas.height;
+        this.dx = (Math.random() * 0.5 + 0.2) * (this.fromLeft ? 1 : -1);
+        this.dy = (Math.random() - 0.5) * 0.3;
+        this.size = Math.random() * 7 + 4;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin = (Math.random() - 0.5) * 0.04;
+        // Pre-generate an irregular rocky outline
+        this.verts = Array.from({ length: 9 }, (_, i) => {
+          const a = (i / 9) * Math.PI * 2;
+          const rad = 1 + (Math.random() - 0.5) * 0.5;
+          return { x: Math.cos(a) * rad, y: Math.sin(a) * rad };
+        });
+        const shades = ["#6b7280", "#78716c", "#57534e", "#52525b"];
+        this.color = shades[Math.floor(Math.random() * shades.length)];
+      }
+      draw() {
+        this.angle += this.spin;
+        const s = this.size;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "#a855f7";
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        this.verts.forEach((v, i) => {
+          const px = v.x * s, py = v.y * s;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        });
+        ctx.closePath();
+        ctx.fill();
+        // Craters
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(0,0,0,0.35)";
+        ctx.beginPath();
+        ctx.arc(-s * 0.25, s * 0.1, s * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(s * 0.3, -s * 0.2, s * 0.16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        this.x += this.dx;
+        this.y += this.dy;
+        if (this.x < -80 || this.x > canvas.width + 80) this.reset();
+      }
+    }
+    const asteroids = Array.from({ length: 7 }, () => new Asteroid());
+
+    // Background spaceships — sleek UFO-style saucers gliding by
+    class Spaceship {
+      constructor() { this.reset(true); }
+      reset(initial = false) {
+        this.fromLeft = Math.random() > 0.5;
+        this.x = this.fromLeft ? -120 : canvas.width + 120;
+        this.y = Math.random() * canvas.height * 0.85;
+        this.speed = (Math.random() * 1 + 0.6) * (this.fromLeft ? 1 : -1);
+        this.bob = Math.random() * Math.PI * 2;
+        this.size = Math.random() * 10 + 16;
+        this.waitFrames = initial ? Math.random() * 300 : Math.random() * 500 + 150;
+        const glows = ["#22d3ee", "#a855f7", "#34d399", "#f472b6"];
+        this.glow = glows[Math.floor(Math.random() * glows.length)];
+      }
+      draw() {
+        if (this.waitFrames > 0) { this.waitFrames--; return; }
+        this.bob += 0.04;
+        const s = this.size;
+        const yOff = Math.sin(this.bob) * 5;
+        ctx.save();
+        ctx.translate(this.x, this.y + yOff);
+
+        // Under-glow beam
+        const beam = ctx.createRadialGradient(0, s * 0.5, 0, 0, s * 0.5, s * 1.6);
+        beam.addColorStop(0, this.glow + "66");
+        beam.addColorStop(1, "transparent");
+        ctx.fillStyle = beam;
+        ctx.beginPath();
+        ctx.ellipse(0, s * 0.6, s * 1.4, s * 0.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Saucer body
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = this.glow;
+        ctx.fillStyle = "#cbd5e1";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, s, s * 0.32, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Dome
+        ctx.fillStyle = "#94a3b8";
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.1, s * 0.42, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = this.glow;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.12, s * 0.26, Math.PI, 0);
+        ctx.fill();
+
+        // Blinking lights
+        const blink = Math.sin(this.bob * 3) > 0 ? 1 : 0.3;
+        ctx.globalAlpha = blink;
+        ctx.fillStyle = this.glow;
+        [-0.6, -0.2, 0.2, 0.6].forEach((p) => {
+          ctx.beginPath();
+          ctx.arc(s * p, s * 0.12, s * 0.07, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        ctx.restore();
+
+        this.x += this.speed;
+        if (this.x < -200 || this.x > canvas.width + 200) this.reset();
+      }
+    }
+    const spaceships = Array.from({ length: 3 }, () => new Spaceship());
+
+    // Colored small stars — twinkling dots in varied hues
+    const starColors = ["#67e8f9", "#fca5a5", "#fde68a", "#86efac", "#f0abfc", "#93c5fd"];
+    const colorStars = Array.from({ length: 220 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.8 + 0.4,
+      color: starColors[Math.floor(Math.random() * starColors.length)],
+      alpha: Math.random() * 0.7 + 0.3,
+      twinkleSpeed: Math.random() * 0.03 + 0.01,
+      twinkleDir: Math.random() > 0.5 ? 1 : -1,
+    }));
+
     // Shooting stars
     const shootingColors = ["#c084fc", "#a855f7", "#9333ea", "#d8b4fe", "#7c3aed", "#e9d5ff"];
 
@@ -371,6 +506,28 @@ export default function ShootingStars() {
         ctx.fill();
         ctx.restore();
       }
+
+      // Draw twinkling colored stars
+      for (const cs of colorStars) {
+        cs.alpha += cs.twinkleSpeed * cs.twinkleDir;
+        if (cs.alpha >= 0.95) cs.twinkleDir = -1;
+        if (cs.alpha <= 0.2) cs.twinkleDir = 1;
+        ctx.save();
+        ctx.globalAlpha = cs.alpha;
+        ctx.fillStyle = cs.color;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = cs.color;
+        ctx.beginPath();
+        ctx.arc(cs.x, cs.y, cs.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Draw mini asteroids
+      for (const ast of asteroids) ast.draw();
+
+      // Draw background spaceships
+      for (const sp of spaceships) sp.draw();
 
       // Draw shooting stars
       for (const ss of shootingStars) ss.draw();
