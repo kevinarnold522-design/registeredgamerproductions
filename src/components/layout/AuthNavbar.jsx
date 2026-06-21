@@ -207,7 +207,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
     { icon: Gamepad2, label: "Games", href: "/category?cat=games" },
     { icon: Puzzle, label: "Modding Community", href: "/category?cat=modding" },
     { icon: Sparkles, label: "Premium Mods", href: "/category?cat=premium_mods" },
-    { icon: Store, label: "Marketplace", href: "/category?cat=buy_sell" },
+    { icon: Store, label: "Marketplace", href: "/category?cat=premium_mods" },
     { icon: Wrench, label: "Tools", href: "/category?cat=paid_tools" },
     { icon: Play, label: "Content / Streaming", href: "/category?cat=content_streaming" },
     { icon: Trophy, label: "Tournaments", href: "/category?cat=tournaments" },
@@ -246,7 +246,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
                 transition: "box-shadow 0.4s ease, background 0.3s ease",
               }}
             >
-              <Gamepad2 className={`w-5 h-5 text-white ${controllerAnimating ? "controller-color-cycle" : ""}`} />
+              <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/cf4a1e4eb_generated_image.png" alt="Gamer.Productions" className="w-full h-full object-cover rounded-lg" />
             </motion.div>
             {s && <span className="font-black text-white text-[10px] whitespace-nowrap">Gamer<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">.Productions</span></span>}
           </Link>
@@ -391,11 +391,13 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
                 : "0 0 10px rgba(168,85,247,0.4)",
             }}
           >
-            <Gamepad2 className={`w-5 h-5 text-white ${controllerAnimating ? "controller-color-cycle" : ""}`} />
+            <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/cf4a1e4eb_generated_image.png" alt="Gamer.Productions" className="w-full h-full object-cover rounded-lg" />
           </motion.div>
           <span className="font-black text-white text-xs">Gamer<span className="text-purple-400">.Productions</span></span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
+          <Link to="/about" className="hidden md:inline-block px-2.5 py-1.5 text-xs font-semibold text-gray-300 hover:text-purple-300 transition-colors">About Us</Link>
+          <Link to="/privacy" className="hidden md:inline-block px-2.5 py-1.5 text-xs font-semibold text-gray-300 hover:text-purple-300 transition-colors">Privacy Policy</Link>
           <NotificationBell userEmail={activeUserEmail} />
           <Link to="/messages" className="p-1 text-green-300" title="Messages & Group Chats">
             <MessageCircle className="w-5 h-5" />

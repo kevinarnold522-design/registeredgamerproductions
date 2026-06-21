@@ -11,7 +11,7 @@ import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { formatListingPrice } from "@/lib/currency";
 
 // Vertical card: image on top, details below. Wider than before.
-const SIZE_HEIGHTS = { sm: "h-40", md: "h-48", lg: "h-56" };
+const SIZE_HEIGHTS = { sm: "h-[184px]", md: "h-[220px]", lg: "h-[256px]" };
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {

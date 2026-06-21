@@ -16,7 +16,7 @@ const navLinks = [
 { label: "Content", href: "/category?cat=content_streaming" },
 { label: "Go Live", href: "/studio", live: true },
 { label: "Tournaments", href: "/category?cat=tournaments" },
-{ label: "Marketplace", href: "/category?cat=buy_sell" }];
+{ label: "Marketplace", href: "/category?cat=premium_mods" }];
 
 
 const accountTypes = [
@@ -106,7 +106,7 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-3 group mr-auto">
               <motion.div
                 onClick={handleControllerClick}
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 bg-gradient-to-br ${colorCycles[colorIdx]}`}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center cursor-pointer transition-all duration-300 relative flex-shrink-0 overflow-hidden"
                 animate={{ rotate: [0, -2, 2, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 5 }}
                 style={{
@@ -116,7 +116,7 @@ export default function Navbar() {
                   transition: "box-shadow 0.4s ease"
                 }}>
                 
-                <Gamepad2 className={`w-8 h-8 text-white ${controllerCycling ? "controller-color-cycle" : ""}`} />
+                <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/cf4a1e4eb_generated_image.png" alt="Gamer.Productions" className="w-full h-full object-cover" />
               </motion.div>
               <div className="hidden sm:block">
                 <span className="font-black text-white text-2xl">Gamer</span>
@@ -145,6 +145,8 @@ export default function Navbar() {
             {/* Right */}
             <div className="flex items-center gap-2">
               <style>{`@keyframes fire-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }`}</style>
+              <Link to="/about" className="hidden md:inline-block px-3 py-2 text-sm font-semibold text-gray-300 hover:text-purple-300 transition-colors">About Us</Link>
+              <Link to="/privacy" className="hidden md:inline-block px-3 py-2 text-sm font-semibold text-gray-300 hover:text-purple-300 transition-colors">Privacy Policy</Link>
               {authenticated && <button
                 onClick={() => navigate('/dashboard')}
                 className="hidden sm:flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 to-pink-700 text-white text-sm font-black transition-all shadow-lg">
