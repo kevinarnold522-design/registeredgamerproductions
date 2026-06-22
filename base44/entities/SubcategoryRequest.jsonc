@@ -1,0 +1,38 @@
+{
+  "name": "SubcategoryRequest",
+  "type": "object",
+  "properties": {
+    "seller_email": {
+      "type": "string"
+    },
+    "seller_username": {
+      "type": "string"
+    },
+    "parent_category": {
+      "type": "string"
+    },
+    "subcategory_name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "admin_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "seller_email",
+    "parent_category",
+    "subcategory_name"
+  ]
+}

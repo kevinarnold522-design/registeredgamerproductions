@@ -1,0 +1,46 @@
+{
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "participant_a": {
+      "type": "string"
+    },
+    "participant_b": {
+      "type": "string"
+    },
+    "participant_a_username": {
+      "type": "string"
+    },
+    "participant_b_username": {
+      "type": "string"
+    },
+    "participant_a_avatar": {
+      "type": "string"
+    },
+    "participant_b_avatar": {
+      "type": "string"
+    },
+    "last_message": {
+      "type": "string"
+    },
+    "last_message_date": {
+      "type": "string"
+    },
+    "unread_a": {
+      "type": "number",
+      "default": 0
+    },
+    "unread_b": {
+      "type": "number",
+      "default": 0
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "participant_a",
+    "participant_b"
+  ]
+}

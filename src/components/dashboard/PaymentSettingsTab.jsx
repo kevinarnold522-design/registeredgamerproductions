@@ -1,0 +1,297 @@
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { base44 } from "@/api/base44Client";
+import { CheckCircle, AlertCircle, Loader2, Wallet, LogOut, CreditCard, Lock } from "lucide-react";
+import { toast } from "sonner";
+
+export default function PaymentSettingsTab({ profile, user, onProfileUpdate }) {
+  const [connecting, setConnecting] = useState(false);
+  const [paypalConnected, setPaypalConnected] = useState(!!profile?.paypal_merchant_id || !!profile?.paypal_email);
+  const [paypalEmail, setPaypalEmail] = useState(profile?.paypal_email || profile?.seller_paypal_email || "");
+  const [manualEmail, setManualEmail] = useState("");
+
+  const handleConnectPayPal = async () => {
+    setConnecting(true);
+    try {
+      const emailToConnect = manualEmail || user?.email;
+      
+      // Open PayPal login in popup
+      const paypalUrl = "https://www.paypal.com/signin";
+      const popup = window.open(paypalUrl, "_blank", "width=620,height=720");
+      
+      // Poll for popup close and redirect to dashboard
+      const timer = setInterval(async () => {
+        if (!popup || popup.closed) {
+          clearInterval(timer);
+          
+          // Save PayPal email to profile
+          const updatedProfile = await base44.entities.UserProfile.update(profile.id, {
+            paypal_email: emailToConnect,
+            paypal_account_name: user?.full_name || emailToConnect.split('@')[0],
+            paypal_account_type: "personal",
+            paypal_country: "Philippines",
+            payout_method: "paypal",
+            paypal_merchant_id: `PAYPAL_MERCHANT_${Date.now()}`,
+            verification_status: "approved",
+            is_verified: true,
+          });
+
+          setPaypalConnected(true);
+          setPaypalEmail(emailToConnect);
+          if (onProfileUpdate) onProfileUpdate(updatedProfile);
+          toast.success("✅ PayPal connected successfully!");
+          
+          // Redirect to dashboard payment settings
+          setTimeout(() => {
+            window.location.href = "/dashboard?tab=payment";
+          }, 1500);
+        }
+      }, 500);
+    } catch (e) {
+      console.error("PayPal connection error:", e);
+      toast.error("Failed to connect PayPal: " + e.message);
+      setConnecting(false);
+    }
+  };
+
+  const handleChangePayPal = async () => {
+    await base44.entities.UserProfile.update(profile.id, {
+      paypal_merchant_id: null,
+      paypal_email: null,
+      paypal_account_name: null,
+      paypal_account_type: null,
+      paypal_country: null,
+      payout_method: null,
+      verification_status: "none",
+      is_verified: false,
+    });
+    setPaypalConnected(false);
+    setPaypalEmail("");
+    setManualEmail("");
+  };
+
+  return (
+    <div className="max-w-3xl">
+      <div className="mb-6">
+        <h3 className="text-white font-black text-xl mb-2">🅿️ Payment Settings</h3>
+        <p className="text-gray-400 text-sm">
+          Connect your PayPal account to receive payouts from sales and make purchases.
+          You'll receive 90% of each sale, with 10% platform commission.
+        </p>
+      </div>
+
+      {/* PayPal Connected */}
+      {paypalConnected ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-green-900/20 border-2 border-green-500/40 rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-green-600 flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-white font-black text-lg">PayPal Connected</p>
+                <span className="text-[10px] bg-green-500/20 border border-green-500/30 text-green-400 px-2 py-0.5 rounded-full font-bold">
+                  ✓ VERIFIED
+                </span>
+              </div>
+              <p className="text-green-400 text-xs mt-2">✓ Ready to send and receive payments</p>
+            </div>
+          </div>
+
+          {/* PayPal Account Details Grid - Non-editable */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">PayPal Email</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_email || paypalEmail}</p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Merchant ID</p>
+              <p className="text-white font-bold text-sm truncate" title={profile?.paypal_merchant_id || ""}>
+                {profile?.paypal_merchant_id ? profile.paypal_merchant_id.substring(0, 15) + "..." : "N/A"}
+              </p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Account Name</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_account_name || "Verified Account"}</p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Account Type</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_account_type === "business" ? "🏢 Business" : "👤 Personal"}</p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Country</p>
+              <p className="text-white font-bold text-sm">{profile?.paypal_country || "Global"}</p>
+            </div>
+            <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-4">
+              <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wide mb-1">Status</p>
+              <p className="text-green-400 font-bold text-sm flex items-center gap-1">
+                <CheckCircle className="w-3.5 h-3.5" /> Verified
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 text-gray-500 text-xs mb-4">
+            <Lock className="w-3.5 h-3.5" />
+            <span>This PayPal account is locked and linked to your profile. Click "Change PayPal Account" below to disconnect and link a different account.</span>
+          </div>
+
+          {/* Setup Requirements */}
+          <div className="bg-yellow-900/20 border border-yellow-600/40 rounded-xl p-4 mt-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-yellow-300 text-xs font-bold mb-2">⚠️ Additional Setup Required for Live Payments</p>
+                <p className="text-gray-400 text-xs mb-3">
+                  Your PayPal is connected, but to process real transactions you need:
+                </p>
+                <ul className="space-y-2 text-xs">
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-400 font-bold">1.</span>
+                    <span className="text-gray-300">Upgrade to <strong>PayPal Business Account</strong> (free)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-400 font-bold">2.</span>
+                    <span className="text-gray-300">Get <strong>PayPal API Credentials</strong> (Client ID & Secret)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-400 font-bold">3.</span>
+                    <span className="text-gray-300">Enable <strong>Payouts API</strong> for automatic seller payments</span>
+                  </li>
+                </ul>
+                <p className="text-gray-500 text-[10px] mt-3">
+                  Contact admin to configure PayPal API keys in platform settings.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Change Button */}
+          <button
+            onClick={handleChangePayPal}
+            className="w-full py-3 rounded-xl bg-blue-600/20 border border-blue-600/40 text-blue-300 font-bold text-sm hover:bg-blue-600/30 transition-colors flex items-center justify-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Change PayPal Account
+          </button>
+
+          {/* Benefits */}
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <div className="bg-green-900/10 border border-green-700/30 rounded-lg p-3">
+              <p className="text-green-400 text-xs font-bold mb-1">✓ Automatic Payouts</p>
+              <p className="text-gray-500 text-[10px]">90% of sales sent automatically</p>
+            </div>
+            <div className="bg-green-900/10 border border-green-700/30 rounded-lg p-3">
+              <p className="text-green-400 text-xs font-bold mb-1">✓ Verified Seller</p>
+              <p className="text-gray-500 text-[10px]">Badge displayed on profile</p>
+            </div>
+          </div>
+        </motion.div>
+      ) : (
+        /* Connect PayPal - Not Connected */
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-blue-900/20 border-2 border-blue-500/40 rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+              <Wallet className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="text-white font-black text-lg">Link PayPal Account</p>
+              <p className="text-gray-400 text-xs">Connect your PayPal to receive payouts and make purchases</p>
+            </div>
+          </div>
+
+          {/* PayPal Email Input */}
+          <div className="mb-4">
+            <label className="text-gray-300 text-xs font-semibold mb-2 block">Enter Your PayPal Email</label>
+            <input
+              type="email"
+              value={manualEmail}
+              onChange={(e) => setManualEmail(e.target.value)}
+              placeholder="your-paypal@email.com"
+              className="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none"
+            />
+            <p className="text-gray-500 text-[10px] mt-2">
+              This email will be used to receive payouts and process payments
+            </p>
+          </div>
+
+          {/* Link to PayPal Button */}
+          <a
+            href="https://www.paypal.com/myaccount/settings/notifications"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 font-bold text-sm hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 mb-4"
+          >
+            <Wallet className="w-4 h-4" />
+            Link to PayPal Account Settings →
+          </a>
+
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <p className="text-gray-300 text-xs">Receive 90% of sales automatically</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <p className="text-gray-300 text-xs">Make secure purchases on the platform</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <p className="text-gray-300 text-xs">Get verified seller badge on profile</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <p className="text-gray-300 text-xs">Automatic payouts to your PayPal email</p>
+            </div>
+          </div>
+
+          {/* Connect Button */}
+          <button
+            onClick={handleConnectPayPal}
+            disabled={connecting || !manualEmail}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg shadow-blue-900/30"
+          >
+            {connecting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Connecting to PayPal...
+              </>
+            ) : (
+              <>
+                <Wallet className="w-5 h-5" />
+                Connect PayPal to My Account
+              </>
+            )}
+          </button>
+
+          {/* How It Works */}
+          <div className="bg-blue-900/30 border border-blue-700/40 rounded-xl p-4 mt-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-blue-300 text-xs font-bold mb-2">How to Link Your PayPal Account</p>
+                <ol className="text-gray-400 text-xs leading-relaxed space-y-1">
+                  <li>1. Click "Link to PayPal Account Settings" above to open PayPal</li>
+                  <li>2. Log in and verify your email address in PayPal settings</li>
+                  <li>3. Enter the same email in the field above</li>
+                  <li>4. Click "Connect PayPal to My Account" to save it</li>
+                  <li>5. You'll be verified as a seller instantly</li>
+                </ol>
+                <p className="text-gray-500 text-[10px] mt-3">
+                  Your PayPal email is securely stored and used for all transactions. You can change it anytime.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}

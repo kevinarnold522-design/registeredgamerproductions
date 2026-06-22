@@ -1,0 +1,328 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "regular",
+        "digital_creator",
+        "business"
+      ],
+      "default": "regular"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "avatar_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "banner_url": {
+      "type": "string"
+    },
+    "profile_theme_color": {
+      "type": "string",
+      "default": "#8b5cf6"
+    },
+    "profile_theme_secondary": {
+      "type": "string",
+      "default": "#ec4899"
+    },
+    "profile_theme_background": {
+      "type": "string",
+      "default": "#050510"
+    },
+    "profile_theme_style": {
+      "type": "string",
+      "enum": [
+        "default",
+        "custom",
+        "fire",
+        "ocean",
+        "forest",
+        "gold",
+        "neon",
+        "sakura",
+        "galaxy",
+        "midnight"
+      ],
+      "default": "default"
+    },
+    "profile_theme_background_style": {
+      "type": "string",
+      "enum": [
+        "solid",
+        "gradient",
+        "cyber_grid"
+      ],
+      "default": "gradient"
+    },
+    "profile_theme_gradient_angle": {
+      "type": "number",
+      "default": 135
+    },
+    "profile_theme_neon_intensity": {
+      "type": "number",
+      "default": 60
+    },
+    "page_editor_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "location": {
+      "type": "string"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "none"
+    },
+    "verification_docs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "moderator_type": {
+      "type": "string",
+      "enum": [
+        "none",
+        "account_moderator",
+        "group_moderator"
+      ],
+      "default": "none"
+    },
+    "no_ads": {
+      "type": "boolean",
+      "default": false
+    },
+    "followers_count": {
+      "type": "number",
+      "default": 0
+    },
+    "following_count": {
+      "type": "number",
+      "default": 0
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0
+    },
+    "total_revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "payment_methods": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "payout_method": {
+      "type": "string",
+      "default": "paypal"
+    },
+    "payout_details": {
+      "type": "object"
+    },
+    "paypal_email": {
+      "type": "string"
+    },
+    "paypal_account_name": {
+      "type": "string"
+    },
+    "paypal_account_type": {
+      "type": "string",
+      "enum": [
+        "personal",
+        "business"
+      ]
+    },
+    "paypal_country": {
+      "type": "string"
+    },
+    "paypal_merchant_id": {
+      "type": "string"
+    },
+    "stripe_account_id": {
+      "type": "string"
+    },
+    "stripe_publishable_key": {
+      "type": "string"
+    },
+    "stripe_secret_key": {
+      "type": "string"
+    },
+    "stripe_webhook_secret": {
+      "type": "string"
+    },
+    "stripe_business_name": {
+      "type": "string"
+    },
+    "stripe_country": {
+      "type": "string"
+    },
+    "stripe_currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "stripe_connected": {
+      "type": "boolean",
+      "default": false
+    },
+    "business_name": {
+      "type": "string"
+    },
+    "business_registration": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "social_links": {
+      "type": "object"
+    },
+    "youtube_url": {
+      "type": "string"
+    },
+    "youtube_channel_id": {
+      "type": "string"
+    },
+    "youtube_subscribers": {
+      "type": "number",
+      "default": 0
+    },
+    "total_views": {
+      "type": "number",
+      "default": 0
+    },
+    "total_watch_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "is_monetized": {
+      "type": "boolean",
+      "default": false
+    },
+    "gaming_checkmark": {
+      "type": "boolean",
+      "default": false
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0
+    },
+    "joined_date": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "preferred_otp_method": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms"
+      ],
+      "default": "email"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "saved_addresses": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "listing_sort_order": {
+      "type": "string",
+      "enum": [
+        "newest",
+        "oldest",
+        "price_asc",
+        "price_desc",
+        "views_desc"
+      ],
+      "default": "newest"
+    },
+    "honor_badge": {
+      "type": "string"
+    },
+    "honor_badge_label": {
+      "type": "string"
+    },
+    "gaming_accounts": {
+      "type": "object"
+    },
+    "kofi_url": {
+      "type": "string"
+    },
+    "buymeacoffee_url": {
+      "type": "string"
+    },
+    "patreon_url": {
+      "type": "string"
+    },
+    "pending_delete_request": {
+      "type": "boolean",
+      "default": false
+    },
+    "favorite_sports_team": {
+      "type": "string"
+    },
+    "favorite_game": {
+      "type": "string"
+    },
+    "favorite_hobby": {
+      "type": "string"
+    },
+    "is_managed_account": {
+      "type": "boolean",
+      "default": false
+    },
+    "managed_by_admin": {
+      "type": "string"
+    },
+    "is_banned": {
+      "type": "boolean",
+      "default": false
+    },
+    "banned_reason": {
+      "type": "string"
+    },
+    "banned_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_email",
+    "username",
+    "account_type"
+  ]
+}

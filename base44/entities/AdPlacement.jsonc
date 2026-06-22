@@ -1,0 +1,59 @@
+{
+  "name": "AdPlacement",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "page_type": {
+      "type": "string",
+      "enum": [
+        "global",
+        "listing",
+        "category"
+      ],
+      "default": "global"
+    },
+    "listing_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "cta_label": {
+      "type": "string"
+    },
+    "cta_url": {
+      "type": "string"
+    },
+    "start_delay_seconds": {
+      "type": "number",
+      "default": 30
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 10
+    },
+    "interval_seconds": {
+      "type": "number",
+      "default": 120
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "title"
+  ]
+}

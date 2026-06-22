@@ -1,0 +1,48 @@
+# =====================================================================
+# Cloudflare Worker config for Gamer.Productions backend
+# Deploy:  cd src/cloudflare Deploy:  cd cloudflare && wrangler deployDeploy:  cd cloudflare && wrangler deploy wrangler deploy
+#
+# 🔒 PERMANENT LOCK — DO NOT CHANGE OR DELETE THESE BINDINGS
+# ---------------------------------------------------------------------
+# This worker is permanently connected to the website's live data:
+#   • D1 database  "gp"  (id 1f45c382-7d39-4532-8320-0f162b588a9b)
+#   • R2 bucket    "gamerproductionsmedia"
+# These identities are the source of truth for all gamerproductions data.
+# Renaming, changing the id, or removing either binding will DETACH the
+# website from its live database/storage and break/lose data. Keep these
+# values EXACTLY as written below, forever.
+# =====================================================================
+name = "gamer-productions-api"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---- D1 database binding 🔒 LOCKED — never rename/change/delete ----
+# Permanently bound to the live website database "gp".
+[[d1_databases]]
+binding = "DB"
+database_name = "gp"
+database_id = "1f45c382-7d39-4532-8320-0f162b588a9b"
+
+# ---- R2 bucket binding (media storage) 🔒 LOCKED — never rename/change/delete ----
+# Permanently bound to the live media bucket "gamerproductionsmedia".
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "gamerproductionsmedia"
+
+# ---- Non-secret vars ----
+[vars]
+BASE44_BACKUP_ENABLED = "true"
+R2_PUBLIC_URL = "https://media.gamer.productions"
+
+# ---- Secrets (set via: wrangler secret put NAME) ----
+#   SUPABASE_URL              (https://smymannqqogtshvsiqyp.supabase.co)
+#   SUPABASE_KEY              (Supabase anon / publishable key — verifies user tokens)
+#   STRIPE_SECRET_KEY
+#   STRIPE_PUBLISHABLE_KEY
+#   PAYPAL_CLIENT_ID
+#   PAYPAL_CLIENT_SECRET
+#   BASE44_APP_ID
+#   BASE44_SERVICE_TOKEN     (used by the backup dual-write layer)
+#   CLOUDFLARE_R2_ACCESS_KEY_ID
+#   CLOUDFLARE_R2_SECRET_ACCESS_KEY

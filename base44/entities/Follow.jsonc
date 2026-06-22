@@ -1,0 +1,37 @@
+{
+  "name": "Follow",
+  "type": "object",
+  "properties": {
+    "follower_email": {
+      "type": "string",
+      "description": "Email of the person following"
+    },
+    "following_email": {
+      "type": "string",
+      "description": "Email of the person being followed"
+    },
+    "follower_username": {
+      "type": "string"
+    },
+    "following_username": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "youtube_sync",
+        "twitch_sync"
+      ],
+      "default": "manual"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "follower_email",
+    "following_email"
+  ]
+}

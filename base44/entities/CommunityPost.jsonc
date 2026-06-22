@@ -1,0 +1,89 @@
+{
+  "name": "CommunityPost",
+  "type": "object",
+  "properties": {
+    "community_id": {
+      "type": "string"
+    },
+    "franchise_id": {
+      "type": "string"
+    },
+    "author_email": {
+      "type": "string"
+    },
+    "author_username": {
+      "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "description": "Extended description or details for the post"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "video_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Video attachments for the post"
+    },
+    "music_url": {
+      "type": "string",
+      "description": "Attached music/audio file URL"
+    },
+    "music_title": {
+      "type": "string",
+      "description": "Title/name of the attached music track"
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "flagged",
+        "removed",
+        "pending_review"
+      ],
+      "default": "active"
+    },
+    "flagged_reason": {
+      "type": "string"
+    },
+    "flagged_by": {
+      "type": "string"
+    },
+    "section_id": {
+      "type": "string"
+    },
+    "special_effect": {
+      "type": "string",
+      "enum": [
+        "none",
+        "gambling_cards",
+        "fire",
+        "water",
+        "fireworks",
+        "glass"
+      ],
+      "default": "none"
+    }
+  },
+  "required": [
+    "community_id",
+    "author_email",
+    "content"
+  ]
+}

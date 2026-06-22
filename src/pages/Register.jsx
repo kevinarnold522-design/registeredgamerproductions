@@ -1,0 +1,334 @@
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, User, ShieldCheck } from "lucide-react";
+import { ACCOUNT_TYPES, TERMS_AND_CONDITIONS } from "@/lib/constants";
+import { base44 } from "@/api/base44Client";
+
+export default function Register() {
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+  const preselectedType = urlParams.get("type");
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(auth => {
+      if (auth) navigate("/");
+    });
+  }, []);
+
+  const [step, setStep] = useState(preselectedType ? 2 : 1);
+  const [accountType, setAccountType] = useState(preselectedType || null);
+  const [form, setForm] = useState({ username: "", email: "" });
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
+  };
+
+  const handleSelectType = (type) => {
+    setAccountType(type);
+    setStep(2);
+  };
+
+  const handleAccountFormNext = (e) => {
+    e.preventDefault();
+    if (!form.username.trim()) { setError("Username is required."); return; }
+    if (!form.email.trim()) { setError("Email is required."); return; }
+    setError("");
+    setStep(3);
+  };
+
+  const handleRegister = async () => {
+    if (!termsAccepted) { setError("You must accept the Terms and Conditions."); return; }
+    setLoading(true);
+    try {
+      await base44.users.inviteUser(form.email, "user");
+      localStorage.setItem("pending_profile", JSON.stringify({
+        username: form.username,
+        account_type: accountType,
+        display_name: form.username,
+        honor_badge: "founding_member",
+        honor_badge_label: "Founding Member",
+      }));
+      setStep(4);
+    } catch (err) {
+      setError(err.message || "Registration failed. Please try again.");
+    }
+    setLoading(false);
+  };
+
+  const EMAIL_PROVIDERS_MAP = [
+    { match: ["gmail"], webmail: "https://mail.google.com" },
+    { match: ["yahoo"], webmail: "https://mail.yahoo.com" },
+    { match: ["outlook", "hotmail", "live", "msn"], webmail: "https://outlook.live.com/mail/0/" },
+    { match: ["icloud", "me.com"], webmail: "https://www.icloud.com/mail" },
+    { match: ["proton", "protonmail"], webmail: "https://mail.proton.me" },
+    { match: ["zoho"], webmail: "https://mail.zoho.com" },
+    { match: ["aol"], webmail: "https://mail.aol.com" },
+  ];
+  const detectedWebmail = EMAIL_PROVIDERS_MAP.find(p =>
+    p.match.some(m => form.email.toLowerCase().includes(m))
+  )?.webmail || null;
+
+  const handleSocialLogin = (provider = "gmail") => {
+    localStorage.setItem("pending_profile", JSON.stringify({
+      username: "",
+      account_type: accountType || "regular",
+      display_name: "",
+    }));
+    const p = String(provider).toLowerCase();
+    const mapped = p === "gmail" ? "google" : p; // gmail -> google, facebook stays facebook
+    base44.auth.loginWithProvider(mapped, "/");
+  };
+
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{ background: "radial-gradient(ellipse at center, #0f0f2e 0%, #000000 100%)" }}
+    >
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 40 }).map((_, i) => (
+          <div key={i} className="absolute rounded-full bg-white opacity-20"
+            style={{ width: Math.random() * 2 + 1, height: Math.random() * 2 + 1, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }} />
+        ))}
+      </div>
+
+      <div className="w-full max-w-lg relative z-10">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+              <Gamepad2 className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-black text-white">
+              GAMER<span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"> Productions</span>
+            </span>
+          </Link>
+        </div>
+
+        {/* Progress */}
+        <div className="flex gap-2 mb-8">
+          {[1, 2, 3, 4].map((s) => (
+            <div key={s} className={`flex-1 h-1 rounded-full transition-colors ${step >= s ? "bg-purple-500" : "bg-gray-800"}`} />
+          ))}
+        </div>
+
+        <AnimatePresence mode="wait">
+          {/* Step 1: Account Type */}
+          {step === 1 && (
+            <motion.div key="step1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-black text-white">Join GAMER Productions</h2>
+                <p className="text-gray-400 text-sm mt-1">What type of account are you creating?</p>
+              </div>
+              <div className="space-y-4">
+                {ACCOUNT_TYPES.map((type) => (
+                  <motion.button key={type.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={() => handleSelectType(type.id)}
+                    className="w-full flex items-start gap-4 p-5 rounded-2xl bg-gray-900/80 border border-gray-700 hover:border-purple-500 transition-colors text-left group">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-2xl flex-shrink-0`}>
+                      {type.icon}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-bold text-lg">{type.label}</p>
+                      <p className="text-gray-400 text-sm mt-0.5">{type.desc}</p>
+                      {type.id === "digital_creator" && (
+                        <div className="mt-2 space-y-1.5">
+                          <p className="text-purple-300 text-xs font-bold">What to upload:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {["Gameplay","Mods","Tutorials","Streams","Walkthroughs","Missions","Highlights","Sports Games","FPS Clips"].map(f => (
+                              <span key={f} className="text-xs bg-purple-900/40 border border-purple-700/40 text-purple-300 px-2 py-0.5 rounded-full">{f}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {type.id === "regular" && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {["Link YouTube","Share Videos","Buy Products","Favorites"].map(f => (
+                            <span key={f} className="text-xs bg-blue-900/30 border border-blue-700/30 text-blue-300 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                      )}
+                      {type.id === "business" && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {["List Products","Verified Badge","Sales Analytics","PayPal Payouts"].map(f => (
+                            <span key={f} className="text-xs bg-green-900/30 border border-green-700/30 text-green-300 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-purple-400 transition-colors flex-shrink-0 mt-1" />
+                  </motion.button>
+                ))}
+              </div>
+              <div className="flex flex-col items-center gap-3 mt-6">
+                <p className="text-gray-500 text-sm">
+                  Already have an account?{" "}
+                  <button onClick={() => base44.auth.redirectToLogin("/")} className="text-purple-400 hover:text-purple-300 font-semibold">Sign In</button>
+                </p>
+                <button onClick={() => base44.auth.redirectToLogin("/")}
+                  className="w-full py-3 rounded-xl border border-purple-700/60 text-purple-300 font-bold text-sm hover:bg-purple-900/20 transition-colors flex items-center justify-center gap-2">
+                  Sign In to Existing Account
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 2: Enter Email + Username */}
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+              <button onClick={() => setStep(1)} className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-5 transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </button>
+              <div className="text-center mb-6">
+                <div className={`inline-flex w-12 h-12 rounded-xl bg-gradient-to-br ${ACCOUNT_TYPES.find(t => t.id === accountType)?.color} items-center justify-center text-2xl mb-3`}>
+                  {ACCOUNT_TYPES.find(t => t.id === accountType)?.icon}
+                </div>
+                <h2 className="text-2xl font-black text-white">Create Your Account</h2>
+                <p className="text-purple-400 text-sm mt-1 font-semibold">{ACCOUNT_TYPES.find(t => t.id === accountType)?.label}</p>
+              </div>
+
+              {/* Social Providers — Gmail primary, then Yahoo + Facebook */}
+              <div className="space-y-3 mb-5">
+                <button onClick={() => handleSocialLogin("gmail")}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-white text-gray-800 hover:bg-gray-100 transition-all">
+                  <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22 6v12a2 2 0 0 1-2 2h-1V8.6l-7 5.2-7-5.2V20H4a2 2 0 0 1-2-2V6c0-.3.1-.6.2-.8L12 12.5l9.8-7.3c.1.2.2.5.2.8z"/><path fill="#EA4335" d="M2 6l10 7.5L22 6c0-1.1-.9-2-2-2H4C2.9 4 2 4.9 2 6z"/></svg>
+                  Continue with Gmail
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => handleSocialLogin("yahoo")}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 border border-gray-700 text-white hover:bg-gray-800 transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#6001D2" d="M3 4h4.2l2.8 6.9L12.9 4H17l-5.1 11.8V20H8.1v-4.2L3 4z"/><circle fill="#6001D2" cx="18.5" cy="17.5" r="2"/><path fill="#6001D2" d="M17.3 4h3.6l-1.4 7.4h-2.9z"/></svg>
+                    Yahoo
+                  </button>
+                  <button onClick={() => handleSocialLogin("facebook")}
+                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 border border-gray-700 text-white hover:bg-gray-800 transition-all">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12c0-6.6-5.4-12-12-12S0 5.4 0 12c0 6 4.4 11 10.1 11.9v-8.4H7.1V12h3v-2.6c0-3 1.8-4.6 4.5-4.6 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4C19.6 23 24 18 24 12z"/></svg>
+                    Facebook
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-gray-800" />
+                <span className="text-gray-600 text-xs">or continue with email</span>
+                <div className="flex-1 h-px bg-gray-800" />
+              </div>
+
+              <form onSubmit={handleAccountFormNext} className="space-y-4">
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input name="username" value={form.username} onChange={handleChange} placeholder="Choose a username" required
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+                </div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email address" required
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+                </div>
+
+                <div className="bg-gray-900/60 border border-gray-700/50 rounded-xl px-4 py-3">
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    <span className="text-purple-300 font-semibold">How it works:</span> We'll send a magic sign-in link to your email. Click it to activate your account and set up your username — no OTP or password needed.
+                  </p>
+                </div>
+
+                {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+
+                <button type="submit"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base hover:opacity-90 transition-opacity">
+                  Next — Review Terms
+                </button>
+              </form>
+            </motion.div>
+          )}
+
+          {/* Step 3: Terms */}
+          {step === 3 && (
+            <motion.div key="step3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+              <button onClick={() => setStep(2)} className="flex items-center gap-1 text-gray-400 hover:text-white text-sm mb-5 transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </button>
+              <div className="text-center mb-5">
+                <ShieldCheck className="w-10 h-10 text-purple-400 mx-auto mb-2" />
+                <h2 className="text-2xl font-black text-white">Terms &amp; Conditions</h2>
+                <p className="text-gray-400 text-sm mt-1">Please read and accept before creating your account</p>
+              </div>
+
+              <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4 h-64 overflow-y-auto mb-5 text-xs text-gray-400 leading-relaxed whitespace-pre-line">
+                {TERMS_AND_CONDITIONS}
+              </div>
+
+              <label className="flex items-start gap-3 cursor-pointer mb-5">
+                <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)}
+                  className="w-5 h-5 mt-0.5 rounded accent-purple-600 flex-shrink-0" />
+                <span className="text-gray-300 text-sm">
+                  I have read and agree to the <span className="text-purple-400 font-semibold">Terms and Conditions</span>, including the Privacy Policy.
+                </span>
+              </label>
+
+              {error && <p className="text-red-400 text-sm text-center mb-3">{error}</p>}
+
+              <button onClick={handleRegister} disabled={!termsAccepted || loading}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-base hover:opacity-90 transition-opacity disabled:opacity-40">
+                {loading ? "Creating Account..." : "Accept & Send Sign-In Link"}
+              </button>
+            </motion.div>
+          )}
+
+          {/* Step 4: Check Email */}
+          {step === 4 && (
+            <motion.div key="step4" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+              <div className="mb-4 px-4 py-3 rounded-2xl border border-orange-500/40 bg-orange-900/10 flex items-center justify-center gap-3">
+                <span className="text-3xl">🏅</span>
+                <div className="text-left">
+                  <p className="text-orange-300 font-black text-sm">Badge of Honor Awarded!</p>
+                  <p className="text-orange-400/70 text-xs">You've earned the <strong>Founding Member</strong> badge for joining GAMER Productions early!</p>
+                </div>
+              </div>
+
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-4xl mx-auto mb-6">
+                📧
+              </div>
+              <h2 className="text-2xl font-black text-white mb-3">Check Your Email!</h2>
+              <p className="text-gray-400 mb-2">We've sent a magic sign-in link to:</p>
+              <p className="text-purple-400 font-bold text-lg mb-4">{form.email}</p>
+
+              {detectedWebmail && (
+                <button
+                  onClick={() => window.open(detectedWebmail, "_blank", "noopener,noreferrer")}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-purple-600/50 bg-gray-900 text-white font-semibold text-sm hover:bg-gray-800 transition-colors mb-4"
+                >
+                  Open My Email Inbox
+                </button>
+              )}
+
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 mb-6 text-left">
+                <p className="text-white font-semibold text-sm mb-2">What happens next:</p>
+                <ol className="text-gray-400 text-xs space-y-1.5 list-decimal list-inside">
+                  <li>Click the sign-in link sent to your email</li>
+                  <li>Your account activates automatically</li>
+                  <li>Set up your profile with username <span className="text-purple-300 font-semibold">@{form.username}</span></li>
+                  {accountType !== "regular" && <li>Submit verification docs to become a seller</li>}
+                  <li>Start exploring GAMER Productions!</li>
+                </ol>
+              </div>
+
+              <button
+                onClick={() => base44.auth.redirectToLogin("/")}
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity mt-2">
+                <Check className="w-5 h-5" /> Go to Sign In
+              </button>
+              <p className="text-gray-600 text-xs mt-4">
+                Didn't receive it? Check spam or{" "}
+                <button onClick={async () => { try { await base44.users.inviteUser(form.email, "user"); } catch {} }} className="text-purple-400 underline">resend</button>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}

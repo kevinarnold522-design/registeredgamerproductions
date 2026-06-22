@@ -1,0 +1,7 @@
+{
+  "name": "gamer-productions-portable-base44-functions",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Portable Base44 backend function adapters for Vercel, Supabase Edge Functions, and Cloudflare."
+}

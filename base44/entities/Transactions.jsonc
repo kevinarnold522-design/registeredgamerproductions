@@ -1,0 +1,37 @@
+{
+  "name": "Transactions",
+  "type": "object",
+  "properties": {
+    "customer_email": {
+      "type": "string"
+    },
+    "item_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "paypal_order_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "customer_email",
+    "item_name",
+    "amount"
+  ]
+}

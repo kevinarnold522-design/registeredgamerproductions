@@ -1,0 +1,43 @@
+# =====================================================================
+# Deploy the Cloudflare Worker + apply D1 schema on every push.
+# GitHub is the source of truth; Base44 stays the live backup.
+#
+# Required GitHub repo secrets:
+#   CLOUDFLARE_API_TOKEN   - token with Workers + D1 edit permissions
+#   CLOUDFLARE_ACCOUNT_ID  - your Cloudflare account id
+# =====================================================================
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main, ai_main_*]
+    paths: ["src/cloudflare/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/cloudflare
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Apply D1 schema (idempotent)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: wrangler d1 execute gp --remote --file=./schema.sql
+
+      - name: Deploy Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: wrangler deploy

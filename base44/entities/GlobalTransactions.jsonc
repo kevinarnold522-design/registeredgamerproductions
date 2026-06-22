@@ -1,0 +1,65 @@
+{
+  "name": "GlobalTransactions",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string"
+    },
+    "buyer_email": {
+      "type": "string"
+    },
+    "seller_email": {
+      "type": "string"
+    },
+    "seller_paypal_id": {
+      "type": "string"
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "admin_fee": {
+      "type": "number",
+      "description": "Platform commission (10%)"
+    },
+    "seller_payout": {
+      "type": "number",
+      "description": "Amount to seller (90%)"
+    },
+    "paypal_order_id": {
+      "type": "string",
+      "description": "PayPal order/reference ID"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "split_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "split",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "transaction_date": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "order_id",
+    "buyer_email",
+    "seller_email",
+    "total_amount"
+  ]
+}

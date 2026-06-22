@@ -1,0 +1,47 @@
+{
+  "name": "SiteSettings",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Settings key identifier (e.g. 'welcome_email', 'html_ad')"
+    },
+    "email_header_title": {
+      "type": "string",
+      "default": "Welcome to GAMER Productions!"
+    },
+    "email_header_subtitle": {
+      "type": "string",
+      "default": "The #1 Gaming Hub Community"
+    },
+    "email_header_tagline": {
+      "type": "string",
+      "default": "Level Up. Connect. Dominate."
+    },
+    "email_banner_color_start": {
+      "type": "string",
+      "default": "#7c3aed"
+    },
+    "email_banner_color_end": {
+      "type": "string",
+      "default": "#ec4899"
+    },
+    "ad_html_code": {
+      "type": "string",
+      "description": "Raw HTML/JS ad code shown to all users after 5 minutes",
+      "maxLength": 100000
+    },
+    "ad_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "When false, HTML ad codes are permanently blocked/banned by admin"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "key"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "name": "VideoPost",
+  "type": "object",
+  "properties": {
+    "creator_email": {
+      "type": "string"
+    },
+    "creator_username": {
+      "type": "string"
+    },
+    "creator_avatar": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "youtube_url": {
+      "type": "string"
+    },
+    "youtube_video_id": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "game_tag": {
+      "type": "string",
+      "description": "Game this content is about"
+    },
+    "game_tag_custom": {
+      "type": "string",
+      "description": "Manually entered game name if not in list"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "gameplay",
+        "tutorial",
+        "review",
+        "highlights",
+        "mods",
+        "esports",
+        "vlog",
+        "livestream",
+        "other"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "is_monetized": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_approved": {
+      "type": "boolean",
+      "default": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "removed",
+        "processing"
+      ],
+      "default": "active"
+    },
+    "earnings": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "creator_email",
+    "title"
+  ]
+}

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>GAMER.PRODUCTIONS — The #1 Gaming Hub Community</title>
+    <meta name="description" content="GAMER.PRODUCTIONS — Stream Live, Share Mods, Build Community, Sell & Earn. The one stop hub for all gamers worldwide." />
+    <meta name="keywords" content="gaming, mods, livestream, esports, marketplace, gaming community, gamer productions, gamer.productions" />
+    <meta name="author" content="Kevin Roberto — GAMER.PRODUCTIONS" />
+    <!-- Open Graph -->
+    <meta property="og:title" content="GAMER.PRODUCTIONS — The #1 Gaming Hub Community" />
+    <meta property="og:description" content="Stream Live, Share Mods, Build Community, Sell & Earn worldwide." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gamerproductions.vercel.app" />
+    <meta property="og:image" content="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GAMER Productions" />
+    <meta name="twitter:description" content="The #1 Gaming Hub Community — Stream · Mods · Social · Marketplace" />
+    <!-- Canonical -->
+    <link rel="canonical" href="https://gamerproductions.vercel.app" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Bidvertiser Domain Verification -->
+    <!-- Bidvertiser2104914 -->
+    <!-- Monetag Verification -->
+    <meta name="monetag" content="8cc8ba10765fcb6e991510c0d55f12ff">
+    <!-- Google Search Console Verification -->
+    <meta name="8cf905e83aaf7d2f25e43d428612a25e7d6ae45c" content="8cf905e83aaf7d2f25e43d428612a25e7d6ae45c" />
+    <!-- Ad control: delay logic + FB/IG 4-min delay + rotation state -->
+    <script>
+      (function() {
+        // Detect Facebook/Instagram in-app browser or referrer
+        var ua = navigator.userAgent || '';
+        var ref = document.referrer || '';
+        var isSocialTraffic = (
+          ua.indexOf('FBAN') !== -1 || ua.indexOf('FBAV') !== -1 ||
+          ua.indexOf('Instagram') !== -1 || ua.indexOf('FB_IAB') !== -1 ||
+          ref.indexOf('facebook.com') !== -1 || ref.indexOf('instagram.com') !== -1 ||
+          ref.indexOf('l.facebook.com') !== -1 || ref.indexOf('lm.facebook.com') !== -1
+        );
+        // Social traffic gets 4-minute delay; everyone else gets 7-second delay
+        var delayMs = isSocialTraffic ? 240000 : 7000;
+        window.__adsHeld = true;
+        window.__adRotationIndex = 0; // which ad slot is currently active
+        window.__adClosed = false;
+        window.__adCloseTime = 0;
+        setTimeout(function() {
+          if (!window.__adsBlocked && !window.__adminBlocked) {
+            window.__adsHeld = false;
+            loadNextAd();
+          }
+        }, delayMs);
+
+        // Ad scripts — each is loaded ONE AT A TIME in rotation
+        var AD_SCRIPTS = [
+          function() {
+            var s = document.createElement('script');
+            s.src = 'https://elementarywhole.com/bf3cVR0.PL3sp_vpbTm_VfJxZADZ0d3VMXDmg/1uNST/QR5YLVTvcEw_OrDxUt1/NxTsMA';
+            s.async = true;
+            s.referrerPolicy = 'no-referrer-when-downgrade';
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
+          function() {
+            var s = document.createElement('script');
+            s.src = 'https://elementarywhole.com/bw3JVl0.Po3/pVvUb_m/VCJ/Z_D/0/3wMoDigb1RNzTCQP5VLPTYcqwzOLDKUl1lNLTQMG';
+            s.async = true;
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
+          function() {
+            var s = document.createElement('script');
+            s.src = '//pricklyassociation.com/byXNVHs.dfGllo0QYAWMcO/DeDmS9yuvZFUslVkBP/TkcKwaOpDMUB1/NPTGcmtWN/zMAu4/N/T/Ut2MMlQS';
+            s.async = true;
+            s.referrerPolicy = 'no-referrer-when-downgrade';
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
+          function() {
+            var s = document.createElement('script');
+            s.src = 'https://quge5.com/88/tag.min.js';
+            s.setAttribute('data-zone', '243750');
+            s.setAttribute('data-cfasync', 'false');
+            s.async = true;
+            s.id = '__ad_slot_active';
+            document.body.appendChild(s);
+          },
+        ];
+
+        window.loadNextAd = function() {
+          if (window.__adsBlocked || window.__adminBlocked || window.__adsHeld) return;
+          // Remove previous active ad slot
+          var old = document.getElementById('__ad_slot_active');
+          if (old) old.remove();
+          var idx = window.__adRotationIndex % AD_SCRIPTS.length;
+          AD_SCRIPTS[idx]();
+          window.__adRotationIndex++;
+        };
+
+        // Reshuffle/rotate ads every 2 minutes for non-admin/non-tier1 users
+        var adShuffleTimer = setInterval(function() {
+          if (!window.__adsBlocked && !window.__adminBlocked && !window.__adsHeld && !window.__adClosed) {
+            window.loadNextAd();
+          }
+        }, 120000);
+
+        // Close button handler — closes current ad and restarts after 4 minutes
+        window.__closeCurrentAd = function() {
+          window.__adClosed = true;
+          window.__adCloseTime = Date.now();
+          var old = document.getElementById('__ad_slot_active');
+          if (old) old.remove();
+          // Also hide any visible ad elements
+          document.querySelectorAll('iframe, ins, [data-zone], [data-cfasync]').forEach(function(el) {
+            el.style.display = 'none';
+          });
+          // Re-enable after 4 minutes (not for admin/mod/tier1)
+          setTimeout(function() {
+            if (!window.__adsBlocked && !window.__adminBlocked) {
+              window.__adClosed = false;
+              loadNextAd();
+            }
+          }, 240000);
+        };
+      })();
+    </script>
+    <!-- Click-fraud / redirect hijack protection for ALL users -->
+    <script>
+    (function() {
+      // Known ad-redirect domains — clicks to these are suppressed
+      var FRAUD_DOMAINS = [
+        'quge5.com','elementarywhole.com','pricklyassociation.com',
+        'monetag.com','popads.net','popcash.net','propellerads.com',
+        'bidvertiser.com','adnxs.com','doubleclick.net',
+        'googlesyndication.com','adskeeper.com','adcash.com',
+        'trafficjunky.com','trafficforce.com','exoclick.com',
+        'juicyads.com','hilltopads.net','adsterra.com','yllix.com',
+        'clickadu.com','adclickxpress.com','popunder','clickunder'
+      ];
+
+      function isFraudUrl(url) {
+        if (!url) return false;
+        try {
+          var u = String(url);
+          return FRAUD_DOMAINS.some(function(d) { return u.indexOf(d) !== -1; });
+        } catch(e) { return false; }
+      }
+
+      // Intercept ALL click events and block ad-network redirects
+      document.addEventListener('click', function(e) {
+        var el = e.target;
+        // Walk up the DOM to find the anchor
+        while (el && el.tagName !== 'A') { el = el.parentElement; }
+        if (!el) return;
+        var href = el.getAttribute('href') || el.href || '';
+        if (isFraudUrl(href)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return false;
+        }
+      }, true); // capture phase — runs before any ad script handlers
+
+      // Block window.open popups to fraud domains for ALL users
+      var _origOpen = window.open;
+      window.open = function(url, target, features) {
+        if (isFraudUrl(url)) return null;
+        // Block blank about: popups (classic popunder technique)
+        if (!url || url === '' || url === 'about:blank') return null;
+        return _origOpen.apply(window, arguments);
+      };
+
+      // Block navigation hijacks via location assign/replace
+      var _origAssign = window.location.assign.bind(window.location);
+      var _origReplace = window.location.replace.bind(window.location);
+      Object.defineProperty(window.location, 'assign', {
+        value: function(url) { if (isFraudUrl(url)) return; _origAssign(url); },
+        writable: false, configurable: false
+      });
+      Object.defineProperty(window.location, 'replace', {
+        value: function(url) { if (isFraudUrl(url)) return; _origReplace(url); },
+        writable: false, configurable: false
+      });
+    })();
+    </script>
+    <!-- Close Ad Button injected into DOM after ads load (hidden for admin/mod/tier1) -->
+    <script>
+    (function() {
+      // Inject a floating close-ad button after a short delay once ads are active
+      function maybeInjectCloseBtn() {
+        if (window.__adsBlocked || window.__adminBlocked) return;
+        if (document.getElementById('__ad_close_btn')) return;
+        var btn = document.createElement('button');
+        btn.id = '__ad_close_btn';
+        btn.innerHTML = '✕ Close Ad';
+        btn.style.cssText = [
+          'position:fixed','bottom:16px','right:16px','z-index:99999',
+          'background:rgba(30,10,50,0.92)','color:#c084fc','border:1px solid #7c3aed55',
+          'border-radius:9999px','padding:6px 14px','font-size:11px','font-weight:700',
+          'cursor:pointer','backdrop-filter:blur(6px)','transition:all 0.2s'
+        ].join(';');
+        btn.onclick = function() {
+          window.__closeCurrentAd();
+          btn.remove();
+          // Re-show button after 4 minutes
+          setTimeout(function() {
+            if (!window.__adsBlocked && !window.__adminBlocked) maybeInjectCloseBtn();
+          }, 240000);
+        };
+        document.body.appendChild(btn);
+      }
+      // Wait for ads to potentially load before showing close button
+      setTimeout(function() {
+        if (!window.__adsBlocked && !window.__adminBlocked) maybeInjectCloseBtn();
+      }, 10000);
+    })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "ListingPageLayout",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string"
+    },
+    "section_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "media",
+        "details",
+        "comments"
+      ]
+    },
+    "updated_by": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "listing_id"
+  ]
+}
