@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import StandardListingCard from "@/components/listings/StandardListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { computeMonthlyRanks } from "@/lib/monthlyRank";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
 const CP = {
@@ -38,10 +39,10 @@ function ScrollRow({ children, speed = 30, reverse = false }) {
 
 // Standardized superglow card (same design as the modding community listings),
 // wrapped at a fixed width so it fits inside the horizontal scroll rows.
-function ScrollCard({ item, user, profile }) {
+function ScrollCard({ item, user, profile, rank }) {
   return (
     <div className="w-[420px] max-w-[88vw] flex-shrink-0">
-      <StandardListingCard listing={item} user={user} profile={profile} />
+      <StandardListingCard listing={item} user={user} profile={profile} monthlyRank={rank} />
     </div>
   );
 }
@@ -74,6 +75,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
 
   const [freeMods, setFreeMods] = useState([]);
   const [paidMods, setPaidMods] = useState([]);
+  const [rankMap, setRankMap] = useState(new Map());
 
   useEffect(() => {
     if (currentUser) setUser(currentUser);
@@ -89,6 +91,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
       const seen = new Set();
       const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
       const realActive = unique.filter(l => l.is_approved !== false);
+      setRankMap(computeMonthlyRanks(realActive));
       const allMods = realActive.filter(l => l.category === "modding" || l.category === "premium_mods");
       const allGames = realActive.filter(l => l.category === "games");
       setPcGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("pc") || String(p).toLowerCase().includes("steam"))).slice(0, 16));
@@ -155,7 +158,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Monitor} label="PC GAME LISTINGS" color={CP.cyan} />
           <ScrollRow speed={38}>
-            {pcGames.map((g, i) => <ScrollCard key={i} item={g} user={user} profile={profile} />)}
+            {pcGames.map((g, i) => <ScrollCard key={i} item={g} user={user} profile={profile} rank={rankMap.get(g.id)} />)}
           </ScrollRow>
         </div>
       )}
@@ -165,7 +168,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Smartphone} label="MOBILE GAME LISTINGS" color={CP.pink} />
           <ScrollRow speed={42} reverse>
-            {mobileGames.map((g, i) => <ScrollCard key={i} item={g} user={user} profile={profile} />)}
+            {mobileGames.map((g, i) => <ScrollCard key={i} item={g} user={user} profile={profile} rank={rankMap.get(g.id)} />)}
           </ScrollRow>
         </div>
       )}
@@ -181,7 +184,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="PREMIUM MODS — Paid" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {paidMods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} />)}
+            {paidMods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} rank={rankMap.get(m.id)} />)}
           </ScrollRow>
         </div>
       )}
@@ -191,7 +194,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="FREE MODS — Community" color="#4ade80" />
           <ScrollRow speed={38}>
-            {freeMods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} />)}
+            {freeMods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} rank={rankMap.get(m.id)} />)}
           </ScrollRow>
         </div>
       )}
@@ -201,7 +204,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div className="mb-8">
           <SectionLabel icon={Package} label="TOP MODS" color={CP.yellow} />
           <ScrollRow speed={35} reverse>
-            {mods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} />)}
+            {mods.map((m, i) => <ScrollCard key={i} item={m} user={user} profile={profile} rank={rankMap.get(m.id)} />)}
           </ScrollRow>
         </div>
       )}
@@ -211,7 +214,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
         <div>
           <SectionLabel icon={TrendingUp} label="MARKETPLACE LISTINGS" color="#4ade80" />
           <ScrollRow speed={45}>
-            {products.map((p, i) => <ScrollCard key={i} item={p} user={user} profile={profile} />)}
+            {products.map((p, i) => <ScrollCard key={i} item={p} user={user} profile={profile} rank={rankMap.get(p.id)} />)}
           </ScrollRow>
         </div>
       )}

@@ -7,6 +7,7 @@ import ListingReportButton from "@/components/shared/ListingReportButton";
 import RepostButton from "@/components/shared/RepostButton";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import CardEditPencil from "@/components/listings/CardEditPencil";
+import MonthlyRankBadge from "@/components/listings/MonthlyRankBadge";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingYouTubeId } from "@/lib/youtube";
@@ -79,7 +80,7 @@ function animationProps(anim) {
   }
 }
 
-export default function StandardListingCard({ listing: initialListing, user, profile, subcategory, onReview }) {
+export default function StandardListingCard({ listing: initialListing, user, profile, subcategory, onReview, monthlyRank }) {
   const cardRef = useRef(null);
   const countedRef = useRef(false);
   const [listing, setListing] = useState(initialListing);
@@ -152,6 +153,9 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       style={{ "--std-glow": glow }}
       className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group flex flex-col ${touchActive ? "std-touch-active" : ""}`}
     >
+      {/* Monthly ranking — pinned to the right edge */}
+      <MonthlyRankBadge rank={monthlyRank} />
+
       {/* TOP: Image */}
       <a href={`/listing?id=${listing.id}`} className="relative block w-full">
         {listing.images?.length > 0 ? (

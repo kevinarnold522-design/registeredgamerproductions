@@ -12,7 +12,7 @@ import GuestAuthDock from "@/components/home/GuestAuthDock";
 import HeyGamerWelcomeModal from "@/components/home/HeyGamerWelcomeModal";
 import HeyGamerBanner from "@/components/home/HeyGamerBanner";
 import { isNewJoiner } from "@/lib/isNewJoiner";
-import { Gamepad2, Wrench } from "lucide-react";
+import { Gamepad2, Wrench, Cloud } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
@@ -247,6 +247,18 @@ export default function Home() {
                 icon={Gamepad2}
                 filterFn={(l) => l.category === "games"}
                 viewAllHref="/category?cat=games"
+                user={user}
+                profile={profile}
+              />
+
+              {/* Cloud Gaming moving dashboard */}
+              <CategoryMovingDashboard
+                title="Cloud Gaming"
+                subtitle="Stream and play instantly — GeForce NOW, Xbox Cloud, PS Plus & more."
+                accent="#38bdf8"
+                icon={Cloud}
+                filterFn={(l) => l.category === "cloud_gaming"}
+                viewAllHref="/category?cat=cloud_gaming"
                 user={user}
                 profile={profile}
               />

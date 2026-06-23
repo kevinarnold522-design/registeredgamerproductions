@@ -113,6 +113,12 @@ export const CATEGORIES = [
     subcategories: ["Gaming Videos", "Live Streams", "Tutorials", "Reviews", "Highlights", "Clips", "Gameplay Streams", "Esports Events"],
   },
   {
+    id: "cloud_gaming",
+    label: "Cloud Gaming",
+    icon: "cloud_gaming",
+    subcategories: ["GeForce NOW", "Xbox Cloud", "PS Plus Cloud", "Boosteroid", "Amazon Luna", "Shadow", "Streaming Setups"],
+  },
+  {
     id: "jobs",
     label: "Gaming Jobs",
     icon: "jobs",

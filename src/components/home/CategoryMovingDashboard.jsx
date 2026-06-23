@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import StandardListingCard from "@/components/listings/StandardListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { computeMonthlyRanks } from "@/lib/monthlyRank";
 
 // Horizontal auto-scrolling row of standardized listing cards.
 function ScrollRow({ children, speed = 36, reverse = false }) {
@@ -23,10 +24,10 @@ function ScrollRow({ children, speed = 36, reverse = false }) {
   );
 }
 
-function ScrollCard({ item, user, profile }) {
+function ScrollCard({ item, user, profile, rank }) {
   return (
     <div className="w-[420px] max-w-[88vw] flex-shrink-0">
-      <StandardListingCard listing={item} user={user} profile={profile} />
+      <StandardListingCard listing={item} user={user} profile={profile} monthlyRank={rank} />
     </div>
   );
 }
@@ -47,13 +48,16 @@ export default function CategoryMovingDashboard({
   reverse = false,
 }) {
   const [items, setItems] = useState([]);
+  const [rankMap, setRankMap] = useState(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getActiveListings().then((listings) => {
       const seen = new Set();
       const unique = listings.filter((l) => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
-      setItems(unique.filter((l) => l.is_approved !== false && filterFn(l)).slice(0, 16));
+      const matched = unique.filter((l) => l.is_approved !== false && filterFn(l)).slice(0, 16);
+      setRankMap(computeMonthlyRanks(matched));
+      setItems(matched);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -75,7 +79,7 @@ export default function CategoryMovingDashboard({
       </div>
 
       <ScrollRow speed={40} reverse={reverse}>
-        {items.map((item, i) => <ScrollCard key={i} item={item} user={user} profile={profile} />)}
+        {items.map((item, i) => <ScrollCard key={i} item={item} user={user} profile={profile} rank={rankMap.get(item.id)} />)}
       </ScrollRow>
 
       {viewAllHref && (
