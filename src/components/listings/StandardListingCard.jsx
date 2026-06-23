@@ -153,9 +153,6 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       style={{ "--std-glow": glow }}
       className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group flex flex-col ${touchActive ? "std-touch-active" : ""}`}
     >
-      {/* Monthly ranking — pinned to the right edge */}
-      <MonthlyRankBadge rank={monthlyRank} />
-
       {/* TOP: Image */}
       <a href={`/listing?id=${listing.id}`} className="relative block w-full">
         {listing.images?.length > 0 ? (
@@ -257,6 +254,13 @@ export default function StandardListingCard({ listing: initialListing, user, pro
         <div className="mt-2 pt-2 border-t border-purple-900/30">
           <ListingEngagementBar listing={listing} user={user} profile={profile} compact hideReport hideRepost />
         </div>
+
+        {/* Monthly ranking — pinned to the bottom of the card */}
+        {monthlyRank && (
+          <div className="mt-2">
+            <MonthlyRankBadge rank={monthlyRank} />
+          </div>
+        )}
       </div>
     </motion.div>
   );

@@ -1,7 +1,7 @@
 import React from "react";
 import { Trophy, TrendingUp } from "lucide-react";
 
-// Vertical rank badge pinned to the right edge of a listing card.
+// Horizontal rank badge shown at the bottom of a listing card.
 // Shows the listing's rank for the current month (resets on the 1st).
 export default function MonthlyRankBadge({ rank }) {
   if (!rank) return null;
@@ -15,11 +15,11 @@ export default function MonthlyRankBadge({ rank }) {
 
   return (
     <div
-      className="absolute top-1/2 -translate-y-1/2 right-0 z-30 flex flex-col items-center gap-0.5 px-1.5 py-2 rounded-l-xl backdrop-blur-sm"
+      className="flex items-center justify-center gap-1.5 w-full px-2 py-1 rounded-lg backdrop-blur-sm"
       style={{
         background: tier.bg,
         border: `1px solid ${tier.ring}55`,
-        boxShadow: `0 0 14px rgba(${tier.glow},0.5), inset 0 0 8px rgba(${tier.glow},0.25)`,
+        boxShadow: `0 0 12px rgba(${tier.glow},0.45), inset 0 0 8px rgba(${tier.glow},0.2)`,
       }}
       title={`Rank #${rank} this month`}
     >
@@ -28,11 +28,8 @@ export default function MonthlyRankBadge({ rank }) {
       ) : (
         <TrendingUp className="w-3.5 h-3.5" style={{ color: tier.text }} />
       )}
-      <span className="text-[8px] font-black uppercase tracking-wide" style={{ color: tier.text, writingMode: "vertical-rl" }}>
-        Rank
-      </span>
-      <span className="text-xs font-black leading-none" style={{ color: tier.text }}>
-        #{rank}
+      <span className="text-[9px] font-black uppercase tracking-wide" style={{ color: tier.text }}>
+        Rank #{rank} this month
       </span>
     </div>
   );
