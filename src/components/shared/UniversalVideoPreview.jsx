@@ -13,9 +13,13 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
 
   const ytId = extractYouTubeId(url);
 
+  // Always fill the parent box so the player/thumbnail can't collapse to
+  // zero height inside flex/grid containers.
+  const fill = "absolute inset-0 w-full h-full";
+
   if (errored) {
     return (
-      <div className={`flex flex-col items-center justify-center gap-2 bg-gray-900 text-gray-600 ${className}`}>
+      <div className={`${fill} flex flex-col items-center justify-center gap-2 bg-gray-900 text-gray-600 ${className}`}>
         <Play className="w-10 h-10" />
         <p className="text-xs">Preview unavailable</p>
       </div>
@@ -26,9 +30,9 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     if (playing) {
       return (
         <iframe
-          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`}
-          title="Preview"
-          className={`w-full h-full ${className}`}
+          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
+          title="Video player"
+          className={`${fill} ${className}`}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -38,8 +42,8 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     return (
       <button
         type="button"
-        onClick={() => setPlaying(true)}
-        className={`relative block w-full h-full group ${className}`}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPlaying(true); }}
+        className={`${fill} block group ${className}`}
       >
         <img
           src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
@@ -63,7 +67,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
       controls
       playsInline
       preload="metadata"
-      className={className}
+      className={`${fill} object-contain ${className}`}
       onError={() => setErrored(true)}
     />
   );
