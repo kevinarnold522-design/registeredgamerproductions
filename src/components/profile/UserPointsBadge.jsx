@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Trophy, Star } from "lucide-react";
-import { computeUserPoints } from "@/lib/userPoints";
 import { computeLeaderboard } from "@/lib/leaderboardScore";
 
 export default function UserPointsBadge({ userEmail }) {
@@ -13,11 +12,11 @@ export default function UserPointsBadge({ userEmail }) {
   const recompute = useCallback(async () => {
     if (!userEmail) return;
     try {
-      const score = await computeUserPoints(userEmail);
-      setPts(score);
-      // Rank from the shared leaderboard so it matches the leaderboard page
+      // Use the SAME leaderboard scoring so profile points always match
+      // the leaderboard's points & rank exactly.
       const board = await computeLeaderboard({ tab: "community" });
       const idx = board.findIndex((e) => e.email === userEmail);
+      setPts(idx >= 0 ? board[idx].score : 0);
       setRank(idx >= 0 ? idx + 1 : null);
     } catch {}
     setLoading(false);

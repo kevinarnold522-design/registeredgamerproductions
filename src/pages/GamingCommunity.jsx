@@ -17,6 +17,7 @@ import GroupChat from "@/components/community/GroupChat";
 import PostComposer from "@/components/community/PostComposer";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
@@ -174,6 +175,10 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
           </div>
         ) : (
           <>
+            {/* Numbered pagination — on top of the newsfeed */}
+            {listingsTotalPages > 1 && (
+              <NewsfeedPagination page={listingsPage} totalPages={listingsTotalPages} onChange={setListingsPage} />
+            )}
             {!user && (
               <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-xl text-center mb-2">
                 <p className="text-gray-400 text-sm mb-3 font-semibold">Join now to post and chat!</p>
@@ -213,12 +218,8 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                   ))}
                 </div>
                 {listingsTotalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-3">
-                    <button disabled={listingsPage === 1} onClick={() => setListingsPage(p => Math.max(1, p - 1))}
-                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-800 text-gray-300 disabled:opacity-40 hover:bg-gray-700 transition-colors">Prev</button>
-                    <span className="text-gray-500 text-[10px] font-semibold">Page {listingsPage} / {listingsTotalPages}</span>
-                    <button disabled={listingsPage === listingsTotalPages} onClick={() => setListingsPage(p => Math.min(listingsTotalPages, p + 1))}
-                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gray-800 text-gray-300 disabled:opacity-40 hover:bg-gray-700 transition-colors">Next</button>
+                  <div className="mt-3">
+                    <NewsfeedPagination page={listingsPage} totalPages={listingsTotalPages} onChange={setListingsPage} />
                   </div>
                 )}
               </div>

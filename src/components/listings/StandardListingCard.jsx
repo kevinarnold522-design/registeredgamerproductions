@@ -121,7 +121,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
           <div className={`${heightClass} w-full flex items-center justify-center bg-gray-800/60`}><Package className="w-9 h-9 text-purple-300 icon-glow-hover" /></div>
         )}
         {isFree && (
-          <span className="absolute top-2 left-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
+          <span className="absolute bottom-2 right-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         )}
         <span className="theme-glow-action absolute bottom-2 left-2 z-10 flex items-center gap-1 text-[10px] bg-black/70 text-cyan-300 font-bold px-1.5 py-0.5 rounded-full">
           <Eye className="w-3 h-3 icon-glow-hover" />{viewCount.toLocaleString()}

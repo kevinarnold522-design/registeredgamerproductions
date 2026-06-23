@@ -297,6 +297,22 @@
       "type": "string",
       "default": "#030712"
     },
+    "card_font_family": {
+      "type": "string",
+      "enum": [
+        "default",
+        "mono",
+        "serif",
+        "rounded",
+        "impact",
+        "condensed"
+      ],
+      "default": "default"
+    },
+    "card_font_color": {
+      "type": "string",
+      "default": "#ffffff"
+    },
     "kofi_url": {
       "type": "string"
     },

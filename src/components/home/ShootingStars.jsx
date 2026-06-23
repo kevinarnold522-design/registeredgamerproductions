@@ -285,15 +285,19 @@ export default function ShootingStars() {
     function spawnAsteroidParticles(x, y, color, count = 10) {
       for (let i = 0; i < count; i++) {
         const a = Math.random() * Math.PI * 2;
-        const sp = Math.random() * 1.8 + 0.6;
+        const sp = Math.random() * 2.6 + 0.8;
         asteroidParticles.push({
           x, y,
           vx: Math.cos(a) * sp,
           vy: Math.sin(a) * sp,
           life: 1,
-          decay: Math.random() * 0.03 + 0.02,
+          decay: Math.random() * 0.025 + 0.012,
           color,
-          r: Math.random() * 2.2 + 0.8,
+          // Tiny rock shard — irregular chunk that tumbles as it flies off
+          r: Math.random() * 3.2 + 1.2,
+          angle: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.4,
+          shard: Math.floor(Math.random() * 3),
         });
       }
     }
@@ -407,11 +411,11 @@ export default function ShootingStars() {
             const impactY = a.y + ny * a.size;
             const impactBX = b.x - nx * b.size;
             const impactBY = b.y - ny * b.size;
-            // Spark flash at the contact point
+            // Spark flash + shatter into tiny rock fragments at the contact point
             a.flash = 10; b.flash = 10;
-            spawnAsteroidParticles(impactX, impactY, a.color, Math.max(8, Math.round((a.size + b.size) / 2)));
-            spawnAsteroidParticles(impactBX, impactBY, b.color, Math.max(8, Math.round((a.size + b.size) / 2)));
-            spawnSparks(impactX, impactY, 18);
+            spawnAsteroidParticles(impactX, impactY, a.color, Math.max(14, Math.round((a.size + b.size))));
+            spawnAsteroidParticles(impactBX, impactBY, b.color, Math.max(14, Math.round((a.size + b.size))));
+            spawnSparks(impactX, impactY, 22);
           }
         }
       }
@@ -429,13 +433,25 @@ export default function ShootingStars() {
           asteroidParticles.splice(i, 1);
           continue;
         }
+        p.angle = (p.angle || 0) + (p.spin || 0);
         ctx.save();
         ctx.globalAlpha = Math.max(0, p.life);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
         ctx.fillStyle = p.color;
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 5;
         ctx.shadowColor = p.color;
+        // Jagged little rock fragment
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        const r = p.r;
+        if (p.shard === 0) {
+          ctx.moveTo(-r, -r * 0.6); ctx.lineTo(r * 0.8, -r); ctx.lineTo(r, r * 0.7); ctx.lineTo(-r * 0.5, r);
+        } else if (p.shard === 1) {
+          ctx.moveTo(-r, 0); ctx.lineTo(0, -r); ctx.lineTo(r, r * 0.3); ctx.lineTo(0, r);
+        } else {
+          ctx.moveTo(-r * 0.7, -r); ctx.lineTo(r, -r * 0.4); ctx.lineTo(r * 0.5, r); ctx.lineTo(-r, r * 0.6);
+        }
+        ctx.closePath();
         ctx.fill();
         ctx.restore();
       }

@@ -135,6 +135,8 @@ export default function CreateListing() {
     card_glow_hex: "#a855f7",
     card_glow_speed: "slow",
     listing_theme_color: "#030712",
+    card_font_family: "default",
+    card_font_color: "#ffffff",
     kofi_url: "",
     buymeacoffee_url: "",
     patreon_url: "",
@@ -236,6 +238,8 @@ export default function CreateListing() {
             card_glow_hex: l.card_glow_hex || "#a855f7",
             card_glow_speed: l.card_glow_speed || "slow",
             listing_theme_color: l.listing_theme_color || "#030712",
+            card_font_family: l.card_font_family || "default",
+            card_font_color: l.card_font_color || "#ffffff",
             bulk_cross_post_ids: [],
           });
           setImages(l.images || []);
@@ -401,6 +405,10 @@ export default function CreateListing() {
       price: priceVal,
       currency: form.currency || "PHP",
       is_free: priceVal === 0,
+      // Donation links only apply to paid listings — clear them on free ones
+      kofi_url: priceVal > 0 ? form.kofi_url : "",
+      buymeacoffee_url: priceVal > 0 ? form.buymeacoffee_url : "",
+      patreon_url: priceVal > 0 ? form.patreon_url : "",
       stock: parseInt(form.quantity) || 1,
       quantity: parseInt(form.quantity) || 1,
       tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
@@ -416,6 +424,8 @@ export default function CreateListing() {
       card_glow_hex: form.card_glow_hex,
       card_glow_speed: form.card_glow_speed,
       listing_theme_color: form.listing_theme_color,
+      card_font_family: form.card_font_family,
+      card_font_color: form.card_font_color,
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
       modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
@@ -1122,7 +1132,8 @@ export default function CreateListing() {
             </label>
           </div>
 
-          {/* Support / Donation Links */}
+          {/* Support / Donation Links — only for PAID listings (not free mods) */}
+          {(parseFloat(form.price) || 0) > 0 && (
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
             <h3 className="text-white font-bold flex items-center gap-2">
               <Coffee className="w-4 h-4 text-orange-300" /> Support & Donation Links
@@ -1153,6 +1164,7 @@ export default function CreateListing() {
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 text-sm" />
             </div>
           </div>
+          )}
 
           {/* Card Animation Style */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
@@ -1239,6 +1251,36 @@ export default function CreateListing() {
                 <p className="text-white text-sm font-bold mb-2">Listing Page Background Theme</p>
                 <input type="color" value={form.listing_theme_color} onChange={e => setForm(f => ({ ...f, listing_theme_color: e.target.value }))}
                   className="w-full h-10 rounded-xl bg-gray-800 border border-gray-700 p-1" />
+              </div>
+
+              {/* Font customisation */}
+              <div>
+                <p className="text-white text-sm font-bold mb-2">Card Font Style</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    { id: "default", label: "Default", css: "inherit" },
+                    { id: "mono", label: "Mono", css: "'Courier New', monospace" },
+                    { id: "serif", label: "Serif", css: "Georgia, serif" },
+                    { id: "rounded", label: "Rounded", css: "'Trebuchet MS', sans-serif" },
+                    { id: "impact", label: "Impact", css: "Impact, sans-serif" },
+                    { id: "condensed", label: "Condensed", css: "'Arial Narrow', sans-serif" },
+                  ].map(f => (
+                    <button key={f.id} type="button" onClick={() => setForm(prev => ({ ...prev, card_font_family: f.id }))}
+                      style={{ fontFamily: f.css }}
+                      className={`px-3 py-2 rounded-xl text-sm font-bold border ${form.card_font_family === f.id ? "bg-purple-900/40 border-purple-500 text-purple-200" : "bg-gray-800 border-gray-700 text-gray-400"}`}>
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-white text-sm font-bold mb-2">Font Letter Color</p>
+                <div className="flex items-center gap-3">
+                  <input type="color" value={form.card_font_color} onChange={e => setForm(f => ({ ...f, card_font_color: e.target.value }))}
+                    className="w-16 h-10 rounded-xl bg-gray-800 border border-gray-700 p-1" />
+                  <span className="text-gray-400 text-xs">The title text color on your card.</span>
+                </div>
               </div>
             </div>
           </div>

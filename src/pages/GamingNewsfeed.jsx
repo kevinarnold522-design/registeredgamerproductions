@@ -7,12 +7,15 @@ import Navbar from "@/components/home/Navbar";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 15;
 
   useEffect(() => {
     if (user?.email) base44.entities.UserProfile.filter({ user_email: user.email }).then(p => setProfile(p[0] || null));
@@ -52,8 +55,13 @@ export default function GamingNewsfeed() {
           </div>
         </div>
         {loading ? <div className="py-16 text-center text-gray-500">Loading newsfeed...</div> : (
+          <>
+          {/* Numbered pagination — on top of the newsfeed */}
+          {Math.ceil(items.length / PER_PAGE) > 1 && (
+            <NewsfeedPagination page={page} totalPages={Math.ceil(items.length / PER_PAGE)} onChange={setPage} />
+          )}
           <div className="space-y-3">
-            {items.map(({ type, item }) => type === "post" ? (
+            {items.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(({ type, item }) => type === "post" ? (
               <CommunityPostCard key={`p-${item.id}`} post={item} user={user} profile={profile} isTier1 canManage={false} canDelete={false} accentColor="#a855f7" />
             ) : (
               <a key={`l-${item.id}`} href={`/listing?id=${item.id}`} className="flex gap-3 rounded-2xl border border-gray-800 bg-gray-900/70 p-3 hover:border-purple-600/40 transition-colors">
@@ -69,6 +77,7 @@ export default function GamingNewsfeed() {
               </a>
             ))}
           </div>
+          </>
         )}
       </div>
     </div>
