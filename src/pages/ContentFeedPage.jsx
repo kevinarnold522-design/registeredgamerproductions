@@ -42,6 +42,13 @@ function VideoCard({ video, onClick, user }) {
     else { navigator.clipboard?.writeText(url); }
   };
 
+  // Listing-backed videos open their real listing landing page; uploaded
+  // VideoPosts open the in-feed player modal.
+  const openVideo = () => {
+    if (video._isListing) { window.location.href = `/listing?id=${video.id}`; return; }
+    onClick(video);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -50,7 +57,7 @@ function VideoCard({ video, onClick, user }) {
       className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden group cursor-pointer hover:border-purple-700/50 transition-all"
     >
       {/* Thumbnail */}
-      <div className="relative h-44 bg-gray-800 overflow-hidden" onClick={() => onClick(video)}>
+      <div className="relative h-44 bg-gray-800 overflow-hidden" onClick={openVideo}>
         {thumb ? (
           <img src={thumb} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : video.video_url ? (
@@ -74,7 +81,7 @@ function VideoCard({ video, onClick, user }) {
 
       {/* Info */}
       <div className="p-3">
-        <p className="text-white font-bold text-sm line-clamp-2 leading-snug mb-1.5 group-hover:text-purple-300 transition-colors" onClick={() => onClick(video)}>{video.title}</p>
+        <p className="text-white font-bold text-sm line-clamp-2 leading-snug mb-1.5 group-hover:text-purple-300 transition-colors" onClick={openVideo}>{video.title}</p>
         <p className="text-purple-400 text-xs font-semibold">{video.creator_username || "Creator"}</p>
         {video.game_tag && <p className="text-gray-600 text-[10px] mt-0.5">{video.game_tag}</p>}
 
@@ -84,7 +91,7 @@ function VideoCard({ video, onClick, user }) {
             <Heart className="w-3.5 h-3.5 theme-glow-icon" fill={liked ? "currentColor" : "none"} />
             <span>{likeCount}</span>
           </button>
-          <button onClick={() => onClick(video)} className="theme-glow-action rounded-lg px-1 flex items-center gap-1 text-xs text-gray-500 hover:text-purple-400 transition-colors">
+          <button onClick={openVideo} className="theme-glow-action rounded-lg px-1 flex items-center gap-1 text-xs text-gray-500 hover:text-purple-400 transition-colors">
             <MessageCircle className="w-3.5 h-3.5 theme-glow-icon" />
           </button>
           <button onClick={handleShare} className="theme-glow-action rounded-lg px-1 flex items-center gap-1 text-xs text-gray-500 hover:text-blue-400 transition-colors">
@@ -512,7 +519,7 @@ export default function ContentFeedPage() {
 
       {/* Hero */}
       <div className="pt-16 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0a0010 0%, #050010 50%, #030710 100%)" }}>
+        style={{ background: "linear-gradient(135deg, #2a0a2e 0%, #3a0d36 50%, #4a1040 100%)" }}>
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: "linear-gradient(rgba(124,58,237,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,0.5) 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
         <div className="max-w-7xl mx-auto px-4 pt-10 pb-10 relative z-10">

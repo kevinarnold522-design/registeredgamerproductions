@@ -60,7 +60,7 @@ export default function SalesDashboard({ user }) {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue", value: `₱${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
+          { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
           { label: "Total Sales", value: totalSales, icon: Package, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
           { label: "Active Listings", value: listings.filter(l => l.status === "active").length, icon: TrendingUp, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
           { label: "Total Downloads", value: totalDownloads.toLocaleString(), icon: Download, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
@@ -75,7 +75,7 @@ export default function SalesDashboard({ user }) {
 
       {/* Monthly Revenue Chart */}
       <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">
-        <h3 className="text-white font-bold mb-4">Monthly Revenue (₱)</h3>
+        <h3 className="text-white font-bold mb-4">Monthly Revenue ($)</h3>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
@@ -102,7 +102,7 @@ export default function SalesDashboard({ user }) {
                 <tr key={i} className="border-t border-gray-800 hover:bg-gray-800/30">
                   <td className="px-4 py-3 text-white text-xs font-medium">{l.name}</td>
                   <td className="px-4 py-3 text-blue-400 font-bold">{l.sales}</td>
-                  <td className="px-4 py-3 text-green-400 font-bold">₱{l.revenue.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-green-400 font-bold">${l.revenue.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -124,10 +124,10 @@ export default function SalesDashboard({ user }) {
               return (
                 <tr key={l.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                   <td className="px-4 py-3 text-white text-xs font-medium max-w-[140px] truncate">{l.title}</td>
-                  <td className="px-4 py-3 text-purple-400 font-bold">{l.is_free ? "FREE" : `₱${l.price?.toLocaleString()}`}</td>
+                  <td className="px-4 py-3 text-purple-400 font-bold">{l.is_free ? "FREE" : `$${l.price?.toLocaleString()}`}</td>
                   <td className="px-4 py-3 text-blue-400 font-bold">{l.views || 0}</td>
                   <td className="px-4 py-3 text-green-400 font-bold">{listingSales}</td>
-                  <td className="px-4 py-3 text-yellow-400 font-bold">₱{listingRevenue.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-yellow-400 font-bold">${listingRevenue.toLocaleString()}</td>
                 </tr>
               );
             })}

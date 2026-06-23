@@ -122,7 +122,7 @@ export default function GlobalSearchBar({ compact = false }) {
                     </div>
                   </div>
                   <span className="text-green-400 font-bold text-sm flex-shrink-0">
-                    {listing.is_free || listing.price === 0 ? "FREE" : `₱${listing.price?.toLocaleString()}`}
+                    {listing.is_free || listing.price === 0 ? "FREE" : `$${listing.price?.toLocaleString()}`}
                   </span>
                 </button>
               ))}

@@ -82,7 +82,7 @@ export default function TopGamingGear() {
                 <h3 className="text-white font-bold text-lg mb-2 truncate">{listing.title}</h3>
                 <p className="text-gray-500 text-xs mb-3 line-clamp-2">{listing.description}</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-pink-400 font-black text-xl">₱{listing.price?.toLocaleString()}</span>
+                  <span className="text-pink-400 font-black text-xl">${listing.price?.toLocaleString()}</span>
                   <span className="text-gray-600 text-xs">by @{listing.seller_username}</span>
                 </div>
               </div>

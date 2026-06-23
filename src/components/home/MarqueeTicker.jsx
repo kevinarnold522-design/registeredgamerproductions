@@ -20,7 +20,7 @@ export default function MarqueeTicker() {
         const listings = await base44.entities.Listing.list("-created_date", 10);
         const liveItems = listings
           .filter(l => l.status === "active" && l.title)
-          .map(l => `${l.category === "modding" ? "🔧" : l.category === "games" ? "🎮" : l.category === "gear" ? "🖥️" : "🛒"} ${l.title} — ₱${l.price?.toLocaleString()}`);
+          .map(l => `${l.category === "modding" ? "🔧" : l.category === "games" ? "🎮" : l.category === "gear" ? "🖥️" : "🛒"} ${l.title} — $${l.price?.toLocaleString()}`);
         if (liveItems.length > 0) {
           setItems([...defaultItems.slice(0, 3), ...liveItems]);
         }

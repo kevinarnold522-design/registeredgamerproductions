@@ -102,7 +102,7 @@ export default function BuyerDashboard({ user, profile }) {
           {[
             { label: "Total Orders", value: orders.length, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
             { label: "Favourites", value: favorites.length, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
-            { label: "Total Spent", value: `₱${orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.amount || 0), 0).toLocaleString()}`, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
+            { label: "Total Spent", value: `$${orders.filter(o => o.payment_status === "paid").reduce((s, o) => s + (o.amount || 0), 0).toLocaleString()}`, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
           ].map((s, i) => (
             <div key={i} className={`rounded-2xl p-5 border ${s.bg}`}>
               <p className="text-gray-400 text-xs mb-2">{s.label}</p>
@@ -153,7 +153,7 @@ export default function BuyerDashboard({ user, profile }) {
                 {orders.map((o) => (
                   <tr key={o.id} className="border-t border-gray-800">
                     <td className="px-4 py-3 text-white text-sm font-medium">{o.listing_title}</td>
-                    <td className="px-4 py-3 text-green-400 font-bold">₱{o.amount?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-green-400 font-bold">${o.amount?.toLocaleString()}</td>
                     <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span></td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{new Date(o.created_date).toLocaleDateString()}</td>
                   </tr>
@@ -171,7 +171,7 @@ export default function BuyerDashboard({ user, profile }) {
               {f.listing_image && <img src={f.listing_image} alt="" className="w-full h-40 object-cover" />}
               <div className="p-4">
                 <p className="text-white font-bold truncate">{f.listing_title}</p>
-                <p className="text-pink-400 font-black mt-1">₱{f.price?.toLocaleString()}</p>
+                <p className="text-pink-400 font-black mt-1">${f.price?.toLocaleString()}</p>
               </div>
             </div>
           ))}

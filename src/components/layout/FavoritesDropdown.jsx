@@ -71,7 +71,7 @@ export default function FavoritesDropdown({ isOpen, onClose, userEmail }) {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-semibold truncate">{item.listing_title}</p>
-                    <p className="text-pink-400 font-bold mt-1">₱{item.price?.toLocaleString()}</p>
+                    <p className="text-pink-400 font-bold mt-1">${item.price?.toLocaleString()}</p>
                     <button onClick={() => addToCart(item)} className="flex items-center gap-1 text-purple-400 text-xs mt-1 hover:text-purple-300 transition-colors">
                       <ShoppingCart className="w-3 h-3" /> Add to Cart
                     </button>

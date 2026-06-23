@@ -258,13 +258,13 @@ export default function ModdingSection({ currentUser, currentProfile }) {
                     </select>
                   </div>
                   <div>
-                    <label className="text-gray-500 text-xs mb-1 block">Min Price (₱)</label>
+                    <label className="text-gray-500 text-xs mb-1 block">Min Price ($)</label>
                     <input type="number" value={filters.priceMin} onChange={e => setFilters(f => ({ ...f, priceMin: e.target.value }))}
                       placeholder="0"
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500" />
                   </div>
                   <div>
-                    <label className="text-gray-500 text-xs mb-1 block">Max Price (₱)</label>
+                    <label className="text-gray-500 text-xs mb-1 block">Max Price ($)</label>
                     <input type="number" value={filters.priceMax} onChange={e => setFilters(f => ({ ...f, priceMax: e.target.value }))}
                       placeholder="9999"
                       className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-orange-500" />

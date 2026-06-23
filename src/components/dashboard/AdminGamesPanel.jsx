@@ -74,7 +74,7 @@ export default function AdminGamesPanel() {
                     {g.title}
                   </td>
                   <td className="px-4 py-3 text-gray-400 text-xs">{g.seller_username || g.seller_email}</td>
-                  <td className="px-4 py-3 text-green-400 font-bold">{g.price === 0 ? "FREE" : `₱${g.price?.toLocaleString()}`}</td>
+                  <td className="px-4 py-3 text-green-400 font-bold">{g.price === 0 ? "FREE" : `$${g.price?.toLocaleString()}`}</td>
                   <td className="px-4 py-3">
                     {editingId === g.id ? (
                       <div className="flex items-center gap-1.5">

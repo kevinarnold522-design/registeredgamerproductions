@@ -172,7 +172,7 @@ export default function ListingOfWeek() {
                   <Trophy className="w-4 h-4" /> View Listing
                 </a>
                 {!isFree && (
-                  <span className="text-2xl font-black text-yellow-300">₱{listing.price?.toLocaleString()}</span>
+                  <span className="text-2xl font-black text-yellow-300">${listing.price?.toLocaleString()}</span>
                 )}
               </div>
             </div>

@@ -572,9 +572,9 @@ export default function CommunityLandingPage() {
                   className="overflow-hidden mb-4">
                   <div className="bg-gray-900 border border-purple-700/30 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <input type="number" value={listingFilter.priceMin} onChange={e => setListingFilter(f => ({ ...f, priceMin: e.target.value }))}
-                      placeholder="Min ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                      placeholder="Min $" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
                     <input type="number" value={listingFilter.priceMax} onChange={e => setListingFilter(f => ({ ...f, priceMax: e.target.value }))}
-                      placeholder="Max ₱" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
+                      placeholder="Max $" className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-purple-500" />
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" checked={listingFilter.isFree} onChange={e => setListingFilter(f => ({ ...f, isFree: e.target.checked }))} className="accent-green-500 w-3.5 h-3.5 rounded" />
                       <span className="text-green-400 text-xs font-semibold">Free Only</span>
@@ -733,7 +733,7 @@ export default function CommunityLandingPage() {
                     <div className="p-2.5">
                       <p className="text-white text-xs font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{l.title}</p>
                       <div className="flex items-center justify-between mt-1">
-                        <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `₱${l.price}`}</p>
+                        <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `$${l.price}`}</p>
                         <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
                           <Eye className="w-2.5 h-2.5 theme-glow-icon" />{(l.views || 0).toLocaleString()}
                         </span>

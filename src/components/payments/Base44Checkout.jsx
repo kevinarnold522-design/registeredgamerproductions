@@ -87,20 +87,20 @@ export default function Base44Checkout({ totalAmount, items, userEmail, onSucces
       <div className="mb-6 bg-gray-900/60 border border-gray-700 rounded-xl p-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-gray-400 text-sm">Total Amount</span>
-          <span className="text-white font-black text-xl">₱{totalAmount.toLocaleString()}</span>
+          <span className="text-white font-black text-xl">${totalAmount.toLocaleString()}</span>
         </div>
         <div className="space-y-1">
           <div className="flex justify-between text-xs">
             <span className="text-gray-500">Subtotal</span>
-            <span className="text-gray-300">₱{(totalAmount / 1.1).toLocaleString()}</span>
+            <span className="text-gray-300">${(totalAmount / 1.1).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-gray-500">Platform Fee (10%)</span>
-            <span className="text-gray-300">₱{(totalAmount * 0.1 / 1.1).toLocaleString()}</span>
+            <span className="text-gray-300">${(totalAmount * 0.1 / 1.1).toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-xs font-bold">
             <span className="text-green-400">Seller Receives (90%)</span>
-            <span className="text-green-400">₱{(totalAmount * 0.9).toLocaleString()}</span>
+            <span className="text-green-400">${(totalAmount * 0.9).toLocaleString()}</span>
           </div>
         </div>
       </div>

@@ -231,7 +231,7 @@ export default function RoutingDashboard() {
                   </div>
                   <p className="text-gray-500 text-xs">
                     {tab === "listings"
-                      ? `By @${item.seller_username} · ₱${item.price || "FREE"} · ${item.category}`
+                      ? `By @${item.seller_username} · $${item.price || "FREE"} · ${item.category}`
                       : `By @${item.author_username} · ${new Date(item.created_date).toLocaleDateString()}`}
                   </p>
                 </div>

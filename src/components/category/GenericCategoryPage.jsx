@@ -189,7 +189,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   if (cat === "livestream") {
     return (
       <div className="min-h-screen">
-        <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #0f0000, #030712)" }}>
+        <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #3a0d1f, #2a0a2e)" }}>
           <div className="max-w-7xl mx-auto relative z-10">
             <a href="/" className="text-red-400 text-sm hover:text-red-300 mb-4 flex items-center gap-1">← Back to Home</a>
             <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
@@ -216,7 +216,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   return (
     <div className="min-h-screen bg-gray-950">
       {/* Hero */}
-      <div className="relative py-14 px-4" style={{ background: `linear-gradient(135deg, #060008, #030712)` }}>
+      <div className="relative py-14 px-4" style={{ background: `linear-gradient(135deg, #2a0a2e, #3a0d36)` }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: meta.grid, backgroundSize: "50px 50px" }} />
         <div className="max-w-7xl mx-auto relative z-10">
           <a href="/" className="text-sm hover:opacity-80 mb-4 flex items-center gap-1" style={{ color: meta.color }}>← Back to Home</a>

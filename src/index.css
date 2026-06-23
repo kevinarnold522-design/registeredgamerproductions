@@ -399,7 +399,7 @@ body {
 .bg-gray-900 { background-color: rgba(60, 20, 78, 0.4) !important; }
 .bg-gray-900\/95 { background-color: rgba(60, 20, 78, 0.46) !important; }
 .bg-gray-950\/95 { background-color: rgba(46, 16, 64, 0.46) !important; }
-.bg-black { background-color: rgba(40, 12, 56, 0.32) !important; }
+.bg-black { background-color: rgba(120, 20, 80, 0.34) !important; }
 .bg-\[\#030712\] { background-color: rgba(46, 16, 64, 0.38) !important; }
 .bg-\[\#050510\] { background-color: rgba(48, 16, 66, 0.38) !important; }
 .bg-\[\#020208\] { background-color: rgba(44, 14, 60, 0.38) !important; }
@@ -418,8 +418,8 @@ body {
 .bg-slate-950, .bg-zinc-950, .bg-neutral-950 { background-color: rgba(46, 16, 64, 0.42) !important; }
 .bg-slate-900, .bg-zinc-900, .bg-neutral-900 { background-color: rgba(64, 22, 84, 0.4) !important; }
 
-/* Pure-black hex fills → deep purple/pink blend */
-.bg-\[\#000\], .bg-\[\#000000\], .bg-\[\#010101\], .bg-\[\#0a0a0a\] { background-color: rgba(56, 16, 72, 0.4) !important; }
+/* Pure-black hex fills → vivid pink blend */
+.bg-\[\#000\], .bg-\[\#000000\], .bg-\[\#010101\], .bg-\[\#0a0a0a\] { background-color: rgba(150, 22, 96, 0.42) !important; }
 
 /* Catch-all remaining dark fills → alternating purple & pink tints */
 .bg-\[\#111\], .bg-\[\#111111\], .bg-\[\#181818\], .bg-\[\#1a1a1a\], .bg-\[\#0d0d0d\] { background-color: rgba(74, 22, 96, 0.42) !important; }

@@ -50,9 +50,9 @@ export default function AdminTransactionsDashboard({ user }) {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue", value: `₱${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
-          { label: "Platform Fees", value: `₱${stats.totalFees.toLocaleString()}`, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
-          { label: "Seller Payouts", value: `₱${stats.totalPayouts.toLocaleString()}`, icon: Package, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
+          { label: "Total Revenue", value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
+          { label: "Platform Fees", value: `$${stats.totalFees.toLocaleString()}`, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
+          { label: "Seller Payouts", value: `$${stats.totalPayouts.toLocaleString()}`, icon: Package, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
           { label: "Transactions", value: stats.transactionCount, icon: BarChart2, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
         ].map((s, i) => (
           <motion.div
@@ -95,9 +95,9 @@ export default function AdminTransactionsDashboard({ user }) {
                     <td className="px-4 py-3 text-white text-xs font-mono">{t.order_id?.slice(0, 8)}...</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{t.buyer_email}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{t.seller_email}</td>
-                    <td className="px-4 py-3 text-green-400 font-bold">₱{t.total_amount?.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-blue-400 font-bold">₱{t.admin_fee?.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-purple-400 font-bold">₱{t.seller_payout?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-green-400 font-bold">${t.total_amount?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-blue-400 font-bold">${t.admin_fee?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-purple-400 font-bold">${t.seller_payout?.toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                         t.payment_status === "completed" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"

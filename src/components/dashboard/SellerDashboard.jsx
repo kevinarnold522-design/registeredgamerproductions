@@ -158,7 +158,7 @@ export default function SellerDashboard({ user, profile }) {
           <YoutubeConnectHighlight profile={profile} user={user} />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             {[
-              { label: "Total Revenue", value: `₱${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
+              { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
               { label: "Total Sales", value: totalSales, icon: Package, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
               { label: "Active Listings", value: activeListings, icon: Store, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
               { label: "Total Views", value: totalViews.toLocaleString(), icon: Eye, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/30" },
@@ -189,8 +189,8 @@ export default function SellerDashboard({ user, profile }) {
                     <tr key={o.id} className="border-t border-gray-800">
                       <td className="px-4 py-3 text-white text-xs font-medium">{o.listing_title}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{o.buyer_email}</td>
-                      <td className="px-4 py-3 text-green-400 font-bold">₱{o.amount?.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-purple-400 font-bold">₱{o.seller_payout?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-green-400 font-bold">${o.amount?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-purple-400 font-bold">${o.seller_payout?.toLocaleString()}</td>
                       <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span></td>
                     </tr>
                   ))}
@@ -226,7 +226,7 @@ export default function SellerDashboard({ user, profile }) {
                   {l.images?.[0] && <img src={l.images[0]} alt="" className="w-full h-40 object-cover" />}
                   <div className="p-4">
                     <p className="text-white font-bold truncate">{l.title}</p>
-                    <p className="text-purple-400 font-black mt-1">₱{l.price?.toLocaleString()}</p>
+                    <p className="text-purple-400 font-black mt-1">${l.price?.toLocaleString()}</p>
                     <div className="flex gap-2 mt-3">
                       <a href={`/create-listing?edit=${l.id}`} className="flex-1 text-center py-2 rounded-lg bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs font-semibold hover:bg-purple-900/50 transition-colors">Edit</a>
                       {l.status === "active" && (
@@ -261,8 +261,8 @@ export default function SellerDashboard({ user, profile }) {
                     <tr key={o.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                       <td className="px-4 py-3 text-white text-xs font-medium max-w-[120px] truncate">{o.listing_title}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{o.buyer_email}</td>
-                      <td className="px-4 py-3 text-green-400 font-bold text-xs">₱{o.amount?.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-purple-400 font-bold text-xs">₱{o.seller_payout?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-green-400 font-bold text-xs">${o.amount?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-purple-400 font-bold text-xs">${o.seller_payout?.toLocaleString()}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span>
                       </td>

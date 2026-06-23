@@ -70,7 +70,7 @@ export default function SellerTrafficInsights({ user, listings = [], orders = []
           { label: "Followers", value: followers.length, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
           { label: "Wishlisted", value: favorites.length, icon: Heart, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
           { label: "Conversion Rate", value: `${conversionRate}%`, icon: TrendingUp, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
-          { label: "Total Revenue", value: `₱${totalRevenue.toLocaleString()}`, icon: ShoppingCart, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
+          { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: ShoppingCart, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
           { label: "Total Orders", value: paidOrders.length, icon: ShoppingCart, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
           { label: "Avg Rating", value: avgRating !== "N/A" ? `${avgRating} ⭐` : "N/A", icon: Star, color: "text-yellow-300", bg: "bg-yellow-500/10 border-yellow-500/30" },
           { label: "Total Likes", value: totalLikes, icon: Heart, color: "text-red-400", bg: "bg-red-500/10 border-red-500/30" },
@@ -211,7 +211,7 @@ export default function SellerTrafficInsights({ user, listings = [], orders = []
                     <tr key={l.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                       <td className="px-4 py-3 text-white text-xs font-medium max-w-[140px] truncate">{l.title}</td>
                       <td className="px-4 py-3 text-purple-400 text-xs">{l.category}</td>
-                      <td className="px-4 py-3 text-green-400 font-bold text-xs">₱{l.price?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-green-400 font-bold text-xs">${l.price?.toLocaleString()}</td>
                       <td className="px-4 py-3 text-blue-400 font-bold text-xs">{l.views || 0}</td>
                       <td className="px-4 py-3 text-pink-400 font-bold text-xs">{l.likes || 0}</td>
                       <td className="px-4 py-3 text-yellow-400 font-bold text-xs">{wishCount}</td>

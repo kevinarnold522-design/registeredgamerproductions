@@ -95,7 +95,7 @@ export default function SearchPage() {
                       {l.store_platforms?.length > 0 && <div className="mt-2"><StorePlatformBadges platforms={l.store_platforms} links={l.store_platform_links} size="sm" /></div>}
                       {l.tool_target_game && <p className="text-blue-300 text-xs mt-2">For: {l.tool_target_game}</p>}
                       <div className="flex items-center justify-between mt-2">
-                        <p className="text-purple-400 font-black text-sm">{!l.price || l.is_free ? "FREE" : `₱${Number(l.price).toLocaleString()}`}</p>
+                        <p className="text-purple-400 font-black text-sm">{!l.price || l.is_free ? "FREE" : `$${Number(l.price).toLocaleString()}`}</p>
                         <span className="theme-glow-action inline-flex items-center gap-1 text-cyan-300 text-[10px] font-bold rounded-lg px-1 py-0.5"><Eye className="w-3 h-3 theme-glow-icon" />{(l.views || 0).toLocaleString()}</span>
                       </div>
                       <p className="theme-glow-action inline-flex items-center gap-1 text-gray-400 text-[10px] mt-1 rounded-lg px-1 py-0.5"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> Posted Date: {l.created_date ? new Date(l.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>

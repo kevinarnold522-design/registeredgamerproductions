@@ -48,7 +48,7 @@ export default function SimilarListings({ listing, compact = false }) {
               </div>
               <div className="p-2">
                 <p className="text-white text-xs font-bold truncate">{l.title}</p>
-                <p className="text-purple-400 text-xs font-black mt-0.5">{free ? "FREE" : `₱${l.price?.toLocaleString()}`}</p>
+                <p className="text-purple-400 text-xs font-black mt-0.5">{free ? "FREE" : `$${l.price?.toLocaleString()}`}</p>
               </div>
             </a>
           );

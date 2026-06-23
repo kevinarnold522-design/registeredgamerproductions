@@ -61,7 +61,7 @@ export default function CartDropdown({ isOpen, onClose, userEmail }) {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-semibold truncate">{item.listing_title}</p>
-                    <p className="text-purple-400 font-bold mt-1">₱{item.price?.toLocaleString()}</p>
+                    <p className="text-purple-400 font-bold mt-1">${item.price?.toLocaleString()}</p>
                   </div>
                   <button onClick={() => removeItem(item.id)} className="text-gray-600 hover:text-red-400 transition-colors flex-shrink-0">
                     <Trash2 className="w-4 h-4" />
@@ -74,7 +74,7 @@ export default function CartDropdown({ isOpen, onClose, userEmail }) {
               <div className="p-4 border-t border-gray-800">
                 <div className="flex justify-between mb-4">
                   <span className="text-gray-400 font-medium">Total</span>
-                  <span className="text-white font-black text-lg">₱{total.toLocaleString()}</span>
+                  <span className="text-white font-black text-lg">${total.toLocaleString()}</span>
                 </div>
                 <a href="/checkout"
                   className="block w-full text-center py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity">

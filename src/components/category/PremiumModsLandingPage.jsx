@@ -122,9 +122,9 @@ export default function PremiumModsLandingPage({ user }) {
               className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500">
               <option value="">All Prices</option>
               <option value="free">Free</option>
-              <option value="low">₱1 - ₱500</option>
-              <option value="mid">₱501 - ₱2,000</option>
-              <option value="high">₱2,001+</option>
+              <option value="low">$1 - $500</option>
+              <option value="mid">$501 - $2,000</option>
+              <option value="high">$2,001+</option>
             </select>
           </div>
         </div>

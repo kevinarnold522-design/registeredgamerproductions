@@ -71,7 +71,7 @@ export default function GamingNewsfeed() {
                 <div className="min-w-0 flex-1">
                   <p className="text-white font-bold text-sm truncate">{item.title}</p>
                   <p className="text-gray-500 text-xs line-clamp-2 mt-1">{item.description}</p>
-                  <p className="text-purple-300 text-sm font-black mt-1">{item.is_free || !item.price ? "FREE" : `₱${item.price?.toLocaleString()}`}</p>
+                  <p className="text-purple-300 text-sm font-black mt-1">{item.is_free || !item.price ? "FREE" : `$${item.price?.toLocaleString()}`}</p>
                   <div className="mt-2"><ListingEngagementBar listing={item} user={user} profile={profile} compact /></div>
                 </div>
               </a>

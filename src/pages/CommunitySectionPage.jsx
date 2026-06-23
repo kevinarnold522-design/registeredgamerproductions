@@ -208,7 +208,7 @@ export default function CommunitySectionPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold text-xs line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</p>
                       <p className="font-black text-xs mt-1" style={{ color: accentColor }}>
-                        {listing.is_free ? "FREE" : `₱${listing.price}`}
+                        {listing.is_free ? "FREE" : `$${listing.price}`}
                       </p>
                     </div>
                   </Link>

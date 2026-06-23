@@ -218,7 +218,7 @@ export default function Analytics() {
                 <StatCard label="Active Listings" value={listings.length} icon={Package} color="text-green-400" bg="bg-green-500/10 border-green-500/30" delay={0} />
                 <StatCard label="Listing Views" value={totalListingViews.toLocaleString()} icon={Eye} color="text-blue-400" bg="bg-blue-500/10 border-blue-500/30" delay={0.05} />
                 <StatCard label="Paid Orders" value={paidOrders} icon={ShoppingBag} color="text-orange-400" bg="bg-orange-500/10 border-orange-500/30" delay={0.1} />
-                <StatCard label={admin ? "Platform Revenue" : "My Revenue"} value={`₱${totalRevenue.toLocaleString()}`} icon={DollarSign} color="text-green-400" bg="bg-green-500/10 border-green-500/30" delay={0.15} />
+                <StatCard label={admin ? "Platform Revenue" : "My Revenue"} value={`$${totalRevenue.toLocaleString()}`} icon={DollarSign} color="text-green-400" bg="bg-green-500/10 border-green-500/30" delay={0.15} />
               </div>
             )}
             {accountType === "regular" && !admin && (
@@ -232,7 +232,7 @@ export default function Analytics() {
             {/* Revenue bar chart for sellers/admin */}
             {(accountType === "business" || admin) && revenueChartData.length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-                <h3 className="text-white font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-400" /> Revenue by Month (₱)</h3>
+                <h3 className="text-white font-bold mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4 text-green-400" /> Revenue by Month ($)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={revenueChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
@@ -325,7 +325,7 @@ export default function Analytics() {
                       <tr key={l.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                         <td className="px-4 py-3 text-white font-medium text-xs max-w-[160px] truncate">{l.title}</td>
                         <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-gray-800 text-gray-300 text-[10px]">{l.category}</span></td>
-                        <td className="px-4 py-3 text-green-400 font-bold text-xs">₱{l.price?.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-green-400 font-bold text-xs">${l.price?.toLocaleString()}</td>
                         <td className="px-4 py-3 text-blue-400 font-bold text-xs">{(l.views || 0).toLocaleString()}</td>
                         <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${l.status === "active" ? "bg-green-900/40 text-green-400" : "bg-gray-800 text-gray-400"}`}>{l.status}</span></td>
                       </tr>
@@ -513,7 +513,7 @@ export default function Analytics() {
                         <tr key={l.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                           <td className="px-4 py-3 text-white font-medium text-xs max-w-[160px] truncate">{l.title}</td>
                           <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full bg-gray-800 text-gray-300 text-[10px]">{l.category}</span></td>
-                          <td className="px-4 py-3 text-green-400 font-bold text-xs">₱{l.price?.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-green-400 font-bold text-xs">${l.price?.toLocaleString()}</td>
                           <td className="px-4 py-3 text-blue-400 font-bold text-xs">{(l.views || 0).toLocaleString()}</td>
                           <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${l.status === "active" ? "bg-green-900/40 text-green-400" : "bg-gray-800 text-gray-400"}`}>{l.status}</span></td>
                         </tr>
@@ -532,11 +532,11 @@ export default function Analytics() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <StatCard label="Total Orders" value={orders.length} icon={ShoppingBag} color="text-orange-400" bg="bg-orange-500/10 border-orange-500/30" delay={0} />
               <StatCard label="Paid Orders" value={paidOrders} icon={Star} color="text-green-400" bg="bg-green-500/10 border-green-500/30" delay={0.05} />
-              <StatCard label="My Revenue" value={`₱${totalRevenue.toLocaleString()}`} icon={DollarSign} color="text-green-400" bg="bg-green-500/10 border-green-500/30" delay={0.1} />
+              <StatCard label="My Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={DollarSign} color="text-green-400" bg="bg-green-500/10 border-green-500/30" delay={0.1} />
             </div>
             {revenueChartData.length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-                <h3 className="text-white font-bold mb-4">Revenue by Month (₱)</h3>
+                <h3 className="text-white font-bold mb-4">Revenue by Month ($)</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={revenueChartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />

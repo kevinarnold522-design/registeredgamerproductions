@@ -92,12 +92,12 @@ export default function Checkout() {
                     {item.listing_image && <img src={item.listing_image} alt="" className="w-10 h-10 rounded-lg object-cover" />}
                     <p className="text-sm text-gray-200 font-medium">{item.listing_title}</p>
                   </div>
-                  <p className="text-purple-400 font-bold">₱{(item.price || 0).toLocaleString()}</p>
+                  <p className="text-purple-400 font-bold">${(item.price || 0).toLocaleString()}</p>
                 </div>
               ))}
               <div className="flex justify-between mt-3 pt-3 border-t border-gray-700">
                 <p className="text-gray-300 font-bold">Total</p>
-                <p className="text-green-400 font-black text-lg">₱{totalAmount.toLocaleString()}</p>
+                <p className="text-green-400 font-black text-lg">${totalAmount.toLocaleString()}</p>
               </div>
             </div>
 

@@ -404,7 +404,7 @@ async function sendOrderNotification(body, env) {
     user_email: buyer_email,
     type: "order",
     title: "Order Confirmed!",
-    message: `Your purchase of "${listing_title}" for ₱${Number(amount).toLocaleString()} is confirmed.`,
+    message: `Your purchase of "${listing_title}" for $${Number(amount).toLocaleString()} is confirmed.`,
     link: "/dashboard?tab=orders",
     related_id: order_id,
   });
@@ -413,7 +413,7 @@ async function sendOrderNotification(body, env) {
     user_email: seller_email,
     type: "sale",
     title: "New Sale! 💰",
-    message: `You sold "${listing_title}" for ₱${Number(amount).toLocaleString()}. Payout: ₱${(amount * 0.9).toLocaleString()}.`,
+    message: `You sold "${listing_title}" for $${Number(amount).toLocaleString()}. Payout: $${(amount * 0.9).toLocaleString()}.`,
     link: "/dashboard?tab=sales",
     related_id: order_id,
   });
@@ -431,21 +431,21 @@ async function salesNotification(body, env) {
   await sendEmail(env, {
     to: buyer_email,
     subject: "✅ Purchase Successful — GAMER Productions",
-    body: `Hey Gamer!\n\nYour purchase was successful! 🎮\n\nItem: ${listing_title}\nAmount Paid: ₱${amount?.toLocaleString()}\nOrder ID: ${order_id || "N/A"}\n\nYour download link or details will be delivered by the seller shortly.\n\nThank you for shopping on GAMER Productions!\n\n— GAMER Productions Team 🕹️`,
+    body: `Hey Gamer!\n\nYour purchase was successful! 🎮\n\nItem: ${listing_title}\nAmount Paid: $${amount?.toLocaleString()}\nOrder ID: ${order_id || "N/A"}\n\nYour download link or details will be delivered by the seller shortly.\n\nThank you for shopping on GAMER Productions!\n\n— GAMER Productions Team 🕹️`,
   });
 
   if (seller_email) {
     await sendEmail(env, {
       to: seller_email,
       subject: "💰 You Made a Sale! — GAMER Productions",
-      body: `Congratulations! 🎉\n\nYou just made a sale on GAMER Productions!\n\nItem Sold: ${listing_title}\nSale Amount: ₱${amount?.toLocaleString()}\nPlatform Commission (10%): ₱${commission?.toLocaleString()}\nYour Payout: ₱${seller_payout?.toLocaleString()}\n\nPayout will be processed to your PayPal within 1-3 business days.\n\nKeep it up — GAMER Productions Team 🕹️`,
+      body: `Congratulations! 🎉\n\nYou just made a sale on GAMER Productions!\n\nItem Sold: ${listing_title}\nSale Amount: $${amount?.toLocaleString()}\nPlatform Commission (10%): $${commission?.toLocaleString()}\nYour Payout: $${seller_payout?.toLocaleString()}\n\nPayout will be processed to your PayPal within 1-3 business days.\n\nKeep it up — GAMER Productions Team 🕹️`,
     });
   }
 
   await sendEmail(env, {
     to: "admin@gamerproductions.com",
     subject: "📊 New Sale Alert — GAMER Productions",
-    body: `New Sale Recorded!\n\nItem: ${listing_title}\nBuyer: ${buyer_email}\nSeller: ${seller_email}\nTotal Amount: ₱${amount?.toLocaleString()}\nPlatform Commission (10%): ₱${commission?.toLocaleString()}\nSeller Payout: ₱${seller_payout?.toLocaleString()}\nOrder ID: ${order_id || "N/A"}\n\n— GAMER Productions Admin`,
+    body: `New Sale Recorded!\n\nItem: ${listing_title}\nBuyer: ${buyer_email}\nSeller: ${seller_email}\nTotal Amount: $${amount?.toLocaleString()}\nPlatform Commission (10%): $${commission?.toLocaleString()}\nSeller Payout: $${seller_payout?.toLocaleString()}\nOrder ID: ${order_id || "N/A"}\n\n— GAMER Productions Admin`,
   });
 
   return { status: 200, body: { success: true } };
@@ -588,7 +588,7 @@ async function dailyUpdatesEmail(body, env) {
   ]);
 
   const recipients = users.filter((u) => u?.email).map((u) => ({ email: u.email, name: u.full_name || "Gamer" }));
-  const listingItems = listings.map((item) => `<li><strong>${item.title || "New listing"}</strong>${item.price ? ` — ₱${Number(item.price).toLocaleString()}` : " — FREE"}</li>`).join("");
+  const listingItems = listings.map((item) => `<li><strong>${item.title || "New listing"}</strong>${item.price ? ` — $${Number(item.price).toLocaleString()}` : " — FREE"}</li>`).join("");
   const postItems = posts.map((item) => `<li>${String(item.content || "").slice(0, 120)}</li>`).join("");
 
   const bodyHtml = (name) => `<div style="background:#050510;color:#f8fafc;font-family:Arial,sans-serif;padding:24px"><div style="max-width:640px;margin:0 auto;background:#111827;border:1px solid #312e81;border-radius:18px;padding:24px"><h1 style="margin:0 0 8px;color:#c4b5fd">Daily GAMER.Productions Update</h1><p style="color:#d1d5db">Hi ${name}, here are today's latest community updates.</p><h2 style="font-size:16px;color:#93c5fd;margin-top:22px">Latest listings</h2><ul style="color:#e5e7eb;line-height:1.7">${listingItems || "<li>No new active listings today.</li>"}</ul><h2 style="font-size:16px;color:#93c5fd;margin-top:22px">Latest community posts</h2><ul style="color:#e5e7eb;line-height:1.7">${postItems || "<li>No new active community posts today.</li>"}</ul><a href="https://gamerproductions.vercel.app" style="display:inline-block;margin-top:18px;background:#2563eb;color:#fff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700">Open GAMER.Productions</a></div></div>`;
@@ -631,7 +631,7 @@ async function biweeklyReport(_body, env) {
   const periodStart = new Date(periodEnd.getTime() - 14 * 24 * 60 * 60 * 1000);
   const period = `${periodStart.toLocaleDateString("en-PH", { month: "short", day: "numeric" })} – ${periodEnd.toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}`;
 
-  const htmlReport = `<div style="background:#030712;font-family:'Segoe UI',Arial,sans-serif;padding:30px 16px;"><div style="max-width:640px;margin:0 auto;background:#111827;border-radius:20px;overflow:hidden;"><div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95,#7c3aed,#ec4899);padding:40px 32px;text-align:center;"><div style="font-size:42px;margin-bottom:8px;">🕹️</div><h1 style="color:#fff;font-size:24px;font-weight:900;margin:0 0 6px;">Bi-Weekly Platform Report</h1><p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">Report Period: ${period}</p></div><div style="padding:28px 32px;color:#d1d5db;font-size:14px;line-height:1.9;"><p>👥 Total Users: <strong style="color:#a78bfa">${profiles.length}</strong> (${regular.length} gamers, ${creators.length} creators, ${businesses.length} businesses)</p><p>💰 Total Revenue: <strong style="color:#4ade80">₱${totalRevenue.toLocaleString()}</strong></p><p>🏆 Commission Earned: <strong style="color:#fbbf24">₱${totalCommission.toLocaleString()}</strong></p><p>🛒 Listings: <strong>${listings.length}</strong> · Orders: <strong>${orders.length}</strong> (${paidOrders.length} paid)</p><p>🎬 Total Video Views: <strong style="color:#60a5fa">${totalViews.toLocaleString()}</strong></p></div></div></div>`;
+  const htmlReport = `<div style="background:#030712;font-family:'Segoe UI',Arial,sans-serif;padding:30px 16px;"><div style="max-width:640px;margin:0 auto;background:#111827;border-radius:20px;overflow:hidden;"><div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95,#7c3aed,#ec4899);padding:40px 32px;text-align:center;"><div style="font-size:42px;margin-bottom:8px;">🕹️</div><h1 style="color:#fff;font-size:24px;font-weight:900;margin:0 0 6px;">Bi-Weekly Platform Report</h1><p style="color:rgba(255,255,255,0.7);font-size:13px;margin:0;">Report Period: ${period}</p></div><div style="padding:28px 32px;color:#d1d5db;font-size:14px;line-height:1.9;"><p>👥 Total Users: <strong style="color:#a78bfa">${profiles.length}</strong> (${regular.length} gamers, ${creators.length} creators, ${businesses.length} businesses)</p><p>💰 Total Revenue: <strong style="color:#4ade80">$${totalRevenue.toLocaleString()}</strong></p><p>🏆 Commission Earned: <strong style="color:#fbbf24">$${totalCommission.toLocaleString()}</strong></p><p>🛒 Listings: <strong>${listings.length}</strong> · Orders: <strong>${orders.length}</strong> (${paidOrders.length} paid)</p><p>🎬 Total Video Views: <strong style="color:#60a5fa">${totalViews.toLocaleString()}</strong></p></div></div></div>`;
 
   for (const adminEmail of ADMIN_EMAILS) {
     await sendEmail(env, { to: adminEmail, subject: `📊 GAMER Productions · Bi-Weekly Report · ${period}`, body: htmlReport });

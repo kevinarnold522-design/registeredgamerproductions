@@ -251,8 +251,8 @@ export default function AdminDashboard({ user, profile }) {
               { label: "Total Views", value: (stats.views || 0).toLocaleString(), icon: Eye, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/30" },
               { label: "Downloads", value: (stats.downloads || 0).toLocaleString(), icon: BarChart2, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
               { label: "Total Orders", value: stats.orders, icon: Package, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
-              { label: "Total Revenue", value: `₱${stats.revenue.toLocaleString()}`, icon: DollarSign, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
-              { label: "Commission (10%)", value: `₱${stats.commission.toLocaleString()}`, icon: TrendingUp, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
+              { label: "Total Revenue", value: `$${stats.revenue.toLocaleString()}`, icon: DollarSign, color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/30" },
+              { label: "Commission (10%)", value: `$${stats.commission.toLocaleString()}`, icon: TrendingUp, color: "text-pink-400", bg: "bg-pink-500/10 border-pink-500/30" },
               { label: "Mod Downloads", value: totalModDownloads.toLocaleString(), icon: BarChart2, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
             ].map((s, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
@@ -284,8 +284,8 @@ export default function AdminDashboard({ user, profile }) {
                     <tr key={o.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                       <td className="px-4 py-3 text-gray-300 text-xs">{o.buyer_email}</td>
                       <td className="px-4 py-3 text-white text-xs font-medium">{o.listing_title}</td>
-                      <td className="px-4 py-3 text-green-400 font-bold">₱{o.amount?.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-yellow-400 font-bold">₱{o.commission?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-green-400 font-bold">${o.amount?.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-yellow-400 font-bold">${o.commission?.toLocaleString()}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>
                           {o.payment_status}
@@ -388,7 +388,7 @@ export default function AdminDashboard({ user, profile }) {
                         {u.page_editor_enabled ? "Enabled" : "Disabled"}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-yellow-400 font-bold">₱{(u.total_revenue || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-yellow-400 font-bold">${(u.total_revenue || 0).toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{u.joined_date ? new Date(u.joined_date).toLocaleDateString() : "—"}</td>
                     <td className="px-4 py-3">
                       {editingUser === u.id ? (
@@ -442,7 +442,7 @@ export default function AdminDashboard({ user, profile }) {
                     <td className="px-4 py-3 text-white font-semibold text-xs max-w-[160px] truncate">{l.title}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{l.seller_username || l.seller_email}</td>
                     <td className="px-4 py-3 text-purple-400 text-xs">{l.category}</td>
-                    <td className="px-4 py-3 text-green-400 font-bold">₱{l.price?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-green-400 font-bold">${l.price?.toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${l.status === "active" ? "bg-green-900/50 text-green-400" : l.status === "sold" ? "bg-blue-900/50 text-blue-400" : "bg-red-900/50 text-red-400"}`}>
                         {l.status}
@@ -521,7 +521,7 @@ export default function AdminDashboard({ user, profile }) {
                   {l.images?.[0] && <img src={l.images[0]} alt="" className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-bold">{l.title}</p>
-                    <p className="text-gray-400 text-xs mt-0.5">{l.seller_username || l.seller_email} · {l.category} · ₱{l.price?.toLocaleString()}</p>
+                    <p className="text-gray-400 text-xs mt-0.5">{l.seller_username || l.seller_email} · {l.category} · ${l.price?.toLocaleString()}</p>
                     {l.description && <p className="text-gray-500 text-xs mt-1 line-clamp-2">{l.description}</p>}
                     <div className="flex gap-2 mt-3">
                       <button
@@ -627,8 +627,8 @@ export default function AdminDashboard({ user, profile }) {
                     <td className="px-4 py-3 text-gray-300 text-xs">{o.buyer_email}</td>
                     <td className="px-4 py-3 text-gray-300 text-xs">{o.seller_email}</td>
                     <td className="px-4 py-3 text-white text-xs font-medium max-w-[120px] truncate">{o.listing_title}</td>
-                    <td className="px-4 py-3 text-green-400 font-bold text-xs">₱{o.amount?.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-yellow-400 font-bold text-xs">₱{o.commission?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-green-400 font-bold text-xs">${o.amount?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-yellow-400 font-bold text-xs">${o.commission?.toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${o.payment_status === "paid" ? "bg-green-900/50 text-green-400" : "bg-yellow-900/50 text-yellow-400"}`}>{o.payment_status}</span>
                     </td>

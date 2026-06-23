@@ -169,7 +169,7 @@ Current selected category: ${form.category}. Only override it if a different cat
       </div>
 
       <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={4}
-        placeholder={"You can paste multiple prompts at once, e.g.:\n- Premium GTA 5 graphics mod, install guide included, latest PC version\n- Also works on Steam, ₱250"}
+        placeholder={"You can paste multiple prompts at once, e.g.:\n- Premium GTA 5 graphics mod, install guide included, latest PC version\n- Also works on Steam, $250"}
         className="w-full resize-none rounded-xl border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500" />
 
       <div className="mt-3 flex flex-wrap items-center gap-2">

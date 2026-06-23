@@ -141,7 +141,7 @@ export default function EarningsDashboard() {
               <div className="relative z-10 flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="text-green-300/80 text-xs font-bold uppercase tracking-widest mb-1">Total Revenue</p>
-                  <p className="text-green-400 font-black" style={{ fontSize: "3rem", lineHeight: 1 }}>₱{totalRevenue.toLocaleString()}</p>
+                  <p className="text-green-400 font-black" style={{ fontSize: "3rem", lineHeight: 1 }}>${totalRevenue.toLocaleString()}</p>
                   <p className="text-gray-400 text-sm mt-2">{paidOrders.length} paid orders · {orders.length} total orders</p>
                 </div>
                 <div className="flex gap-3 flex-wrap">
@@ -158,7 +158,7 @@ export default function EarningsDashboard() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard label="Total Revenue" value={`₱${totalRevenue.toLocaleString()}`} icon={DollarSign} color="text-green-400" bg="bg-green-500/10 border-green-500/30" sub={`${paidOrders.length} paid orders`} />
+              <StatCard label="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={DollarSign} color="text-green-400" bg="bg-green-500/10 border-green-500/30" sub={`${paidOrders.length} paid orders`} />
               <StatCard label="Total Orders" value={orders.length} icon={ShoppingBag} color="text-blue-400" bg="bg-blue-500/10 border-blue-500/30" />
               <StatCard label="Active Listings" value={listings.filter(l => l.status === "active").length} icon={Package} color="text-purple-400" bg="bg-purple-500/10 border-purple-500/30" sub={`${totalListingViews.toLocaleString()} views`} />
               <StatCard label="Watch Hours" value={totalWatchHours.toLocaleString()} icon={Clock} color="text-cyan-400" bg="bg-cyan-500/10 border-cyan-500/30" sub="From listing stay time" />
@@ -173,7 +173,7 @@ export default function EarningsDashboard() {
             {revenueChartData.length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                 <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-400" /> Revenue by Month (₱)
+                  <TrendingUp className="w-4 h-4 text-green-400" /> Revenue by Month ($)
                 </h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={revenueChartData}>
@@ -377,7 +377,7 @@ export default function EarningsDashboard() {
                     <tr key={o.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                       <td className="px-4 py-3 text-white text-xs font-medium max-w-[150px] truncate">{o.listing_title || "—"}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs">{o.buyer_email || "—"}</td>
-                      <td className="px-4 py-3 text-green-400 font-black text-xs">₱{(o.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-green-400 font-black text-xs">${(o.amount || 0).toLocaleString()}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${o.payment_status === "paid" ? "bg-green-900/40 text-green-400" : "bg-gray-800 text-gray-400"}`}>
                           {o.payment_status || "pending"}
@@ -414,9 +414,9 @@ export default function EarningsDashboard() {
                           {l.title} <ArrowUpRight className="w-3 h-3" />
                         </a>
                       </td>
-                      <td className="px-4 py-3 text-purple-400 font-bold text-xs">₱{(l.price || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-purple-400 font-bold text-xs">${(l.price || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-blue-400 text-xs">{(l.views || 0).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-green-400 font-black text-xs">₱{l.revenue.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-green-400 font-black text-xs">${l.revenue.toLocaleString()}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${l.status === "active" ? "bg-green-900/40 text-green-400" : "bg-gray-800 text-gray-400"}`}>
                           {l.status}

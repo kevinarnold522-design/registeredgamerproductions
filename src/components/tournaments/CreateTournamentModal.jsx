@@ -154,11 +154,11 @@ export default function CreateTournamentModal({ user, profile, franchiseId, onCl
             <div>
               <label className="text-gray-400 text-xs font-bold mb-1 block">Prize Pool</label>
               <input value={form.prize_pool} onChange={e => set("prize_pool", e.target.value)}
-                placeholder="e.g. ₱5,000 or Trophy"
+                placeholder="e.g. $5,000 or Trophy"
                 className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-500" />
             </div>
             <div>
-              <label className="text-gray-400 text-xs font-bold mb-1 block">Entry Fee (₱)</label>
+              <label className="text-gray-400 text-xs font-bold mb-1 block">Entry Fee ($)</label>
               <input type="number" value={form.entry_fee} onChange={e => set("entry_fee", Number(e.target.value))}
                 min={0} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-green-500" />
             </div>

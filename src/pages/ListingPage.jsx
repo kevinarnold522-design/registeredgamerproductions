@@ -408,7 +408,7 @@ export default function ListingPage() {
   const commentsBlock = <div id="comments"><ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} /></div>;
 
   return (
-    <div className="min-h-screen text-white" style={{ background: seller ? sellerTheme.bg : `linear-gradient(135deg, ${listingTheme}, #030712 55%, #050510)`, backgroundImage: seller ? sellerTheme.grid : undefined, backgroundSize: "42px 42px" }}>
+    <div className="min-h-screen text-white" style={{ background: seller ? sellerTheme.bg : `linear-gradient(135deg, ${listingTheme}, #2a0a2e 55%, #3a0d36)`, backgroundImage: seller ? sellerTheme.grid : undefined, backgroundSize: "42px 42px" }}>
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <StickySearchBar />

@@ -149,9 +149,9 @@ export default function PaidModsSection() {
             >
               <option value="">All Prices</option>
               <option value="free">Free</option>
-              <option value="low">₱1 - ₱500</option>
-              <option value="mid">₱501 - ₱2,000</option>
-              <option value="high">₱2,001+</option>
+              <option value="low">$1 - $500</option>
+              <option value="mid">$501 - $2,000</option>
+              <option value="high">$2,001+</option>
             </select>
           </div>
 
@@ -176,7 +176,7 @@ export default function PaidModsSection() {
               )}
               {filters.priceRange && (
                 <span className="px-2 py-1 rounded-lg bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs">
-                  {filters.priceRange === "free" ? "Free" : filters.priceRange === "low" ? "₱1-₱500" : filters.priceRange === "mid" ? "₱501-₱2,000" : "₱2,001+"}
+                  {filters.priceRange === "free" ? "Free" : filters.priceRange === "low" ? "$1-$500" : filters.priceRange === "mid" ? "$501-$2,000" : "$2,001+"}
                 </span>
               )}
               <button

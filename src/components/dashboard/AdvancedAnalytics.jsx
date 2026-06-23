@@ -81,7 +81,7 @@ export default function AdvancedAnalytics({ user, profile, sellerOnly = false })
           { label: "Listings", value: listings.length.toLocaleString(), icon: ShoppingBag, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/30" },
           { label: "Views", value: totalViews.toLocaleString(), icon: Eye, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" },
           { label: "Downloads", value: totalDownloads.toLocaleString(), icon: Download, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/30" },
-          { label: "Paid Revenue", value: `₱${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
+          { label: "Paid Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: "text-green-400", bg: "bg-green-500/10 border-green-500/30" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={`rounded-2xl p-4 border ${s.bg}`}>
             <s.icon className={`w-4 h-4 ${s.color} mb-2`} />
