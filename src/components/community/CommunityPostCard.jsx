@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import UserAvatar from "@/components/shared/UserAvatar";
 import RepostButton from "@/components/shared/RepostButton";
+import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 
 function StarRating({ postId, userEmail, initialRating = 0 }) {
   const [rating, setRating] = useState(initialRating);
@@ -373,9 +374,9 @@ export default function CommunityPostCard({ post, user, profile, isTier1, canMan
               {post.video_urls?.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {post.video_urls.map((url, i) => (
-                    <div key={i} className="relative rounded-2xl overflow-hidden border border-gray-700">
-                      <video src={url} controls className="w-full max-h-80 bg-black" />
-                      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/70 text-white text-[9px] font-bold flex items-center gap-1">
+                    <div key={i} className="relative rounded-2xl overflow-hidden border border-gray-700 aspect-video bg-black">
+                      <UniversalVideoPreview url={url} className="w-full h-full" />
+                      <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-lg bg-black/70 text-white text-[9px] font-bold flex items-center gap-1 pointer-events-none">
                         <Video className="w-2.5 h-2.5" /> Video
                       </div>
                     </div>

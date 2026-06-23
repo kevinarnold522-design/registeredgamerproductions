@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Package, CalendarDays, Star, Clock, Download } from "lucide-react";
+import { Eye, Package, CalendarDays, Star, Clock, Download, Play } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
@@ -9,9 +9,11 @@ import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import CardEditPencil from "@/components/listings/CardEditPencil";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { formatListingPrice } from "@/lib/currency";
+import { getListingYouTubeId } from "@/lib/youtube";
 
-// Vertical card: image on top, details below. Wider than before.
-const SIZE_HEIGHTS = { sm: "h-[184px]", md: "h-[220px]", lg: "h-[256px]" };
+// Vertical card: image on top, details below.
+// All listing cards share ONE consistent media height so grids line up evenly.
+const STANDARD_MEDIA_HEIGHT = "h-[200px]";
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -111,7 +113,8 @@ export default function StandardListingCard({ listing: initialListing, user, pro
 
   const glow = resolveGlow(listing);
   const isFree = listing.price === 0 || listing.is_free;
-  const heightClass = SIZE_HEIGHTS[listing.card_size] || "h-48";
+  const heightClass = STANDARD_MEDIA_HEIGHT;
+  const ytId = getListingYouTubeId(listing);
   const stay = formatStay(listing);
 
   // Count a view once when scrolled into view
@@ -153,6 +156,20 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       <a href={`/listing?id=${listing.id}`} className="relative block w-full">
         {listing.images?.length > 0 ? (
           <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass={heightClass} />
+        ) : ytId ? (
+          <div className={`${heightClass} w-full relative bg-black`}>
+            <img
+              src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+              alt={listing.title}
+              className="w-full h-full object-cover"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition-colors">
+              <span className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center shadow-lg">
+                <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+              </span>
+            </span>
+            {listing.is_premium && <span className="absolute top-2 left-2 text-[10px] font-black bg-yellow-400 text-black px-2 py-0.5 rounded-full">PREMIUM</span>}
+          </div>
         ) : (
           <div className={`${heightClass} w-full flex items-center justify-center bg-gray-800/60`}><Package className="w-9 h-9 text-purple-300 icon-glow-hover" /></div>
         )}
