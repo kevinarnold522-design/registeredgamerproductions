@@ -405,6 +405,10 @@ export default function CreateListing() {
       price: priceVal,
       currency: form.currency || "PHP",
       is_free: priceVal === 0,
+      // All paid mods are automatically Premium
+      is_premium: form.is_premium || ((form.category === "modding" || form.category === "premium_mods") && priceVal > 0),
+      // Every listing is treated as digital content
+      product_type: form.product_type || "digital",
       // Donation links only apply to paid listings — clear them on free ones
       kofi_url: priceVal > 0 ? form.kofi_url : "",
       buymeacoffee_url: priceVal > 0 ? form.buymeacoffee_url : "",

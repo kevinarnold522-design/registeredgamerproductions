@@ -35,7 +35,6 @@ const lazyWithRetry = (importer) =>
 const BusinessModelSection = lazyWithRetry(() => import("@/components/home/BusinessModelSection"));
 const MovingDashboard = lazyWithRetry(() => import("@/components/home/MovingDashboard"));
 const LiveStreamSection = lazyWithRetry(() => import("@/components/home/LiveStreamSection"));
-const HowWeHelpSection = lazyWithRetry(() => import("@/components/home/HowWeHelpSection"));
 const PaidModsSection = lazyWithRetry(() => import("@/components/home/PaidModsSection"));
 const ModdingSection = lazyWithRetry(() => import("@/components/home/ModdingSection"));
 const MonetizationBadge = lazyWithRetry(() => import("@/components/home/MonetizationBadge"));
@@ -271,9 +270,6 @@ export default function Home() {
               {/* Content/Streaming - Merged */}
               <LiveStreamSection />
               <VideosSection />
-
-              {/* How We Help */}
-              <HowWeHelpSection />
 
               <PaidModsSection />
               <MonetizationBadge />

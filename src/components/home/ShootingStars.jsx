@@ -9,14 +9,16 @@ export default function ShootingStars() {
     const ctx = canvas.getContext("2d");
 
     const resize = () => {
+      // Canvas is position:fixed covering the viewport — sizing to the full
+      // scrollable page height wastes huge amounts of fill/draw work and causes lag.
       canvas.width = window.innerWidth;
-      canvas.height = document.documentElement.scrollHeight;
+      canvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener("resize", resize);
 
     // Static background stars
-    const bgStars = Array.from({ length: 600 }, () => ({
+    const bgStars = Array.from({ length: 300 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 2.2 + 0.3,
@@ -58,25 +60,25 @@ export default function ShootingStars() {
     class Rocket {
       constructor() { this.reset(true); }
       reset(initial = false) {
-        this.fromLeft = Math.random() > 0.5;
-        this.x = this.fromLeft ? -80 : canvas.width + 80;
-        this.y = Math.random() * canvas.height;
-        this.speed = (Math.random() * 1.2 + 0.8) * (this.fromLeft ? 1 : -1);
+        // Rockets now LAUNCH UPWARD from below the screen
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + 100;
+        this.speed = Math.random() * 2.2 + 1.6;
         this.bob = Math.random() * Math.PI * 2;
         this.size = Math.random() * 8 + 14;
-        this.waitFrames = initial ? Math.random() * 400 : Math.random() * 600 + 200;
+        this.sway = Math.random() * 0.6 + 0.4;
+        this.waitFrames = initial ? Math.random() * 400 : Math.random() * 500 + 150;
       }
       draw() {
         if (this.waitFrames > 0) { this.waitFrames--; return; }
-        this.bob += 0.05;
-        const yOff = Math.sin(this.bob) * 8;
+        this.bob += 0.08;
+        const xOff = Math.sin(this.bob) * this.sway * 6;
         const s = this.size;
-        const facingRight = this.speed > 0;
 
         ctx.save();
-        ctx.translate(this.x, this.y + yOff);
-        // Point the nose in the travel direction (rocket drawn pointing up, rotate to horizontal)
-        ctx.rotate(facingRight ? Math.PI / 2 : -Math.PI / 2);
+        ctx.translate(this.x + xOff, this.y);
+        // Nose points up — slight wobble as it climbs
+        ctx.rotate(Math.sin(this.bob) * 0.08);
 
         // Flame
         const flicker = 0.7 + Math.random() * 0.6;
@@ -145,11 +147,11 @@ export default function ShootingStars() {
         ctx.fill();
         ctx.restore();
 
-        this.x += this.speed;
-        if (this.x < -150 || this.x > canvas.width + 150) this.reset();
+        this.y -= this.speed;
+        if (this.y < -120) this.reset();
       }
     }
-    const rockets = Array.from({ length: 4 }, () => new Rocket());
+    const rockets = Array.from({ length: 3 }, () => new Rocket());
 
     // Mini floating astronauts — slow drift + gentle spin
     class Astronaut {
@@ -167,9 +169,10 @@ export default function ShootingStars() {
         this.hasBalloon = Math.random() > 0.35;
         const balloonColors = ["#f472b6", "#f87171", "#facc15", "#4ade80", "#60a5fa", "#c084fc"];
         this.balloonColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
-        // Different colored space suits
-        const suitColors = ["#f87171", "#fbbf24", "#4ade80", "#60a5fa", "#c084fc", "#f472b6", "#e2e8f0", "#22d3ee"];
-        this.suitColor = suitColors[Math.floor(Math.random() * suitColors.length)];
+        // Most astronauts wear a WHITE suit; accent color used for helmet trim + stripes
+        const accentColors = ["#f87171", "#fbbf24", "#4ade80", "#60a5fa", "#c084fc", "#f472b6", "#22d3ee", "#fb923c"];
+        this.suitColor = "#f1f5f9";
+        this.accentColor = accentColors[Math.floor(Math.random() * accentColors.length)];
       }
       draw() {
         this.bob += 0.04;
@@ -213,13 +216,18 @@ export default function ShootingStars() {
         ctx.roundRect(-s * 0.5, -s * 0.35, s * 0.35, s * 0.8, s * 0.1);
         ctx.fill();
 
-        // Body suit
+        // Body suit (white)
         ctx.fillStyle = this.suitColor;
         ctx.beginPath();
         ctx.roundRect(-s * 0.28, -s * 0.3, s * 0.56, s * 0.75, s * 0.18);
         ctx.fill();
+        // Colored chest stripe
+        ctx.fillStyle = this.accentColor;
+        ctx.beginPath();
+        ctx.roundRect(-s * 0.28, s * 0.02, s * 0.56, s * 0.1, s * 0.04);
+        ctx.fill();
 
-        // Arms
+        // Arms (white with colored cuffs)
         ctx.strokeStyle = this.suitColor;
         ctx.lineWidth = s * 0.18;
         ctx.lineCap = "round";
@@ -238,14 +246,19 @@ export default function ShootingStars() {
         ctx.lineTo(s * 0.25, s * 0.72);
         ctx.stroke();
 
-        // Helmet
+        // Helmet (white shell, colored trim ring)
         ctx.fillStyle = "#f8fafc";
         ctx.beginPath();
         ctx.arc(0, -s * 0.5, s * 0.32, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = this.accentColor;
+        ctx.lineWidth = s * 0.06;
+        ctx.beginPath();
+        ctx.arc(0, -s * 0.5, s * 0.3, 0, Math.PI * 2);
+        ctx.stroke();
         // Visor
         ctx.shadowBlur = 6;
-        ctx.shadowColor = "#22d3ee";
+        ctx.shadowColor = this.accentColor;
         ctx.fillStyle = "#155e75";
         ctx.beginPath();
         ctx.arc(0, -s * 0.5, s * 0.2, 0, Math.PI * 2);
@@ -261,7 +274,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + 60 || this.x < -60 || this.x > canvas.width + 60) this.reset();
       }
     }
-    const astronauts = Array.from({ length: 10 }, () => new Astronaut());
+    const astronauts = Array.from({ length: 7 }, () => new Astronaut());
 
     // Spark bursts emitted when two asteroids clash
     const sparks = [];
@@ -307,6 +320,8 @@ export default function ShootingStars() {
     class Asteroid {
       constructor() { this.reset(true); }
       reset(initial = false) {
+        this.broken = false;
+        this.respawnFrames = 0;
         // Smaller size range — tiny pebbles to small rocks
         this.size = Math.random() * 11 + 3;
         this.mass = this.size * this.size;
@@ -332,12 +347,20 @@ export default function ShootingStars() {
           const rad = 1 + (Math.random() - 0.5) * 0.16;
           return { x: Math.cos(a) * rad, y: Math.sin(a) * rad };
         });
-        // Dark yellowish rock tones
-        const shades = ["#a16207", "#854d0e", "#713f12", "#92710b", "#6b5310"];
+        // Grey rock tones
+        const shades = ["#9ca3af", "#6b7280", "#71717a", "#52525b", "#a1a1aa"];
         this.color = shades[Math.floor(Math.random() * shades.length)];
         this.flash = 0;
+        this.broken = false;
+        this.respawnFrames = 0;
       }
       draw() {
+        // When broken, stay invisible and count down to respawn somewhere else
+        if (this.broken) {
+          this.respawnFrames--;
+          if (this.respawnFrames <= 0) this.reset();
+          return;
+        }
         this.angle += this.spin;
         const s = this.size;
         ctx.save();
@@ -345,7 +368,7 @@ export default function ShootingStars() {
         ctx.rotate(this.angle);
         ctx.scale(this.stretchX, this.stretchY);
         ctx.shadowBlur = this.flash > 0 ? 16 : 6;
-        ctx.shadowColor = this.flash > 0 ? "#fbbf24" : "#ca8a04";
+        ctx.shadowColor = this.flash > 0 ? "#e5e7eb" : "#9ca3af";
         ctx.fillStyle = this.color;
         ctx.beginPath();
         // Smooth rounded outline through the vertices
@@ -380,13 +403,14 @@ export default function ShootingStars() {
         if (this.y > canvas.height + m) this.y = -m;
       }
     }
-    const asteroids = Array.from({ length: 26 }, () => new Asteroid());
+    const asteroids = Array.from({ length: 16 }, () => new Asteroid());
 
     // Elastic collision resolution between asteroids — makes them clash
     function resolveAsteroidCollisions() {
       for (let i = 0; i < asteroids.length; i++) {
         for (let j = i + 1; j < asteroids.length; j++) {
           const a = asteroids[i], b = asteroids[j];
+          if (a.broken || b.broken) continue;
           const dx = b.x - a.x, dy = b.y - a.y;
           const dist = Math.hypot(dx, dy);
           const minDist = a.size + b.size;
@@ -411,11 +435,13 @@ export default function ShootingStars() {
             const impactY = a.y + ny * a.size;
             const impactBX = b.x - nx * b.size;
             const impactBY = b.y - ny * b.size;
-            // Spark flash + shatter into tiny rock fragments at the contact point
-            a.flash = 10; b.flash = 10;
-            spawnAsteroidParticles(impactX, impactY, a.color, Math.max(14, Math.round((a.size + b.size))));
-            spawnAsteroidParticles(impactBX, impactBY, b.color, Math.max(14, Math.round((a.size + b.size))));
-            spawnSparks(impactX, impactY, 22);
+            // Shatter BOTH asteroids into rock fragments — they break apart, not stay intact
+            spawnAsteroidParticles(a.x, a.y, a.color, Math.max(16, Math.round(a.size * 1.8)));
+            spawnAsteroidParticles(b.x, b.y, b.color, Math.max(16, Math.round(b.size * 1.8)));
+            spawnSparks(impactX, impactY, 24);
+            a.broken = true; b.broken = true;
+            a.respawnFrames = 140 + Math.floor(Math.random() * 180);
+            b.respawnFrames = 140 + Math.floor(Math.random() * 180);
           }
         }
       }
@@ -595,7 +621,7 @@ export default function ShootingStars() {
 
     // Colored small stars — twinkling dots in varied hues
     const starColors = ["#67e8f9", "#fca5a5", "#fde68a", "#86efac", "#f0abfc", "#93c5fd"];
-    const colorStars = Array.from({ length: 220 }, () => ({
+    const colorStars = Array.from({ length: 120 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 1.8 + 0.4,
@@ -786,7 +812,7 @@ export default function ShootingStars() {
       }
     }
 
-    const shootingStars = Array.from({ length: 35 }, () => new ShootingStar());
+    const shootingStars = Array.from({ length: 18 }, () => new ShootingStar());
     let animId;
     let frame = 0;
 

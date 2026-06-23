@@ -31,7 +31,8 @@ function VideoCard({ video, onClick, user }) {
     const next = !liked;
     setLiked(next);
     setLikeCount(c => next ? c + 1 : Math.max(0, c - 1));
-    await base44.entities.VideoPost.update(video.id, { likes: next ? likeCount + 1 : Math.max(0, likeCount - 1) });
+    const entity = video._isListing ? base44.entities.Listing : base44.entities.VideoPost;
+    await entity.update(video.id, { likes: next ? likeCount + 1 : Math.max(0, likeCount - 1) }).catch(() => {});
   };
 
   const handleShare = (e) => {
@@ -113,7 +114,8 @@ function VideoPlayerModal({ video, user, profile, onClose }) {
 
   useEffect(() => {
     // increment view
-    base44.entities.VideoPost.update(video.id, { views: (video.views || 0) + 1 }).catch(() => {});
+    const entity = video._isListing ? base44.entities.Listing : base44.entities.VideoPost;
+    entity.update(video.id, { views: (video.views || 0) + 1 }).catch(() => {});
     // load comments
     base44.entities.ChannelPostComment.filter({ post_id: video.id }).then(c =>
       setComments(c.filter(x => x.is_approved !== false).sort((a, b) => new Date(b.created_date) - new Date(a.created_date)))
@@ -125,7 +127,8 @@ function VideoPlayerModal({ video, user, profile, onClose }) {
     const next = !liked;
     setLiked(next);
     setLikeCount(c => next ? c + 1 : Math.max(0, c - 1));
-    await base44.entities.VideoPost.update(video.id, { likes: next ? likeCount + 1 : Math.max(0, likeCount - 1) });
+    const entity = video._isListing ? base44.entities.Listing : base44.entities.VideoPost;
+    await entity.update(video.id, { likes: next ? likeCount + 1 : Math.max(0, likeCount - 1) }).catch(() => {});
   };
 
   const handleComment = async () => {
@@ -452,8 +455,39 @@ export default function ContentFeedPage() {
 
   const loadVideos = async () => {
     setLoading(true);
-    const v = await base44.entities.VideoPost.list("-created_date", 60);
-    setVideos(v.filter(x => x.status === "active" && x.is_approved !== false && !isServiceListing(x)));
+    const [v, listings] = await Promise.all([
+      base44.entities.VideoPost.list("-created_date", 60),
+      base44.entities.Listing.list("-created_date", 200).catch(() => []),
+    ]);
+    const videoPosts = v.filter(x => x.status === "active" && x.is_approved !== false && !isServiceListing(x));
+    // Any listing with a YouTube link becomes a playable video in the content feed
+    const ytExtract = (url) => url?.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1];
+    const listingVideos = (listings || [])
+      .filter(l => l.status !== "removed" && l.is_approved !== false)
+      .map(l => {
+        const ytId = l.youtube_video_id || ytExtract(l.youtube_url) || ytExtract(l.preview_video_url);
+        if (!ytId) return null;
+        return {
+          id: l.id,
+          title: l.title,
+          description: l.description,
+          youtube_url: l.youtube_url || l.preview_video_url,
+          youtube_video_id: ytId,
+          video_url: "",
+          creator_username: l.seller_username || "Gamer",
+          creator_email: l.seller_email,
+          game_tag: l.game_name || "",
+          category: "gameplay",
+          likes: l.likes || 0,
+          views: l.views || 0,
+          created_date: l.created_date,
+          _isListing: true,
+        };
+      })
+      .filter(Boolean);
+    // Merge, listings + uploaded posts, newest first
+    const merged = [...videoPosts, ...listingVideos].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    setVideos(merged);
     setLoading(false);
   };
 
