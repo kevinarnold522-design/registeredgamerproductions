@@ -44,6 +44,39 @@ function resolveGlow(listing) {
   return GLOW_PRESET_RGB[listing?.card_glow_color] || "168,85,247";
 }
 
+const FONT_FAMILIES = {
+  default: undefined,
+  mono: "'Courier New', monospace",
+  serif: "Georgia, serif",
+  rounded: "'Trebuchet MS', sans-serif",
+  impact: "Impact, sans-serif",
+  condensed: "'Arial Narrow', sans-serif",
+};
+// Map the card_animation choice to a framer-motion enter transition
+function animationProps(anim) {
+  switch (anim) {
+    case "slide_up":
+      return { initial: { opacity: 0, y: 48 }, whileInView: { opacity: 1, y: 0 } };
+    case "slide_left":
+      return { initial: { opacity: 0, x: 60 }, whileInView: { opacity: 1, x: 0 } };
+    case "zoom":
+      return { initial: { opacity: 0, scale: 0.8 }, whileInView: { opacity: 1, scale: 1 } };
+    case "flip":
+      return { initial: { opacity: 0, rotateY: 90 }, whileInView: { opacity: 1, rotateY: 0 } };
+    case "bounce":
+      return { initial: { opacity: 0, y: 40 }, whileInView: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 12 } } };
+    case "glow":
+      return { initial: { opacity: 0, scale: 0.94 }, whileInView: { opacity: 1, scale: 1 } };
+    case "rotate":
+      return { initial: { opacity: 0, rotate: -12, scale: 0.9 }, whileInView: { opacity: 1, rotate: 0, scale: 1 } };
+    case "none":
+      return { initial: false, whileInView: { opacity: 1 } };
+    case "fade":
+    default:
+      return { initial: { opacity: 0, y: 24, scale: 0.96 }, whileInView: { opacity: 1, y: 0, scale: 1 } };
+  }
+}
+
 export default function StandardListingCard({ listing: initialListing, user, profile, subcategory, onReview }) {
   const cardRef = useRef(null);
   const countedRef = useRef(false);
@@ -99,12 +132,15 @@ export default function StandardListingCard({ listing: initialListing, user, pro
   }, [listing?.id]);
 
   const hasDownload = listing.download_url || listing.external_link;
+  const anim = animationProps(listing.card_animation);
+  const titleFont = FONT_FAMILIES[listing.card_font_family];
+  const titleColor = listing.card_font_color && listing.card_font_color !== "#ffffff" ? listing.card_font_color : undefined;
 
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 24, scale: 0.96 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={anim.initial}
+      whileInView={anim.whileInView}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       onTouchStart={() => setTouchActive(true)}
@@ -154,7 +190,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
 
         <a href={`/listing?id=${listing.id}`} className="block">
           <p className="text-purple-400 text-[10px] font-semibold capitalize truncate">{listing.card_category_label || subcategory || listing.modding_subcategory || listing.digital_subcategory || listing.game_name || "Listing"}</p>
-          <h3 className="text-white font-bold text-sm line-clamp-2 leading-tight group-hover:text-purple-300 transition-colors">{listing.title}</h3>
+          <h3 style={{ fontFamily: titleFont, color: titleColor }} className="text-white font-bold text-sm line-clamp-2 leading-tight group-hover:text-purple-300 transition-colors">{listing.title}</h3>
           <p className="theme-glow-action inline-flex items-center gap-1 text-gray-500 text-[10px] mt-1">
             <CalendarDays className="w-3 h-3 icon-glow-hover" /> {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}
             {stay && <span className="text-cyan-300 ml-1 inline-flex items-center gap-0.5"><Clock className="w-3 h-3" /> {stay}</span>}
