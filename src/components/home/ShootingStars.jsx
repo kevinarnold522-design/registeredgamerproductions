@@ -72,8 +72,15 @@ export default function ShootingStars() {
         this.size = Math.random() * 8 + 14;
         this.sway = Math.random() * 0.6 + 0.4;
         this.waitFrames = initial ? Math.random() * 400 : Math.random() * 500 + 150;
+        this.broken = false;
+        this.respawnFrames = 0;
       }
       draw() {
+        if (this.broken) {
+          this.respawnFrames--;
+          if (this.respawnFrames <= 0) this.reset();
+          return;
+        }
         if (this.waitFrames > 0) { this.waitFrames--; return; }
         this.bob += 0.08;
         const xOff = Math.sin(this.bob) * this.sway * 6;
@@ -177,8 +184,15 @@ export default function ShootingStars() {
         const accentColors = ["#f87171", "#fbbf24", "#4ade80", "#60a5fa", "#c084fc", "#f472b6", "#22d3ee", "#fb923c"];
         this.suitColor = "#f1f5f9";
         this.accentColor = accentColors[Math.floor(Math.random() * accentColors.length)];
+        this.broken = false;
+        this.respawnFrames = 0;
       }
       draw() {
+        if (this.broken) {
+          this.respawnFrames--;
+          if (this.respawnFrames <= 0) this.reset();
+          return;
+        }
         this.bob += 0.04;
         this.angle += this.spin;
         const s = this.size;
@@ -316,6 +330,45 @@ export default function ShootingStars() {
           spin: (Math.random() - 0.5) * 0.4,
           shard: Math.floor(Math.random() * 3),
         });
+      }
+    }
+
+    // Colorful fireball explosion — emitted when a shooting star hits an object
+    const explosions = [];
+    function spawnExplosion(x, y, count = 30) {
+      const colors = ["#fde68a", "#fb923c", "#f87171", "#fcd34d", "#22d3ee", "#a855f7", "#f472b6", "#ffffff"];
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = Math.random() * 5 + 1.5;
+        explosions.push({
+          x, y,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          life: 1,
+          decay: Math.random() * 0.03 + 0.015,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          r: Math.random() * 3 + 1.5,
+        });
+      }
+      // Bright central flash
+      explosions.push({ x, y, vx: 0, vy: 0, life: 1, decay: 0.06, color: "#ffffff", r: 16, flash: true });
+    }
+    function drawExplosions() {
+      for (let i = explosions.length - 1; i >= 0; i--) {
+        const p = explosions[i];
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.93; p.vy *= 0.93;
+        p.life -= p.decay;
+        if (p.life <= 0) { explosions.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = p.flash ? 30 : 12;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.flash ? p.r * p.life : p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
     }
 
@@ -817,6 +870,44 @@ export default function ShootingStars() {
     }
 
     const shootingStars = Array.from({ length: 18 }, () => new ShootingStar());
+
+    // When a shooting star's head touches an asteroid / rocket / astronaut, it explodes.
+    function resolveShootingStarHits() {
+      for (const ss of shootingStars) {
+        if (ss.waitFrames > 0 || ss.trail.length < 2) continue;
+        const hx = ss.x, hy = ss.y;
+        const hit = (obj, radius) => {
+          if (obj.broken || obj.waitFrames > 0) return false;
+          return Math.hypot(obj.x - hx, obj.y - hy) < radius + ss.size * 2;
+        };
+        for (const obj of asteroids) {
+          if (hit(obj, obj.size)) {
+            spawnExplosion(obj.x, obj.y, 34);
+            spawnAsteroidParticles(obj.x, obj.y, obj.color, 18);
+            obj.broken = true; obj.respawnFrames = 150 + Math.floor(Math.random() * 160);
+            ss.trail = []; ss.reset();
+            break;
+          }
+        }
+        for (const obj of rockets) {
+          if (hit(obj, obj.size)) {
+            spawnExplosion(obj.x, obj.y, 40);
+            obj.broken = true; obj.respawnFrames = 200 + Math.floor(Math.random() * 200);
+            ss.trail = []; ss.reset();
+            break;
+          }
+        }
+        for (const obj of astronauts) {
+          if (hit(obj, obj.size)) {
+            spawnExplosion(obj.x, obj.y, 32);
+            obj.broken = true; obj.respawnFrames = 180 + Math.floor(Math.random() * 180);
+            ss.trail = []; ss.reset();
+            break;
+          }
+        }
+      }
+    }
+
     let animId;
     let frame = 0;
 
@@ -935,6 +1026,10 @@ export default function ShootingStars() {
 
       // Draw floating astronauts
       for (const a of astronauts) a.draw();
+
+      // Detect shooting-star impacts and render the resulting explosions
+      resolveShootingStarHits();
+      drawExplosions();
 
       animId = requestAnimationFrame(animate);
     };

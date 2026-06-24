@@ -18,6 +18,8 @@ import PostComposer from "@/components/community/PostComposer";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
+import { formatListingPrice } from "@/lib/currency";
+import CommunityTagAd from "@/components/ads/CommunityTagAd";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
@@ -209,7 +211,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                       <div className="p-2 flex-1 flex flex-col">
                         <p className="text-white text-[11px] font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{item.title}</p>
                         <p className="text-gray-500 text-[8px] inline-flex items-center gap-1 mt-1"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> {item.created_date ? new Date(item.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}</p>
-                        <p className="font-black text-[11px] mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : `\u20B1${item.price}`}</p>
+                        <p className="font-black text-[11px] mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}</p>
                         <div className="mt-1.5">
                           <ListingEngagementBar listing={item} user={user} profile={profile} compact />
                         </div>
@@ -695,6 +697,7 @@ export default function GamingCommunity() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <CommunityTagAd adFree={admin || profile?.no_ads} />
       <AnimatedController />
       {/* Official socials — pinned to the very top */}
       <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">

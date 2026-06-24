@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Package, CalendarDays, Star, Clock, Download, Play } from "lucide-react";
+import { Eye, Package, CalendarDays, Star, Clock, Download, Play, Crown, Trophy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
@@ -11,10 +11,12 @@ import MonthlyRankBadge from "@/components/listings/MonthlyRankBadge";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingYouTubeId } from "@/lib/youtube";
+import { getPublisherRankMap } from "@/lib/publisherRank";
 
 // Vertical card: image on top, details below.
 // All listing cards share ONE consistent media height so grids line up evenly.
-const STANDARD_MEDIA_HEIGHT = "h-[200px]";
+// Taller portrait media so the full cover image is visible.
+const STANDARD_MEDIA_HEIGHT = "h-[300px]";
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -87,6 +89,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
   const [viewCount, setViewCount] = useState(initialListing.views || 0);
   const [touchActive, setTouchActive] = useState(false);
   const [sellerAvatar, setSellerAvatar] = useState(initialListing.seller_avatar || "");
+  const [publisherRank, setPublisherRank] = useState(null);
 
   useEffect(() => { setListing(initialListing); }, [initialListing]);
 
@@ -98,6 +101,16 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       .then((rows) => { if (rows[0]?.avatar_url) setSellerAvatar(rows[0].avatar_url); })
       .catch(() => {});
   }, [initialListing.seller_email, initialListing.seller_avatar]);
+
+  // Resolve the publisher's leaderboard rank (cached) so we can show it by their name
+  useEffect(() => {
+    if (!initialListing.seller_email) return;
+    let active = true;
+    getPublisherRankMap().then((map) => {
+      if (active && map[initialListing.seller_email]) setPublisherRank(map[initialListing.seller_email]);
+    });
+    return () => { active = false; };
+  }, [initialListing.seller_email]);
 
   // Realtime: keep this card's stats (views, likes, comments) in sync live
   useEffect(() => {
@@ -174,8 +187,12 @@ export default function StandardListingCard({ listing: initialListing, user, pro
         ) : (
           <div className={`${heightClass} w-full flex items-center justify-center bg-gray-800/60`}><Package className="w-9 h-9 text-purple-300 icon-glow-hover" /></div>
         )}
-        {isFree && (
+        {isFree ? (
           <span className="absolute bottom-2 right-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
+        ) : (
+          <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-0.5 text-[10px] font-black bg-gradient-to-r from-yellow-400 to-amber-500 text-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.6)]">
+            <Crown className="w-2.5 h-2.5 fill-black" /> PREMIUM
+          </span>
         )}
         <span className="theme-glow-action absolute bottom-2 left-2 z-10 flex items-center gap-1 text-[10px] bg-black/70 text-cyan-300 font-bold px-1.5 py-0.5 rounded-full">
           <Eye className="w-3 h-3 icon-glow-hover" />{viewCount.toLocaleString()}
@@ -204,6 +221,11 @@ export default function StandardListingCard({ listing: initialListing, user, pro
               : <span className="text-white text-[9px] font-bold">{(listing.seller_username || "G")[0].toUpperCase()}</span>}
           </div>
           <span className="text-gray-300 text-[11px] font-bold truncate">{listing.seller_username || "Gamer"}</span>
+          {publisherRank && (
+            <span className="flex-shrink-0 inline-flex items-center gap-0.5 text-[9px] font-black px-1.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500/30 to-yellow-500/30 text-amber-300 border border-amber-500/40" title={`Leaderboard rank #${publisherRank}`}>
+              <Trophy className="w-2.5 h-2.5" />#{publisherRank}
+            </span>
+          )}
         </a>
 
         <a href={`/listing?id=${listing.id}`} className="block">

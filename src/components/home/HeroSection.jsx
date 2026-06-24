@@ -59,51 +59,43 @@ function LiveStats() {
     load();
   }, []);
 
+  // Shared stat-card style so every stat (Registered Gamers, Active Listings,
+  // LIVE, ON AIR) has the exact same glowing purple/pink design.
+  const cardStyle = {
+    background: "linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1))",
+    border: "1px solid rgba(139,92,246,0.4)",
+    boxShadow: "0 0 20px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.1)",
+  };
+  const valueClass = "text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center justify-center gap-1.5";
+  const labelClass = "text-xs text-purple-300 uppercase tracking-wider mt-1 font-semibold flex items-center justify-center gap-1";
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-    className="flex flex-wrap justify-center gap-8 mb-8 text-center">
+    className="flex flex-wrap justify-center gap-6 mb-8 text-center">
       {/* Registered Gamers — admin only */}
       {isAdmin &&
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        className="relative px-6 py-3 rounded-2xl"
-        style={{
-          background: "linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1))",
-          border: "1px solid rgba(139,92,246,0.4)",
-          boxShadow: "0 0 20px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.1)"
-        }}>
-        
-          <motion.div
-          animate={{ textShadow: ["0 0 10px #a855f7", "0 0 30px #ec4899", "0 0 10px #a855f7"] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-          
-            {adminUserCount > 0 ? adminUserCount.toLocaleString() : "—"}
-          </motion.div>
-          <div className="text-xs text-purple-300 uppercase tracking-wider mt-1 font-semibold flex items-center justify-center gap-1"><Zap className="w-3 h-3" /> Registered Gamers</div>
-        </motion.div>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+        <div className={valueClass}>{adminUserCount > 0 ? adminUserCount.toLocaleString() : "—"}</div>
+        <div className={labelClass}><Zap className="w-3 h-3" /> Registered Gamers</div>
+      </motion.div>
       }
 
-      <div className="text-center">
-        <div className="text-3xl font-black text-white">{stats.listings > 0 ? stats.listings.toLocaleString() : "—"}</div>
-        <div className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">Active Listings</div>
-      </div>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+        <div className={valueClass}>{stats.listings > 0 ? stats.listings.toLocaleString() : "—"}</div>
+        <div className={labelClass}>Active Listings</div>
+      </motion.div>
 
-      <div className="text-center">
-        <div className="flex items-center gap-1 justify-center">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" />
-          <span className="text-3xl font-black text-white">LIVE</span>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+        <div className={valueClass}>
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" /> LIVE
         </div>
-        <div className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">Platform Status</div>
-      </div>
+        <div className={labelClass}>Platform Status</div>
+      </motion.div>
 
-      <div className="text-center">
-        <div className="flex items-center justify-center gap-1">
-          <Radio className="w-5 h-5 text-red-400" />
-          <span className="text-3xl font-black text-red-400">ON AIR</span>
-        </div>
-        <div className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">Streaming Now</div>
-      </div>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+        <div className={valueClass}><Radio className="w-5 h-5" /> ON AIR</div>
+        <div className={labelClass}>Streaming Now</div>
+      </motion.div>
     </motion.div>);
 
 }
