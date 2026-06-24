@@ -9,6 +9,7 @@ import CommentThread from "@/components/shared/CommentThread";
 import DownloadAdUnlock from "@/components/ads/DownloadAdUnlock";
 import ScheduledAdOverlay from "@/components/ads/ScheduledAdOverlay";
 import ListingPageAd from "@/components/ads/ListingPageAd";
+import ListingVignetteAd from "@/components/ads/ListingVignetteAd";
 import SimilarListings from "@/components/shared/SimilarListings";
 import StickySearchBar from "@/components/shared/StickySearchBar";
 import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
@@ -418,6 +419,8 @@ export default function ListingPage() {
       )}
       <ScheduledAdOverlay listing={listing} />
       <ListingPageAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
+      {/* Vignette ad — listing landing pages only */}
+      <ListingVignetteAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
 
       <div className="pt-20 max-w-7xl mx-auto px-4 pb-16">
         {/* Back + Edit */}

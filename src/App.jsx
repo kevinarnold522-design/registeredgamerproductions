@@ -15,6 +15,7 @@ import InAppBrowserLinkFix from '@/components/layout/InAppBrowserLinkFix';
 import PageTransition from '@/components/layout/PageTransition';
 import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker';
 import GlobalHtmlAd from '@/components/ads/GlobalHtmlAd';
+import FloatingNewsfeed from '@/components/home/FloatingNewsfeed';
 // Add page imports here
 import GamingCommunity from "./pages/GamingCommunity";
 import Home from "./pages/Home";
@@ -160,6 +161,7 @@ function App() {
               </SidebarLayout>
             </div>
             <LanguagePrompt />
+            <FloatingNewsfeed />
             <GlobalHtmlAd />
           </Router>
           <Toaster />

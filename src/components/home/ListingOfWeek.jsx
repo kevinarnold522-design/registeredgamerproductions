@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Download, Eye, Heart, Star, Crown, Sparkles, Rocket } from "lucide-react";
 import { getActiveListings, getCachedUserProfile } from "@/lib/homeDataCache";
+import { formatListingPrice } from "@/lib/currency";
+
+// Most-recent Sunday 00:00 (local) — listing of the week resets every Sunday.
+function lastSundayMidnight() {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  d.setDate(d.getDate() - d.getDay()); // back to Sunday
+  return d.getTime();
+}
 
 export default function ListingOfWeek() {
   const [listing, setListing] = useState(null);
@@ -11,10 +20,10 @@ export default function ListingOfWeek() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Get listings from past 7 days, score by downloads + views + likes
+        // Resets every Sunday: only score listings created since the most recent Sunday.
         const all = await getActiveListings();
-        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        const recent = all.filter(l => new Date(l.created_date).getTime() > oneWeekAgo);
+        const weekStart = lastSundayMidnight();
+        const recent = all.filter(l => new Date(l.created_date).getTime() >= weekStart);
         const pool = recent.length >= 3 ? recent : all;
         
         // Score: views * 1 + likes * 3 + (has_download ? 10 : 0)
@@ -172,7 +181,7 @@ export default function ListingOfWeek() {
                   <Trophy className="w-4 h-4" /> View Listing
                 </a>
                 {!isFree && (
-                  <span className="text-2xl font-black text-yellow-300">${listing.price?.toLocaleString()}</span>
+                  <span className="text-2xl font-black text-yellow-300">{formatListingPrice(listing.price, listing.currency)}</span>
                 )}
               </div>
             </div>

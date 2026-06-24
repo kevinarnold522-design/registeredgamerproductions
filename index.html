@@ -118,8 +118,10 @@
           window.__adCloseTime = Date.now();
           var old = document.getElementById('__ad_slot_active');
           if (old) old.remove();
-          // Also hide any visible ad elements
+          // Also hide any visible ad elements — but NEVER touch YouTube/video player iframes
           document.querySelectorAll('iframe, ins, [data-zone], [data-cfasync]').forEach(function(el) {
+            var src = (el.getAttribute && (el.getAttribute('src') || '')) || '';
+            if (src.indexOf('youtube') !== -1 || src.indexOf('youtu.be') !== -1 || src.indexOf('vimeo') !== -1) return;
             el.style.display = 'none';
           });
           // Re-enable after 4 minutes (not for admin/mod/tier1)

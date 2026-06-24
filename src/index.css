@@ -172,13 +172,23 @@ button:not(.no-glow):hover,
 .listing-glow-lines::after {
   content: "";
   position: absolute;
-  left: 12px;
-  right: 12px;
-  top: 8px;
-  height: 1px;
+  left: 8px;
+  right: 8px;
+  top: 6px;
+  height: 3px;
+  border-radius: 999px;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, var(--listing-glow-color, rgba(168,85,247,.9)), transparent);
-  box-shadow: 0 0 14px var(--listing-glow-color, rgba(168,85,247,.7));
+  background: linear-gradient(90deg, transparent, var(--listing-glow-color, rgba(168,85,247,1)) 20%, #ffffff 50%, var(--listing-glow-color, rgba(168,85,247,1)) 80%, transparent);
+  box-shadow: 0 0 8px var(--listing-glow-color, rgba(168,85,247,.95)), 0 0 18px var(--listing-glow-color, rgba(168,85,247,.7));
+  animation: listing-glow-slow 2.2s ease-in-out infinite;
+}
+/* Matching bright bar at the BOTTOM edge so the "lines" read clearly */
+.listing-glow-lines::before {
+  border: none !important;
+  box-shadow: none !important;
+}
+.listing-glow-lines {
+  position: relative;
 }
 .listing-glow-solid::before { background: color-mix(in srgb, var(--listing-glow-color, rgba(168,85,247,.55)) 10%, transparent); }
 @keyframes listing-glow-cycle { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }

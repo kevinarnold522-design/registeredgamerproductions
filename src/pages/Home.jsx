@@ -51,7 +51,6 @@ const ListingOfWeek = lazyWithRetry(() => import("@/components/home/ListingOfWee
 const VerifiedBadgeBanner = lazyWithRetry(() => import("@/components/home/VerifiedBadgeBanner"));
 const First10KBanner = lazyWithRetry(() => import("@/components/home/First10KBanner"));
 const FirstLoginTutorial = lazyWithRetry(() => import("@/components/tutorial/FirstLoginTutorial"));
-const AllCategoriesNewsfeed = lazyWithRetry(() => import("@/components/home/AllCategoriesNewsfeed"));
 const CategoryMovingDashboard = lazyWithRetry(() => import("@/components/home/CategoryMovingDashboard"));
 
 export default function Home() {
@@ -229,15 +228,8 @@ export default function Home() {
               {/* First 10K Free Verified Badge promotion */}
               <First10KBanner user={user} profile={profile} />
 
-              {/* Live Moving Dashboard (marketplace listings) + single all-categories newsfeed on the right */}
-              <div className="max-w-7xl mx-auto px-4 flex flex-col lg:flex-row gap-6 items-start">
-                <div className="flex-1 min-w-0 w-full">
-                  <MovingDashboard currentUser={user} currentProfile={profile} />
-                </div>
-                <aside className="w-full lg:w-80 lg:flex-shrink-0 lg:sticky lg:top-20">
-                  <AllCategoriesNewsfeed user={user} profile={profile} />
-                </aside>
-              </div>
+              {/* Live Moving Dashboard (marketplace listings) — newsfeed now floats globally on the right */}
+              <MovingDashboard currentUser={user} currentProfile={profile} />
 
               {/* Games moving dashboard */}
               <CategoryMovingDashboard

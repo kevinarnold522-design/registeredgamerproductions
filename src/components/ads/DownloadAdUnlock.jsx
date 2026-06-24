@@ -15,8 +15,17 @@ const ADS = [
 
 const TOTAL = 10;
 
+// Direct-link offer opened to unlock the download (listing landing pages only).
+const UNLOCK_OFFER_URL = "https://omg10.com/4/11195219";
+
 export default function DownloadAdUnlock({ onComplete }) {
   const [remaining, setRemaining] = useState(TOTAL);
+
+  // Open the offer link in a new tab, then continue to the real download.
+  const handleContinue = () => {
+    try { window.open(UNLOCK_OFFER_URL, "_blank", "noopener,noreferrer"); } catch {}
+    onComplete();
+  };
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -72,7 +81,7 @@ export default function DownloadAdUnlock({ onComplete }) {
         {/* Footer action */}
         <div className="mt-5">
           {ready ? (
-            <button onClick={onComplete}
+            <button onClick={handleContinue}
               className="w-full py-3.5 rounded-xl font-black text-white text-sm transition-all hover:opacity-90 flex items-center justify-center gap-2"
               style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
               <Download className="w-4 h-4" /> Continue to Download →

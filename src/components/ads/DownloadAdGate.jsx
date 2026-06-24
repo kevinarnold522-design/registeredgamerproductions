@@ -86,10 +86,14 @@ export default function DownloadAdGate({ onComplete, isGuest = false }) {
     return () => clearInterval(t);
   }, [adIndex]);
 
+  // Direct-link offer opened to unlock the download (listing landing pages only).
+  const UNLOCK_OFFER_URL = "https://omg10.com/4/11195219";
+
   const handleNext = () => {
     if (adIndex < ADS.length - 1) {
       setAdIndex(i => i + 1);
     } else {
+      try { window.open(UNLOCK_OFFER_URL, "_blank", "noopener,noreferrer"); } catch {}
       onComplete();
     }
   };
