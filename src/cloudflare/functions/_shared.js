@@ -6,16 +6,21 @@
 // =====================================================================
 import { handleFunction } from "../functions.js";
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, api_key",
-};
+function corsHeaders(request, methods = "POST, OPTIONS") {
+  const origin = request.headers.get("Origin");
+  return {
+    "Access-Control-Allow-Origin": origin || "*",
+    "Access-Control-Allow-Methods": methods,
+    "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers") || "Content-Type, Authorization, api_key",
+    "Vary": "Origin, Access-Control-Request-Headers",
+    ...(origin ? { "Access-Control-Allow-Credentials": "true" } : {}),
+  };
+}
 
-const json = (data, status = 200) =>
+const json = (request, data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json", ...CORS },
+    headers: { "Content-Type": "application/json", ...corsHeaders(request) },
   });
 
 // Build a Pages Functions handler bound to a specific backend function name.
@@ -27,14 +32,14 @@ export function makeFunctionRoute(name) {
       try {
         const body = await request.json().catch(() => ({}));
         const result = await handleFunction(name, body, env, request);
-        return json(result.body, result.status || 200);
+        return json(request, result.body, result.status || 200);
       } catch (err) {
         console.error(`Function '${name}' error:`, err.message, err.stack);
-        return json({ error: err.message }, 500);
+        return json(request, { error: err.message }, 500);
       }
     },
-    onRequestOptions() {
-      return new Response(null, { headers: CORS });
+    onRequestOptions(context) {
+      return new Response(null, { headers: corsHeaders(context.request) });
     },
   };
 }
