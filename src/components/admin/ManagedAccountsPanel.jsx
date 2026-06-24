@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Plus, Search, Shield, LogOut, ExternalLink, X, CheckCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
+import { buildManagedAccountRedirect, createManagedAccountProfile, listManagedAccounts, startManagedAccountSession } from "@/lib/managedAccounts";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -55,11 +55,8 @@ export default function ManagedAccountsPanel() {
   const loadAccounts = async () => {
     setLoading(true);
     try {
-      // Read accounts straight from the UserProfile entity so every created /
-      // ghost / managed account always reflects here (and in the switcher).
-      const all = await base44.entities.UserProfile.list("-created_date", 1000);
-      const rows = showAllUsers ? all : all.filter(a => a.is_managed_account === true);
-      setAccounts(rows.map(a => ({ ...a, stats: a.stats || { listings: 0, posts: 0, following: 0 } })));
+      const rows = await listManagedAccounts({ includeAll: showAllUsers });
+      setAccounts(rows);
     } catch (error) {
       toast.error("Failed to load accounts");
     } finally {
@@ -75,37 +72,15 @@ export default function ManagedAccountsPanel() {
 
     setCreating(true);
     try {
-      const response = await invokeAdminFn('createManagedAccount', {
-        action: 'create',
-        ...formData,
-      });
+      const { profile, email } = await createManagedAccountProfile(currentUser, formData);
+      toast.success("Account created successfully!");
+      setShowCreateModal(false);
+      setFormData({ email: "", username: "", display_name: "", account_type: "regular", avatar_url: "" });
 
-      if (response.data.success) {
-        const createdEmail = response.data.email || formData.email;
-        toast.success("Account created successfully!");
-        setShowCreateModal(false);
-
-        const impersonationData = {
-          isImpersonating: true,
-          isGhostLogin: true,
-          isPersistent: true,
-          originalUser: { email: currentUser?.email, full_name: currentUser?.full_name },
-          targetEmail: createdEmail,
-          targetUsername: formData.username,
-          targetDisplayName: formData.display_name || formData.username,
-          targetAvatar: formData.avatar_url,
-          targetAccountType: formData.account_type,
-        };
-        localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
-        setFormData({ email: "", username: "", display_name: "", account_type: "regular", avatar_url: "" });
-
-        // Redirect to the new account's channel page
-        window.location.href = `/channel?email=${encodeURIComponent(createdEmail)}&new_account=1`;
-      } else {
-        toast.error(response.data.error || "Failed to create account");
-      }
+      startManagedAccountSession({ currentUser, account: profile });
+      window.location.href = `/channel?email=${encodeURIComponent(email)}&new_account=1`;
     } catch (error) {
-      const message = error?.response?.data?.error || error?.message || "Failed to create account";
+      const message = error?.message || "Failed to create account";
       toast.error(message);
     } finally {
       setCreating(false);
@@ -114,64 +89,27 @@ export default function ManagedAccountsPanel() {
 
   const handleLoginAsGhost = async (account) => {
     try {
-      const response = await invokeAdminFn('loginAsGhost', {
-        target_email: account.user_email,
+      startManagedAccountSession({
+        currentUser,
+        account,
+        redirectUrl: buildManagedAccountRedirect(account.user_email),
       });
-
-      if (response.data.success) {
-        // Store ghost session data - frontend only, no backend token
-        const impersonationData = {
-          isImpersonating: true,
-          isGhostLogin: true,
-          isPersistent: true,
-          originalUser: { email: currentUser?.email, full_name: currentUser?.full_name },
-          targetEmail: account.user_email,
-          targetUsername: account.username,
-          targetDisplayName: response.data.display_name,
-          targetAvatar: response.data.avatar_url,
-          targetAccountType: response.data.account_type,
-        };
-        localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
-        
-        toast.success(`Logged in as ${response.data.username}`);
-        
-        // Redirect to ghost account's profile page with proper URL params
-        window.location.href = response.data.redirect_url;
-      }
+      toast.success(`Logged in as ${account.username}`);
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to login as ghost account");
+      toast.error(error?.message || "Failed to login as ghost account");
     }
   };
 
   const handleImpersonate = async (account) => {
     try {
-      const response = await invokeAdminFn('createManagedAccount', {
-        action: 'impersonate',
-        target_email: account.user_email,
-      });
+      startManagedAccountSession({ currentUser, account });
+      toast.success(`Now managing as ${account.username}`);
 
-      if (response.data.success) {
-        const impersonationData = {
-          isImpersonating: true,
-          isGhostLogin: true,
-          isPersistent: true,
-          originalUser: JSON.parse(localStorage.getItem('base44_user') || '{}'),
-          targetEmail: account.user_email,
-          targetUsername: account.username,
-          targetDisplayName: account.display_name || account.username,
-          targetAvatar: account.avatar_url,
-          targetAccountType: account.account_type,
-        };
-        localStorage.setItem('impersonation_session', JSON.stringify(impersonationData));
-        
-        toast.success(`Now managing as ${account.username}`);
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      }
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to switch to account");
+      toast.error(error?.message || "Failed to switch to account");
     }
   };
 

@@ -3,11 +3,10 @@ import { motion } from "framer-motion";
 import { Play, Eye, Heart, Youtube } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ShareButton from "@/components/shared/ShareButton";
+import { extractYouTubeId } from "@/lib/youtube";
 
 function getYouTubeId(url) {
-  if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
-  return match ? match[1] : null;
+  return extractYouTubeId(url);
 }
 
 export default function VideoFeed({ limit = 8 }) {

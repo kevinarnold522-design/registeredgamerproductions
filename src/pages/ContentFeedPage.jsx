@@ -13,6 +13,7 @@ import Pagination from "@/components/shared/Pagination";
 import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import { extractYouTubeId } from "@/lib/youtube";
 
 const PER_PAGE = 10;
 
@@ -22,7 +23,7 @@ function VideoCard({ video, onClick, user }) {
   const [likeCount, setLikeCount] = useState(video.likes || 0);
   const [saved, setSaved] = useState(false);
 
-  const ytId = video.youtube_video_id || (video.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+  const ytId = video.youtube_video_id || extractYouTubeId(video.youtube_url);
   const thumb = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : video.thumbnail_url || video.cover_url || "";
 
   const handleLike = async (e) => {
@@ -117,7 +118,7 @@ function VideoPlayerModal({ video, user, profile, onClose }) {
   const [reported, setReported] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const ytId = video.youtube_video_id || (video.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+  const ytId = video.youtube_video_id || extractYouTubeId(video.youtube_url);
 
   useEffect(() => {
     // increment view

@@ -8,6 +8,8 @@
 // auth.me/logout/...) so existing pages keep working unchanged.
 // =====================================================================
 
+import { getBase44Direct } from "@/lib/base44Direct";
+
 // Permanent fallback to the live Cloudflare Worker. The build-time env var
 // (VITE_CF_API_URL) takes priority, but if it's missing or accidentally set to
 // the app's own origin, we fall back to the known worker URL so auth and all
@@ -51,6 +53,20 @@ async function authHeaders(extra = {}) {
     if (token) headers.Authorization = `Bearer ${token}`;
   } catch (_) {}
   return headers;
+}
+
+async function getSupabaseAccessToken({ refresh = false } = {}) {
+  try {
+    let { data } = await supabase.auth.getSession();
+    const exp = data?.session?.expires_at ? data.session.expires_at * 1000 : 0;
+    if (refresh && (!data?.session || (exp && exp - Date.now() < 60000))) {
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed?.data?.session) data = refreshed.data;
+    }
+    return data?.session?.access_token || "";
+  } catch (_) {
+    return "";
+  }
 }
 
 async function request(path, { method = "GET", body, headers } = {}) {
@@ -133,22 +149,7 @@ async function entityOp(entity, op, payload = {}) {
   // Pass the Supabase access token in the body — the dependable auth path for
   // write operations (header forwarding is not guaranteed in all environments).
   const isWrite = op === "create" || op === "update" || op === "delete";
-  let accessToken = "";
-  try {
-    let { data } = await supabase.auth.getSession();
-    // For writes, make sure the token is fresh — an expired/stale access token
-    // makes the proxy reject the save with 401, which is exactly why profile
-    // covers/avatars "saved" but reverted on refresh. Refresh it first so a
-    // valid token always reaches the server.
-    if (isWrite) {
-      const exp = data?.session?.expires_at ? data.session.expires_at * 1000 : 0;
-      if (!data?.session || (exp && exp - Date.now() < 60000)) {
-        const refreshed = await supabase.auth.refreshSession();
-        if (refreshed?.data?.session) data = refreshed.data;
-      }
-    }
-    accessToken = data?.session?.access_token || "";
-  } catch (_) {}
+  const accessToken = await getSupabaseAccessToken({ refresh: isWrite });
   const res = await request(`/functions/entityProxy`, {
     method: "POST",
     body: { entity, op, accessToken, ...payload },
@@ -210,12 +211,24 @@ const entities = new Proxy({}, {
 // Returns an axios-like { data } so existing `res.data` reads keep working.
 const functions = {
   async invoke(name, payload = {}, opts = {}) {
-    const data = await request(`/functions/${name}`, {
-      method: "POST",
-      body: payload,
-      headers: opts.headers,
-    });
-    return { data, status: 200 };
+    const accessToken = payload?.accessToken || await getSupabaseAccessToken({ refresh: true });
+    const finalPayload = accessToken ? { ...payload, accessToken } : payload;
+
+    try {
+      const direct = getBase44Direct();
+      const data = await direct.functions.invoke(name, finalPayload);
+      return data?.data ? data : { data, status: 200 };
+    } catch (directError) {
+      const data = await request(`/functions/${name}`, {
+        method: "POST",
+        body: finalPayload,
+        headers: opts.headers,
+      }).catch((fallbackError) => {
+        if (fallbackError?.isNetworkError) throw directError;
+        throw fallbackError;
+      });
+      return { data, status: 200 };
+    }
   },
 };
 

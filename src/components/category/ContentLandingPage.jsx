@@ -5,9 +5,10 @@ import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { Link as RouterLink } from "react-router-dom";
 import SubcategoryCards from "./SubcategoryCards";
+import { extractYouTubeId } from "@/lib/youtube";
 
 function VideoCard({ video, index }) {
-  const ytId = video.youtube_video_id || (video.youtube_url || "").match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1];
+  const ytId = video.youtube_video_id || extractYouTubeId(video.youtube_url);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.04 }}

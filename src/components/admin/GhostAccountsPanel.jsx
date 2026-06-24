@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Plus, Eye, UserX, Shield, Sparkles, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { invokeAdminFn } from "@/lib/invokeAdminFn";
+import { createManagedAccountProfile, listManagedAccounts, startManagedAccountSession } from "@/lib/managedAccounts";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { toast } from "sonner";
 import { isAdmin } from "@/lib/constants";
 
 export default function GhostAccountsPanel() {
   const [ghosts, setGhosts] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [newGhost, setNewGhost] = useState({
@@ -22,13 +23,16 @@ export default function GhostAccountsPanel() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
+    base44.auth.me().then((user) => {
+      if (user) setCurrentUser(user);
+    }).catch(() => {});
     loadGhosts();
   }, []);
 
   const loadGhosts = async () => {
     try {
-      const res = await invokeAdminFn("createManagedAccount", { action: "list" });
-      setGhosts(res.data.accounts || []);
+      const rows = await listManagedAccounts();
+      setGhosts(rows);
     } catch (e) {
       toast.error("Failed to load managed accounts");
     }
@@ -43,32 +47,15 @@ export default function GhostAccountsPanel() {
 
     setCreating(true);
     try {
-      const email = newGhost.email && newGhost.email.includes("@") 
-        ? newGhost.email 
-        : `${newGhost.username.toLowerCase().replace(/\s+/g, '_')}@gamerproductions.com`;
-      
-      const res = await invokeAdminFn("createManagedAccount", {
-        action: "create",
-        email: email,
-        username: newGhost.username,
-        display_name: newGhost.display_name || newGhost.username,
-        account_type: newGhost.account_type,
-        avatar_url: newGhost.avatar_url,
-      });
+      await createManagedAccountProfile(currentUser, newGhost);
+      toast.success("Account created! Redirecting to community page...");
+      setNewGhost({ email: "", username: "", display_name: "", account_type: "regular", avatar_url: "" });
+      setShowCreate(false);
+      loadGhosts();
 
-      if (res.data.success) {
-        toast.success("Account created! Redirecting to community page...");
-        setNewGhost({ email: "", username: "", display_name: "", account_type: "regular", avatar_url: "" });
-        setShowCreate(false);
-        loadGhosts();
-        
-        // Redirect to the gaming community page
-        setTimeout(() => {
-          window.location.href = "/gaming-community";
-        }, 1500);
-      } else {
-        toast.error(res.data.error || "Failed to create");
-      }
+      setTimeout(() => {
+        window.location.href = "/gaming-community";
+      }, 1500);
     } catch (e) {
       toast.error(e.message || "Failed to create account");
     }
@@ -77,34 +64,14 @@ export default function GhostAccountsPanel() {
 
   const handleImpersonate = async (ghost) => {
     try {
-      const res = await invokeAdminFn("createManagedAccount", {
-        action: "impersonate",
-        target_email: ghost.user_email,
-      });
-      
-      if (res.data.success) {
-        // Store the impersonation session
-        localStorage.setItem("impersonation_session", JSON.stringify({
-          isImpersonating: true,
-          isGhostLogin: true,
-          isPersistent: true,
-          targetEmail: ghost.user_email,
-          targetUsername: ghost.username,
-          targetDisplayName: ghost.display_name || ghost.username,
-          targetAvatar: ghost.avatar_url,
-          targetAccountType: ghost.account_type,
-          started_at: new Date().toISOString(),
-        }));
-        
-        toast.success(`Now managing as ${ghost.username}`);
-        
-        // Reload the page to apply the impersonation
-        setTimeout(() => {
-          window.location.reload();
-        }, 800);
-      }
+      startManagedAccountSession({ currentUser, account: ghost });
+      toast.success(`Now managing as ${ghost.username}`);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     } catch (e) {
-      toast.error("Failed to switch account");
+      toast.error(e?.message || "Failed to switch account");
     }
   };
 

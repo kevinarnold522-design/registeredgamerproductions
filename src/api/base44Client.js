@@ -3,7 +3,7 @@
 //
 // • entities  → Supabase (the permanent, persistent database where all
 //               profiles, listings, posts, etc. now live after migration).
-// • functions → Cloudflare Worker backend functions.
+// • functions → hosted backend functions backed by Supabase-aware logic.
 // • auth      → Supabase auth (Google/email), normalized to the app's shape.
 //
 // `base44` keeps the same shape the app already calls (entities.*,
