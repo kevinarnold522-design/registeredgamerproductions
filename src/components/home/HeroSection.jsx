@@ -108,17 +108,6 @@ function LiveStats() {
 
 }
 
-const quickLinks = [
-{ icon: Gamepad2, label: "Looking for Games?", sub: "PC, Console & Mobile", href: "/category?cat=games" },
-{ icon: Radio, label: "Live Streams", sub: "Watch & go live", href: "/category?cat=livestream" },
-{ icon: CircleDollarSign, label: "Hot Deals?", sub: "Best prices today", href: "/category?cat=buy_sell" },
-{ icon: Trophy, label: "Tournaments?", sub: "Join & compete", href: "/category?cat=tournaments" },
-{ icon: Headphones, label: "Looking for Audio?", sub: "Headsets & Speakers", href: "/category?cat=buy_sell" },
-{ icon: Wrench, label: "Get Mods?", sub: "GTA, FIFA, WWE & more", href: "/category?cat=modding" },
-{ icon: ShoppingCart, label: "Buy & Sell?", sub: "Accounts & in-game items", href: "/category?cat=buy_sell" },
-{ icon: Clapperboard, label: "Content Creator?", sub: "Streaming gear & tips", href: "/register?type=digital_creator" }];
-
-
 export default function HeroSection() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -265,22 +254,6 @@ export default function HeroSection() {
 
         {/* Live Stats */}
         <LiveStats />
-
-        {/* Quick Links */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
-          {quickLinks.filter((item) => !user || !item.href.startsWith("/register")).map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <motion.button key={i} onClick={() => navigate(item.href)} whileHover={{ scale: 1.04, y: -3, boxShadow: "0 0 20px rgba(139,92,246,0.3)" }}
-              className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-gray-900/60 border border-gray-800 hover:border-purple-700/60 transition-all cursor-pointer group">
-                <Icon className="w-6 h-6 text-purple-300" />
-                <span className="text-white text-xs font-semibold text-center leading-tight group-hover:text-purple-300 transition-colors">{item.label}</span>
-                <span className="text-gray-500 text-xs text-center">{item.sub}</span>
-              </motion.button>);
-
-          })}
-        </motion.div>
       </div>
     </section>);
 

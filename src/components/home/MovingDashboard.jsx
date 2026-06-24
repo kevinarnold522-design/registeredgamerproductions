@@ -13,7 +13,7 @@ const CP = {
   cyan: "#00d4ff",
   pink: "#ff2d78",
   purple: "#a855f7",
-  darkBg: "#050008",
+  darkBg: "#2a0a26",
 };
 
 function ScrollRow({ children, speed = 30, reverse = false }) {
@@ -108,7 +108,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
   if (loading) return null;
 
   return (
-    <section className="py-16 overflow-hidden relative" style={{ background: `linear-gradient(180deg, #030712 0%, ${CP.darkBg} 40%, #050005 70%, #030712 100%)` }}>
+    <section className="py-16 overflow-hidden relative" style={{ background: `linear-gradient(180deg, #2a0a26 0%, ${CP.darkBg} 40%, #3a0d36 70%, #2a0a26 100%)` }}>
       {/* Cyberpunk scanline effect */}
       <div className="absolute inset-0 pointer-events-none" style={{
         backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.012) 2px, rgba(0,212,255,0.012) 4px)",

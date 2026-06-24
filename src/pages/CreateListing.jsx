@@ -106,7 +106,7 @@ export default function CreateListing() {
     title: "",
     description: "",
     price: "0",
-    currency: "PHP",
+    currency: "USD",
     product_type: defaultCat === "premium_mods" ? "digital" : "",
     category: defaultCat,
     subcategories: defaultSub ? [defaultSub] : [],
@@ -202,7 +202,7 @@ export default function CreateListing() {
             title: l.title || "",
             description: l.description || "",
             price: l.price !== undefined ? String(l.price) : "0",
-            currency: l.currency || "PHP",
+            currency: l.currency === "PHP" ? "USD" : (l.currency || "USD"),
             product_type: l.product_type || "",
             category: l.category || defaultCat,
             subcategories: l.subcategories || [],
@@ -403,7 +403,7 @@ export default function CreateListing() {
       digital_subcategory: form.digital_subcategory_custom?.trim() || form.digital_subcategory,
       digital_subcategory_custom: undefined,
       price: priceVal,
-      currency: form.currency || "PHP",
+      currency: form.currency === "PHP" ? "USD" : (form.currency || "USD"),
       is_free: priceVal === 0,
       // All paid mods are automatically Premium
       is_premium: form.is_premium || ((form.category === "modding" || form.category === "premium_mods") && priceVal > 0),
@@ -830,11 +830,11 @@ export default function CreateListing() {
               {(form.price !== "0" && form.price !== 0) && (
                 <div className="space-y-3">
                   <div className="flex gap-2">
-                    <select value={form.currency || "PHP"} onChange={e => setForm({ ...form, currency: e.target.value })}
+                    <select value={form.currency === "PHP" ? "USD" : (form.currency || "USD")} onChange={e => setForm({ ...form, currency: e.target.value })}
                       className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
                       {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code} {c.symbol}</option>)}
                     </select>
-                    <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder={`Enter price in ${getCurrencySymbol(form.currency || "PHP")}`}
+                    <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder={`Enter price in ${getCurrencySymbol(form.currency === "PHP" ? "USD" : (form.currency || "USD"))}`}
                       className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
                   </div>
                 </div>

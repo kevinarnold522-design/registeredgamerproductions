@@ -30,10 +30,11 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     if (playing) {
       return (
         <iframe
-          src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
+          src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
           title="Video player"
           className={`${fill} ${className}`}
           frameBorder="0"
+          referrerPolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
         />

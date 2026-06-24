@@ -660,11 +660,14 @@ export default function ListingPage() {
 
             <div className="flex flex-col gap-3">
               {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} purchased={purchased} />}
+              {/* Support / donation links — only for PAID listings (paid mods), never free ones */}
+              {!isFree && (
               <div className="flex gap-2 flex-wrap">
                 {listing.kofi_url && <a href={listing.kofi_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-orange-900/30 border border-orange-700/40 text-orange-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="kofi" label="Ko-fi" className="w-4 h-4" /> Ko-fi</a>}
                 {listing.buymeacoffee_url && <a href={listing.buymeacoffee_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-900/30 border border-yellow-700/40 text-yellow-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="buymeacoffee" label="Buy Me a Coffee" className="w-4 h-4" /> BuyMeACoffee</a>}
                 {listing.patreon_url && <a href={listing.patreon_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-900/30 border border-red-700/40 text-red-300 text-xs font-bold hover:opacity-80"><BrandLogo brand="patreon" label="Patreon" className="w-4 h-4" /> Patreon</a>}
               </div>
+              )}
             </div>
 
             {(

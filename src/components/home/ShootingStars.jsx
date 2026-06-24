@@ -17,6 +17,10 @@ export default function ShootingStars() {
     resize();
     window.addEventListener("resize", resize);
 
+    // Mobile gets smaller asteroids so they don't crowd the narrow viewport.
+    const isMobile = window.innerWidth < 640;
+    const astSizeScale = isMobile ? 0.5 : 1;
+
     // Static background stars
     const bgStars = Array.from({ length: 300 }, () => ({
       x: Math.random() * canvas.width,
@@ -322,8 +326,8 @@ export default function ShootingStars() {
       reset(initial = false) {
         this.broken = false;
         this.respawnFrames = 0;
-        // Smaller size range — tiny pebbles to small rocks
-        this.size = Math.random() * 11 + 3;
+        // Smaller size range — tiny pebbles to small rocks (even smaller on mobile)
+        this.size = (Math.random() * 11 + 3) * astSizeScale;
         this.mass = this.size * this.size;
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
@@ -750,8 +754,8 @@ export default function ShootingStars() {
     }
     const planets = Array.from({ length: 5 }, () => new Planet());
 
-    // Shooting stars
-    const shootingColors = ["#c084fc", "#a855f7", "#9333ea", "#d8b4fe", "#7c3aed", "#e9d5ff"];
+    // Shooting stars — varied vivid colors (not just purple)
+    const shootingColors = ["#c084fc", "#22d3ee", "#34d399", "#f472b6", "#fde68a", "#60a5fa", "#fb923c", "#f87171", "#a855f7", "#e9d5ff"];
 
     class ShootingStar {
       constructor() { this.reset(true); }

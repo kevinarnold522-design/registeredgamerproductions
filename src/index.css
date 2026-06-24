@@ -258,6 +258,17 @@ a[href]:not(.no-glow):hover,
   animation: std-edge-orbit 3s linear infinite;
 }
 
+/* ─── ACTIVE LISTING "Registered Gamers" pulse glow ─── */
+/* Same animated purple→pink aura used on the Registered Gamers stat badge,
+   applied to live/active listing cards so they pulse with energy. */
+@keyframes active-listing-pulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(168,85,247,0.45), 0 0 36px rgba(168,85,247,0.18); }
+  50%      { box-shadow: 0 0 30px rgba(236,72,153,0.6), 0 0 60px rgba(236,72,153,0.28); }
+}
+.active-listing-glow {
+  animation: active-listing-pulse 2.6s ease-in-out infinite;
+}
+
 /* ─── STANDARDIZED LISTING CARD: glass + glow + blazing fire edges ─── */
 @keyframes std-card-fire {
   0%, 100% { opacity: 0.65; filter: blur(6px) brightness(1); }

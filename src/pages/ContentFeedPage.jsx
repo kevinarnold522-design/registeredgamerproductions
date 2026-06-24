@@ -188,10 +188,13 @@ function VideoPlayerModal({ video, user, profile, onClose }) {
             <div className="relative bg-black flex-1 min-h-[260px] flex items-center">
               {ytId ? (
                 <iframe
-                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1`}
+                  src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
                   className="w-full aspect-video"
+                  title="Video player"
+                  frameBorder="0"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
-                  allow="autoplay; encrypted-media"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 />
               ) : video.video_url ? (
                 <video src={video.video_url} controls autoPlay className="w-full max-h-[380px]" />
