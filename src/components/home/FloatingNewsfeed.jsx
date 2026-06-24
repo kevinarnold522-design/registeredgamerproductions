@@ -38,7 +38,11 @@ function FeedRow({ item }) {
 // Auto-scrolls vertically (marquee loop) and stays fixed wherever the user goes.
 export default function FloatingNewsfeed() {
   const [listings, setListings] = useState([]);
-  const [open, setOpen] = useState(true);
+  // Open by default on desktop; collapsed on mobile so it never covers content.
+  const [open, setOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 1024;
+  });
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function FloatingNewsfeed() {
   const loopItems = [...listings, ...listings];
 
   return (
-    <div className="hidden lg:flex fixed top-24 right-3 z-30 flex-col items-end pointer-events-none">
+    <div className="flex fixed top-20 lg:top-24 right-2 lg:right-3 z-30 flex-col items-end pointer-events-none">
       {/* Toggle handle */}
       <button
         onClick={() => setOpen(o => !o)}
@@ -72,7 +76,7 @@ export default function FloatingNewsfeed() {
 
       {open && (
         <div
-          className="pointer-events-auto w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
+          className="pointer-events-auto w-44 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
           style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
@@ -86,7 +90,7 @@ export default function FloatingNewsfeed() {
           </div>
 
           {/* Vertical auto-scrolling marquee */}
-          <div className="relative h-[60vh] overflow-hidden">
+          <div className="relative h-[45vh] lg:h-[60vh] overflow-hidden">
             <div
               className="flex flex-col"
               style={{

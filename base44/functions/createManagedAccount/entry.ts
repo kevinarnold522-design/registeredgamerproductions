@@ -1,10 +1,24 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const ADMIN_EMAILS = [
     'kevinjersey2019@gmail.com',
     'arnoldk137@gmail.com',
     'kevinarnold522@gmail.com',
 ];
+
+// Fallback: also recognise the admin via the Base44 / Cloudflare session cookie.
+// Admins may be authenticated through Base44 rather than a live Supabase token,
+// in which case getSupabaseUser() returns null and ghost-account creation 403s.
+async function getBase44User(req) {
+    try {
+        const base44 = createClientFromRequest(req);
+        const u = await base44.auth.me();
+        return u ? { email: u.email, role: u.role } : null;
+    } catch (_) {
+        return null;
+    }
+}
 
 const SUPA_URL = () => {
     const raw = Deno.env.get('VITE_SUPABASE_URL');
@@ -43,8 +57,9 @@ Deno.serve(async (req) => {
         const body = await req.json().catch(() => ({}));
         const { action, email, username, avatar_url, display_name, account_type, target_email, include_all, accessToken } = body;
 
-        // Authenticate via Supabase + admin allow-list.
-        const user = await getSupabaseUser(req, accessToken);
+        // Authenticate via Supabase, falling back to the Base44 session cookie.
+        let user = await getSupabaseUser(req, accessToken);
+        if (!user) user = await getBase44User(req);
         const isAdmin = user && ADMIN_EMAILS.includes(String(user.email || '').toLowerCase());
         if (!isAdmin) {
             console.error('createManagedAccount forbidden', { email: user?.email || null, action });

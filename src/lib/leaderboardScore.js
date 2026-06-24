@@ -15,6 +15,46 @@ import { base44 } from "@/api/base44Client";
 // Points are keyed by the CURRENT owner email (seller_email / author_email /
 // creator_email). When a listing is transferred, its seller_email changes, so
 // its points automatically move to the new owner and leave the old one.
+// Points earned by a single listing (same weighting used for owners below).
+export function listingScore(l) {
+  return 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2 + (l.shares || 0) * 2;
+}
+
+// Ranks individual LISTINGS by the points they've earned. Each listing's points
+// also contribute to its owner on the main leaderboard (see below).
+export async function computeListingLeaderboard() {
+  const [listings, profiles] = await Promise.all([
+    base44.entities.Listing.list("-created_date", 1000).catch(() => []),
+    base44.entities.UserProfile.list("-created_date", 1000).catch(() => []),
+  ]);
+  const profileMap = {};
+  profiles.forEach((p) => { profileMap[p.user_email] = p; });
+
+  return listings
+    .filter((l) => l.status !== "removed" && l.status !== "deleted")
+    .map((l) => {
+      const prof = profileMap[l.seller_email];
+      return {
+        id: l.id,
+        title: l.title,
+        image: l.images?.[0] || "",
+        category: l.category,
+        seller_email: l.seller_email,
+        seller_username: prof?.username || prof?.display_name || l.seller_username || "Gamer",
+        seller_avatar: prof?.avatar_url || l.seller_avatar || "",
+        owner_verified: prof?.is_verified || false,
+        views: l.views || 0,
+        likes: l.likes || 0,
+        downloads: l.downloads || 0,
+        price: l.price,
+        currency: l.currency,
+        is_free: l.is_free,
+        score: listingScore(l),
+      };
+    })
+    .sort((a, b) => b.score - a.score);
+}
+
 export async function computeLeaderboard({ tab = "community" } = {}) {
   if (tab === "tournaments") {
     const tournaments = await base44.entities.Tournament.list("-created_date", 200).catch(() => []);

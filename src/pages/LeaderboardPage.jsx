@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Crown, Star, Zap, Users, MessageCircle, Heart, Shield, Medal, Award } from "lucide-react";
+import { Trophy, Crown, Star, Zap, Users, MessageCircle, Heart, Shield, Medal, Award, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
-import { computeLeaderboard } from "@/lib/leaderboardScore";
+import { computeLeaderboard, computeListingLeaderboard } from "@/lib/leaderboardScore";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
+import ListingLeaderRow from "@/components/leaderboard/ListingLeaderRow";
 
 const TABS = [
   { id: "community", label: "Community", icon: Users },
+  { id: "listings", label: "Listings", icon: Package },
   { id: "modding", label: "Modding", icon: Zap },
   { id: "tournaments", label: "Tournaments", icon: Trophy },
 ];
@@ -105,8 +107,10 @@ export default function LeaderboardPage() {
 
   const loadLeaderboard = async (currentTab) => {
     setLoading(true);
-    const sorted = await computeLeaderboard({ tab: currentTab });
     const limit = user ? 100 : 10;
+    const sorted = currentTab === "listings"
+      ? await computeListingLeaderboard()
+      : await computeLeaderboard({ tab: currentTab });
     setLeaderboard(sorted.slice(0, limit));
     setLoading(false);
   };
@@ -115,9 +119,12 @@ export default function LeaderboardPage() {
 
   const tabConfig = {
     community: { title: "Community", subtitle: "Top contributors by posts, likes & ratings", color: "#7c3aed" },
+    listings: { title: "Listings", subtitle: "Top listings by views, likes & downloads", color: "#22d3ee" },
     modding: { title: "Modding", subtitle: "Top mod creators & uploaders", color: "#f97316" },
     tournaments: { title: "Tournaments", subtitle: "Top players by wins & participation", color: "#4ade80" },
   };
+
+  const isListings = tab === "listings";
 
   const current = tabConfig[tab];
 
@@ -190,7 +197,7 @@ export default function LeaderboardPage() {
                     <p className="text-gray-500 text-sm text-center py-8">No data yet</p>
                   ) : top10.map((entry, rank) => (
                     <motion.div
-                      key={entry.email}
+                      key={isListings ? entry.id : entry.email}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: rank * 0.05 }}
@@ -202,17 +209,17 @@ export default function LeaderboardPage() {
                           : rank === 2 ? <Medal className="w-5 h-5 text-amber-600 mx-auto" />
                           : <span className="text-gray-400 font-black text-sm">#{rank+1}</span>}
                       </div>
-                      <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-sm border-2 ${rank < 3 ? "border-purple-500/60" : "border-gray-700"}`}
+                      <div className={`w-10 h-10 ${isListings ? "rounded-xl" : "rounded-full"} overflow-hidden flex-shrink-0 flex items-center justify-center font-black text-sm border-2 ${rank < 3 ? "border-purple-500/60" : "border-gray-700"}`}
                         style={{ background: rank < 3 ? "linear-gradient(135deg,#7c3aed,#ec4899)" : "#1f2937" }}>
-                        {entry.avatar_url
-                          ? <img src={entry.avatar_url} className="w-full h-full rounded-full object-cover" alt="" />
-                          : (entry.username || "G")[0].toUpperCase()
+                        {(isListings ? entry.image : entry.avatar_url)
+                          ? <img src={isListings ? entry.image : entry.avatar_url} className="w-full h-full object-cover" alt="" />
+                          : ((isListings ? entry.title : entry.username) || "G")[0].toUpperCase()
                         }
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-white font-bold text-sm truncate">{entry.username || "Unknown"}</p>
-                          <GamerCheckmark isVerified={entry.is_verified} userEmail={entry.email} size="sm" showTooltip={false} />
+                          <p className="text-white font-bold text-sm truncate">{(isListings ? entry.title : entry.username) || "Unknown"}</p>
+                          {!isListings && <GamerCheckmark isVerified={entry.is_verified} userEmail={entry.email} size="sm" showTooltip={false} />}
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
@@ -254,7 +261,7 @@ export default function LeaderboardPage() {
             </div>
 
             {/* Top 3 podium */}
-            {!loading && leaderboard.length >= 3 && (
+            {!loading && !isListings && leaderboard.length >= 3 && (
               <div className="flex justify-center items-end gap-4 mb-8">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                   className="flex flex-col items-center gap-2">
@@ -298,7 +305,9 @@ export default function LeaderboardPage() {
             ) : (
               <div className="space-y-2">
                 {leaderboard.map((entry, rank) => (
-                  <LeaderRow key={entry.email} entry={entry} rank={rank} tab={tab} />
+                  isListings
+                    ? <ListingLeaderRow key={entry.id} entry={entry} rank={rank} />
+                    : <LeaderRow key={entry.email} entry={entry} rank={rank} tab={tab} />
                 ))}
               </div>
             )}
