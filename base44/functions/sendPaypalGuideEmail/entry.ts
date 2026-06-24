@@ -1,10 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { requireAdminUser } from '../_shared/adminAuth.ts';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-  const user = await base44.auth.me();
+  const body = await req.json().catch(() => ({}));
+  const user = await requireAdminUser(req, body.accessToken);
 
-  if (!user || user.role !== 'admin') {
+  if (!user) {
     return Response.json({ error: 'Forbidden: Admin only' }, { status: 403 });
   }
 

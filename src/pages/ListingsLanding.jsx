@@ -5,6 +5,7 @@ import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2 } from "lucide-re
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
 import MascotShowcase from "@/components/shared/MascotShowcase";
+import { invokeAdminFn } from "@/lib/invokeAdminFn";
 
 export default function ListingsLanding({ mode = "mine" }) {
   const [user, setUser] = useState(null);
@@ -41,7 +42,7 @@ export default function ListingsLanding({ mode = "mine" }) {
     const canDelete = adminUser || isOwner;
     if (!canDelete) return;
     if (!window.confirm("Are you sure you want to permanently delete this listing and its files?")) return;
-    await base44.functions.invoke("deleteListingPermanent", { listing_id: listing.id });
+    await invokeAdminFn("deleteListingPermanent", { listing_id: listing.id });
     setItems(prev => prev.filter(item => item.id !== listing.id));
   };
 

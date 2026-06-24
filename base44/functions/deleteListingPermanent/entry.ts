@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { S3Client, DeleteObjectCommand } from 'npm:@aws-sdk/client-s3@3.699.0';
-
-const ADMIN_EMAIL = 'kevinarnold522@gmail.com';
+import { getRequestUser, isAdminUser } from '../_shared/adminAuth.ts';
 
 function collectUrls(value, urls = new Set()) {
   if (!value) return urls;
@@ -36,16 +35,15 @@ function keyFromUrl(url, publicBaseUrl) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const { listing_id, accessToken } = await req.json().catch(() => ({}));
+    const user = await getRequestUser(req, accessToken);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { listing_id } = await req.json();
     if (!listing_id) return Response.json({ error: 'Missing listing id' }, { status: 400 });
 
     const listing = await base44.asServiceRole.entities.Listing.get(listing_id);
     if (!listing) return Response.json({ error: 'Listing not found' }, { status: 404 });
 
-    const isAdmin = String(user.email || '').toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const isAdmin = isAdminUser(user);
     const isOwner =
       String(listing.seller_email || '').toLowerCase() === String(user.email || '').toLowerCase() ||
       String(listing.created_by || '').toLowerCase() === String(user.email || '').toLowerCase() ||

@@ -71,6 +71,7 @@ export default function ShootingStars() {
         this.bob = Math.random() * Math.PI * 2;
         this.size = Math.random() * 8 + 14;
         this.sway = Math.random() * 0.6 + 0.4;
+        this.variant = Math.floor(Math.random() * 3);
         this.waitFrames = initial ? Math.random() * 400 : Math.random() * 500 + 150;
         this.broken = false;
         this.respawnFrames = 0;
@@ -106,44 +107,89 @@ export default function ShootingStars() {
         ctx.closePath();
         ctx.fill();
 
-        // Fins
         ctx.shadowBlur = 8;
         ctx.shadowColor = "#a855f7";
-        ctx.fillStyle = "#ef4444";
-        ctx.beginPath();
-        ctx.moveTo(-s * 0.28, s * 0.4);
-        ctx.lineTo(-s * 0.55, s * 0.78);
-        ctx.lineTo(-s * 0.28, s * 0.72);
-        ctx.closePath();
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(s * 0.28, s * 0.4);
-        ctx.lineTo(s * 0.55, s * 0.78);
-        ctx.lineTo(s * 0.28, s * 0.72);
-        ctx.closePath();
-        ctx.fill();
+        if (this.variant === 0) {
+          ctx.fillStyle = "#ef4444";
+          ctx.beginPath();
+          ctx.moveTo(-s * 0.28, s * 0.4);
+          ctx.lineTo(-s * 0.55, s * 0.78);
+          ctx.lineTo(-s * 0.28, s * 0.72);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(s * 0.28, s * 0.4);
+          ctx.lineTo(s * 0.55, s * 0.78);
+          ctx.lineTo(s * 0.28, s * 0.72);
+          ctx.closePath();
+          ctx.fill();
 
-        // Body (rounded capsule)
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = "#c4b5fd";
-        ctx.fillStyle = "#f1f5f9";
-        ctx.beginPath();
-        ctx.moveTo(0, -s * 0.9);
-        ctx.quadraticCurveTo(s * 0.32, -s * 0.4, s * 0.28, s * 0.5);
-        ctx.lineTo(-s * 0.28, s * 0.5);
-        ctx.quadraticCurveTo(-s * 0.32, -s * 0.4, 0, -s * 0.9);
-        ctx.closePath();
-        ctx.fill();
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "#c4b5fd";
+          ctx.fillStyle = "#f1f5f9";
+          ctx.beginPath();
+          ctx.moveTo(0, -s * 0.9);
+          ctx.quadraticCurveTo(s * 0.32, -s * 0.4, s * 0.28, s * 0.5);
+          ctx.lineTo(-s * 0.28, s * 0.5);
+          ctx.quadraticCurveTo(-s * 0.32, -s * 0.4, 0, -s * 0.9);
+          ctx.closePath();
+          ctx.fill();
 
-        // Nose cone tip
-        ctx.fillStyle = "#a855f7";
-        ctx.beginPath();
-        ctx.moveTo(0, -s * 0.9);
-        ctx.quadraticCurveTo(s * 0.18, -s * 0.5, s * 0.1, -s * 0.35);
-        ctx.lineTo(-s * 0.1, -s * 0.35);
-        ctx.quadraticCurveTo(-s * 0.18, -s * 0.5, 0, -s * 0.9);
-        ctx.closePath();
-        ctx.fill();
+          ctx.fillStyle = "#a855f7";
+          ctx.beginPath();
+          ctx.moveTo(0, -s * 0.9);
+          ctx.quadraticCurveTo(s * 0.18, -s * 0.5, s * 0.1, -s * 0.35);
+          ctx.lineTo(-s * 0.1, -s * 0.35);
+          ctx.quadraticCurveTo(-s * 0.18, -s * 0.5, 0, -s * 0.9);
+          ctx.closePath();
+          ctx.fill();
+        } else if (this.variant === 1) {
+          ctx.fillStyle = "#38bdf8";
+          ctx.fillRect(-s * 0.4, s * 0.34, s * 0.16, s * 0.34);
+          ctx.fillRect(s * 0.24, s * 0.34, s * 0.16, s * 0.34);
+          ctx.fillStyle = "#e2e8f0";
+          ctx.beginPath();
+          ctx.moveTo(0, -s);
+          ctx.lineTo(s * 0.3, -s * 0.22);
+          ctx.lineTo(s * 0.3, s * 0.56);
+          ctx.lineTo(-s * 0.3, s * 0.56);
+          ctx.lineTo(-s * 0.3, -s * 0.22);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(-s * 0.18, -s * 0.44, s * 0.36, s * 0.18);
+          ctx.fillStyle = "#38bdf8";
+          ctx.beginPath();
+          ctx.moveTo(0, -s);
+          ctx.lineTo(s * 0.15, -s * 0.56);
+          ctx.lineTo(-s * 0.15, -s * 0.56);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillStyle = "#fb7185";
+          ctx.beginPath();
+          ctx.moveTo(-s * 0.18, s * 0.26);
+          ctx.lineTo(-s * 0.56, s * 0.72);
+          ctx.lineTo(-s * 0.08, s * 0.58);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(s * 0.18, s * 0.26);
+          ctx.lineTo(s * 0.56, s * 0.72);
+          ctx.lineTo(s * 0.08, s * 0.58);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#d946ef";
+          ctx.fillRect(-s * 0.14, s * 0.46, s * 0.28, s * 0.18);
+          ctx.fillStyle = "#e5e7eb";
+          ctx.beginPath();
+          ctx.ellipse(0, -s * 0.12, s * 0.3, s * 0.72, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#facc15";
+          ctx.beginPath();
+          ctx.ellipse(0, -s * 0.68, s * 0.12, s * 0.22, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
         // Porthole
         ctx.shadowBlur = 6;

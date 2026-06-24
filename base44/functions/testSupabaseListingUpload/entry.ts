@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { createClient } from 'npm:@supabase/supabase-js@2.43.0';
+import { requireAdminUser } from '../_shared/adminAuth.ts';
 
 const SUPABASE_URL = 'https://smymannqqogtshvsiqyp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteW1hbm5xcW9ndHNodnNpcXlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjMyOTYsImV4cCI6MjA5Njk5OTI5Nn0.mY40GwnnOoUXf111fgAhWgfzc8sapyBNcLISzbMWocg';
@@ -9,8 +10,9 @@ const TEST_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const isAuthenticated = await base44.auth.isAuthenticated();
-    if (!isAuthenticated) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await req.json().catch(() => ({}));
+    const adminUser = await requireAdminUser(req, body.accessToken);
+    if (!adminUser) return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
 
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!serviceKey) return Response.json({ error: 'Supabase service key missing' }, { status: 500 });

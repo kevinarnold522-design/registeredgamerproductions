@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { getActiveListings } from "@/lib/homeDataCache";
-import { Heart, ShoppingCart } from "lucide-react";
+import HomeListingCard from "@/components/home/HomeListingCard";
 
 export default function FeaturedGames() {
   const [listings, setListings] = useState([]);
@@ -60,30 +59,7 @@ export default function FeaturedGames() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {listings.map((listing, i) => (
-            <motion.a key={listing.id} href={`/listing?id=${listing.id}`} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-purple-700/50 transition-colors block">
-              <div className="relative h-44">
-                {listing.images?.[0] ? (
-                  <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-800">🎮</div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
-                {listing.is_premium && (
-                  <span className="absolute top-3 left-3 text-xs font-bold bg-yellow-500/90 text-black px-2.5 py-1 rounded-full">⭐ Premium</span>
-                )}
-              </div>
-              <div className="p-5">
-                <p className="text-purple-400 text-xs font-semibold mb-1">{listing.subcategory || listing.platform || "Game"}</p>
-                <h3 className="text-white font-bold text-lg mb-2 truncate">{listing.title}</h3>
-                <p className="text-gray-500 text-xs mb-3 line-clamp-2">{listing.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-purple-400 font-black text-xl">${listing.price?.toLocaleString()}</span>
-                  <span className="text-gray-600 text-xs">by @{listing.seller_username}</span>
-                </div>
-              </div>
-            </motion.a>
+            <HomeListingCard key={listing.id} listing={listing} index={i} />
           ))}
         </div>
       </div>

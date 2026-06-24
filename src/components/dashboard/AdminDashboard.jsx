@@ -24,6 +24,7 @@ import ManagedAccountsPanel from "@/components/admin/ManagedAccountsPanel";
 import CategoryStyleEditor from "@/components/admin/CategoryStyleEditor";
 import AdminGamesPanel from "@/components/dashboard/AdminGamesPanel";
 import AdminAdManager from "@/components/admin/AdminAdManager";
+import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Gamepad2, Megaphone } from "lucide-react";
 
 export default function AdminDashboard({ user, profile }) {
@@ -119,7 +120,7 @@ export default function AdminDashboard({ user, profile }) {
 
   const removeListing = async (listingId) => {
     if (!window.confirm("Are you sure you want to permanently delete this listing and its files?")) return;
-    await base44.functions.invoke("deleteListingPermanent", { listing_id: listingId });
+    await invokeAdminFn("deleteListingPermanent", { listing_id: listingId });
     setAllListings(prev => prev.filter(l => l.id !== listingId));
   };
 

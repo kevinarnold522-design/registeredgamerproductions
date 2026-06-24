@@ -1,48 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
-const ADMIN_EMAILS = [
-    'kevinjersey2019@gmail.com',
-    'arnoldk137@gmail.com',
-    'kevinarnold522@gmail.com',
-];
-
-// Fallback: also recognise the admin via the Base44 / Cloudflare session cookie.
-// Admins may be authenticated through Base44 rather than a live Supabase token,
-// in which case getSupabaseUser() returns null and ghost-account creation 403s.
-async function getBase44User(req) {
-    try {
-        const base44 = createClientFromRequest(req);
-        const u = await base44.auth.me();
-        return u ? { email: u.email, role: u.role } : null;
-    } catch (_) {
-        return null;
-    }
-}
+import { requireAdminUser } from '../_shared/adminAuth.ts';
 
 const SUPA_URL = () => {
     const raw = Deno.env.get('VITE_SUPABASE_URL');
     return (raw && raw.startsWith('http')) ? raw : 'https://smymannqqogtshvsiqyp.supabase.co';
 };
-
-// Verify the Supabase access token (auth migrated from Base44 -> Supabase).
-// Token can come from the Authorization header OR the request body.
-async function getSupabaseUser(req, bodyToken) {
-    const headerToken = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-    const token = headerToken || bodyToken || '';
-    if (!token) return null;
-    const key = Deno.env.get('VITE_SUPABASE_ANON_KEY');
-    if (!key) return null;
-    try {
-        const supabase = createClient(SUPA_URL(), key, { auth: { persistSession: false, autoRefreshToken: false } });
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (error || !user) return null;
-        return { id: user.id, email: user.email, role: (user.user_metadata || {}).role };
-    } catch (err) {
-        console.error('createManagedAccount supabase verify failed', err.message);
-        return null;
-    }
-}
 
 // Header columns are real columns; everything else lives inside the jsonb `data`.
 const HEADER = new Set(['id', 'created_date', 'updated_date', 'created_by_id', 'created_by']);
@@ -52,16 +14,47 @@ function flatten(row) {
     return { ...(data || {}), ...header };
 }
 
+function makeManagedAccountPassword() {
+    return `Ghost-${crypto.randomUUID()}!aA1`;
+}
+
+function isDuplicateAuthUserError(error) {
+    const message = String(error?.message || '').toLowerCase();
+    return message.includes('already') && (message.includes('registered') || message.includes('exists'));
+}
+
+async function ensureManagedAuthUser(supabase, email, profileData) {
+    try {
+        const { data, error } = await supabase.auth.admin.createUser({
+            email,
+            password: makeManagedAccountPassword(),
+            email_confirm: true,
+            user_metadata: {
+                username: profileData.username,
+                display_name: profileData.display_name,
+                account_type: profileData.account_type,
+                is_managed_account: true,
+                managed_by_admin: profileData.managed_by_admin,
+            },
+        });
+        if (error) {
+            if (isDuplicateAuthUserError(error)) return { created: false, userId: null };
+            throw error;
+        }
+        return { created: true, userId: data.user?.id || null };
+    } catch (error) {
+        if (isDuplicateAuthUserError(error)) return { created: false, userId: null };
+        throw error;
+    }
+}
+
 Deno.serve(async (req) => {
     try {
         const body = await req.json().catch(() => ({}));
         const { action, email, username, avatar_url, display_name, account_type, target_email, include_all, accessToken } = body;
 
-        // Authenticate via Supabase, falling back to the Base44 session cookie.
-        let user = await getSupabaseUser(req, accessToken);
-        if (!user) user = await getBase44User(req);
-        const isAdmin = user && ADMIN_EMAILS.includes(String(user.email || '').toLowerCase());
-        if (!isAdmin) {
+        const user = await requireAdminUser(req, accessToken);
+        if (!user) {
             console.error('createManagedAccount forbidden', { email: user?.email || null, action });
             return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
         }
@@ -114,9 +107,10 @@ Deno.serve(async (req) => {
                 return Response.json({ error: 'Username is required' }, { status: 400 });
             }
 
-            const finalEmail = (email && email.includes('@'))
-                ? email
-                : `${username.toLowerCase().replace(/\s+/g, '_')}@gamerproductions.com`;
+            const normalizedUsername = String(username).trim();
+            const finalEmail = (email && String(email).includes('@'))
+                ? String(email).trim().toLowerCase()
+                : `${normalizedUsername.toLowerCase().replace(/\s+/g, '_')}@gamerproductions.com`;
 
             const existingUsers = await filterData('UserProfile', 'user_email', finalEmail);
             if (existingUsers.length > 0) {
@@ -125,8 +119,8 @@ Deno.serve(async (req) => {
 
             const profileData = {
                 user_email: finalEmail,
-                username: username,
-                display_name: display_name || username,
+                username: normalizedUsername,
+                display_name: display_name || normalizedUsername,
                 account_type: account_type || 'regular',
                 avatar_url: avatar_url || '',
                 is_managed_account: true,
@@ -134,19 +128,36 @@ Deno.serve(async (req) => {
                 joined_date: new Date().toISOString(),
             };
 
-            const { data: inserted, error } = await supabase
-                .from('UserProfile')
-                .insert({ created_by: user.email, data: profileData })
-                .select('*')
-                .single();
-            if (error) throw new Error(error.message);
+            const authUser = await ensureManagedAuthUser(supabase, finalEmail, profileData);
+            if (authUser.userId) {
+                profileData.supabase_auth_user_id = authUser.userId;
+            }
 
-            return Response.json({
-                success: true,
-                message: 'Managed account created successfully',
-                profile: flatten(inserted),
-                email: finalEmail,
-            });
+            try {
+                const { data: inserted, error } = await supabase
+                    .from('UserProfile')
+                    .insert({ created_by: user.email, data: profileData })
+                    .select('*')
+                    .single();
+                if (error) throw new Error(error.message);
+
+                return Response.json({
+                    success: true,
+                    message: 'Managed account created successfully',
+                    profile: flatten(inserted),
+                    email: finalEmail,
+                    auth_user_created: authUser.created,
+                });
+            } catch (error) {
+                if (authUser.created && authUser.userId) {
+                    try {
+                        await supabase.auth.admin.deleteUser(authUser.userId);
+                    } catch (cleanupError) {
+                        console.error('createManagedAccount auth cleanup failed', cleanupError.message);
+                    }
+                }
+                throw error;
+            }
         }
 
         // Get impersonation info

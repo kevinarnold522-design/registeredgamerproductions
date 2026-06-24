@@ -62,7 +62,8 @@ async function getUser(env, request) {
 
 function isAdmin(user) {
   if (!user) return false;
-  return user.role === "admin" || String(user.email || "").toLowerCase() === MASTER_EMAIL.toLowerCase();
+  const email = String(user.email || "").toLowerCase();
+  return user.role === "admin" || ADMIN_EMAILS.map((item) => item.toLowerCase()).includes(email) || email === MASTER_EMAIL.toLowerCase();
 }
 
 // Send an email via the Base44 Core integration (email delivery stays on Base44).
@@ -793,13 +794,54 @@ async function updateProfileMedia(body, env, request) {
 
 async function createManagedAccount(body, env, request) {
   const user = await getUser(env, request);
-  if (!user || user.role !== "admin") return { status: 403, body: { error: "Forbidden: Admin access required" } };
+  if (!isAdmin(user)) return { status: 403, body: { error: "Forbidden: Admin access required" } };
 
-  const { action, email, username, avatar_url, display_name, account_type, target_email } = body;
+  const { action, email, username, avatar_url, display_name, account_type, target_email, include_all } = body;
+
+  async function ensureManagedAuthUser(finalEmail, profileData) {
+    const url = env.VITE_SUPABASE_URL || env.SUPABASE_URL;
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !serviceKey) return { created: false, userId: null };
+
+    const { createClient } = await import("npm:@supabase/supabase-js@2");
+    const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const password = `Ghost-${crypto.randomUUID()}!aA1`;
+
+    try {
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: finalEmail,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          username: profileData.username,
+          display_name: profileData.display_name,
+          account_type: profileData.account_type,
+          is_managed_account: true,
+          managed_by_admin: profileData.managed_by_admin,
+        },
+      });
+      if (error) {
+        const message = String(error.message || "").toLowerCase();
+        if (message.includes("already") && (message.includes("registered") || message.includes("exists"))) {
+          return { created: false, userId: null };
+        }
+        throw error;
+      }
+      return { created: true, userId: data.user?.id || null };
+    } catch (error) {
+      const message = String(error?.message || "").toLowerCase();
+      if (message.includes("already") && (message.includes("registered") || message.includes("exists"))) {
+        return { created: false, userId: null };
+      }
+      throw error;
+    }
+  }
 
   if (action === "list") {
-    const managed = await listRecords(env, "UserProfile", { is_managed_account: true }, 1000);
-    const accountsWithStats = await Promise.all(managed.map(async (account) => {
+    const rows = include_all
+      ? await listRecords(env, "UserProfile", {}, 1000)
+      : await listRecords(env, "UserProfile", { is_managed_account: true }, 1000);
+    const accountsWithStats = await Promise.all(rows.map(async (account) => {
       const [listings, posts, follows] = await Promise.all([
         listRecords(env, "Listing", { seller_email: account.user_email }, 1000),
         listRecords(env, "CommunityPost", { author_email: account.user_email }, 1000),
@@ -811,26 +853,62 @@ async function createManagedAccount(body, env, request) {
   }
 
   if (action === "create") {
-    if (!email || !username) return { status: 400, body: { error: "Email and username are required" } };
-    const existing = await listRecords(env, "UserProfile", { user_email: email }, 1);
+    if (!username) return { status: 400, body: { error: "Username is required" } };
+    const normalizedUsername = String(username).trim();
+    const finalEmail = email && String(email).includes("@")
+      ? String(email).trim().toLowerCase()
+      : `${normalizedUsername.toLowerCase().replace(/\s+/g, "_")}@gamerproductions.com`;
+    const existing = await listRecords(env, "UserProfile", { user_email: finalEmail }, 1);
     if (existing.length > 0) return { status: 400, body: { error: "Email already registered" } };
 
-    const profile = await createRecord(env, "UserProfile", {
-      user_email: email,
-      username,
-      display_name: display_name || username,
+    const profileData = {
+      user_email: finalEmail,
+      username: normalizedUsername,
+      display_name: display_name || normalizedUsername,
       account_type: account_type || "regular",
       avatar_url: avatar_url || "",
       is_managed_account: true,
       managed_by_admin: user.email,
-    });
-    return { status: 200, body: { success: true, message: "Managed account created successfully", profile } };
+      joined_date: new Date().toISOString(),
+    };
+
+    const authUser = await ensureManagedAuthUser(finalEmail, profileData);
+    if (authUser.userId) profileData.supabase_auth_user_id = authUser.userId;
+
+    try {
+      const profile = await createRecord(env, "UserProfile", profileData);
+      return {
+        status: 200,
+        body: {
+          success: true,
+          message: "Managed account created successfully",
+          profile,
+          email: finalEmail,
+          auth_user_created: authUser.created,
+        },
+      };
+    } catch (error) {
+      if (authUser.created && authUser.userId) {
+        try {
+          const url = env.VITE_SUPABASE_URL || env.SUPABASE_URL;
+          const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+          if (url && serviceKey) {
+            const { createClient } = await import("npm:@supabase/supabase-js@2");
+            const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+            await supabase.auth.admin.deleteUser(authUser.userId);
+          }
+        } catch (cleanupError) {
+          console.error("createManagedAccount auth cleanup failed", cleanupError.message);
+        }
+      }
+      throw error;
+    }
   }
 
   if (action === "impersonate") {
     if (!target_email) return { status: 400, body: { error: "Target email required" } };
-    const target = await listRecords(env, "UserProfile", { user_email: target_email, is_managed_account: true }, 1);
-    if (target.length === 0) return { status: 404, body: { error: "Account not found or not a managed account" } };
+    const target = await listRecords(env, "UserProfile", { user_email: target_email }, 1);
+    if (target.length === 0) return { status: 404, body: { error: "Account not found" } };
     return {
       status: 200,
       body: { success: true, target_email, username: target[0].username, display_name: target[0].display_name, avatar_url: target[0].avatar_url },
@@ -842,7 +920,7 @@ async function createManagedAccount(body, env, request) {
 
 async function adminGhostAccounts(body, env, request) {
   const user = await getUser(env, request);
-  if (!user || user.role !== "admin") return { status: 403, body: { error: "Admin access required" } };
+  if (!isAdmin(user)) return { status: 403, body: { error: "Admin access required" } };
 
   const { action, ghostData, targetEmail } = body;
 
@@ -883,13 +961,13 @@ async function adminGhostAccounts(body, env, request) {
 
 async function loginAsGhost(body, env, request) {
   const user = await getUser(env, request);
-  if (!user || user.role !== "admin") return { status: 403, body: { error: "Forbidden: Admin access required" } };
+  if (!isAdmin(user)) return { status: 403, body: { error: "Forbidden: Admin access required" } };
 
   const { target_email } = body;
   if (!target_email) return { status: 400, body: { error: "Target email required" } };
 
-  const target = await listRecords(env, "UserProfile", { user_email: target_email, is_managed_account: true }, 1);
-  if (target.length === 0) return { status: 404, body: { error: "Account not found or not a managed account" } };
+  const target = await listRecords(env, "UserProfile", { user_email: target_email }, 1);
+  if (target.length === 0) return { status: 404, body: { error: "Account not found" } };
 
   return {
     status: 200,

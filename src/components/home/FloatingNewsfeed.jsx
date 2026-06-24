@@ -62,6 +62,10 @@ export default function FloatingNewsfeed() {
   // Duplicate the list so the vertical marquee loops seamlessly.
   const loopItems = [...listings, ...listings];
 
+  if (typeof window !== "undefined" && window.location.pathname === "/" && window.innerWidth < 1024) {
+    return null;
+  }
+
   return (
     <div className="flex fixed top-20 lg:top-24 right-2 lg:right-3 z-30 flex-col items-end pointer-events-none">
       {/* Toggle handle */}
@@ -115,6 +119,42 @@ export default function FloatingNewsfeed() {
           100% { transform: translateY(-50%); }
         }
       `}</style>
+    </div>
+  );
+}
+
+export function InlineFloatingNewsfeed() {
+  const [listings, setListings] = useState([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await base44.entities.Listing.list("-created_date", 24);
+        const all = Array.isArray(res) ? res : (res?.data || res?.records || []);
+        const active = all.filter((l) => (l.status ? l.status === "active" : true) && l.is_approved !== false);
+        setListings(active.slice(0, 12));
+      } catch {}
+    };
+    load();
+  }, []);
+
+  if (listings.length === 0) return null;
+
+  return (
+    <div className="lg:hidden w-full flex justify-end px-4 py-6">
+      <div className="w-full max-w-sm rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
+        style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}>
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
+          <Newspaper className="w-4 h-4 text-purple-300" />
+          <div className="min-w-0">
+            <h3 className="text-white font-black text-xs leading-none">Featured Newsfeed</h3>
+            <p className="text-gray-500 text-[9px] mt-0.5">Latest listings · homepage</p>
+          </div>
+        </div>
+        <div className="max-h-[28rem] overflow-y-auto p-2 gamer-sidebar-scroll">
+          {listings.map((item) => <FeedRow key={item.id} item={item} />)}
+        </div>
+      </div>
     </div>
   );
 }

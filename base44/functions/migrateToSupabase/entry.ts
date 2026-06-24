@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireAdminUser } from '../_shared/adminAuth.ts';
 
 // =====================================================================
 // One-time migration: copy every record from the Base44 entities DB into
@@ -35,6 +36,12 @@ function splitRecord(record) {
 
 Deno.serve(async (req) => {
   try {
+    const body = await req.json().catch(() => ({}));
+    const adminUser = await requireAdminUser(req, body.accessToken);
+    if (!adminUser) {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const base44 = createClientFromRequest(req);
 
     const rawUrl = Deno.env.get('VITE_SUPABASE_URL');

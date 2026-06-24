@@ -84,7 +84,6 @@ function animationProps(anim) {
 
 export default function StandardListingCard({ listing: initialListing, user, profile, subcategory, onReview, monthlyRank }) {
   const cardRef = useRef(null);
-  const countedRef = useRef(false);
   const [listing, setListing] = useState(initialListing);
   const [viewCount, setViewCount] = useState(initialListing.views || 0);
   const [touchActive, setTouchActive] = useState(false);
@@ -130,23 +129,6 @@ export default function StandardListingCard({ listing: initialListing, user, pro
   const heightClass = STANDARD_MEDIA_HEIGHT;
   const ytId = getListingYouTubeId(listing);
   const stay = formatStay(listing);
-
-  // Count a view once when scrolled into view
-  useEffect(() => {
-    if (!cardRef.current || !listing?.id) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || countedRef.current) return;
-      countedRef.current = true;
-      const key = `listing_seen_${listing.id}`;
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
-      const nextViews = (listing.views || 0) + 1;
-      setViewCount(nextViews);
-      base44.entities.Listing.update(listing.id, { views: nextViews }).catch(() => {});
-    }, { threshold: 0.55 });
-    observer.observe(cardRef.current);
-    return () => observer.disconnect();
-  }, [listing?.id]);
 
   const hasDownload = listing.download_url || listing.external_link;
   const anim = animationProps(listing.card_animation);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
-import StandardListingCard from "@/components/listings/StandardListingCard";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { computeMonthlyRanks } from "@/lib/monthlyRank";
 
@@ -26,8 +26,8 @@ function ScrollRow({ children, speed = 36, reverse = false }) {
 
 function ScrollCard({ item, user, profile, rank }) {
   return (
-    <div className="w-[420px] max-w-[88vw] flex-shrink-0">
-      <StandardListingCard listing={item} user={user} profile={profile} monthlyRank={rank} />
+    <div className="w-[320px] max-w-[84vw] flex-shrink-0">
+      <HomeListingCard listing={{ ...item, monthlyRank: rank }} className="h-full" />
     </div>
   );
 }

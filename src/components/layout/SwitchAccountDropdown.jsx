@@ -23,6 +23,31 @@ export default function SwitchAccountDropdown({ currentUser, collapsed = false }
       .finally(() => { setLoading(false); setLoaded(true); });
   }, [open, loaded]);
 
+  useEffect(() => {
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = base44.entities.UserProfile.subscribe((event) => {
+        setAccounts((prev) => {
+          if (event.type === "delete") {
+            return prev.filter((account) => account.id !== event.id && account.id !== event.data?.id);
+          }
+          const nextAccount = event.data || {};
+          const nextId = nextAccount.id;
+          if (!nextId) return prev;
+          const exists = prev.some((account) => account.id === nextId);
+          if (exists) {
+            return prev.map((account) => (account.id === nextId ? { ...account, ...nextAccount } : account));
+          }
+          return [nextAccount, ...prev];
+        });
+      });
+    } catch (_) {}
+
+    return () => {
+      try { unsubscribe(); } catch (_) {}
+    };
+  }, []);
+
   const switchTo = (account) => {
     const impersonationData = {
       isImpersonating: true,
@@ -41,6 +66,7 @@ export default function SwitchAccountDropdown({ currentUser, collapsed = false }
 
   const filtered = accounts.filter(a =>
     a.username?.toLowerCase().includes(query.toLowerCase()) ||
+    a.display_name?.toLowerCase().includes(query.toLowerCase()) ||
     a.user_email?.toLowerCase().includes(query.toLowerCase())
   );
 

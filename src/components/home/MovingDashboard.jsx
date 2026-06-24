@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Package, TrendingUp, Zap, Monitor, Smartphone, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import MascotShowcase from "@/components/shared/MascotShowcase";
-import StandardListingCard from "@/components/listings/StandardListingCard";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { computeMonthlyRanks } from "@/lib/monthlyRank";
 
@@ -41,8 +41,8 @@ function ScrollRow({ children, speed = 30, reverse = false }) {
 // wrapped at a fixed width so it fits inside the horizontal scroll rows.
 function ScrollCard({ item, user, profile, rank }) {
   return (
-    <div className="w-[300px] max-w-[80vw] flex-shrink-0">
-      <StandardListingCard listing={item} user={user} profile={profile} monthlyRank={rank} />
+    <div className="w-[320px] max-w-[84vw] flex-shrink-0">
+      <HomeListingCard listing={{ ...item, monthlyRank: rank }} className="h-full" />
     </div>
   );
 }

@@ -1,29 +1,5 @@
-import { createClient } from 'npm:@supabase/supabase-js@2';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
-const ADMIN_EMAILS = [
-    'kevinjersey2019@gmail.com',
-    'arnoldk137@gmail.com',
-    'kevinarnold522@gmail.com',
-];
-
-async function getSupabaseUser(req, bodyToken) {
-    const headerToken = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-    const token = headerToken || bodyToken || '';
-    if (!token) return null;
-    const url = Deno.env.get('VITE_SUPABASE_URL');
-    const key = Deno.env.get('VITE_SUPABASE_ANON_KEY');
-    if (!url || !key) return null;
-    try {
-        const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (error || !user) return null;
-        return { id: user.id, email: user.email, role: (user.user_metadata || {}).role };
-    } catch (err) {
-        console.error('loginAsGhost supabase verify failed', err.message);
-        return null;
-    }
-}
+import { requireAdminUser } from '../_shared/adminAuth.ts';
 
 Deno.serve(async (req) => {
     try {
@@ -31,9 +7,8 @@ Deno.serve(async (req) => {
         const body = await req.json().catch(() => ({}));
         const { target_email, accessToken } = body;
 
-        const user = await getSupabaseUser(req, accessToken);
-        const isAdmin = user && ADMIN_EMAILS.includes(String(user.email || '').toLowerCase());
-        if (!isAdmin) {
+        const user = await requireAdminUser(req, accessToken);
+        if (!user) {
             return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
         }
 

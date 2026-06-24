@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
+import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import CommentThread from "@/components/shared/CommentThread";
 import DownloadAdUnlock from "@/components/ads/DownloadAdUnlock";
 import ScheduledAdOverlay from "@/components/ads/ScheduledAdOverlay";
@@ -171,12 +172,6 @@ export default function ListingPage() {
           if (l.seller_email) {
             base44.entities.UserProfile.filter({ user_email: l.seller_email }).then(p => { if (p[0]) setSeller(p[0]); });
           }
-          if (user) {
-            base44.entities.Favorite.filter({ user_email: user.email, listing_id: l.id }).then(favs => setLiked(favs.length > 0));
-            // Check if this user already paid for this listing (unlocks the download)
-            base44.entities.Order.filter({ buyer_email: user.email, listing_id: l.id, payment_status: "paid" })
-              .then(orders => setPurchased(orders.length > 0)).catch(() => {});
-          }
           base44.entities.PostComment.filter({ post_id: l.id }).then(c => {
             setComments(c.filter(x => x.status !== "removed").sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
           });
@@ -186,10 +181,6 @@ export default function ListingPage() {
               const avg = ratings.reduce((s, r) => s + r.rating, 0) / ratings.length;
               setAvgRating(Math.round(avg * 10) / 10);
               setRatingCount(ratings.length);
-              if (user) {
-                const myRating = ratings.find(r => r.user_email === user.email);
-                if (myRating) setUserRating(myRating.rating);
-              }
             }
           });
         }
@@ -197,7 +188,38 @@ export default function ListingPage() {
       setLoading(false);
     };
     load();
-  }, [id, user]);
+  }, [id]);
+
+  useEffect(() => {
+    if (!listing?.id || !user?.email) return;
+    base44.entities.Favorite.filter({ user_email: user.email, listing_id: listing.id })
+      .then((favs) => setLiked(favs.length > 0))
+      .catch(() => {});
+    base44.entities.Order.filter({ buyer_email: user.email, listing_id: listing.id, payment_status: "paid" })
+      .then((orders) => setPurchased(orders.length > 0))
+      .catch(() => {});
+    base44.entities.PostRating.filter({ post_id: listing.id }).then((ratings) => {
+      const myRating = ratings.find((rating) => rating.user_email === user.email);
+      setUserRating(myRating?.rating || 0);
+    }).catch(() => {});
+  }, [listing?.id, user?.email]);
+
+  useEffect(() => {
+    if (!listing?.id) return;
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = base44.entities.Listing.subscribe((event) => {
+        if (event?.data?.id !== listing.id) return;
+        if (event.type === "update") {
+          setListing((prev) => prev ? { ...prev, ...event.data } : prev);
+          if (typeof event.data.likes === "number") setLikeCount(event.data.likes);
+        }
+      });
+    } catch (_) {}
+    return () => {
+      try { unsubscribe(); } catch (_) {}
+    };
+  }, [listing?.id]);
 
   const handleLike = async () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
@@ -370,7 +392,7 @@ export default function ListingPage() {
   const handleDeleteListing = async () => {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
     if (!canEdit) return;
-    await base44.functions.invoke("deleteListingPermanent", { listing_id: listing.id });
+    await invokeAdminFn("deleteListingPermanent", { listing_id: listing.id });
     window.location.href = adminUser ? "/all-listings" : "/my-listings";
   };
 

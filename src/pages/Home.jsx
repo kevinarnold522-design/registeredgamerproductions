@@ -5,6 +5,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import VideoHeroBanner from "@/components/home/VideoHeroBanner";
 import HeroSection from "@/components/home/HeroSection";
 import MarqueeTicker from "@/components/home/MarqueeTicker";
+import { InlineFloatingNewsfeed } from "@/components/home/FloatingNewsfeed";
 import CategoryCards from "@/components/home/CategoryCards";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
@@ -218,6 +219,7 @@ export default function Home() {
             <HeroSection />
             <CategoryCards />
             <MarqueeTicker />
+            <InlineFloatingNewsfeed />
 
             <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
               {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}

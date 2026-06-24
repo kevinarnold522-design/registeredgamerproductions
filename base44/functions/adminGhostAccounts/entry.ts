@@ -1,15 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { requireAdminUser } from '../_shared/adminAuth.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const { accessToken, action, ghostData, targetEmail } = await req.json().catch(() => ({}));
+    const user = await requireAdminUser(req, accessToken);
     
-    if (!user || user.role !== 'admin') {
+    if (!user) {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
-
-    const { action, ghostData, targetEmail } = await req.json();
 
     if (action === 'list_ghosts') {
       const ghosts = await base44.entities.UserProfile.filter({ 
