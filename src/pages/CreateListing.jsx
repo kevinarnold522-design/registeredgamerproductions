@@ -38,6 +38,7 @@ const PHYSICAL_SUBCATEGORIES = [
 ];
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import AIListingAssistant from "@/components/listings/AIListingAssistant";
+import SearchableSelect from "@/components/listings/SearchableSelect";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
@@ -160,6 +161,31 @@ export default function CreateListing() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Build the category/subcategory option list from all existing listings, so
+  // newly-added categories & subcategories appear in the pickers in real time.
+  const refreshDynamicCategories = async () => {
+    try {
+      const existing = await base44.entities.Listing.list("-created_date", 200);
+      const byCategory = Object.fromEntries(CATEGORIES.map(c => [c.id, { ...c, subcategories: [...(c.subcategories || [])] }]));
+      existing.forEach(item => {
+        if (item.category && !byCategory[item.category]) byCategory[item.category] = { id: item.category, label: item.category.replace(/_/g, " "), icon: item.category, subcategories: [] };
+        const target = byCategory[item.category];
+        if (!target) return;
+        [...(item.subcategories || []), item.modding_subcategory, item.digital_subcategory, item.physical_subcategory].filter(Boolean).forEach(sub => {
+          if (!target.subcategories.includes(sub)) target.subcategories.push(sub);
+        });
+      });
+      setDynamicCategories(Object.values(byCategory));
+    } catch { /* keep current categories */ }
+  };
+
+  // Realtime: when any listing is created/updated, refresh the category &
+  // subcategory options so the pickers stay current without a reload.
+  useEffect(() => {
+    const unsubscribe = base44.entities.Listing.subscribe(() => { refreshDynamicCategories(); });
+    return unsubscribe;
+  }, []);
+
   const [needsLogin, setNeedsLogin] = useState(false);
 
   useEffect(() => {
@@ -182,18 +208,7 @@ export default function CreateListing() {
       const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
       if (profiles.length > 0) setProfile(profiles[0]);
       setGamingCommunities(TOP_FRANCHISES.map(f => ({ id: f.id, name: f.name })));
-      base44.entities.Listing.list("-created_date", 200).then(existing => {
-        const byCategory = Object.fromEntries(CATEGORIES.map(c => [c.id, { ...c, subcategories: [...(c.subcategories || [])] }]));
-        existing.forEach(item => {
-          if (item.category && !byCategory[item.category]) byCategory[item.category] = { id: item.category, label: item.category.replace(/_/g, " "), icon: item.category, subcategories: [] };
-          const target = byCategory[item.category];
-          if (!target) return;
-          [...(item.subcategories || []), item.modding_subcategory, item.digital_subcategory, item.physical_subcategory].filter(Boolean).forEach(sub => {
-            if (!target.subcategories.includes(sub)) target.subcategories.push(sub);
-          });
-        });
-        setDynamicCategories(Object.values(byCategory));
-      }).catch(() => {});
+      refreshDynamicCategories();
       if (!editId && defaultGame) setGameSearch(defaultGame);
       if (editId) {
         const l = await base44.entities.Listing.get(editId);
@@ -852,10 +867,12 @@ export default function CreateListing() {
             <h3 className="text-white font-bold mb-2">Category & Placement</h3>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Main Category *</label>
-              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value, community_franchise_id: e.target.value === "games" ? "" : form.community_franchise_id, bulk_cross_post_ids: e.target.value === "games" ? [] : form.bulk_cross_post_ids })}
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                {dynamicCategories.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-              </select>
+              <SearchableSelect
+                value={form.category}
+                onChange={(val) => setForm({ ...form, category: val, community_franchise_id: val === "games" ? "" : form.community_franchise_id, bulk_cross_post_ids: val === "games" ? [] : form.bulk_cross_post_ids })}
+                options={dynamicCategories.map(c => ({ value: c.id, label: c.label }))}
+                placeholder="Select a category"
+              />
             </div>
 
             {/* GAMES category — IGN rating + store platforms */}
@@ -952,12 +969,13 @@ export default function CreateListing() {
                 <Gamepad2 className="w-3 h-3 text-cyan-300" /> Gaming Community <span className="text-red-400 ml-1">*</span>
               </label>
               <p className="text-gray-500 text-xs mb-2">Your listing will appear in the selected gaming community feed. Required.</p>
-              <select value={form.community_franchise_id} onChange={e => setForm({ ...form, community_franchise_id: e.target.value })}
-                required
-                className="w-full bg-gray-800 border border-cyan-500/70 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 text-sm">
-                <option value="">— Select a Gaming Community —</option>
-                {TOP_FRANCHISES.map(f => <option key={f.id} value={f.id}>{f.name} ({f.genre})</option>)}
-              </select>
+              <SearchableSelect
+                value={form.community_franchise_id}
+                onChange={(val) => setForm({ ...form, community_franchise_id: val })}
+                options={TOP_FRANCHISES.map(f => ({ value: f.id, label: `${f.name} (${f.genre})` }))}
+                placeholder="— Select a Gaming Community —"
+                borderClass="border-cyan-500/70 focus-within:border-cyan-400"
+              />
               {form.community_franchise_id && (
                 <p className="text-cyan-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Will be shared with {TOP_FRANCHISES.find(f => f.id === form.community_franchise_id)?.name}</p>
               )}

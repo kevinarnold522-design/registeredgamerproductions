@@ -21,6 +21,7 @@ import AnimatedController from "@/components/shared/AnimatedController";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import CommunityTagAd from "@/components/ads/CommunityTagAd";
 
 export default function CommunityLandingPage() {
   const { user } = useAuth();
@@ -266,6 +267,7 @@ export default function CommunityLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <CommunityTagAd adFree={admin || profile?.no_ads} />
       {/* Official socials — pinned to the very top */}
       <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
         <GamerSocialsBar />

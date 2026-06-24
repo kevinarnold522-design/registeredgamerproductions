@@ -11,6 +11,7 @@ import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
+import CommunityTagAd from "@/components/ads/CommunityTagAd";
 
 // Storage key for cards in a subcategory landing page
 const getStorageKey = (parentCat, subId) => `subcat_landing_${parentCat}_${subId}`;
@@ -342,6 +343,7 @@ export default function SubcategoryLandingPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <CommunityTagAd adFree={admin || profile?.no_ads} />
       {/* Official socials — pinned to the very top of every subcategory */}
       <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
         <GamerSocialsBar />
