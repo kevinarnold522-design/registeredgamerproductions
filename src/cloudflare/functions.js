@@ -57,7 +57,13 @@ export async function handleFunction(name, body, env, request) {
 // Resolve the current user from the request — Supabase access token only.
 async function getUser(env, request) {
   if (!request) return null;
-  return getSupabaseUser(env, request);
+  let bodyToken = "";
+  try {
+    const clone = request.clone();
+    const body = await clone.json();
+    bodyToken = body?.accessToken || "";
+  } catch (_) {}
+  return getSupabaseUser(env, request, bodyToken);
 }
 
 function isAdmin(user) {

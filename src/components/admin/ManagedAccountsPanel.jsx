@@ -105,7 +105,8 @@ export default function ManagedAccountsPanel() {
         toast.error(response.data.error || "Failed to create account");
       }
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to create account");
+      const message = error?.response?.data?.error || error?.message || "Failed to create account";
+      toast.error(message);
     } finally {
       setCreating(false);
     }

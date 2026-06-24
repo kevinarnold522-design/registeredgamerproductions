@@ -46,8 +46,9 @@ async function upsertSupabaseUser(env, supaUser) {
 }
 
 // Verify the bearer token via Supabase; returns the D1 user row or null.
-export async function getSupabaseUser(env, request) {
-  const token = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+export async function getSupabaseUser(env, request, bodyToken = "") {
+  const headerToken = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+  const token = headerToken || String(bodyToken || "");
   if (!token) return null;
   const supabase = getSupabase(env);
   if (!supabase) return null;
