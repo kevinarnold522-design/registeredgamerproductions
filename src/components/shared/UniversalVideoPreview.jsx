@@ -9,6 +9,8 @@ import { extractYouTubeId } from "@/lib/youtube";
 export default function UniversalVideoPreview({ url, poster, className = "" }) {
   const [errored, setErrored] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [embedHost, setEmbedHost] = useState("www.youtube.com");
+  const [embedFailed, setEmbedFailed] = useState(false);
   if (!url) return null;
 
   const ytId = extractYouTubeId(url);
@@ -27,23 +29,53 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
   }
 
   if (ytId) {
+    const youtubeWatchUrl = `https://www.youtube.com/watch?v=${ytId}`;
     if (playing) {
       return (
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
-          title="Video player"
-          className={`${fill} ${className}`}
-          frameBorder="0"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+        <>
+          {!embedFailed ? (
+            <iframe
+              src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
+              title="Video player"
+              className={`${fill} ${className}`}
+              frameBorder="0"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              onError={() => {
+                if (embedHost === "www.youtube.com") {
+                  setEmbedHost("www.youtube-nocookie.com");
+                  return;
+                }
+                setEmbedFailed(true);
+              }}
+            />
+          ) : (
+            <div className={`${fill} flex flex-col items-center justify-center gap-3 bg-gray-900/95 text-gray-300 p-4 text-center ${className}`}>
+              <p className="text-sm font-semibold">Embed blocked in this browser/network</p>
+              <a
+                href={youtubeWatchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold"
+              >
+                Open on YouTube
+              </a>
+            </div>
+          )}
+        </>
       );
     }
     return (
       <button
         type="button"
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPlaying(true); }}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setEmbedHost("www.youtube.com");
+          setEmbedFailed(false);
+          setPlaying(true);
+        }}
         className={`${fill} block group ${className}`}
       >
         <img
