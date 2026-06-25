@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Upload, X, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink, Package, Monitor, Gamepad2, CheckCircle, Store, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag, LayoutGrid } from "lucide-react";
+import { Upload, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink, Package, Monitor, Gamepad2, CheckCircle, Store, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag, LayoutGrid } from "lucide-react";
 
 const NEWSFEED_TARGETS = [
   { id: "games", label: "Games" },
@@ -38,6 +38,7 @@ const PHYSICAL_SUBCATEGORIES = [
 ];
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import AIListingAssistant from "@/components/listings/AIListingAssistant";
+import ImageSortableList from "@/components/ImageSortableList";
 import SearchableSelect from "@/components/listings/SearchableSelect";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
@@ -589,16 +590,11 @@ export default function CreateListing() {
               <Upload className="w-4 h-4 text-purple-400" /> Photos & Images
             </h3>
             <p className="text-gray-500 text-xs mb-3">Maximum upload size: {MAX_UPLOAD_LABEL} per file.</p>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-3">
-              {images.map((img, i) => (
-                <div key={i} className="relative aspect-square">
-                  <img src={img} alt="" className="w-full h-full object-cover rounded-xl" />
-                  <button type="button" onClick={() => removeImage(i)}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                    <X className="w-3 h-3 text-white" />
-                  </button>
-                </div>
-              ))}
+            <p className="text-gray-400 text-xs mb-3">Hold and drag an image to rearrange it. The first image becomes the cover.</p>
+            <div className="mb-3">
+              <ImageSortableList images={images} onReorder={setImages} onRemove={removeImage} />
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
               <button type="button" onClick={() => fileInputRef.current?.click()}
                 className="aspect-square flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-700 hover:border-purple-500 transition-colors text-gray-500 hover:text-purple-400">
                 <Plus className="w-6 h-6" />
