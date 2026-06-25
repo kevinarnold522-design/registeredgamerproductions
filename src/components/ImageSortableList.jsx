@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
@@ -18,6 +19,9 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, X } from 'lucide-react';
 
+// Stable ID: use the URL itself so IDs never change when order changes
+const toItems = (imgs) => imgs.filter(Boolean).map((img) => ({ id: img, url: img }));
+
 function SortableImage({ id, url, isFirst, index, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
@@ -25,7 +29,7 @@ function SortableImage({ id, url, isFirst, index, onRemove }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0 : 1, // hide source; DragOverlay shows the ghost
     touchAction: 'none',
   };
 
@@ -33,82 +37,106 @@ function SortableImage({ id, url, isFirst, index, onRemove }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative aspect-square overflow-hidden rounded-xl border ${
+      // Listeners on the whole tile so you can drag from anywhere on the image
+      {...attributes}
+      {...listeners}
+      className={`relative aspect-square overflow-hidden rounded-xl border cursor-grab active:cursor-grabbing ${
         isFirst ? 'border-purple-400 ring-2 ring-purple-400/40' : 'border-gray-700'
-      } bg-gray-900 ${isDragging ? 'z-10 scale-105 shadow-2xl' : ''}`}
+      } bg-gray-900`}
     >
       <img
         src={url}
         alt={`Listing image ${index + 1}`}
-        className="h-full w-full object-cover"
+        className="h-full w-full object-cover pointer-events-none select-none"
+        draggable={false}
       />
       {isFirst && (
-        <div className="absolute left-0 top-0 rounded-br-lg bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">
+        <div className="absolute left-0 top-0 rounded-br-lg bg-purple-600 px-2 py-1 text-[10px] font-bold text-white pointer-events-none">
           COVER
         </div>
       )}
+      {/* Remove button — stop propagation so click doesn't fire drag listeners */}
       <button
         type="button"
-        onClick={() => onRemove?.(index)}
-        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); onRemove?.(index); }}
+        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600 z-10"
         aria-label={`Remove image ${index + 1}`}
       >
         <X className="h-3.5 w-3.5" />
       </button>
-      <button
-        type="button"
-        className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-md bg-black/60 px-2 py-1 text-[10px] font-semibold text-white touch-none"
-        aria-label={`Drag image ${index + 1} to reorder`}
-        {...attributes}
-        {...listeners}
-      >
+      {/* Visual drag-hint badge */}
+      <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-md bg-black/60 px-2 py-1 text-[10px] font-semibold text-white pointer-events-none">
         <GripVertical className="h-3 w-3" />
-        Drag
-      </button>
-      <div className="absolute bottom-1.5 right-1.5 rounded-md bg-black/60 px-2 py-1 text-[10px] font-semibold text-white">
         #{index + 1}
       </div>
     </div>
   );
 }
 
-export default function ImageSortableList({ images = [], onReorder, onRemove }) {
-  const normalizedImages = useMemo(() => images.filter(Boolean), [images]);
-  const [items, setItems] = useState(
-    normalizedImages.map((img, idx) => ({ id: `${idx}-${img}`, url: img }))
+// Ghost tile shown under cursor while dragging
+function DragGhost({ url }) {
+  return (
+    <div className="aspect-square w-28 overflow-hidden rounded-xl border-2 border-purple-400 shadow-2xl opacity-90 rotate-2 scale-105">
+      <img src={url} alt="dragging" className="h-full w-full object-cover" draggable={false} />
+    </div>
   );
+}
 
+export default function ImageSortableList({ images = [], onReorder, onRemove }) {
+  const [items, setItems] = useState(() => toItems(images));
+  const [activeItem, setActiveItem] = useState(null);
+
+  // Sync when images are added or removed from outside (not just reordered)
+  const prevUrlsRef = useRef(new Set(images.filter(Boolean)));
   useEffect(() => {
-    setItems(normalizedImages.map((img, idx) => ({ id: `${idx}-${img}`, url: img })));
-  }, [normalizedImages]);
+    const newUrls = images.filter(Boolean);
+    const newSet = new Set(newUrls);
+    const prev = prevUrlsRef.current;
+    const contentChanged =
+      newUrls.length !== prev.size ||
+      newUrls.some((u) => !prev.has(u));
+
+    if (contentChanged) {
+      prevUrlsRef.current = newSet;
+      // Preserve existing order for URLs that are still present; append new ones
+      setItems((old) => {
+        const kept = old.filter((item) => newSet.has(item.url));
+        const existing = new Set(kept.map((i) => i.url));
+        const added = newUrls.filter((u) => !existing.has(u)).map((u) => ({ id: u, url: u }));
+        return [...kept, ...added];
+      });
+    }
+  }, [images]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 150, tolerance: 8 },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
+  const handleDragStart = ({ active }) => {
+    setActiveItem(items.find((i) => i.id === active.id) ?? null);
+  };
 
-    if (!over || active.id === over.id) {
-      return;
-    }
+  const handleDragEnd = ({ active, over }) => {
+    setActiveItem(null);
+    if (!over || active.id === over.id) return;
 
-    const oldIndex = items.findIndex((item) => item.id === active.id);
-    const newIndex = items.findIndex((item) => item.id === over.id);
-    const newItems = arrayMove(items, oldIndex, newIndex);
-
-    setItems(newItems);
-    onReorder?.(newItems.map((item) => item.url));
+    setItems((prev) => {
+      const oldIndex = prev.findIndex((i) => i.id === active.id);
+      const newIndex = prev.findIndex((i) => i.id === over.id);
+      const next = arrayMove(prev, oldIndex, newIndex);
+      onReorder?.(next.map((i) => i.url));
+      return next;
+    });
   };
 
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={items} strategy={rectSortingStrategy}>
@@ -130,6 +158,11 @@ export default function ImageSortableList({ images = [], onReorder, onRemove }) 
           )}
         </div>
       </SortableContext>
+
+      {/* Portal'd overlay — not clipped by any parent overflow:hidden */}
+      <DragOverlay dropAnimation={null}>
+        {activeItem ? <DragGhost url={activeItem.url} /> : null}
+      </DragOverlay>
     </DndContext>
   );
 }
