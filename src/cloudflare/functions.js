@@ -20,6 +20,7 @@ export async function handleFunction(name, body, env, request) {
     case "getPaypalConfig":        return getPaypalConfig(body, env);
     case "createPaypalOrder":      return createPaypalOrder(body, env, request);
     case "createSupabaseUpload":   return createSupabaseUpload(body, env, request);
+    case "cleanupListingDraftMedia": return cleanupListingDraftMedia(body, env, request);
     case "capturePaypalPayment":   return capturePaypalPayment(body, env, request);
     case "verifyPaymentStatus":    return verifyPaymentStatus(body, env);
     case "completePayment":        return completePayment(body, env);
@@ -699,25 +700,18 @@ async function deleteListingPermanent(body, env, request) {
     String(listing.created_by_id || "") === String(user.email || "");
   if (!isAdmin(user) && !owner) return { status: 403, body: { error: "Forbidden" } };
 
-  // Delete media from the Worker's R2 bucket binding
+  // Delete stored listing media from Supabase Storage.
   let deletedFiles = 0;
-  const urls = new Set();
-  const collect = (v) => {
-    if (!v) return;
-    if (typeof v === "string" && (v.startsWith("http://") || v.startsWith("https://"))) urls.add(v);
-    else if (Array.isArray(v)) v.forEach(collect);
-    else if (typeof v === "object") Object.values(v).forEach(collect);
-  };
-  collect(listing.images); collect(listing.download_url); collect(listing.video_url); collect(listing.preview_video_url);
-
-  if (env.MEDIA) {
-    const publicBase = (env.CLOUDFLARE_R2_PUBLIC_URL || "").replace(/\/$/, "");
-    for (const u of urls) {
-      try {
-        const key = publicBase && u.startsWith(publicBase + "/") ? decodeURIComponent(u.slice(publicBase.length + 1)) : new URL(u).pathname.replace(/^\//, "");
-        if (key) { await env.MEDIA.delete(key); deletedFiles++; }
-      } catch (e) { console.error("R2 delete failed", e.message); }
-    }
+  const storagePaths = [...collectSupabaseStoragePaths({
+    images: listing.images,
+    download_url: listing.download_url,
+    video_url: listing.video_url,
+    preview_video_url: listing.preview_video_url,
+  })];
+  try {
+    deletedFiles = await removeSupabaseStoragePaths(env, storagePaths);
+  } catch (e) {
+    console.error("Supabase media delete failed", e.message);
   }
 
   // Cascade delete related records
@@ -1039,6 +1033,123 @@ async function apiRegister(body, env) {
 
 const SUPABASE_MEDIA_BUCKET = "gamerproductionsmedia";
 const SUPABASE_MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+const LISTING_MEDIA_PREFIXES = ["listing-images/", "listing-videos/", "listing-downloads/"];
+
+async function createSupabaseServiceClient(env) {
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || "https://smymannqqogtshvsiqyp.supabase.co";
+  if (!serviceKey) throw new Error("Supabase service role key is not configured.");
+  const { createClient } = await import("npm:@supabase/supabase-js@2");
+  return createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+function supabaseStoragePathFromValue(value) {
+  if (!value || typeof value !== "string") return null;
+  if (!value.startsWith("http://") && !value.startsWith("https://")) {
+    return value.replace(/^\/+/, "") || null;
+  }
+  try {
+    const parsed = new URL(value);
+    const marker = `/storage/v1/object/public/${SUPABASE_MEDIA_BUCKET}/`;
+    const idx = parsed.pathname.indexOf(marker);
+    if (idx >= 0) return decodeURIComponent(parsed.pathname.slice(idx + marker.length));
+    return decodeURIComponent(parsed.pathname.replace(/^\/+/, "")) || null;
+  } catch {
+    return null;
+  }
+}
+
+function collectSupabaseStoragePaths(value, paths = new Set()) {
+  if (!value) return paths;
+  if (typeof value === "string") {
+    const path = supabaseStoragePathFromValue(value);
+    if (path) paths.add(path);
+    return paths;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectSupabaseStoragePaths(item, paths));
+    return paths;
+  }
+  if (typeof value === "object") {
+    Object.values(value).forEach((item) => collectSupabaseStoragePaths(item, paths));
+  }
+  return paths;
+}
+
+function isAllowedListingMediaPath(path) {
+  return !!path && LISTING_MEDIA_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
+
+async function listSupabaseTableRows(env, table, selectColumns = "id,data") {
+  const supabase = await createSupabaseServiceClient(env);
+  const out = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(selectColumns)
+      .range(from, from + pageSize - 1);
+    if (error) throw new Error(error.message);
+    out.push(...(Array.isArray(data) ? data : []));
+    if (!Array.isArray(data) || data.length < pageSize) break;
+    from += pageSize;
+  }
+  return out;
+}
+
+async function listSupabaseFolderPaths(env, folder) {
+  const supabase = await createSupabaseServiceClient(env);
+  const out = [];
+  let offset = 0;
+  const limit = 1000;
+  while (true) {
+    const { data, error } = await supabase.storage.from(SUPABASE_MEDIA_BUCKET).list(folder, {
+      limit,
+      offset,
+      sortBy: { column: "name", order: "asc" },
+    });
+    if (error) throw new Error(error.message);
+    const files = (Array.isArray(data) ? data : []).filter((item) => item?.name && item?.metadata);
+    out.push(...files.map((item) => `${folder}/${item.name}`));
+    if (!Array.isArray(data) || data.length < limit) break;
+    offset += data.length;
+  }
+  return out;
+}
+
+async function removeSupabaseStoragePaths(env, paths = []) {
+  const uniquePaths = [...new Set(paths)].filter(Boolean);
+  if (!uniquePaths.length) return 0;
+  const supabase = await createSupabaseServiceClient(env);
+  let deletedCount = 0;
+  for (let i = 0; i < uniquePaths.length; i += 100) {
+    const chunk = uniquePaths.slice(i, i + 100);
+    const { error } = await supabase.storage.from(SUPABASE_MEDIA_BUCKET).remove(chunk);
+    if (error) {
+      console.error("Supabase storage remove failed", { chunk, error: error.message });
+      continue;
+    }
+    deletedCount += chunk.length;
+  }
+  return deletedCount;
+}
+
+async function getReferencedListingMediaPaths(env) {
+  const rows = await listSupabaseTableRows(env, "Listing", "id,data");
+  const paths = new Set();
+  for (const row of rows) {
+    collectSupabaseStoragePaths({
+      images: row?.data?.images,
+      video_url: row?.data?.video_url,
+      download_url: row?.data?.download_url,
+      preview_video_url: row?.data?.preview_video_url,
+    }, paths);
+  }
+  return paths;
+}
 
 function safeSupabasePath(folder, fileName) {
   const originalName = String(fileName || "upload").replace(/[^a-zA-Z0-9._-]/g, "-");
@@ -1080,6 +1191,38 @@ async function createSupabaseUpload(body, env, request) {
       token: signed.token,
       signedUrl: signed.signedURL || signed.signedUrl,
       publicUrl: `${supabaseUrl}/storage/v1/object/public/${SUPABASE_MEDIA_BUCKET}/${path}`,
+    },
+  };
+}
+
+async function cleanupListingDraftMedia(body, env, request) {
+  const user = await getUser(env, request);
+  if (!user) return { status: 401, body: { error: "Unauthorized" } };
+
+  const uploads = Array.isArray(body.uploads) ? body.uploads : [];
+  const removeOrphans = body.removeOrphans === true;
+  if (removeOrphans && !isAdmin(user)) return { status: 403, body: { error: "Forbidden" } };
+
+  const referencedPaths = await getReferencedListingMediaPaths(env);
+  const requestedPaths = uploads
+    .map((item) => supabaseStoragePathFromValue(item?.path || item?.url || item?.file_url || ""))
+    .filter((path) => isAllowedListingMediaPath(path) && !referencedPaths.has(path));
+
+  let orphanPaths = [];
+  if (removeOrphans) {
+    const storedImagePaths = await listSupabaseFolderPaths(env, "listing-images");
+    orphanPaths = storedImagePaths.filter((path) => !referencedPaths.has(path));
+  }
+
+  const allPaths = [...new Set([...requestedPaths, ...orphanPaths])];
+  const deletedCount = await removeSupabaseStoragePaths(env, allPaths);
+
+  return {
+    status: 200,
+    body: {
+      success: true,
+      deletedCount,
+      deletedPaths: allPaths,
     },
   };
 }

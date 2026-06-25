@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { S3Client, DeleteObjectCommand } from 'npm:@aws-sdk/client-s3@3.699.0';
+import { createClient } from 'npm:@supabase/supabase-js@2.43.0';
 import { getRequestUser, isAdminUser } from '../_shared/adminAuth.ts';
 
 function collectUrls(value, urls = new Set()) {
@@ -18,18 +18,27 @@ function collectUrls(value, urls = new Set()) {
   return urls;
 }
 
-function keyFromUrl(url, publicBaseUrl) {
+const SUPABASE_URL = 'https://smymannqqogtshvsiqyp.supabase.co';
+const SUPABASE_BUCKET = 'gamerproductionsmedia';
+
+function pathFromUrl(url: string) {
   try {
     const parsed = new URL(url);
-    const normalizedBase = publicBaseUrl ? publicBaseUrl.replace(/\/$/, '') : '';
-    if (normalizedBase && url.startsWith(normalizedBase + '/')) {
-      return decodeURIComponent(url.slice(normalizedBase.length + 1));
-    }
-    const path = parsed.pathname.replace(/^\//, '');
-    return path || null;
+    const marker = `/storage/v1/object/public/${SUPABASE_BUCKET}/`;
+    const idx = parsed.pathname.indexOf(marker);
+    if (idx >= 0) return decodeURIComponent(parsed.pathname.slice(idx + marker.length));
+    return decodeURIComponent(parsed.pathname.replace(/^\//, '')) || null;
   } catch {
     return null;
   }
+}
+
+function createServiceSupabaseClient() {
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!serviceKey) throw new Error('Supabase service role key is not configured.');
+  return createClient(Deno.env.get('VITE_SUPABASE_URL') || Deno.env.get('SUPABASE_URL') || SUPABASE_URL, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 Deno.serve(async (req) => {
@@ -51,15 +60,6 @@ Deno.serve(async (req) => {
       String(listing.created_by_id || '') === String(user.email || '');
     if (!isAdmin && !isOwner) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    const accountId = Deno.env.get('CLOUDFLARE_ACCOUNT_ID')?.trim() || 'f9559f35122ab25fb52ed96e81ca17a4';
-    const accessKeyId = Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY_ID')?.trim();
-    const secretAccessKey = Deno.env.get('CLOUDFLARE_R2_SECRET_ACCESS_KEY')?.trim();
-    const bucket = Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME')?.trim() || 'gamerproductionsmedia';
-    const publicBaseUrlRaw = Deno.env.get('CLOUDFLARE_R2_PUBLIC_URL')?.trim() || '';
-    const publicBaseUrl = publicBaseUrlRaw
-      ? (publicBaseUrlRaw.startsWith('http') ? publicBaseUrlRaw : `https://${publicBaseUrlRaw}`)
-      : '';
-
     let deletedFiles = 0;
     const urls = collectUrls({
       images: listing.images,
@@ -67,23 +67,20 @@ Deno.serve(async (req) => {
       video_url: listing.video_url,
       preview_video_url: listing.preview_video_url,
     });
-
-    if (accountId && accessKeyId && secretAccessKey && bucket) {
-      const client = new S3Client({
-        region: 'auto',
-        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-        credentials: { accessKeyId, secretAccessKey },
-      });
-      for (const url of urls) {
-        const key = keyFromUrl(url, publicBaseUrl);
-        if (!key) continue;
-        try {
-          await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
-          deletedFiles += 1;
-        } catch (error) {
-          console.error('R2 delete failed', { key, error: error.message });
+    try {
+      const supabase = createServiceSupabaseClient();
+      const paths = [...urls].map((url) => pathFromUrl(url)).filter(Boolean) as string[];
+      for (let i = 0; i < paths.length; i += 100) {
+        const chunk = paths.slice(i, i + 100);
+        const { error } = await supabase.storage.from(SUPABASE_BUCKET).remove(chunk);
+        if (error) {
+          console.error('Supabase storage delete failed', { chunk, error: error.message });
+          continue;
         }
+        deletedFiles += chunk.length;
       }
+    } catch (error) {
+      console.error('Supabase media cleanup failed', error.message);
     }
 
     // Clear EVERYTHING that references this listing across all entities

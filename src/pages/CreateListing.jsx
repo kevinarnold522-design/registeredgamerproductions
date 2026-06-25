@@ -13,6 +13,7 @@ const NEWSFEED_TARGETS = [
 ];
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { cf } from "@/lib/cfClient";
 import { CURRENCY_OPTIONS, getCurrencySymbol } from "@/lib/currency";
 import { isAdmin, CATEGORIES, GAMES_STORES } from "@/lib/constants";
 
@@ -41,8 +42,9 @@ import AIListingAssistant from "@/components/listings/AIListingAssistant";
 import ImageSortableList from "@/components/ImageSortableList";
 import SearchableSelect from "@/components/listings/SearchableSelect";
 import BrandLogo from "@/components/shared/BrandLogo";
-import { uploadFileToR2 } from "@/lib/uploadToR2";
+import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
+import { supabase } from "@/lib/supabaseClient";
 
 function extractYouTubeId(url) {
   if (!url) return null;
@@ -54,6 +56,8 @@ function extractYouTubeId(url) {
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 const MAX_UPLOAD_LABEL = "25MB";
+const LISTING_ORPHAN_CLEANUP_KEY = "listing-orphan-cleanup-at";
+const LISTING_ORPHAN_CLEANUP_INTERVAL = 12 * 60 * 60 * 1000;
 
 export default function CreateListing() {
   const { user: authUser, isLoadingAuth } = useAuth();
@@ -66,6 +70,10 @@ export default function CreateListing() {
   const fileInputRef = useRef(null);
   const videoFileRef = useRef(null);
   const downloadFileRef = useRef(null);
+  const pendingUploadsRef = useRef([]);
+  const listingSavedRef = useRef(false);
+  const cleanupQueuedRef = useRef(false);
+  const accessTokenRef = useRef("");
 
   const params = new URLSearchParams(window.location.search);
   const editId = params.get("edit");
@@ -267,10 +275,104 @@ export default function CreateListing() {
     init();
   }, [authUser, isLoadingAuth]);
 
-  const uploadToR2 = async (file, folder) => {
-    const { file_url } = await uploadFileToR2(file, folder);
-    return file_url;
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) accessTokenRef.current = data?.session?.access_token || "";
+    }).catch(() => {});
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      accessTokenRef.current = session?.access_token || "";
+    });
+
+    return () => {
+      mounted = false;
+      listener?.subscription?.unsubscribe?.();
+    };
+  }, []);
+
+  const rememberPendingUpload = (upload) => {
+    if (!upload?.path) return;
+    if (pendingUploadsRef.current.some((item) => item.path === upload.path)) return;
+    pendingUploadsRef.current = [...pendingUploadsRef.current, upload];
   };
+
+  const forgetPendingUploads = (paths = []) => {
+    const removeSet = new Set(paths.filter(Boolean));
+    pendingUploadsRef.current = pendingUploadsRef.current.filter((item) => !removeSet.has(item.path));
+  };
+
+  const findPendingUploadByUrl = (url) => pendingUploadsRef.current.find((item) => item.file_url === url);
+
+  const stripUploadsFromDraft = (uploads = []) => {
+    const urlSet = new Set(uploads.map((item) => item?.file_url).filter(Boolean));
+    if (!urlSet.size) return;
+    setImages((prev) => prev.filter((url) => !urlSet.has(url)));
+    setForm((prev) => ({
+      ...prev,
+      video_url: urlSet.has(prev.video_url) ? "" : prev.video_url,
+      download_url: urlSet.has(prev.download_url) ? "" : prev.download_url,
+      preview_video_url: urlSet.has(prev.preview_video_url) ? "" : prev.preview_video_url,
+    }));
+  };
+
+  const cleanupListingUploads = async (uploads = [], options = {}) => {
+    const uniqueUploads = [...new Map(
+      uploads
+        .filter((item) => item?.path || item?.file_url)
+        .map((item) => [item.path || item.file_url, item])
+    ).values()];
+
+    if (!uniqueUploads.length && !options.removeOrphans) return { deletedCount: 0 };
+
+    const payload = {
+      uploads: uniqueUploads.map((item) => ({
+        path: item.path,
+        file_url: item.file_url,
+        bucket: item.bucket,
+      })),
+      removeOrphans: options.removeOrphans === true,
+    };
+
+    if (options.beacon && accessTokenRef.current && typeof navigator !== "undefined") {
+      const blob = new Blob([JSON.stringify({ ...payload, accessToken: accessTokenRef.current })], {
+        type: "application/json",
+      });
+      navigator.sendBeacon(`${cf.API_BASE}/functions/cleanupListingDraftMedia`, blob);
+      return { queued: true };
+    }
+
+    const res = await base44.functions.invoke("cleanupListingDraftMedia", payload);
+    forgetPendingUploads(uniqueUploads.map((item) => item.path));
+    return res?.data || { success: true };
+  };
+
+  const queueAbandonedDraftCleanup = () => {
+    if (cleanupQueuedRef.current || listingSavedRef.current || !pendingUploadsRef.current.length) return;
+    cleanupQueuedRef.current = true;
+    cleanupListingUploads([...pendingUploadsRef.current], { beacon: true });
+  };
+
+  useEffect(() => {
+    window.addEventListener("pagehide", queueAbandonedDraftCleanup);
+    window.addEventListener("beforeunload", queueAbandonedDraftCleanup);
+    return () => {
+      queueAbandonedDraftCleanup();
+      window.removeEventListener("pagehide", queueAbandonedDraftCleanup);
+      window.removeEventListener("beforeunload", queueAbandonedDraftCleanup);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user?.email || !isAdmin(user.email)) return;
+    try {
+      const lastRun = Number(localStorage.getItem(LISTING_ORPHAN_CLEANUP_KEY) || 0);
+      if (Date.now() - lastRun < LISTING_ORPHAN_CLEANUP_INTERVAL) return;
+      localStorage.setItem(LISTING_ORPHAN_CLEANUP_KEY, String(Date.now()));
+    } catch (_) {}
+
+    base44.functions.invoke("cleanupListingDraftMedia", { removeOrphans: true }).catch(() => {});
+  }, [user?.email]);
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -281,12 +383,18 @@ export default function CreateListing() {
       return;
     }
     setUploadingImages(true);
+    const uploadedThisAttempt = [];
     try {
       for (const file of files) {
-        const file_url = await uploadToR2(file, "listing-images");
-        setImages(prev => [...prev, file_url]);
+        const upload = await uploadFileWithFallback(file, "listing-images");
+        uploadedThisAttempt.push(upload);
+        rememberPendingUpload(upload);
       }
+      setImages((prev) => [...prev, ...uploadedThisAttempt.map((item) => item.file_url)]);
     } catch (err) {
+      if (uploadedThisAttempt.length) {
+        await cleanupListingUploads(uploadedThisAttempt).catch(() => {});
+      }
       alert(err?.message || "Image upload failed. Please try again.");
     } finally {
       setUploadingImages(false);
@@ -304,8 +412,9 @@ export default function CreateListing() {
     }
     setUploadingImages(true);
     try {
-      const file_url = await uploadToR2(file, "listing-videos");
-      setForm(f => ({ ...f, video_url: file_url }));
+      const upload = await uploadFileWithFallback(file, "listing-videos");
+      rememberPendingUpload(upload);
+      setForm(f => ({ ...f, video_url: upload.file_url }));
     } catch (err) {
       alert(err?.message || "Video upload failed. Please try again.");
     } finally {
@@ -324,8 +433,9 @@ export default function CreateListing() {
     }
     setUploadingImages(true);
     try {
-      const file_url = await uploadToR2(file, "listing-downloads");
-      setForm(f => ({ ...f, download_url: file_url }));
+      const upload = await uploadFileWithFallback(file, "listing-downloads");
+      rememberPendingUpload(upload);
+      setForm(f => ({ ...f, download_url: upload.file_url }));
     } catch (err) {
       alert(err?.message || "File upload failed. Please try again.");
     } finally {
@@ -334,7 +444,32 @@ export default function CreateListing() {
     }
   };
 
-  const removeImage = (idx) => setImages(images.filter((_, i) => i !== idx));
+  const removeImage = async (idx) => {
+    const removedUrl = images[idx];
+    setImages((prev) => prev.filter((_, i) => i !== idx));
+    const pendingUpload = findPendingUploadByUrl(removedUrl);
+    if (pendingUpload) {
+      await cleanupListingUploads([pendingUpload]).catch(() => {});
+    }
+  };
+
+  const removeUploadedField = async (field) => {
+    const url = form[field];
+    setForm((prev) => ({ ...prev, [field]: "" }));
+    const pendingUpload = findPendingUploadByUrl(url);
+    if (pendingUpload) {
+      await cleanupListingUploads([pendingUpload]).catch(() => {});
+    }
+  };
+
+  const collectListingMediaUrls = (listingLike = {}) => {
+    const urls = [];
+    if (Array.isArray(listingLike.images)) urls.push(...listingLike.images.filter(Boolean));
+    ["video_url", "download_url", "preview_video_url"].forEach((field) => {
+      if (listingLike[field]) urls.push(listingLike[field]);
+    });
+    return urls;
+  };
 
   const [moderationResult, setModerationResult] = useState(null);
   const [savedFilters, setSavedFilters] = useState(() => {
@@ -476,6 +611,19 @@ export default function CreateListing() {
       savedListing = await base44.entities.Listing.create(data);
     }
 
+    const removedExistingMedia = existingListing
+      ? collectListingMediaUrls(existingListing).filter((url) => !collectListingMediaUrls(data).includes(url))
+      : [];
+
+    listingSavedRef.current = true;
+    cleanupQueuedRef.current = true;
+    pendingUploadsRef.current = [];
+    if (removedExistingMedia.length) {
+      base44.functions.invoke("cleanupListingDraftMedia", {
+        uploads: removedExistingMedia.map((url) => ({ file_url: url })),
+      }).catch(() => {});
+    }
+
     // Note: listings are surfaced in community/category newsfeeds via their
     // category, community_franchise_id, modding_subcategory & newsfeed_categories
     // fields directly — no auto-generated "New listing" announcement posts.
@@ -488,6 +636,11 @@ export default function CreateListing() {
       window.location.href = "/dashboard?tab=listings";
     }
     } catch (err) {
+      const pendingUploads = [...pendingUploadsRef.current];
+      if (pendingUploads.length) {
+        await cleanupListingUploads(pendingUploads).catch(() => {});
+        stripUploadsFromDraft(pendingUploads);
+      }
       alert(err?.message || "Could not save your post. Please try again.");
     } finally {
       setSaving(false);
@@ -633,7 +786,7 @@ export default function CreateListing() {
               {form.video_url ? (
                 <div className="flex items-center gap-3">
                   <video src={form.video_url} controls className="w-48 rounded-xl" />
-                  <button type="button" onClick={() => setForm(f => ({ ...f, video_url: "" }))} className="text-red-400 text-xs hover:text-red-300">Remove</button>
+                  <button type="button" onClick={() => removeUploadedField("video_url")} className="text-red-400 text-xs hover:text-red-300">Remove</button>
                 </div>
               ) : (
                 <button type="button" onClick={() => videoFileRef.current?.click()}
@@ -671,7 +824,7 @@ export default function CreateListing() {
                 <div className="flex items-center gap-3 bg-green-900/20 border border-green-700/40 rounded-xl p-3">
                 <span className="text-green-400 text-sm flex items-center gap-1.5"><CheckCircle className="w-4 h-4" /> File uploaded</span>
                   <a href={form.download_url} target="_blank" rel="noopener noreferrer" className="text-green-400 text-xs underline">Preview</a>
-                  <button type="button" onClick={() => setForm(f => ({ ...f, download_url: "" }))} className="ml-auto text-red-400 text-xs hover:text-red-300">Remove</button>
+                  <button type="button" onClick={() => removeUploadedField("download_url")} className="ml-auto text-red-400 text-xs hover:text-red-300">Remove</button>
                 </div>
               ) : (
                 <button type="button" onClick={() => downloadFileRef.current?.click()}
