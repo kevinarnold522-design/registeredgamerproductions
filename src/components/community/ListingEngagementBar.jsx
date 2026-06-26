@@ -123,48 +123,18 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
 
   if (showRankings) {
     return (
-      <div className="w-full space-y-2">
-        {/* Listing ranking */}
-        {listing.monthlyRank && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg backdrop-blur-sm" style={{
-            background: listing.monthlyRank === 1 ? "rgba(234,179,8,0.22)" : listing.monthlyRank === 2 ? "rgba(229,231,235,0.18)" : listing.monthlyRank === 3 ? "rgba(249,115,22,0.2)" : "rgba(168,85,247,0.18)",
-            border: `1px solid ${listing.monthlyRank === 1 ? "#fde04755" : listing.monthlyRank === 2 ? "#e5e7eb55" : listing.monthlyRank === 3 ? "#fdba7455" : "#c084fc55"}`,
-          }}>
-            {listing.monthlyRank <= 3 ? (
-              <Trophy className="w-3 h-3" style={{ color: listing.monthlyRank === 1 ? "#fde047" : listing.monthlyRank === 2 ? "#e5e7eb" : "#fdba74" }} />
-            ) : (
-              <TrendingUp className="w-3 h-3" style={{ color: "#d8b4fe" }} />
-            )}
-            <span className="text-[9px] font-bold" style={{ color: listing.monthlyRank === 1 ? "#fde047" : listing.monthlyRank === 2 ? "#e5e7eb" : listing.monthlyRank === 3 ? "#fdba74" : "#d8b4fe" }}>
-              Listing Rank #{listing.monthlyRank}
-            </span>
-          </div>
-        )}
-
-        {/* Lister ranking - show seller rank if available */}
-        {listing.seller_email && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg backdrop-blur-sm bg-blue-950/30 border border-blue-600/40">
-            <Trophy className="w-3 h-3 text-blue-400" />
-            <span className="text-[9px] font-bold text-blue-300 truncate">
-              Seller Rank
-            </span>
-          </div>
-        )}
-
-        {/* Action buttons */}
-        <div className="flex items-center justify-end gap-1 pt-1 border-t border-gray-800/50">
-          <ShareButton type="listing" id={listing.id} title={listing.title} compact={true} />
-          <button onClick={handleFav} className={`${actionClass} transition-colors`}
-            style={{ color: saved ? "#f59e0b" : "rgba(216,180,254,0.82)" }} title="Save to Favourites">
-            <Bookmark className={iconSize} style={{ fill: saved ? "#f59e0b" : "none" }} />
+      <div className="flex items-center justify-end gap-1">
+        <ShareButton type="listing" id={listing.id} title={listing.title} compact={true} />
+        <button onClick={handleFav} className={`${actionClass} transition-colors`}
+          style={{ color: saved ? "#f59e0b" : "rgba(216,180,254,0.82)" }} title="Save to Favourites">
+          <Bookmark className={iconSize} style={{ fill: saved ? "#f59e0b" : "none" }} />
+        </button>
+        {!hideRepost && <RepostButton item={listing} type="listing" user={user} profile={profile} compact={compact} />}
+        {!hideReport && (
+          <button onClick={handleReport} className={`${actionClass} text-gray-500 hover:text-red-300 transition-colors`} title="Report">
+            <Flag className={iconSize} />
           </button>
-          {!hideRepost && <RepostButton item={listing} type="listing" user={user} profile={profile} compact={compact} />}
-          {!hideReport && (
-            <button onClick={handleReport} className={`${actionClass} text-gray-500 hover:text-red-300 transition-colors`} title="Report">
-              <Flag className={iconSize} />
-            </button>
-          )}
-        </div>
+        )}
       </div>
     );
   }

@@ -9,12 +9,22 @@ import MonthlyRankBadge from "@/components/listings/MonthlyRankBadge";
 export default function HomeListingCard({ listing, index = 0, className = "", user = null, profile = null }) {
   const [liveListing, setLiveListing] = useState(listing);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [sellerAvatar, setSellerAvatar] = useState(listing.seller_avatar || "");
   const hasMultipleImages = liveListing.images && liveListing.images.length > 1;
 
   useEffect(() => {
     setLiveListing(listing);
     setCurrentImageIndex(0);
   }, [listing]);
+
+  // Resolve seller avatar from their profile when not embedded on the listing
+  useEffect(() => {
+    if (listing.seller_avatar) { setSellerAvatar(listing.seller_avatar); return; }
+    if (!listing.seller_email) return;
+    base44.entities.UserProfile.filter({ user_email: listing.seller_email })
+      .then((rows) => { if (rows[0]?.avatar_url) setSellerAvatar(rows[0].avatar_url); })
+      .catch(() => {});
+  }, [listing.seller_email, listing.seller_avatar]);
 
   useEffect(() => {
     if (!listing?.id) return;
@@ -134,7 +144,19 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
           <span className="text-purple-400 font-black text-xl">
             {liveListing.is_free || !liveListing.price ? "FREE" : formatListingPrice(liveListing.price, liveListing.currency)}
           </span>
-          <span className="text-gray-600 text-xs truncate">by @{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</span>
+          {/* Seller profile with avatar */}
+          <a
+            href={`/channel?email=${encodeURIComponent(liveListing.seller_email || "")}`}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+              {sellerAvatar
+                ? <img src={sellerAvatar} className="w-full h-full object-cover" alt="" />
+                : <span className="text-white text-[9px] font-bold">{(liveListing.seller_username || "G")[0].toUpperCase()}</span>}
+            </div>
+            <span className="text-gray-300 text-xs font-bold truncate">@{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</span>
+          </a>
         </div>
         
         {/* Monthly rank badge */}
