@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 
 export const MASCOTS = [
@@ -117,30 +117,27 @@ function selectMascots() {
 
 export default function MascotShowcase({ compact = false }) {
   const mascots = selectMascots();
-  const [failedImages, setFailedImages] = useState({});
-
-  const handleImageError = (mascotId) => {
-    setFailedImages(prev => ({ ...prev, [mascotId]: true }));
-  };
 
   const getPlaceholderSVG = (mascot) => {
     const colors = {
-      "argentina-penguin": { primary: "#0ea5e9", secondary: "#06b6d4", emoji: "🐧" },
-      "eafc-moose": { primary: "#60a5fa", secondary: "#3b82f6", emoji: "🫎" },
-      "brazil-bird": { primary: "#facc15", secondary: "#f59e0b", emoji: "🦜" },
-      "france-chicken": { primary: "#3b82f6", secondary: "#1e40af", emoji: "🐓" },
-      "germany-eagle": { primary: "#ef4444", secondary: "#dc2626", emoji: "🦅" },
-      "portugal-tiger": { primary: "#eab308", secondary: "#ca8a04", emoji: "🐯" },
-      "spain-bull": { primary: "#f97316", secondary: "#ea580c", emoji: "🐂" },
-      "belgium-dog": { primary: "#a855f7", secondary: "#9333ea", emoji: "🐕" },
-      "netherlands-tulip-lion": { primary: "#ec4899", secondary: "#db2777", emoji: "🦁" },
-      "usa-eagle": { primary: "#22c55e", secondary: "#16a34a", emoji: "🦅" },
-      "mexico-hawk": { primary: "#b45ef5", secondary: "#a855f7", emoji: "🦅" },
+      "argentina-penguin": { bg: "#0ea5e9", emoji: "🐧" },
+      "eafc-moose": { bg: "#60a5fa", emoji: "🫎" },
+      "brazil-bird": { bg: "#facc15", emoji: "🦜" },
+      "france-chicken": { bg: "#3b82f6", emoji: "🐓" },
+      "germany-eagle": { bg: "#ef4444", emoji: "🦅" },
+      "portugal-tiger": { bg: "#eab308", emoji: "🐯" },
+      "spain-bull": { bg: "#f97316", emoji: "🐂" },
+      "belgium-dog": { bg: "#a855f7", emoji: "🐕" },
+      "netherlands-tulip-lion": { bg: "#ec4899", emoji: "🦁" },
+      "usa-eagle": { bg: "#22c55e", emoji: "🦅" },
+      "mexico-hawk": { bg: "#b45ef5", emoji: "🦅" },
     };
 
-    const color = colors[mascot.id] || { primary: "#8b5cf6", secondary: "#7c3aed", emoji: "🎮" };
+    const color = colors[mascot.id] || { bg: "#8b5cf6", emoji: "🎮" };
+    const bgEncoded = color.bg.replace("#", "%23");
 
-    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:${encodeURIComponent(color.primary)};stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:${encodeURIComponent(color.secondary)};stop-opacity:0.8' /%3E%3C/linearGradient%3E%3CfilterBlur id='shadow'%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='3' /%3E%3C/filter%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23grad)' rx='30'/%3E%3Ccircle cx='100' cy='100' r='85' fill='rgba(255,255,255,0.1)'/%3E%3Ctext x='50%25' y='60%25' font-size='100' text-anchor='middle' dominant-baseline='middle' font-weight='bold' filter='url(%23shadow)' style='text-shadow: 0 4px 8px rgba(0,0,0,0.3)'%3E${color.emoji}%3C/text%3E%3Ctext x='50%25' y='88%25' font-size='18' text-anchor='middle' fill='white' font-weight='bold' opacity='0.95'%3E${mascot.country}%3C/text%3E%3Ctext x='50%25' y='98%25' font-size='12' text-anchor='middle' fill='white' opacity='0.8'%3E${mascot.animal || mascot.role.split('/')[0]}%3C/text%3E%3C/svg%3E`;
+    // Simplified SVG with proper encoding
+    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:${bgEncoded};stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:${bgEncoded};stop-opacity:0.7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='160' fill='url(%23grad1)' rx='20'/%3E%3Ccircle cx='80' cy='80' r='70' fill='rgba(255,255,255,0.15)'/%3E%3Ctext x='80' y='75' font-size='80' text-anchor='middle' dominant-baseline='central'%3E${color.emoji}%3C/text%3E%3C/svg%3E`;
   };
 
   return (
@@ -160,18 +157,22 @@ export default function MascotShowcase({ compact = false }) {
               transition={{ delay: index * 0.08, type: "spring", stiffness: 160 }}
               className="group relative flex flex-col items-center flex-shrink-0"
             >
+              {/* Country label above */}
+              <div className="text-center mb-1 h-6 flex flex-col justify-end">
+                <p className="text-xs font-bold text-white truncate w-20 sm:w-24">{mascot.country}</p>
+              </div>
+
               <div className="absolute bottom-4 h-12 w-12 rounded-full blur-2xl opacity-70" style={{ background: mascot.glow }} />
+              
               <img
-                src={failedImages[mascot.id] ? getPlaceholderSVG(mascot) : mascot.image}
+                src={getPlaceholderSVG(mascot)}
                 alt={mascot.name}
-                onError={() => handleImageError(mascot.id)}
                 className={`${compact ? "h-20 sm:h-24" : "h-24 sm:h-32 md:h-40"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110 rounded-lg`}
                 loading="lazy"
               />
-              <div className="mt-1 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <p className="text-xs font-bold text-white truncate">{mascot.country}</p>
-                <p className="text-[9px] text-gray-400">{mascot.animal || mascot.role.split("/")[0]}</p>
-              </div>
+              
+              {/* Animal label below */}
+              <p className="text-[9px] text-gray-400 mt-1 text-center w-20 sm:w-24 truncate">{mascot.animal || mascot.role.split("/")[0]}</p>
             </motion.div>
           ))}
         </div>
