@@ -125,6 +125,7 @@ export default function FloatingNewsfeed() {
 
 export function InlineFloatingNewsfeed() {
   const [listings, setListings] = useState([]);
+  const [open, setOpen] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -140,21 +141,58 @@ export function InlineFloatingNewsfeed() {
 
   if (listings.length === 0) return null;
 
+  // Duplicate the list so the vertical marquee loops seamlessly for mobile
+  const loopItems = [...listings, ...listings];
+
   return (
-    <div className="lg:hidden w-full flex justify-end px-4 py-6">
-      <div className="w-full max-w-sm rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
-        style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}>
-        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
-          <Newspaper className="w-4 h-4 text-purple-300" />
-          <div className="min-w-0">
-            <h3 className="text-white font-black text-xs leading-none">Featured Newsfeed</h3>
-            <p className="text-gray-500 text-[9px] mt-0.5">Latest listings · homepage</p>
+    <div className="fixed bottom-24 lg:bottom-auto lg:top-auto right-0 lg:right-0 z-30 w-full lg:w-auto flex flex-col items-end lg:items-end">
+      {/* Toggle button for mobile */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="lg:hidden pointer-events-auto mb-1 mr-2 flex items-center gap-1 px-2 py-1 rounded-l-lg bg-purple-900/80 border border-purple-600/50 text-purple-100 text-[9px] font-black backdrop-blur-sm hover:bg-purple-800/80 transition-colors"
+        style={{ boxShadow: "0 0 14px rgba(168,85,247,0.4)" }}
+      >
+        {open ? "Hide" : "News"}
+      </button>
+
+      {open && (
+        <div
+          className="lg:hidden w-48 max-h-screen rounded-l-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden mr-0"
+          style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
+        >
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
+            <Newspaper className="w-3.5 h-3.5 text-purple-300" />
+            <div className="min-w-0">
+              <h3 className="text-white font-black text-xs leading-none">Featured</h3>
+              <p className="text-gray-500 text-[8px] mt-0.5">Live feed</p>
+            </div>
+          </div>
+          
+          {/* Vertical auto-scrolling marquee for mobile */}
+          <div className="relative h-96 overflow-hidden">
+            <div
+              className="flex flex-col"
+              style={{
+                animation: `fn-vscroll ${listings.length * 3.2}s linear infinite`,
+              }}
+            >
+              {loopItems.map((item, i) => (
+                <FeedRow key={`${item.id}-${i}`} item={item} />
+              ))}
+            </div>
+            {/* Fade edges */}
+            <div className="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-gray-950/95 to-transparent" />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-gray-950/95 to-transparent" />
           </div>
         </div>
-        <div className="max-h-[28rem] overflow-y-auto p-2 gamer-sidebar-scroll">
-          {listings.map((item) => <FeedRow key={item.id} item={item} />)}
-        </div>
-      </div>
+      )}
+
+      <style>{`
+        @keyframes fn-vscroll {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+      `}</style>
     </div>
   );
 }

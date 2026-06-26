@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye } from "lucide-react";
+import { Eye, ChevronLeft, ChevronRight, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import MonthlyRankBadge from "@/components/listings/MonthlyRankBadge";
 
 export default function HomeListingCard({ listing, index = 0, className = "", user = null, profile = null }) {
   const [liveListing, setLiveListing] = useState(listing);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const hasMultipleImages = liveListing.images && liveListing.images.length > 1;
 
   useEffect(() => {
     setLiveListing(listing);
+    setCurrentImageIndex(0);
   }, [listing]);
 
   useEffect(() => {
@@ -28,6 +32,27 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
     };
   }, [listing?.id]);
 
+  // Auto-transition images every 3 seconds if multiple images
+  useEffect(() => {
+    if (!hasMultipleImages) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % liveListing.images.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [hasMultipleImages, liveListing.images?.length]);
+
+  const handlePrevImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + liveListing.images.length) % liveListing.images.length);
+  };
+
+  const handleNextImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % liveListing.images.length);
+  };
+
   return (
     <motion.a
       href={`/listing?id=${listing.id}`}
@@ -37,13 +62,60 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
       transition={{ delay: index * 0.05 }}
       className={`bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-purple-700/50 transition-colors block ${className}`}
     >
-      <div className="relative h-44">
+      <div className="relative h-44 overflow-hidden">
+        {/* Image carousel */}
         {liveListing.images?.[0] ? (
-          <img src={liveListing.images[0]} alt={liveListing.title} className="w-full h-full object-cover" />
+          <div className="relative w-full h-full">
+            <motion.img
+              key={`image-${currentImageIndex}`}
+              src={liveListing.images[currentImageIndex]}
+              alt={liveListing.title}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="w-full h-full object-cover"
+            />
+            {/* Image navigation arrows - only show if multiple images */}
+            {hasMultipleImages && (
+              <>
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1 transition-colors z-10"
+                >
+                  <ChevronLeft className="w-4 h-4 text-white" />
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1 transition-colors z-10"
+                >
+                  <ChevronRight className="w-4 h-4 text-white" />
+                </button>
+                {/* Image indicators */}
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                  {liveListing.images.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        i === currentImageIndex ? "bg-white" : "bg-white/40"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-800">🎮</div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
+        
+        {/* Premium badge - show for premium/verified listings */}
+        {(liveListing.is_premium || liveListing.verified) && (
+          <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#d946ef,#a855f7)", color: "#fff", boxShadow: "0 0 10px rgba(217,70,239,0.6)" }}>
+            <Crown className="w-3 h-3" /> PREMIUM
+          </span>
+        )}
+        
         {!liveListing.is_free && liveListing.price > 0 && (
           <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#f59e0b,#ec4899)", color: "#000", boxShadow: "0 0 10px rgba(245,158,11,0.6)" }}>💎 PAID</span>
         )}
@@ -56,15 +128,22 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
         <p className="text-purple-400 text-xs font-semibold mb-1">{liveListing.subcategory || liveListing.platform || liveListing.game_name || "Game"}</p>
         <h3 className="text-white font-bold text-lg mb-2 truncate">{liveListing.title}</h3>
         <p className="text-gray-500 text-xs mb-3 line-clamp-2">{liveListing.description}</p>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 mb-3">
           <span className="text-purple-400 font-black text-xl">
             {liveListing.is_free || !liveListing.price ? "FREE" : formatListingPrice(liveListing.price, liveListing.currency)}
           </span>
           <span className="text-gray-600 text-xs truncate">by @{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</span>
         </div>
+        
+        {/* Monthly rank badge */}
+        {liveListing.monthlyRank && (
+          <div className="mb-3">
+            <MonthlyRankBadge rank={liveListing.monthlyRank} />
+          </div>
+        )}
       </div>
       <div className="px-5 pb-4 pt-0" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
-        <ListingEngagementBar listing={liveListing} user={user} profile={profile} compact />
+        <ListingEngagementBar listing={liveListing} user={user} profile={profile} compact showBars />
       </div>
     </motion.a>
   );

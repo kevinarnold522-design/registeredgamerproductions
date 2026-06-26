@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import RepostButton from "@/components/shared/RepostButton";
 import ShareButton from "@/components/shared/ShareButton";
 
-export default function ListingEngagementBar({ listing, user, profile, compact = false, hideReport = false, hideRepost = false }) {
+export default function ListingEngagementBar({ listing, user, profile, compact = false, hideReport = false, hideRepost = false, showBars = false }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes || 0);
   const [saved, setSaved] = useState(false);
@@ -46,6 +46,80 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
   const countWidth = compact ? "min-w-[22px]" : "min-w-[26px]";
   const actionClass = `theme-glow-action flex items-center justify-center gap-0.5 ${textSize} rounded-lg px-1 py-0.5`;
   const statClass = `${actionClass}`;
+
+  // Calculate max for bar scaling
+  const maxValue = Math.max(
+    listing.views || 0,
+    likeCount || 0,
+    commentCount || 0,
+    1
+  );
+
+  if (showBars) {
+    return (
+      <div className="w-full space-y-3">
+        {/* Engagement bars with indicators */}
+        <div className="grid grid-cols-3 gap-2">
+          {/* Views bar */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <Eye className="w-3 h-3 theme-glow-icon text-cyan-300" />
+              <span className="text-[9px] tabular-nums text-gray-400">{(listing.views || 0).toLocaleString()}</span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-full transition-all duration-300"
+                style={{ width: `${maxValue > 0 ? ((listing.views || 0) / maxValue) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Likes bar */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <Heart className="w-3 h-3 theme-glow-icon" style={{ color: liked ? "#ec4899" : "rgba(216,180,254,0.82)" }} />
+              <span className="text-[9px] tabular-nums" style={{ color: liked ? "#ec4899" : "rgba(216,180,254,0.82)" }}>{likeCount}</span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-pink-400 to-pink-500 rounded-full transition-all duration-300"
+                style={{ width: `${maxValue > 0 ? (likeCount / maxValue) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Comments bar */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <MessageCircle className="w-3 h-3 theme-glow-icon text-gray-400" />
+              <span className="text-[9px] tabular-nums text-gray-400">{commentCount}</span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-purple-400 to-purple-500 rounded-full transition-all duration-300"
+                style={{ width: `${maxValue > 0 ? (commentCount / maxValue) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Action buttons below */}
+        <div className="flex items-center justify-end gap-1 pt-1 border-t border-gray-800/50">
+          <ShareButton type="listing" id={listing.id} title={listing.title} compact={true} />
+          <button onClick={handleFav} className={`${actionClass} transition-colors`}
+            style={{ color: saved ? "#f59e0b" : "rgba(216,180,254,0.82)" }} title="Save to Favourites">
+            <Bookmark className={iconSize} style={{ fill: saved ? "#f59e0b" : "none" }} />
+          </button>
+          {!hideRepost && <RepostButton item={listing} type="listing" user={user} profile={profile} compact={compact} />}
+          {!hideReport && (
+            <button onClick={handleReport} className={`${actionClass} text-gray-500 hover:text-red-300 transition-colors`} title="Report">
+              <Flag className={iconSize} />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-between w-full" onClick={e => e.preventDefault()}>
