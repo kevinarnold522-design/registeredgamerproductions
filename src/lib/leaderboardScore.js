@@ -16,24 +16,37 @@ import { base44 } from "@/api/base44Client";
 // creator_email). When a listing is transferred, its seller_email changes, so
 // its points automatically move to the new owner and leave the old one.
 // Points earned by a single listing (same weighting used for owners below).
-export function listingScore(l) {
-  return 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2 + (l.shares || 0) * 2;
+export function listingScore(l, ratingPoints = 0) {
+  return 10
+    + (l.likes || 0) * 5
+    + Math.floor((l.views || 0) / 10)
+    + (l.downloads || 0) * 2
+    + (l.shares_count || l.shares || 0) * 2
+    + (ratingPoints || 0);
 }
 
 // Ranks individual LISTINGS by the points they've earned. Each listing's points
 // also contribute to its owner on the main leaderboard (see below).
 export async function computeListingLeaderboard() {
-  const [listings, profiles] = await Promise.all([
+  const [listings, profiles, ratings] = await Promise.all([
     base44.entities.Listing.list("-created_date", 1000).catch(() => []),
     base44.entities.UserProfile.list("-created_date", 1000).catch(() => []),
+    base44.entities.PostRating.list("-created_date", 1000).catch(() => []),
   ]);
   const profileMap = {};
   profiles.forEach((p) => { profileMap[p.user_email] = p; });
+
+  const ratingPointsByListingId = {};
+  ratings.forEach((r) => {
+    if (!r.post_id) return;
+    ratingPointsByListingId[r.post_id] = (ratingPointsByListingId[r.post_id] || 0) + (r.rating || 0) * 2;
+  });
 
   return listings
     .filter((l) => l.status !== "removed" && l.status !== "deleted")
     .map((l) => {
       const prof = profileMap[l.seller_email];
+      const ratingPoints = ratingPointsByListingId[l.id] || 0;
       return {
         id: l.id,
         title: l.title,
@@ -49,7 +62,7 @@ export async function computeListingLeaderboard() {
         price: l.price,
         currency: l.currency,
         is_free: l.is_free,
-        score: listingScore(l),
+        score: listingScore(l, ratingPoints),
       };
     })
     .sort((a, b) => b.score - a.score);
@@ -126,7 +139,7 @@ export async function computeLeaderboard({ tab = "community" } = {}) {
     if (tab === "modding" && !isMod(l.category)) return;
     const e = seed(l.seller_email, l.seller_username);
     e.posts += 1; e.likes += l.likes || 0;
-    e.score += 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2 + (l.shares || 0) * 2;
+    e.score += 10 + (l.likes || 0) * 5 + Math.floor((l.views || 0) / 10) + (l.downloads || 0) * 2 + (l.shares_count || l.shares || 0) * 2;
   });
 
   // Physical sales
