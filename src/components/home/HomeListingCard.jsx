@@ -131,7 +131,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
           {(liveListing.views || 0).toLocaleString()}
         </span>
         
-        {/* PAID sign moved to bottom-right */}
+        {/* PAID sign at bottom-right */}
         {!liveListing.is_free && liveListing.price > 0 && (
           <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#f59e0b,#ec4899)", color: "#000", boxShadow: "0 0 10px rgba(245,158,11,0.6)" }}>💎 PAID</span>
         )}
