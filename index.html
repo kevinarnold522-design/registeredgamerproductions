@@ -46,8 +46,8 @@
           ref.indexOf('facebook.com') !== -1 || ref.indexOf('instagram.com') !== -1 ||
           ref.indexOf('l.facebook.com') !== -1 || ref.indexOf('lm.facebook.com') !== -1
         );
-        // Social traffic gets 4-minute delay; everyone else gets 7-second delay
-        var delayMs = isSocialTraffic ? 240000 : 7000;
+        // Social traffic gets 2.5 second delay; everyone else gets 3 second delay to let page render first
+        var delayMs = isSocialTraffic ? 2500 : 3000;
         window.__adsHeld = true;
         window.__adRotationIndex = 0; // which ad slot is currently active
         window.__adClosed = false;
@@ -112,7 +112,7 @@
           }
         }, 120000);
 
-        // Close button handler — closes current ad and restarts after 4 minutes
+        // Close button handler — closes current ad and restarts after 3 minutes (not 4)
         window.__closeCurrentAd = function() {
           window.__adClosed = true;
           window.__adCloseTime = Date.now();
@@ -124,13 +124,13 @@
             if (src.indexOf('youtube') !== -1 || src.indexOf('youtu.be') !== -1 || src.indexOf('vimeo') !== -1) return;
             el.style.display = 'none';
           });
-          // Re-enable after 4 minutes (not for admin/mod/tier1)
+          // Re-enable after 3 minutes (reduced from 4 for better UX)
           setTimeout(function() {
             if (!window.__adsBlocked && !window.__adminBlocked) {
               window.__adClosed = false;
               loadNextAd();
             }
-          }, 240000);
+          }, 180000);
         };
       })();
     </script>
