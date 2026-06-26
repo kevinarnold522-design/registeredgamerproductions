@@ -9,7 +9,7 @@ import { extractYouTubeId } from "@/lib/youtube";
 export default function UniversalVideoPreview({ url, poster, className = "" }) {
   const [errored, setErrored] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [embedHost, setEmbedHost] = useState("www.youtube.com");
+  const [embedHost, setEmbedHost] = useState("www.youtube-nocookie.com");
   const [embedFailed, setEmbedFailed] = useState(false);
   if (!url) return null;
 
@@ -72,7 +72,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setEmbedHost("www.youtube.com");
+          setEmbedHost("www.youtube-nocookie.com");
           setEmbedFailed(false);
           setPlaying(true);
         }}

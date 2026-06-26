@@ -43,9 +43,6 @@ export default function HomeListingCard({ listing, index = 0, className = "" }) 
           <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-800">🎮</div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
-        {liveListing.is_premium && (
-          <span className="absolute top-3 left-3 text-xs font-bold bg-yellow-500/90 text-black px-2.5 py-1 rounded-full">⭐ Premium</span>
-        )}
         <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-cyan-300">
           <Eye className="w-3 h-3" />
           {(liveListing.views || 0).toLocaleString()}

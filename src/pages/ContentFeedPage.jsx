@@ -117,14 +117,14 @@ function VideoPlayerModal({ video, user, profile, onClose }) {
   const [posting, setPosting] = useState(false);
   const [reported, setReported] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [embedHost, setEmbedHost] = useState("www.youtube.com");
+  const [embedHost, setEmbedHost] = useState("www.youtube-nocookie.com");
   const [embedFailed, setEmbedFailed] = useState(false);
 
   const ytId = video.youtube_video_id || extractYouTubeId(video.youtube_url);
   const youtubeWatchUrl = ytId ? `https://www.youtube.com/watch?v=${ytId}` : "";
 
   useEffect(() => {
-    setEmbedHost("www.youtube.com");
+    setEmbedHost("www.youtube-nocookie.com");
     setEmbedFailed(false);
   }, [video.id]);
 

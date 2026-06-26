@@ -34,24 +34,27 @@ export default function LiveStreamSection() {
   };
 
   return (
-    <section id="livestream" className="py-20 px-4 relative overflow-hidden" style={{ background: "linear-gradient(180deg,#030712 0%,#0a0015 50%,#030712 100%)" }}>
-      {/* Glow bg */}
+    <section id="livestream" className="py-20 px-4 relative overflow-hidden" style={{ background: "linear-gradient(180deg,#0a0118 0%,#160828 40%,#1e0a38 60%,#0a0118 100%)" }}>
+      {/* Premium glow bg */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: "radial-gradient(circle,#7c3aed,transparent)" }} />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: "radial-gradient(circle,#ec4899,transparent)" }} />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-60" />
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-pink-500 to-transparent opacity-60" />
+        <div className="absolute top-1/4 left-1/6 w-[500px] h-[500px] rounded-full opacity-20 blur-[120px]" style={{ background: "radial-gradient(circle,#7c3aed,transparent)" }} />
+        <div className="absolute bottom-1/4 right-1/6 w-[500px] h-[500px] rounded-full opacity-18 blur-[120px]" style={{ background: "radial-gradient(circle,#ec4899,transparent)" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] rounded-full opacity-10 blur-[100px]" style={{ background: "radial-gradient(ellipse,#a855f7,transparent)" }} />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-900/30 border border-red-700/40 text-red-300 text-xs font-semibold mb-4">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            LIVE STREAMING HUB
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border text-xs font-black mb-4 tracking-widest uppercase" style={{ background: "rgba(220,38,38,0.15)", borderColor: "rgba(220,38,38,0.5)", color: "#fca5a5", boxShadow: "0 0 20px rgba(220,38,38,0.3), 0 0 40px rgba(168,85,247,0.15)" }}>
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+            🔴 LIVE STREAMING HUB
           </div>
-          <h2 className="text-3xl md:text-5xl font-black text-white mb-3">
-            Go <span className="bg-gradient-to-r from-red-400 to-purple-400 bg-clip-text text-transparent">Live</span> on GAMER
+          <h2 className="text-3xl md:text-5xl font-black text-white mb-3" style={{ textShadow: "0 0 40px rgba(168,85,247,0.4)" }}>
+            Go <span className="bg-gradient-to-r from-red-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">Live</span> on GAMER
           </h2>
-          <p className="text-gray-400 text-base max-w-2xl mx-auto mb-5">
+          <p className="text-purple-200/60 text-base max-w-2xl mx-auto mb-5">
             Stream your gameplay, tournaments, and content directly on GAMER Productions.
             Grow your audience, earn from views, and build your community — all in one place.
           </p>
@@ -61,15 +64,15 @@ export default function LiveStreamSection() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-black text-white text-base"
-              style={{ background: "linear-gradient(90deg, #dc2626, #be123c)", boxShadow: "0 0 25px rgba(220,38,38,0.5)" }}
+              style={{ background: "linear-gradient(90deg, #dc2626, #be123c, #7c3aed)", boxShadow: "0 0 30px rgba(220,38,38,0.6), 0 0 60px rgba(168,85,247,0.3)" }}
             >
               <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
               <Radio className="w-5 h-5" />
               Go Live — PC / Browser
             </motion.button>
             <a href="https://streamlabs.com/mobile-app" target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-black text-white text-base border border-purple-700/50"
-              style={{ background: "rgba(124,58,237,0.2)" }}>
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-black text-white text-base"
+              style={{ background: "rgba(124,58,237,0.25)", border: "1px solid rgba(168,85,247,0.5)", boxShadow: "0 0 20px rgba(168,85,247,0.2)" }}>
               📱 Android / iOS
             </a>
           </div>
@@ -84,7 +87,7 @@ export default function LiveStreamSection() {
 
         {/* Copyright Warning Banner */}
         <motion.div initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
-          className="bg-yellow-900/20 border-2 border-yellow-600/40 rounded-2xl p-5 mb-8 flex gap-4 items-start">
+          className="rounded-2xl p-5 mb-8 flex gap-4 items-start" style={{ background: "rgba(120,53,15,0.25)", border: "2px solid rgba(234,179,8,0.35)", boxShadow: "0 0 30px rgba(234,179,8,0.1), inset 0 0 30px rgba(120,53,15,0.1)" }}>
           <AlertTriangle className="w-6 h-6 text-yellow-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-yellow-300 font-black text-base mb-1">⚠️ IMPORTANT: Copyright Rules for Streamers</p>
@@ -103,7 +106,8 @@ export default function LiveStreamSection() {
             { id: "setup", label: "⚙️ Stream Setup" },
           ].map(t => (
             <button key={t.id} onClick={() => setActiveTab(t.id)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === t.id ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
+              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === t.id ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-900/50" : "text-purple-300/70 hover:text-white"}`}
+              style={activeTab !== t.id ? { background: "rgba(88,28,135,0.2)", border: "1px solid rgba(168,85,247,0.25)" } : {}}>
               {t.label}
             </button>
           ))}
@@ -116,12 +120,15 @@ export default function LiveStreamSection() {
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {STREAMING_TOOLS.map((tool, i) => (
                   <motion.a key={i} href={tool.href} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                    className="group flex gap-4 p-5 rounded-2xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 transition-all hover:shadow-lg hover:shadow-purple-900/20">
+                    className="group flex gap-4 p-5 rounded-2xl transition-all"
+                    style={{ background: "rgba(59,7,100,0.35)", border: "1px solid rgba(168,85,247,0.2)", boxShadow: "0 4px 20px rgba(88,28,135,0.15)" }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 30px rgba(168,85,247,0.4), 0 4px 20px rgba(88,28,135,0.3)"}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 20px rgba(88,28,135,0.15)"}>
                     <div className="text-3xl flex-shrink-0">{tool.icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-white font-bold text-sm">{tool.title}</p>
-                        <span className="px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-300 text-[10px] font-semibold">{tool.tag}</span>
+                        <span className="px-2 py-0.5 rounded-full text-purple-200 text-[10px] font-semibold" style={{ background: "rgba(124,58,237,0.35)", border: "1px solid rgba(168,85,247,0.3)" }}>{tool.tag}</span>
                       </div>
                       <p className="text-gray-500 text-xs leading-relaxed">{tool.desc}</p>
                     </div>
@@ -133,11 +140,11 @@ export default function LiveStreamSection() {
               {/* Live Stats Preview */}
               <div className="mt-8 grid grid-cols-3 gap-4">
                 {[
-                  { label: "Avg Stream Duration", value: "2h 14m", icon: <Video className="w-5 h-5 text-purple-400" />, color: "border-purple-700/30 bg-purple-900/10" },
-                  { label: "Peak Concurrent Viewers", value: "—", icon: <Eye className="w-5 h-5 text-pink-400" />, color: "border-pink-700/30 bg-pink-900/10" },
-                  { label: "Streams This Month", value: "—", icon: <Radio className="w-5 h-5 text-red-400" />, color: "border-red-700/30 bg-red-900/10" },
+                  { label: "Avg Stream Duration", value: "2h 14m", icon: <Video className="w-5 h-5 text-purple-400" />, glow: "rgba(168,85,247,0.4)", border: "rgba(168,85,247,0.3)" },
+                  { label: "Peak Concurrent Viewers", value: "—", icon: <Eye className="w-5 h-5 text-pink-400" />, glow: "rgba(236,72,153,0.4)", border: "rgba(236,72,153,0.3)" },
+                  { label: "Streams This Month", value: "—", icon: <Radio className="w-5 h-5 text-red-400" />, glow: "rgba(220,38,38,0.4)", border: "rgba(220,38,38,0.3)" },
                 ].map((s, i) => (
-                  <div key={i} className={`rounded-2xl p-4 border ${s.color} text-center`}>
+                  <div key={i} className="rounded-2xl p-4 text-center" style={{ background: `rgba(59,7,100,0.3)`, border: `1px solid ${s.border}`, boxShadow: `0 0 20px ${s.glow}` }}>
                     <div className="flex justify-center mb-2">{s.icon}</div>
                     <p className="text-white font-black text-xl">{s.value}</p>
                     <p className="text-gray-500 text-xs mt-1">{s.label}</p>
@@ -150,7 +157,7 @@ export default function LiveStreamSection() {
           {/* Free Music Library */}
           {activeTab === "music" && (
             <motion.div key="music" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-              <div className="bg-green-900/20 border border-green-700/30 rounded-2xl p-4 mb-6 flex gap-3 items-center">
+              <div className="rounded-2xl p-4 mb-6 flex gap-3 items-center" style={{ background: "rgba(6,78,59,0.2)", border: "1px solid rgba(34,197,94,0.25)", boxShadow: "0 0 20px rgba(34,197,94,0.1)" }}>
                 <Music className="w-5 h-5 text-green-400 flex-shrink-0" />
                 <p className="text-green-300 text-sm font-semibold">
                   All tracks below are 100% royalty-free & copyright-safe for streaming and gaming content. Always verify before use.
@@ -160,15 +167,18 @@ export default function LiveStreamSection() {
                 {FREE_MUSIC.map((track, i) => (
                   <motion.a key={i} href={track.link} target="_blank" rel="noopener noreferrer"
                     initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                    className="group flex gap-3 p-4 rounded-2xl bg-gray-900 border border-gray-800 hover:border-green-600/50 transition-all">
-                    <div className="w-10 h-10 rounded-xl bg-green-900/30 border border-green-700/30 flex items-center justify-center flex-shrink-0">
+                    className="group flex gap-3 p-4 rounded-2xl transition-all"
+                    style={{ background: "rgba(59,7,100,0.3)", border: "1px solid rgba(34,197,94,0.2)" }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(34,197,94,0.5)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(34,197,94,0.2)"}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(6,78,59,0.3)", border: "1px solid rgba(34,197,94,0.3)" }}>
                       <Music className="w-5 h-5 text-green-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold text-sm truncate">{track.title}</p>
                       <p className="text-gray-400 text-xs">{track.artist}</p>
                       <div className="flex gap-2 mt-1">
-                        <span className="px-2 py-0.5 rounded-full bg-gray-800 text-gray-400 text-[10px]">{track.genre}</span>
+                        <span className="px-2 py-0.5 rounded-full text-purple-300 text-[10px]" style={{ background: "rgba(88,28,135,0.4)" }}>{track.genre}</span>
                         <span className="px-2 py-0.5 rounded-full bg-green-900/30 text-green-400 text-[10px]">✓ Free</span>
                       </div>
                     </div>
@@ -186,11 +196,11 @@ export default function LiveStreamSection() {
           {activeTab === "setup" && (
             <motion.div key="setup" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
               className="max-w-2xl mx-auto space-y-5">
-              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+              <div className="rounded-2xl p-6" style={{ background: "rgba(59,7,100,0.35)", border: "1px solid rgba(168,85,247,0.25)", boxShadow: "0 0 30px rgba(88,28,135,0.3)" }}>
                 <p className="text-white font-black text-lg mb-1 flex items-center gap-2"><Settings className="w-5 h-5 text-purple-400" /> Your Stream Key</p>
-                <p className="text-gray-500 text-sm mb-4">Use this key in OBS, Streamlabs, or any RTMP broadcaster. Keep it private!</p>
+                <p className="text-purple-300/60 text-sm mb-4">Use this key in OBS, Streamlabs, or any RTMP broadcaster. Keep it private!</p>
                 <div className="flex gap-2">
-                  <div className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-gray-500 font-mono text-sm select-none">
+                  <div className="flex-1 rounded-xl px-4 py-3 text-purple-300/50 font-mono text-sm select-none" style={{ background: "rgba(88,28,135,0.25)", border: "1px solid rgba(168,85,247,0.2)" }}>
                     ••••••••••••••••••••••••
                   </div>
                   <button onClick={handleCopy} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 text-white font-semibold text-sm hover:bg-purple-700 transition-colors">
@@ -201,7 +211,7 @@ export default function LiveStreamSection() {
                 <p className="text-gray-600 text-xs mt-3">🔒 Sign in to your account to access your personal stream key</p>
               </div>
 
-              <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
+              <div className="rounded-2xl p-6 space-y-4" style={{ background: "rgba(59,7,100,0.35)", border: "1px solid rgba(168,85,247,0.25)", boxShadow: "0 0 30px rgba(88,28,135,0.3)" }}>
                 <p className="text-white font-black text-lg mb-3 flex items-center gap-2"><Zap className="w-5 h-5 text-yellow-400" /> Recommended OBS Settings</p>
                 {[
                   { label: "Server", value: "rtmp://live.gamerproductions.app/stream" },
@@ -211,8 +221,8 @@ export default function LiveStreamSection() {
                   { label: "FPS", value: "60 (for fast-paced games) / 30 (casual)" },
                   { label: "Audio Bitrate", value: "160 kbps" },
                 ].map((s, i) => (
-                  <div key={i} className="flex justify-between items-center py-2 border-b border-gray-800 last:border-0">
-                    <span className="text-gray-400 text-sm">{s.label}</span>
+                  <div key={i} className="flex justify-between items-center py-2 last:border-0" style={{ borderBottom: i < 5 ? "1px solid rgba(168,85,247,0.15)" : "none" }}>
+                    <span className="text-purple-300/70 text-sm">{s.label}</span>
                     <span className="text-white font-mono text-sm font-semibold">{s.value}</span>
                   </div>
                 ))}
