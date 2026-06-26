@@ -38,7 +38,6 @@ const PLATFORMS = [
     name: "Instagram",
     icon: Instagram,
     color: "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 hover:opacity-90",
-    // Instagram doesn't support direct URL sharing via web — copy to clipboard instead
     getUrl: null,
     action: "copy",
   },
@@ -74,6 +73,57 @@ const PLATFORMS = [
     color: "bg-sky-500 hover:bg-sky-600",
     getUrl: (url, text) =>
       `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+  },
+];
+
+// File-hosting platforms — clicking copies the share link so users can paste it there
+const FILE_PLATFORMS = [
+  {
+    name: "MediaFire",
+    bgColor: "#1299DA",
+    icon: () => (
+      <svg viewBox="0 0 64 64" className="w-5 h-5">
+        {/* MediaFire "M" flame shape — blue */}
+        <path fill="#fff" d="M10 54 C10 54 16 38 20 30 C22 26 24 24 26 24 C28 24 29 26 30 29 L32 36 L34 29 C35 26 36 24 38 24 C40 24 42 26 44 30 C48 38 54 54 54 54 L46 54 C46 54 42 42 40 36 C39 33 38 31 37 31 C36 31 35 33 34 36 L32 44 L30 36 C29 33 28 31 27 31 C26 31 25 33 24 36 C22 42 18 54 18 54 Z"/>
+      </svg>
+    ),
+  },
+  {
+    name: "MEGA",
+    bgColor: "#D9272E",
+    icon: () => (
+      <svg viewBox="0 0 64 64" className="w-5 h-5">
+        {/* MEGA bold red M */}
+        <path fill="#fff" d="M8 48 L8 16 L20 16 L32 30 L44 16 L56 16 L56 48 L46 48 L46 28 L34 42 L30 42 L18 28 L18 48 Z"/>
+        <rect fill="#D9272E" x="34" y="34" width="22" height="14" rx="2"/>
+        <path fill="#fff" d="M36 37 L36 47 L38 47 L38 40 L42 44 L46 40 L46 47 L48 47 L48 37 L46 37 L42 41 L38 37 Z"/>
+      </svg>
+    ),
+  },
+  {
+    name: "ModsFire",
+    bgColor: "#FF5722",
+    icon: () => (
+      <svg viewBox="0 0 64 64" className="w-5 h-5">
+        {/* ModsFire — orange flame with M */}
+        <path fill="#fff" d="M32 6 C24 14 18 20 18 30 C18 36 21 40 24 43 C23 40 24 37 26 35 C27 38 28 40 30 42 C29 39 30 36 32 34 C34 36 35 39 34 42 C36 40 37 38 38 35 C40 37 41 40 40 43 C43 40 46 36 46 30 C46 20 40 14 32 6 Z"/>
+        <path fill="#FF5722" d="M26 44 C26 48 28 52 32 54 C36 52 38 48 38 44 C36 46 34 47 32 47 C30 47 28 46 26 44 Z"/>
+      </svg>
+    ),
+  },
+  {
+    name: "ShareMod",
+    bgColor: "#7C3AED",
+    icon: () => (
+      <svg viewBox="0 0 64 64" className="w-5 h-5">
+        {/* ShareMod — controller + share arrow */}
+        <circle fill="#fff" cx="16" cy="32" r="8"/>
+        <circle fill="#fff" cx="48" cy="16" r="8"/>
+        <circle fill="#fff" cx="48" cy="48" r="8"/>
+        <line x1="22" y1="28" x2="42" y2="19" stroke="#fff" strokeWidth="4" strokeLinecap="round"/>
+        <line x1="22" y1="36" x2="42" y2="45" stroke="#fff" strokeWidth="4" strokeLinecap="round"/>
+      </svg>
+    ),
   },
 ];
 
@@ -128,7 +178,7 @@ export default function ShareButton({ type, id, title, compact = false }) {
               initial={{ opacity: 0, scale: 0.9, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 8 }}
-              className="absolute z-50 bottom-full mb-2 right-0 w-64 rounded-2xl p-3 shadow-2xl"
+              className="absolute z-50 bottom-full mb-2 right-0 w-72 rounded-2xl p-3 shadow-2xl"
               style={{
                 background: "rgba(10,10,30,0.97)",
                 border: "1px solid rgba(139,92,246,0.4)",
@@ -142,6 +192,7 @@ export default function ShareButton({ type, id, title, compact = false }) {
                 </button>
               </div>
 
+              {/* Social platforms */}
               <div className="grid grid-cols-5 gap-1.5 mb-3">
                 {PLATFORMS.map(p => {
                   const Icon = p.icon;
@@ -157,6 +208,28 @@ export default function ShareButton({ type, id, title, compact = false }) {
                     </button>
                   );
                 })}
+              </div>
+
+              {/* File hosting platforms */}
+              <div className="mb-3">
+                <p className="text-gray-600 text-[9px] font-bold uppercase tracking-widest mb-1.5">Copy link for file hosts</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {FILE_PLATFORMS.map(p => {
+                    const Icon = p.icon;
+                    return (
+                      <button
+                        key={p.name}
+                        onClick={handleCopy}
+                        title={`Copy link for ${p.name}`}
+                        className="flex flex-col items-center gap-1 py-2 rounded-xl text-white text-[9px] font-bold transition-all hover:opacity-90 hover:scale-105 active:scale-95"
+                        style={{ background: p.bgColor }}
+                      >
+                        <Icon />
+                        <span className="truncate w-full text-center px-0.5">{p.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Copy link */}
