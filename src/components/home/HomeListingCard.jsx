@@ -4,7 +4,7 @@ import { Eye, ChevronLeft, ChevronRight, Crown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
-import MonthlyRankBadge from "@/components/listings/MonthlyRankBadge";
+
 
 export default function HomeListingCard({ listing, index = 0, className = "", user = null, profile = null }) {
   const [liveListing, setLiveListing] = useState(listing);
@@ -159,15 +159,10 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
           </a>
         </div>
         
-        {/* Monthly rank badge */}
-        {liveListing.monthlyRank && (
-          <div className="mb-3">
-            <MonthlyRankBadge rank={liveListing.monthlyRank} />
-          </div>
-        )}
+
       </div>
       <div className="px-5 pb-4 pt-0" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
-        <ListingEngagementBar listing={liveListing} user={user} profile={profile} compact showRankings />
+        <ListingEngagementBar listing={liveListing} user={user} profile={profile} compact />
       </div>
     </motion.a>
   );
