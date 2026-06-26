@@ -17,6 +17,17 @@ export default function GameCoverCard({ l: initialL, i, user, profile }) {
   const coverUrl = l.images?.[0];
   const videoUrl = l.preview_video_url || l.video_url || l.youtube_url;
 
+  const glowPalette = {
+    red: "rgba(239,68,68,0.9)",
+    purple: "rgba(168,85,247,0.9)",
+    blue: "rgba(59,130,246,0.9)",
+    green: "rgba(34,197,94,0.9)",
+    gold: "rgba(250,204,21,0.92)",
+    multi: "rgba(236,72,153,0.9)",
+    custom: l.card_glow_hex || "#a855f7",
+  };
+  const glowColor = glowPalette[l.card_glow_color || "purple"] || glowPalette.purple;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -25,8 +36,8 @@ export default function GameCoverCard({ l: initialL, i, user, profile }) {
       whileHover={{ y: -4 }}
       className="group relative p-[2px]"
       style={{
-        background: "linear-gradient(160deg, rgba(236,72,153,0.9), rgba(168,85,247,0.9))",
-        boxShadow: "0 0 22px rgba(168,85,247,0.45), 0 0 44px rgba(236,72,153,0.25)",
+        background: `linear-gradient(160deg, ${glowColor}, rgba(17,24,39,0.95))`,
+        boxShadow: `0 0 22px ${glowColor}, 0 0 44px ${glowColor}`,
       }}
     >
       <div className="relative bg-gray-950">
@@ -43,7 +54,7 @@ export default function GameCoverCard({ l: initialL, i, user, profile }) {
             )}
             {/* IGN rating badge */}
             {l.ign_rating != null && (
-              <div className="absolute top-2.5 right-2.5 z-10">
+              <div className="absolute bottom-2.5 left-2.5 z-10">
                 <IgnRatingBadge rating={l.ign_rating} size="sm" />
               </div>
             )}

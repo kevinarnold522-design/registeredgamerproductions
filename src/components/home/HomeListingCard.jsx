@@ -12,6 +12,31 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
   const [sellerAvatar, setSellerAvatar] = useState(listing.seller_avatar || "");
   const hasMultipleImages = liveListing.images && liveListing.images.length > 1;
 
+  const getGlow = () => {
+    const selected = String(liveListing.card_glow_color || "").toLowerCase();
+    switch (selected) {
+      case "red": return { solid: "#ef4444", soft: "rgba(239,68,68,0.8)" };
+      case "blue": return { solid: "#3b82f6", soft: "rgba(59,130,246,0.8)" };
+      case "green": return { solid: "#22c55e", soft: "rgba(34,197,94,0.8)" };
+      case "gold": return { solid: "#f59e0b", soft: "rgba(245,158,11,0.85)" };
+      case "multi": return { solid: "#ec4899", soft: "rgba(236,72,153,0.85)" };
+      case "custom": return { solid: liveListing.card_glow_hex || "#a855f7", soft: (liveListing.card_glow_hex || "#a855f7") };
+      case "purple": return { solid: "#a855f7", soft: "rgba(168,85,247,0.8)" };
+      default:
+        switch (String(liveListing.category || "").toLowerCase()) {
+          case "games": return { solid: "#3b82f6", soft: "rgba(59,130,246,0.8)" };
+          case "modding": return { solid: "#22c55e", soft: "rgba(34,197,94,0.8)" };
+          case "premium_mods": return { solid: "#f59e0b", soft: "rgba(245,158,11,0.85)" };
+          case "paid_tools": return { solid: "#06b6d4", soft: "rgba(6,182,212,0.8)" };
+          case "tournaments": return { solid: "#ef4444", soft: "rgba(239,68,68,0.8)" };
+          case "content_streaming": return { solid: "#ec4899", soft: "rgba(236,72,153,0.85)" };
+          default: return { solid: "#a855f7", soft: "rgba(168,85,247,0.8)" };
+        }
+    }
+  };
+
+  const glow = getGlow();
+
   useEffect(() => {
     setLiveListing(listing);
     setCurrentImageIndex(0);
@@ -71,8 +96,8 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
       className={`bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-purple-700/50 transition-colors block group ${className}`}
-      style={{ boxShadow: "0 0 20px rgba(168, 85, 247, 0.15)" }}
-      whileHover={{ boxShadow: "0 0 30px rgba(168, 85, 247, 0.3)" }}
+      style={{ boxShadow: `0 0 20px ${glow.soft.replace("0.8", "0.22").replace("0.85", "0.22")}` }}
+      whileHover={{ boxShadow: `0 0 34px ${glow.soft.replace("0.8", "0.45").replace("0.85", "0.5")}` }}
     >
       <div className="relative h-44 overflow-hidden">
         {/* Image carousel */}
@@ -133,9 +158,9 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
           {(liveListing.views || 0).toLocaleString()}
         </span>
         
-        {/* IGN Rating badge - top right if available */}
+        {/* IGN Rating badge - lower left if available */}
         {liveListing.ign_rating && (
-          <div className="absolute top-3 left-24 flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)", color: "#000", boxShadow: "0 0 15px rgba(251, 191, 36, 0.7)" }}>
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black z-10" style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)", color: "#000", boxShadow: "0 0 15px rgba(251, 191, 36, 0.7)" }}>
             <Star className="w-3 h-3 fill-current" />
             IGN {liveListing.ign_rating}
           </div>
@@ -146,8 +171,11 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
           <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#f59e0b,#ec4899)", color: "#000", boxShadow: "0 0 10px rgba(245,158,11,0.6)" }}>💎 PAID</span>
         )}
         
-        {/* Super glow bar effect - animated gradient at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent" style={{ opacity: 0.6, boxShadow: "0 0 20px rgba(168, 85, 247, 0.8)" }} />
+        {/* Super glow bar effect - dynamic color by listing/category */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-current to-transparent"
+          style={{ color: glow.solid, opacity: 0.72, boxShadow: `0 0 22px ${glow.soft}` }}
+        />
       </div>
       <div className="p-5">
         <p className="text-purple-400 text-xs font-semibold mb-1">{liveListing.subcategory || liveListing.platform || liveListing.game_name || "Game"}</p>
