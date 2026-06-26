@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 
 export const MASCOTS = [
@@ -33,7 +33,7 @@ export const MASCOTS = [
     id: "france-chicken",
     name: "French Chicken",
     role: "European Gaming",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/france_chicken_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=FranceChicken&scale=120&backgroundColor=b6e3ff",
     country: "France",
     animal: "Chicken",
     keywords: ["france", "gaming", "european", "chicken", "esports"],
@@ -43,7 +43,7 @@ export const MASCOTS = [
     id: "germany-eagle",
     name: "German Eagle",
     role: "Strategy Gaming",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/germany_eagle_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=GermanyEagle&scale=120&backgroundColor=ffcccc",
     country: "Germany",
     animal: "Eagle",
     keywords: ["germany", "gaming", "strategy", "eagle", "european"],
@@ -53,7 +53,7 @@ export const MASCOTS = [
     id: "portugal-tiger",
     name: "Portuguese Tiger",
     role: "Community Hub",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/portugal_tiger_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=PortugalTiger&scale=120&backgroundColor=ffffcc",
     country: "Portugal",
     animal: "Tiger",
     keywords: ["portugal", "gaming", "community", "tiger", "iberian"],
@@ -63,7 +63,7 @@ export const MASCOTS = [
     id: "spain-bull",
     name: "Spanish Bull",
     role: "Combat Games",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/spain_bull_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=SpainBull&scale=120&backgroundColor=ffddcc",
     country: "Spain",
     animal: "Bull",
     keywords: ["spain", "gaming", "combat", "bull", "iberian"],
@@ -73,7 +73,7 @@ export const MASCOTS = [
     id: "belgium-dog",
     name: "Belgian Saint Bernard",
     role: "Cooperative Gaming",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/belgium_dog_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=BelgiumDog&scale=120&backgroundColor=e5ccff",
     country: "Belgium",
     animal: "Saint Bernard Dog",
     keywords: ["belgium", "gaming", "cooperative", "dog", "european"],
@@ -83,7 +83,7 @@ export const MASCOTS = [
     id: "netherlands-tulip-lion",
     name: "Dutch Lion",
     role: "Trading Games",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/netherlands_lion_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=NetherlandsLion&scale=120&backgroundColor=ffccee",
     country: "Netherlands",
     animal: "Lion",
     keywords: ["netherlands", "gaming", "trading", "dutch", "european"],
@@ -93,7 +93,7 @@ export const MASCOTS = [
     id: "usa-eagle",
     name: "American Eagle",
     role: "Action Games",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/usa_eagle_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=USAEagle&scale=120&backgroundColor=ccffcc",
     country: "USA",
     animal: "Eagle",
     keywords: ["usa", "gaming", "action", "eagle", "esports"],
@@ -103,7 +103,7 @@ export const MASCOTS = [
     id: "mexico-hawk",
     name: "Mexican Hawk",
     role: "Adventure Gaming",
-    image: "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/mexico_hawk_3d.png",
+    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=MexicoHawk&scale=120&backgroundColor=ffccdd",
     country: "Mexico",
     animal: "Hawk",
     keywords: ["mexico", "gaming", "adventure", "hawk", "americas"],
@@ -117,6 +117,31 @@ function selectMascots() {
 
 export default function MascotShowcase({ compact = false }) {
   const mascots = selectMascots();
+  const [failedImages, setFailedImages] = useState({});
+
+  const handleImageError = (mascotId) => {
+    setFailedImages(prev => ({ ...prev, [mascotId]: true }));
+  };
+
+  const getPlaceholderSVG = (mascot) => {
+    const colors = {
+      "argentina-penguin": { primary: "#0ea5e9", secondary: "#06b6d4", emoji: "🐧" },
+      "eafc-moose": { primary: "#60a5fa", secondary: "#3b82f6", emoji: "🫎" },
+      "brazil-bird": { primary: "#facc15", secondary: "#f59e0b", emoji: "🦜" },
+      "france-chicken": { primary: "#3b82f6", secondary: "#1e40af", emoji: "🐓" },
+      "germany-eagle": { primary: "#ef4444", secondary: "#dc2626", emoji: "🦅" },
+      "portugal-tiger": { primary: "#eab308", secondary: "#ca8a04", emoji: "🐯" },
+      "spain-bull": { primary: "#f97316", secondary: "#ea580c", emoji: "🐂" },
+      "belgium-dog": { primary: "#a855f7", secondary: "#9333ea", emoji: "🐕" },
+      "netherlands-tulip-lion": { primary: "#ec4899", secondary: "#db2777", emoji: "🦁" },
+      "usa-eagle": { primary: "#22c55e", secondary: "#16a34a", emoji: "🦅" },
+      "mexico-hawk": { primary: "#b45ef5", secondary: "#a855f7", emoji: "🦅" },
+    };
+
+    const color = colors[mascot.id] || { primary: "#8b5cf6", secondary: "#7c3aed", emoji: "🎮" };
+
+    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:${encodeURIComponent(color.primary)};stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:${encodeURIComponent(color.secondary)};stop-opacity:0.8' /%3E%3C/linearGradient%3E%3CfilterBlur id='shadow'%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='3' /%3E%3C/filter%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23grad)' rx='30'/%3E%3Ccircle cx='100' cy='100' r='85' fill='rgba(255,255,255,0.1)'/%3E%3Ctext x='50%25' y='60%25' font-size='100' text-anchor='middle' dominant-baseline='middle' font-weight='bold' filter='url(%23shadow)' style='text-shadow: 0 4px 8px rgba(0,0,0,0.3)'%3E${color.emoji}%3C/text%3E%3Ctext x='50%25' y='88%25' font-size='18' text-anchor='middle' fill='white' font-weight='bold' opacity='0.95'%3E${mascot.country}%3C/text%3E%3Ctext x='50%25' y='98%25' font-size='12' text-anchor='middle' fill='white' opacity='0.8'%3E${mascot.animal || mascot.role.split('/')[0]}%3C/text%3E%3C/svg%3E`;
+  };
 
   return (
     <section className={`relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gray-950/80 ${compact ? "px-4 py-4" : "px-5 py-6"} shadow-[0_0_34px_rgba(124,58,237,0.18)]`}>
@@ -137,9 +162,10 @@ export default function MascotShowcase({ compact = false }) {
             >
               <div className="absolute bottom-4 h-12 w-12 rounded-full blur-2xl opacity-70" style={{ background: mascot.glow }} />
               <img
-                src={mascot.image}
+                src={failedImages[mascot.id] ? getPlaceholderSVG(mascot) : mascot.image}
                 alt={mascot.name}
-                className={`${compact ? "h-20 sm:h-24" : "h-24 sm:h-32 md:h-40"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110`}
+                onError={() => handleImageError(mascot.id)}
+                className={`${compact ? "h-20 sm:h-24" : "h-24 sm:h-32 md:h-40"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110 rounded-lg`}
                 loading="lazy"
               />
               <div className="mt-1 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
