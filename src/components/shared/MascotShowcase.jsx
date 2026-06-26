@@ -118,26 +118,58 @@ function selectMascots() {
 export default function MascotShowcase({ compact = false }) {
   const mascots = selectMascots();
 
-  const getPlaceholderSVG = (mascot) => {
-    const colors = {
-      "argentina-penguin": { bg: "#0ea5e9", emoji: "🐧" },
-      "eafc-moose": { bg: "#60a5fa", emoji: "🫎" },
-      "brazil-bird": { bg: "#facc15", emoji: "🦜" },
-      "france-chicken": { bg: "#3b82f6", emoji: "🐓" },
-      "germany-eagle": { bg: "#ef4444", emoji: "🦅" },
-      "portugal-tiger": { bg: "#eab308", emoji: "🐯" },
-      "spain-bull": { bg: "#f97316", emoji: "🐂" },
-      "belgium-dog": { bg: "#a855f7", emoji: "🐕" },
-      "netherlands-tulip-lion": { bg: "#ec4899", emoji: "🦁" },
-      "usa-eagle": { bg: "#22c55e", emoji: "🦅" },
-      "mexico-hawk": { bg: "#b45ef5", emoji: "🦅" },
+  const generate3DMascotSVG = (mascot) => {
+    const styles = {
+      "france-chicken": {
+        primaryColor: "#E74C3C",
+        secondaryColor: "#C0392B",
+        accentColor: "#FFD700",
+      },
+      "germany-eagle": {
+        primaryColor: "#8B4513",
+        secondaryColor: "#654321",
+        accentColor: "#DAA520",
+      },
+      "portugal-tiger": {
+        primaryColor: "#FF6B35",
+        secondaryColor: "#F7931E",
+        accentColor: "#FFD700",
+      },
+      "spain-bull": {
+        primaryColor: "#8B0000",
+        secondaryColor: "#600000",
+        accentColor: "#FFD700",
+      },
+      "belgium-dog": {
+        primaryColor: "#8B4513",
+        secondaryColor: "#A0522D",
+        accentColor: "#F4A460",
+      },
+      "netherlands-tulip-lion": {
+        primaryColor: "#CD853F",
+        secondaryColor: "#8B4513",
+        accentColor: "#FFD700",
+      },
+      "usa-eagle": {
+        primaryColor: "#8B4513",
+        secondaryColor: "#654321",
+        accentColor: "#DAA520",
+      },
+      "mexico-hawk": {
+        primaryColor: "#8B4513",
+        secondaryColor: "#654321",
+        accentColor: "#DAA520",
+      },
     };
 
-    const color = colors[mascot.id] || { bg: "#8b5cf6", emoji: "🎮" };
-    const bgEncoded = color.bg.replace("#", "%23");
+    const style = styles[mascot.id] || {
+      primaryColor: "#8B5CF6",
+      secondaryColor: "#7C3AED",
+      accentColor: "#A78BFA",
+    };
 
-    // Simplified SVG with proper encoding
-    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:${bgEncoded};stop-opacity:1'/%3E%3Cstop offset='100%25' style='stop-color:${bgEncoded};stop-opacity:0.7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='160' fill='url(%23grad1)' rx='20'/%3E%3Ccircle cx='80' cy='80' r='70' fill='rgba(255,255,255,0.15)'/%3E%3Ctext x='80' y='75' font-size='80' text-anchor='middle' dominant-baseline='central'%3E${color.emoji}%3C/text%3E%3C/svg%3E`;
+    // Create a more sophisticated 3D SVG with proper animal shapes
+    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 250'%3E%3Cdefs%3E%3ClinearGradient id='bodyGrad' x1='0%' y1='0%' x2='100%' y2='100%'%3E%3Cstop offset='0%' style='stop-color:${encodeURIComponent(style.primaryColor)};stop-opacity:1'/%3E%3Cstop offset='100%' style='stop-color:${encodeURIComponent(style.secondaryColor)};stop-opacity:1'/%3E%3C/linearGradient%3E%3ClinearGradient id='accent' x1='0%' y1='0%' x2='100%' y2='100%'%3E%3Cstop offset='0%' style='stop-color:${encodeURIComponent(style.accentColor)};stop-opacity:0.9'/%3E%3Cstop offset='100%' style='stop-color:${encodeURIComponent(style.accentColor)};stop-opacity:0.6'/%3E%3C/linearGradient%3E%3CfilterBlur id='shadow' x='-50%' y='-50%' width='200%' height='200%'%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='2'/%3E%3C/filterBlur%3E%3Cdrop-shadow id='dropShadow' dx='2' dy='4' stdDeviation='3' flood-opacity='0.3' /%3E%3C/defs%3E%3Crect x='10' y='10' width='180' height='230' fill='%23f0f0f0' rx='20' opacity='0.05'/%3E%3Ccircle cx='100' cy='85' r='45' fill='url(%23bodyGrad)' opacity='0.95'/%3E%3Ccircle cx='95' cy='80' r='42' fill='url(%23bodyGrad)' opacity='0.8'/%3E%3Cellipse cx='100' cy='150' rx='50' ry='55' fill='url(%23bodyGrad)' opacity='0.9'/%3E%3Ccircle cx='70' cy='90' r='12' fill='white' opacity='0.6'/%3E%3Ccircle cx='130' cy='90' r='12' fill='white' opacity='0.6'/%3E%3Ccircle cx='72' cy='88' r='8' fill='%23333' opacity='0.8'/%3E%3Ccircle cx='132' cy='88' r='8' fill='%23333' opacity='0.8'/%3E%3Cellipse cx='100' cy='105' rx='8' ry='10' fill='%23333' opacity='0.7'/%3E%3Cpath d='M 85 190 L 80 220 M 95 190 L 92 220 M 105 190 L 108 220 M 115 190 L 120 220' stroke='%23333' stroke-width='4' opacity='0.8' stroke-linecap='round'/%3E%3Crect x='30' y='120' width='20' height='60' fill='url(%23bodyGrad)' opacity='0.7' rx='8'/%3E%3Crect x='150' y='120' width='20' height='60' fill='url(%23bodyGrad)' opacity='0.7' rx='8'/%3E%3C/svg%3E`;
   };
 
   return (
@@ -165,8 +197,11 @@ export default function MascotShowcase({ compact = false }) {
               <div className="absolute bottom-4 h-12 w-12 rounded-full blur-2xl opacity-70" style={{ background: mascot.glow }} />
               
               <img
-                src={getPlaceholderSVG(mascot)}
+                src={mascot.image.includes("dicebear") ? mascot.image : generate3DMascotSVG(mascot)}
                 alt={mascot.name}
+                onError={(e) => {
+                  e.target.src = generate3DMascotSVG(mascot);
+                }}
                 className={`${compact ? "h-20 sm:h-24" : "h-24 sm:h-32 md:h-40"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110 rounded-lg`}
                 loading="lazy"
               />
