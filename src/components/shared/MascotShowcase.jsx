@@ -33,7 +33,7 @@ export const MASCOTS = [
     id: "france-chicken",
     name: "French Chicken",
     role: "European Gaming",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=FranceChicken&scale=120&backgroundColor=b6e3ff",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=FranceChicken&scale=90",
     country: "France",
     animal: "Chicken",
     keywords: ["france", "gaming", "european", "chicken", "esports"],
@@ -43,7 +43,7 @@ export const MASCOTS = [
     id: "germany-eagle",
     name: "German Eagle",
     role: "Strategy Gaming",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=GermanyEagle&scale=120&backgroundColor=ffcccc",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=GermanyEagle&scale=90",
     country: "Germany",
     animal: "Eagle",
     keywords: ["germany", "gaming", "strategy", "eagle", "european"],
@@ -53,7 +53,7 @@ export const MASCOTS = [
     id: "portugal-tiger",
     name: "Portuguese Tiger",
     role: "Community Hub",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=PortugalTiger&scale=120&backgroundColor=ffffcc",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=PortugalTiger&scale=90",
     country: "Portugal",
     animal: "Tiger",
     keywords: ["portugal", "gaming", "community", "tiger", "iberian"],
@@ -63,7 +63,7 @@ export const MASCOTS = [
     id: "spain-bull",
     name: "Spanish Bull",
     role: "Combat Games",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=SpainBull&scale=120&backgroundColor=ffddcc",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=SpainBull&scale=90",
     country: "Spain",
     animal: "Bull",
     keywords: ["spain", "gaming", "combat", "bull", "iberian"],
@@ -73,7 +73,7 @@ export const MASCOTS = [
     id: "belgium-dog",
     name: "Belgian Saint Bernard",
     role: "Cooperative Gaming",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=BelgiumDog&scale=120&backgroundColor=e5ccff",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=BelgiumDog&scale=90",
     country: "Belgium",
     animal: "Saint Bernard Dog",
     keywords: ["belgium", "gaming", "cooperative", "dog", "european"],
@@ -83,7 +83,7 @@ export const MASCOTS = [
     id: "netherlands-tulip-lion",
     name: "Dutch Lion",
     role: "Trading Games",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=NetherlandsLion&scale=120&backgroundColor=ffccee",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=NetherlandsLion&scale=90",
     country: "Netherlands",
     animal: "Lion",
     keywords: ["netherlands", "gaming", "trading", "dutch", "european"],
@@ -93,7 +93,7 @@ export const MASCOTS = [
     id: "usa-eagle",
     name: "American Eagle",
     role: "Action Games",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=USAEagle&scale=120&backgroundColor=ccffcc",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=USAEagle&scale=90",
     country: "USA",
     animal: "Eagle",
     keywords: ["usa", "gaming", "action", "eagle", "esports"],
@@ -103,7 +103,7 @@ export const MASCOTS = [
     id: "mexico-hawk",
     name: "Mexican Hawk",
     role: "Adventure Gaming",
-    image: "https://api.dicebear.com/7.x/3d-avatar/svg?seed=MexicoHawk&scale=120&backgroundColor=ffccdd",
+    image: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=MexicoHawk&scale=90",
     country: "Mexico",
     animal: "Hawk",
     keywords: ["mexico", "gaming", "adventure", "hawk", "americas"],
@@ -117,60 +117,6 @@ function selectMascots() {
 
 export default function MascotShowcase({ compact = false }) {
   const mascots = selectMascots();
-
-  const generate3DMascotSVG = (mascot) => {
-    const styles = {
-      "france-chicken": {
-        primaryColor: "#E74C3C",
-        secondaryColor: "#C0392B",
-        accentColor: "#FFD700",
-      },
-      "germany-eagle": {
-        primaryColor: "#8B4513",
-        secondaryColor: "#654321",
-        accentColor: "#DAA520",
-      },
-      "portugal-tiger": {
-        primaryColor: "#FF6B35",
-        secondaryColor: "#F7931E",
-        accentColor: "#FFD700",
-      },
-      "spain-bull": {
-        primaryColor: "#8B0000",
-        secondaryColor: "#600000",
-        accentColor: "#FFD700",
-      },
-      "belgium-dog": {
-        primaryColor: "#8B4513",
-        secondaryColor: "#A0522D",
-        accentColor: "#F4A460",
-      },
-      "netherlands-tulip-lion": {
-        primaryColor: "#CD853F",
-        secondaryColor: "#8B4513",
-        accentColor: "#FFD700",
-      },
-      "usa-eagle": {
-        primaryColor: "#8B4513",
-        secondaryColor: "#654321",
-        accentColor: "#DAA520",
-      },
-      "mexico-hawk": {
-        primaryColor: "#8B4513",
-        secondaryColor: "#654321",
-        accentColor: "#DAA520",
-      },
-    };
-
-    const style = styles[mascot.id] || {
-      primaryColor: "#8B5CF6",
-      secondaryColor: "#7C3AED",
-      accentColor: "#A78BFA",
-    };
-
-    // Create a more sophisticated 3D SVG with proper animal shapes
-    return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 250'%3E%3Cdefs%3E%3ClinearGradient id='bodyGrad' x1='0%' y1='0%' x2='100%' y2='100%'%3E%3Cstop offset='0%' style='stop-color:${encodeURIComponent(style.primaryColor)};stop-opacity:1'/%3E%3Cstop offset='100%' style='stop-color:${encodeURIComponent(style.secondaryColor)};stop-opacity:1'/%3E%3C/linearGradient%3E%3ClinearGradient id='accent' x1='0%' y1='0%' x2='100%' y2='100%'%3E%3Cstop offset='0%' style='stop-color:${encodeURIComponent(style.accentColor)};stop-opacity:0.9'/%3E%3Cstop offset='100%' style='stop-color:${encodeURIComponent(style.accentColor)};stop-opacity:0.6'/%3E%3C/linearGradient%3E%3CfilterBlur id='shadow' x='-50%' y='-50%' width='200%' height='200%'%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='2'/%3E%3C/filterBlur%3E%3Cdrop-shadow id='dropShadow' dx='2' dy='4' stdDeviation='3' flood-opacity='0.3' /%3E%3C/defs%3E%3Crect x='10' y='10' width='180' height='230' fill='%23f0f0f0' rx='20' opacity='0.05'/%3E%3Ccircle cx='100' cy='85' r='45' fill='url(%23bodyGrad)' opacity='0.95'/%3E%3Ccircle cx='95' cy='80' r='42' fill='url(%23bodyGrad)' opacity='0.8'/%3E%3Cellipse cx='100' cy='150' rx='50' ry='55' fill='url(%23bodyGrad)' opacity='0.9'/%3E%3Ccircle cx='70' cy='90' r='12' fill='white' opacity='0.6'/%3E%3Ccircle cx='130' cy='90' r='12' fill='white' opacity='0.6'/%3E%3Ccircle cx='72' cy='88' r='8' fill='%23333' opacity='0.8'/%3E%3Ccircle cx='132' cy='88' r='8' fill='%23333' opacity='0.8'/%3E%3Cellipse cx='100' cy='105' rx='8' ry='10' fill='%23333' opacity='0.7'/%3E%3Cpath d='M 85 190 L 80 220 M 95 190 L 92 220 M 105 190 L 108 220 M 115 190 L 120 220' stroke='%23333' stroke-width='4' opacity='0.8' stroke-linecap='round'/%3E%3Crect x='30' y='120' width='20' height='60' fill='url(%23bodyGrad)' opacity='0.7' rx='8'/%3E%3Crect x='150' y='120' width='20' height='60' fill='url(%23bodyGrad)' opacity='0.7' rx='8'/%3E%3C/svg%3E`;
-  };
 
   return (
     <section className={`relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gray-950/80 ${compact ? "px-4 py-4" : "px-5 py-6"} shadow-[0_0_34px_rgba(124,58,237,0.18)]`}>
@@ -197,11 +143,8 @@ export default function MascotShowcase({ compact = false }) {
               <div className="absolute bottom-4 h-12 w-12 rounded-full blur-2xl opacity-70" style={{ background: mascot.glow }} />
               
               <img
-                src={mascot.image.includes("dicebear") ? mascot.image : generate3DMascotSVG(mascot)}
+                src={mascot.image}
                 alt={mascot.name}
-                onError={(e) => {
-                  e.target.src = generate3DMascotSVG(mascot);
-                }}
                 className={`${compact ? "h-20 sm:h-24" : "h-24 sm:h-32 md:h-40"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110 rounded-lg`}
                 loading="lazy"
               />
