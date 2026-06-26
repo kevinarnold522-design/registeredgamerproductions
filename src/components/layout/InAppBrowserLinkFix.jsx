@@ -1,5 +1,14 @@
 import { useEffect } from "react";
 
+function safeAssign(url) {
+  const helper = window.__safeLocationAssign;
+  if (typeof helper === "function") {
+    helper(url);
+    return;
+  }
+  window.location.assign(url);
+}
+
 function isSocialInAppBrowser() {
   const ua = navigator.userAgent || "";
   return /Instagram|FBAN|FBAV|FB_IAB|Line|Twitter|TikTok|Snapchat/i.test(ua);
@@ -21,7 +30,7 @@ export default function InAppBrowserLinkFix() {
       if (isModifiedClick) return;
 
       event.preventDefault();
-      window.location.assign(url.href);
+      safeAssign(url.href);
     };
 
     document.addEventListener("click", handleClick, true);

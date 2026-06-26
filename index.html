@@ -179,17 +179,19 @@
         return _origOpen.apply(window, arguments);
       };
 
-      // Block navigation hijacks via location assign/replace
+      // Expose safe navigation helpers without mutating native location methods.
+      // Redefining window.location.assign/replace throws in some browsers and can
+      // halt app bootstrap with a blank screen.
       var _origAssign = window.location.assign.bind(window.location);
       var _origReplace = window.location.replace.bind(window.location);
-      Object.defineProperty(window.location, 'assign', {
-        value: function(url) { if (isFraudUrl(url)) return; _origAssign(url); },
-        writable: false, configurable: false
-      });
-      Object.defineProperty(window.location, 'replace', {
-        value: function(url) { if (isFraudUrl(url)) return; _origReplace(url); },
-        writable: false, configurable: false
-      });
+      window.__safeLocationAssign = function(url) {
+        if (isFraudUrl(url)) return;
+        _origAssign(url);
+      };
+      window.__safeLocationReplace = function(url) {
+        if (isFraudUrl(url)) return;
+        _origReplace(url);
+      };
     })();
     </script>
     <!-- Close Ad Button injected into DOM after ads load (hidden for admin/mod/tier1) -->
