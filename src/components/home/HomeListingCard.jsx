@@ -116,13 +116,15 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
           </span>
         )}
         
-        {!liveListing.is_free && liveListing.price > 0 && (
-          <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#f59e0b,#ec4899)", color: "#000", boxShadow: "0 0 10px rgba(245,158,11,0.6)" }}>💎 PAID</span>
-        )}
         <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-cyan-300">
           <Eye className="w-3 h-3" />
           {(liveListing.views || 0).toLocaleString()}
         </span>
+        
+        {/* PAID sign moved to bottom-right */}
+        {!liveListing.is_free && liveListing.price > 0 && (
+          <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#f59e0b,#ec4899)", color: "#000", boxShadow: "0 0 10px rgba(245,158,11,0.6)" }}>💎 PAID</span>
+        )}
       </div>
       <div className="p-5">
         <p className="text-purple-400 text-xs font-semibold mb-1">{liveListing.subcategory || liveListing.platform || liveListing.game_name || "Game"}</p>
@@ -143,7 +145,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
         )}
       </div>
       <div className="px-5 pb-4 pt-0" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
-        <ListingEngagementBar listing={liveListing} user={user} profile={profile} compact showBars />
+        <ListingEngagementBar listing={liveListing} user={user} profile={profile} compact showRankings />
       </div>
     </motion.a>
   );
