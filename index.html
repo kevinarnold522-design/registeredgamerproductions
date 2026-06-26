@@ -5,6 +5,23 @@
     <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
+    <!-- Critical CSS for instant dark background on load -->
+    <style>
+      html, body, #root {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #030712;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      #root {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
     <title>GAMER.PRODUCTIONS — The #1 Gaming Hub Community</title>
     <meta name="description" content="GAMER.PRODUCTIONS — Stream Live, Share Mods, Build Community, Sell & Earn. The one stop hub for all gamers worldwide." />
     <meta name="keywords" content="gaming, mods, livestream, esports, marketplace, gaming community, gamer productions, gamer.productions" />

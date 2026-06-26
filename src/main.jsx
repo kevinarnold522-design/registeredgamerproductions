@@ -16,16 +16,15 @@ import '@/index.css'
     localStorage.setItem('base44_token', token);
   } catch (_) {}
 
-  // Clean the URL and reload without the token in the address bar
+  // Clean the URL without reloading — let React handle the state
   params.delete('access_token');
   const cleanUrl =
     window.location.pathname +
     (params.toString() ? `?${params.toString()}` : '') +
     window.location.hash;
 
+  // Use replaceState without reload to keep app running
   window.history.replaceState({}, document.title, cleanUrl);
-  // Force a clean reload so the SDK picks up the token from localStorage
-  window.location.replace(cleanUrl);
 })();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
