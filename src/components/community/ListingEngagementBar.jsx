@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Heart, MessageCircle, Share2, Bookmark, Eye, Flag, Check } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, Eye, Flag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { toast } from "sonner";
-import { copyToClipboard } from "@/lib/copyToClipboard";
 import RepostButton from "@/components/shared/RepostButton";
+import ShareButton from "@/components/shared/ShareButton";
 
 export default function ListingEngagementBar({ listing, user, profile, compact = false, hideReport = false, hideRepost = false }) {
   const [liked, setLiked] = useState(false);
@@ -26,33 +25,7 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
     base44.entities.Listing.update(listing.id, { likes: next ? likeCount + 1 : likeCount - 1 }).catch(() => {});
   };
 
-  const [shared, setShared] = useState(false);
-  const handleShare = async (e) => {
-    e.preventDefault(); e.stopPropagation();
-    const url = `${window.location.origin}/listing?id=${listing.id}`;
-    // Try the native share sheet first (mobile / supported browsers).
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: listing.title, url });
-        base44.entities.Listing.update(listing.id, { shares: (Number(listing.shares) || 0) + 1 }).catch(() => {});
-        return;
-      } catch (err) {
-        // User cancelled the share sheet — do nothing.
-        if (err?.name === "AbortError") return;
-        // Otherwise fall through to copy.
-      }
-    }
-    // Fallback: copy the link to the clipboard with visible confirmation.
-    const ok = await copyToClipboard(url);
-    if (ok) {
-      setShared(true);
-      toast.success("Link copied — share it anywhere!");
-      base44.entities.Listing.update(listing.id, { shares: (Number(listing.shares) || 0) + 1 }).catch(() => {});
-      setTimeout(() => setShared(false), 2000);
-    } else {
-      toast.error("Couldn't copy the link");
-    }
-  };
+
 
   const handleFav = async (e) => {
     e.preventDefault(); e.stopPropagation();
@@ -102,9 +75,7 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
       {/* Right cluster: actions */}
       <div className="flex items-center gap-2">
         {/* Share */}
-        <button onClick={handleShare} className={`${actionClass} ${shared ? "text-green-400" : "text-gray-400 hover:text-cyan-200"} transition-colors`} title="Share">
-          {shared ? <Check className={iconSize} /> : <Share2 className={iconSize} />}
-        </button>
+        <ShareButton type="listing" id={listing.id} title={listing.title} compact={true} />
 
         {/* Save to Favourites */}
         <button onClick={handleFav} className={`${actionClass} transition-colors`}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, TrendingUp, ShoppingBag, Star, Download, Eye, BarChart2, Package, Clock, ArrowUpRight, Gift, Flame, Target, Wallet } from "lucide-react";
+import { DollarSign, TrendingUp, ShoppingBag, Star, Download, Eye, BarChart2, Package, Clock, ArrowUpRight, Gift, Flame, Target, Wallet, Heart, Share2, Zap } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -10,6 +10,23 @@ import {
 } from "recharts";
 
 const COLORS = ["#a855f7", "#ec4899", "#06b6d4", "#f59e0b", "#22c55e", "#f97316"];
+
+// Custom 3-D bar shape for recharts
+const Bar3D = (props) => {
+  const { x, y, width, height, fill } = props;
+  if (!height || height <= 0) return null;
+  const depth = Math.max(4, width * 0.25);
+  return (
+    <g>
+      {/* Front face */}
+      <rect x={x} y={y} width={width} height={height} fill={fill} rx={3} />
+      {/* Top face */}
+      <path d={`M${x},${y} L${x+depth},${y-depth} L${x+width+depth},${y-depth} L${x+width},${y} Z`} fill={fill} opacity={0.6} />
+      {/* Right side face */}
+      <path d={`M${x+width},${y} L${x+width+depth},${y-depth} L${x+width+depth},${y+height-depth} L${x+width},${y+height} Z`} fill={fill} opacity={0.35} />
+    </g>
+  );
+};
 
 const StatCard = ({ label, value, icon: IconComp, color, bg, sub }) => (
   <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
@@ -121,11 +138,11 @@ export default function EarningsDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
-          {["overview", "daily rewards", "orders", "listings", ...(admin ? ["subscriptions"] : [])].map(t => (
+          {["overview", "daily rewards", "orders", "listings", "analytics", ...(admin ? ["subscriptions"] : [])].map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-2 rounded-xl text-sm font-bold capitalize whitespace-nowrap transition-all ${tab === t ? "text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}
               style={tab === t ? { background: "linear-gradient(135deg, #22c55e, #16a34a)" } : {}}>
-              {t === "daily rewards" ? "🎁 Daily Rewards" : t}
+              {t === "daily rewards" ? "🎁 Daily Rewards" : t === "analytics" ? "📊 Analytics" : t}
             </button>
           ))}
         </div>
@@ -430,6 +447,126 @@ export default function EarningsDashboard() {
             </div>
           </div>
         )}
+
+        {/* ── ANALYTICS TAB ── */}
+        {tab === "analytics" && (() => {
+          const topHearted = [...listings].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, 8);
+          const topViewed = [...listings].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+          const topShared = [...listings].sort((a, b) => (b.shares || 0) - (a.shares || 0)).slice(0, 8);
+          // Engagement rate = likes / max(views,1)
+          const engRate = [...listings]
+            .map(l => ({ ...l, engagementRate: ((l.likes || 0) / Math.max(l.views || 1, 1) * 100) }))
+            .sort((a, b) => b.engagementRate - a.engagementRate).slice(0, 8);
+          const mostStayHearted = engRate[0];
+          const heartedChartData = topHearted.map(l => ({ name: (l.title || "").slice(0, 16), hearts: l.likes || 0, views: l.views || 0, shares: l.shares || 0 }));
+          const engChartData = engRate.map(l => ({ name: (l.title || "").slice(0, 16), rate: parseFloat(l.engagementRate.toFixed(2)) }));
+          return (
+            <div className="space-y-6">
+              {/* Hero: Most Average Stay Hearted */}
+              {mostStayHearted && (
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                  className="rounded-3xl p-6 border border-pink-500/30 relative overflow-hidden"
+                  style={{ background: "linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.08))" }}>
+                  <div className="absolute top-0 right-0 w-56 h-56 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #ec4899, transparent)", transform: "translate(30%,-30%)" }} />
+                  <div className="relative z-10 flex flex-wrap items-start gap-6">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Heart className="w-5 h-5 text-pink-400 fill-pink-400" />
+                        <span className="text-pink-300 text-xs font-black uppercase tracking-widest">Most Average Stay-Hearted Listing</span>
+                      </div>
+                      <h3 className="text-white font-black text-xl truncate mb-1">{mostStayHearted.title}</h3>
+                      <p className="text-gray-400 text-sm">Highest hearts-to-views engagement ratio</p>
+                    </div>
+                    <div className="flex gap-4 flex-wrap">
+                      <div className="text-center px-5 py-3 rounded-2xl" style={{ background: "rgba(236,72,153,0.15)", border: "1px solid rgba(236,72,153,0.3)" }}>
+                        <p className="text-pink-400 font-black text-2xl">{mostStayHearted.likes || 0}</p>
+                        <p className="text-gray-500 text-[10px] uppercase">Hearts</p>
+                      </div>
+                      <div className="text-center px-5 py-3 rounded-2xl" style={{ background: "rgba(168,85,247,0.15)", border: "1px solid rgba(168,85,247,0.3)" }}>
+                        <p className="text-purple-400 font-black text-2xl">{mostStayHearted.views || 0}</p>
+                        <p className="text-gray-500 text-[10px] uppercase">Views</p>
+                      </div>
+                      <div className="text-center px-5 py-3 rounded-2xl" style={{ background: "rgba(6,182,212,0.15)", border: "1px solid rgba(6,182,212,0.3)" }}>
+                        <p className="text-cyan-400 font-black text-2xl">{mostStayHearted.engagementRate.toFixed(1)}%</p>
+                        <p className="text-gray-500 text-[10px] uppercase">Eng. Rate</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* 3D Bar: Top Hearted Listings */}
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                <h3 className="text-white font-black mb-1 flex items-center gap-2"><Heart className="w-4 h-4 text-pink-400" /> Most Hearted Listings</h3>
+                <p className="text-gray-500 text-xs mb-4">Listings with the most ❤️ hearts from users</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={heartedChartData} margin={{ top: 16, right: 8, bottom: 8, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={42} />
+                    <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: "#111827", border: "1px solid #374151", borderRadius: "8px" }} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#ec4899" }} />
+                    <Bar dataKey="hearts" shape={<Bar3D />} radius={[6,6,0,0]}>
+                      {heartedChartData.map((_, i) => <Cell key={i} fill={["#ec4899","#a855f7","#f59e0b","#06b6d4","#22c55e","#f97316","#e11d48","#8b5cf6"][i % 8]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* 3D Bar: Engagement Rate */}
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                <h3 className="text-white font-black mb-1 flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-400" /> Engagement Rate by Listing (%)</h3>
+                <p className="text-gray-500 text-xs mb-4">Hearts ÷ Views — higher = more people who view also heart it</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={engChartData} margin={{ top: 16, right: 8, bottom: 8, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={42} />
+                    <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} unit="%" />
+                    <Tooltip contentStyle={{ background: "#111827", border: "1px solid #374151", borderRadius: "8px" }} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#f59e0b" }} formatter={(v) => [`${v}%`, "Eng. Rate"]} />
+                    <Bar dataKey="rate" shape={<Bar3D />} radius={[6,6,0,0]}>
+                      {engChartData.map((_, i) => <Cell key={i} fill={["#f59e0b","#f97316","#ec4899","#a855f7","#06b6d4","#22c55e","#e11d48","#8b5cf6"][i % 8]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* 3D Bar: Top Viewed */}
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                <h3 className="text-white font-black mb-1 flex items-center gap-2"><Eye className="w-4 h-4 text-blue-400" /> Most Viewed Listings</h3>
+                <p className="text-gray-500 text-xs mb-4">Top listings by total view count</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={topViewed.map(l => ({ name: (l.title||"").slice(0,16), views: l.views||0 }))} margin={{ top: 16, right: 8, bottom: 8, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={42} />
+                    <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: "#111827", border: "1px solid #374151", borderRadius: "8px" }} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#60a5fa" }} />
+                    <Bar dataKey="views" shape={<Bar3D />} radius={[6,6,0,0]}>
+                      {topViewed.map((_, i) => <Cell key={i} fill={["#3b82f6","#06b6d4","#a855f7","#22c55e","#f59e0b","#ec4899","#f97316","#8b5cf6"][i % 8]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* 3D Bar: Most Shared */}
+              {topShared.some(l => l.shares > 0) && (
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+                  <h3 className="text-white font-black mb-1 flex items-center gap-2"><Share2 className="w-4 h-4 text-cyan-400" /> Most Shared Listings</h3>
+                  <p className="text-gray-500 text-xs mb-4">Top listings by total share count</p>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={topShared.map(l => ({ name: (l.title||"").slice(0,16), shares: l.shares||0 }))} margin={{ top: 16, right: 8, bottom: 8, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 10 }} interval={0} angle={-20} textAnchor="end" height={42} />
+                      <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} />
+                      <Tooltip contentStyle={{ background: "#111827", border: "1px solid #374151", borderRadius: "8px" }} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#22d3ee" }} />
+                      <Bar dataKey="shares" shape={<Bar3D />} radius={[6,6,0,0]}>
+                        {topShared.map((_, i) => <Cell key={i} fill={["#06b6d4","#3b82f6","#a855f7","#ec4899","#f59e0b","#22c55e","#f97316","#8b5cf6"][i % 8]} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── SUBSCRIPTIONS (admin) ── */}
         {tab === "subscriptions" && admin && (

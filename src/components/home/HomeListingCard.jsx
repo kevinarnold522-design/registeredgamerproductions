@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import { Eye } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
+import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
-export default function HomeListingCard({ listing, index = 0, className = "" }) {
+export default function HomeListingCard({ listing, index = 0, className = "", user = null, profile = null }) {
   const [liveListing, setLiveListing] = useState(listing);
 
   useEffect(() => {
@@ -43,6 +44,9 @@ export default function HomeListingCard({ listing, index = 0, className = "" }) 
           <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-800">🎮</div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
+        {!liveListing.is_free && liveListing.price > 0 && (
+          <span className="absolute top-3 left-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#f59e0b,#ec4899)", color: "#000", boxShadow: "0 0 10px rgba(245,158,11,0.6)" }}>💎 PAID</span>
+        )}
         <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-bold text-cyan-300">
           <Eye className="w-3 h-3" />
           {(liveListing.views || 0).toLocaleString()}
@@ -58,6 +62,9 @@ export default function HomeListingCard({ listing, index = 0, className = "" }) 
           </span>
           <span className="text-gray-600 text-xs truncate">by @{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</span>
         </div>
+      </div>
+      <div className="px-5 pb-4 pt-0" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
+        <ListingEngagementBar listing={liveListing} user={user} profile={profile} compact />
       </div>
     </motion.a>
   );

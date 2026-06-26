@@ -42,7 +42,7 @@ function ScrollRow({ children, speed = 30, reverse = false }) {
 function ScrollCard({ item, user, profile, rank }) {
   return (
     <div className="w-[320px] max-w-[84vw] flex-shrink-0">
-      <HomeListingCard listing={{ ...item, monthlyRank: rank }} className="h-full" />
+      <HomeListingCard listing={{ ...item, monthlyRank: rank }} user={user} profile={profile} className="h-full" />
     </div>
   );
 }
