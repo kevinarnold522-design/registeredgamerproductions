@@ -37,8 +37,12 @@ export default function GlobalHtmlAd() {
     const media = window.matchMedia("(max-width: 1023px)");
     const onChange = () => setIsMobileViewport(media.matches);
     onChange();
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
   }, []);
 
   // Ad-free option bans ALL ad codes for the user (admin-set no_ads,

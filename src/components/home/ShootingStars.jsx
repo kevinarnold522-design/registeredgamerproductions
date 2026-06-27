@@ -9,8 +9,12 @@ export default function ShootingStars() {
     const media = window.matchMedia("(max-width: 1023px), (prefers-reduced-motion: reduce)");
     const update = () => setEnabled(!media.matches);
     update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }
+    media.addListener(update);
+    return () => media.removeListener(update);
   }, []);
 
   useEffect(() => {

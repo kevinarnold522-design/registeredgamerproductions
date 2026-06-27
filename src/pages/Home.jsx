@@ -71,8 +71,12 @@ export default function Home() {
     const media = window.matchMedia("(max-width: 1023px)");
     const onChange = () => setIsMobileViewport(media.matches);
     onChange();
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
   }, []);
 
   // Page mounted successfully — clear the chunk-retry guard so a future
