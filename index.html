@@ -55,20 +55,24 @@
     <script>
       (function() {
         // Mobile-safe mode: disable ad script bootstrapping on mobile/tablet
-        // to prevent third-party overlays from blanking the page.
+        // and in-app touch browsers to prevent first-render stalls/overlays.
+        var ua = navigator.userAgent || '';
+        var isLikelyMobileUA = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini|FBAN|FBAV|Instagram/i.test(ua);
         var isMobileViewport = false;
+        var isCoarsePointer = false;
         try {
-          isMobileViewport = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
+          isMobileViewport = window.matchMedia && window.matchMedia('(max-width: 1279px)').matches;
+          isCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
         } catch (e) {
           isMobileViewport = false;
+          isCoarsePointer = false;
         }
-        if (isMobileViewport) {
+        if (isLikelyMobileUA || isMobileViewport || isCoarsePointer) {
           window.__adsBlocked = true;
           return;
         }
 
         // Detect Facebook/Instagram in-app browser or referrer
-        var ua = navigator.userAgent || '';
         var ref = document.referrer || '';
         var isSocialTraffic = (
           ua.indexOf('FBAN') !== -1 || ua.indexOf('FBAV') !== -1 ||
@@ -227,13 +231,18 @@
     <!-- Close Ad Button injected into DOM after ads load (hidden for admin/mod/tier1) -->
     <script>
     (function() {
+      var ua = navigator.userAgent || '';
+      var isLikelyMobileUA = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini|FBAN|FBAV|Instagram/i.test(ua);
       var isMobileViewport = false;
+      var isCoarsePointer = false;
       try {
-        isMobileViewport = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
+        isMobileViewport = window.matchMedia && window.matchMedia('(max-width: 1279px)').matches;
+        isCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       } catch (e) {
         isMobileViewport = false;
+        isCoarsePointer = false;
       }
-      if (isMobileViewport) return;
+      if (isLikelyMobileUA || isMobileViewport || isCoarsePointer) return;
 
       // Inject a floating close-ad button after a short delay once ads are active
       function maybeInjectCloseBtn() {

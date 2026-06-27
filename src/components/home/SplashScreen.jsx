@@ -9,7 +9,7 @@ export default function SplashScreen({ onDismiss }) {
     if (dismissingRef.current) return;
     dismissingRef.current = true;
     setTapped(true);
-    setTimeout(() => onDismiss(), 180);
+    setTimeout(() => onDismiss(), 420);
   }, [onDismiss]);
   
   useEffect(() => {
