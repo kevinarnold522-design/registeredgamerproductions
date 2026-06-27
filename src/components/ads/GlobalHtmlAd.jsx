@@ -28,12 +28,12 @@ export default function GlobalHtmlAd() {
   const [show, setShow] = useState(false);
   const [exempt, setExempt] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
     return window.matchMedia("(max-width: 1023px)").matches;
   });
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const media = window.matchMedia("(max-width: 1023px)");
     const onChange = () => setIsMobileViewport(media.matches);
     onChange();

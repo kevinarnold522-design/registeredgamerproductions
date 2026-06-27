@@ -7,9 +7,10 @@ import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
 
 export default function HomeListingCard({ listing, index = 0, className = "", user = null, profile = null }) {
-  const [liveListing, setLiveListing] = useState(listing);
+  const safeListing = listing || {};
+  const [liveListing, setLiveListing] = useState(safeListing);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [sellerAvatar, setSellerAvatar] = useState(listing.seller_avatar || "");
+  const [sellerAvatar, setSellerAvatar] = useState(safeListing.seller_avatar || "");
   const hasMultipleImages = liveListing.images && liveListing.images.length > 1;
 
   const getGlow = () => {
@@ -38,18 +39,18 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
   const glow = getGlow();
 
   useEffect(() => {
-    setLiveListing(listing);
+    setLiveListing(listing || {});
     setCurrentImageIndex(0);
   }, [listing]);
 
   // Resolve seller avatar from their profile when not embedded on the listing
   useEffect(() => {
-    if (listing.seller_avatar) { setSellerAvatar(listing.seller_avatar); return; }
-    if (!listing.seller_email) return;
+    if (listing?.seller_avatar) { setSellerAvatar(listing.seller_avatar); return; }
+    if (!listing?.seller_email) return;
     base44.entities.UserProfile.filter({ user_email: listing.seller_email })
       .then((rows) => { if (rows[0]?.avatar_url) setSellerAvatar(rows[0].avatar_url); })
       .catch(() => {});
-  }, [listing.seller_email, listing.seller_avatar]);
+  }, [listing?.seller_email, listing?.seller_avatar]);
 
   useEffect(() => {
     if (!listing?.id) return;
@@ -61,9 +62,9 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
           setLiveListing((prev) => ({ ...prev, ...event.data }));
         }
       });
-    } catch (_) {}
+    } catch {}
     return () => {
-      try { unsubscribe(); } catch (_) {}
+      try { unsubscribe(); } catch {}
     };
   }, [listing?.id]);
 
@@ -90,7 +91,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
 
   return (
     <motion.a
-      href={`/listing?id=${listing.id}`}
+      href={liveListing.id ? `/listing?id=${liveListing.id}` : "/listing"}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -129,9 +130,9 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
                 </button>
                 {/* Image indicators */}
                 <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-                  {liveListing.images.map((_, i) => (
+                  {liveListing.images.map((imageSrc, i) => (
                     <div
-                      key={i}
+                      key={imageSrc || i}
                       className={`w-1.5 h-1.5 rounded-full transition-colors ${
                         i === currentImageIndex ? "bg-white" : "bg-white/40"
                       }`}

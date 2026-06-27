@@ -3,12 +3,12 @@ import React, { useEffect, useRef } from "react";
 export default function ShootingStars() {
   const canvasRef = useRef(null);
   const [enabled, setEnabled] = React.useState(() => {
-    if (typeof window === "undefined") return true;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return true;
     return !window.matchMedia("(max-width: 1023px), (prefers-reduced-motion: reduce)").matches;
   });
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const media = window.matchMedia("(max-width: 1023px), (prefers-reduced-motion: reduce)");
     const update = () => setEnabled(!media.matches);
     update();

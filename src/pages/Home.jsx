@@ -62,13 +62,13 @@ export default function Home() {
   const [showTutorial, setShowTutorial] = useState(false);
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
     return window.matchMedia("(max-width: 1023px)").matches;
   });
   useScrollReveal();
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const media = window.matchMedia("(max-width: 1023px)");
     const onChange = () => setIsMobileViewport(media.matches);
     onChange();
