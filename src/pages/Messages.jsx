@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Send, MessageCircle, ArrowLeft } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export default function Messages() {
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -30,7 +32,7 @@ export default function Messages() {
       setConversations(all);
 
       // Check if a specific conversation is pre-selected from URL
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(location.search);
       const convId = params.get("conv");
       const withEmail = params.get("with");
       if (convId) {
@@ -44,7 +46,7 @@ export default function Messages() {
       setLoading(false);
     };
     init();
-  }, []);
+  }, [location.search]);
 
   const openOrCreateConversation = async (otherEmail, me, myProfile, existing) => {
     const found = existing.find(c =>

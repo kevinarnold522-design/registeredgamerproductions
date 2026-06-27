@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/AuthContext";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import Pagination from "@/components/shared/Pagination";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { extractYouTubeId } from "@/lib/youtube";
@@ -18,7 +18,7 @@ import { extractYouTubeId } from "@/lib/youtube";
 const PER_PAGE = 10;
 
 // ── Video Card (YouTube-style) ────────────────────────────────────────────────
-function VideoCard({ video, onClick, user }) {
+function VideoCard({ video, onClick, user, onOpenListing }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(video.likes || 0);
   const [saved, setSaved] = useState(false);
@@ -46,7 +46,7 @@ function VideoCard({ video, onClick, user }) {
   // Listing-backed videos open their real listing landing page; uploaded
   // VideoPosts open the in-feed player modal.
   const openVideo = () => {
-    if (video._isListing) { window.location.href = `/listing?id=${video.id}`; return; }
+    if (video._isListing) { onOpenListing?.(video.id); return; }
     onClick(video);
   };
 
@@ -462,6 +462,8 @@ const VIDEO_CATEGORIES = ["all", "gameplay", "tutorial", "review", "highlights",
 
 export default function ContentFeedPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -478,13 +480,13 @@ export default function ContentFeedPage() {
 
   // Check for ?v= param on mount
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const vId = params.get("v");
     if (vId && videos.length > 0) {
       const found = videos.find(v => v.id === vId);
       if (found) setActiveVideo(found);
     }
-  }, [videos]);
+  }, [location.search, videos]);
 
   useEffect(() => {
     if (user?.email) {
@@ -659,7 +661,7 @@ export default function ContentFeedPage() {
           <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {paged.map((v, i) => (
-              <VideoCard key={v.id} video={v} user={user} onClick={setActiveVideo} />
+              <VideoCard key={v.id} video={v} user={user} onClick={setActiveVideo} onOpenListing={(listingId) => navigate(`/listing?id=${listingId}`)} />
             ))}
           </div>
           <Pagination page={page} totalPages={totalPages} onChange={goToPage} />

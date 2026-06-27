@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, MessageCircle, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
-import CommentThread from "@/components/shared/CommentThread";
 import DownloadAdUnlock from "@/components/ads/DownloadAdUnlock";
 import ScheduledAdOverlay from "@/components/ads/ScheduledAdOverlay";
 import ListingPageAd from "@/components/ads/ListingPageAd";
@@ -33,6 +32,7 @@ import RepostButton from "@/components/shared/RepostButton";
 import ListingReportButton from "@/components/shared/ListingReportButton";
 import { useDwellTracker } from "@/components/listings/useDwellTracker";
 import { getListingYouTubeId } from "@/lib/youtube";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -93,7 +93,9 @@ function GlowDownloadButton({ isFree, price, currency, onClick, theme, purchased
 // AdOverlay replaced by DownloadAdGate component
 
 export default function ListingPage() {
-  const params = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
   const id = params.get("id");
 
   const [listing, setListing] = useState(null);
@@ -215,9 +217,9 @@ export default function ListingPage() {
           if (typeof event.data.likes === "number") setLikeCount(event.data.likes);
         }
       });
-    } catch (_) {}
+    } catch {}
     return () => {
-      try { unsubscribe(); } catch (_) {}
+      try { unsubscribe(); } catch {}
     };
   }, [listing?.id]);
 
@@ -447,7 +449,7 @@ export default function ListingPage() {
       <div className="pt-20 max-w-7xl mx-auto px-4 pb-16">
         {/* Back + Edit */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
           <div className="flex items-center gap-2">

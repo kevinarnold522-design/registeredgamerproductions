@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, Send, ChevronLeft, ChevronRight, Gamepad2, Lightbulb, Newspaper } from "lucide-react";
+import { Pencil, X, Check, Upload, Plus, Trash2, ArrowLeft, Share2, ChevronLeft, ChevronRight, Gamepad2, Lightbulb, Newspaper } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { isAdmin, isServiceListing } from "@/lib/constants";
@@ -12,9 +12,9 @@ import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 // Storage key for cards in a subcategory landing page
-const getStorageKey = (parentCat, subId) => `subcat_landing_${parentCat}_${subId}`;
 const getCardsKey = (parentCat, subId) => `subcat_landing_cards_${parentCat}_${subId}`;
 
 function CardEditOverlay({ card, onClose, onSave }) {
@@ -237,12 +237,14 @@ function AddCardModal({ onClose, onAdd }) {
 export default function SubcategoryLandingPage() {
   const { user, isLoadingAuth } = useAuth();
   const [profile, setProfile] = useState(null);
-  const params = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
   const cat = params.get("cat") || "";
   const sub = params.get("sub") || "";
-  const deep = params.get("deep") || "";
+  const _deep = params.get("deep") || "";
   const [cards, setCards] = useState([]);
-  const [posts, setPosts] = useState([]);
+  const [_posts, setPosts] = useState([]);
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -320,7 +322,7 @@ export default function SubcategoryLandingPage() {
   const handleDelete = (id) => saveCards(cards.filter(c => c.id !== id));
 
   const handleCardClick = (card) => {
-    window.location.href = `/sub-landing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}&deep=${encodeURIComponent(card.id)}`;
+    navigate(`/sub-landing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}&deep=${encodeURIComponent(card.id)}`);
   };
 
   const perPage = 10;
@@ -351,7 +353,7 @@ export default function SubcategoryLandingPage() {
       {!isLoadingAuth && (user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />)}
 
       <div className="pt-20 px-4 max-w-7xl mx-auto pb-16">
-        <button onClick={() => window.history.back()}
+        <button onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-400 hover:text-purple-300 text-sm mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
@@ -368,7 +370,7 @@ export default function SubcategoryLandingPage() {
               <Lightbulb className="w-4 h-4" /> Recommend Subcategory
             </button>
             {user && (
-              <button onClick={() => window.location.href = `/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
+              <button onClick={() => navigate(`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
                 style={{ background: "linear-gradient(135deg, #059669, #0d9488)" }}>
                 <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
@@ -427,10 +429,10 @@ export default function SubcategoryLandingPage() {
               <p className="text-gray-400 font-semibold">No listings yet</p>
               <p className="text-gray-600 text-sm mt-1">Be the first to contribute!</p>
               {user && (
-                <a href={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
+                <Link to={`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
                   className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm hover:opacity-90 transition-opacity">
                   <Plus className="w-4 h-4" /> {cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
-                </a>
+                </Link>
               )}
             </div>
           ) : (

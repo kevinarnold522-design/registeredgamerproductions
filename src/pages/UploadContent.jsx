@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
-import { motion } from "framer-motion";
-import { Upload, X, Plus, ArrowLeft, Link as LinkIcon, Youtube, Globe } from "lucide-react";
+import { Upload, ArrowLeft, Youtube, Globe } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
-import { isAdmin } from "@/lib/constants";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import AuthNavbar from "@/components/layout/AuthNavbar";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function UploadContent() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -100,7 +100,7 @@ export default function UploadContent() {
     }
 
     setUploading(false);
-    window.location.href = "/channel";
+    navigate("/channel");
   };
 
   if (loading) return (
@@ -114,9 +114,9 @@ export default function UploadContent() {
       <AuthNavbar user={user} profile={profile} />
       <div className="pt-24 max-w-3xl mx-auto px-4 pb-12">
         <div className="flex items-center gap-3 mb-8">
-          <a href="/channel" className="text-gray-400 hover:text-white transition-colors">
+          <Link to="/channel" className="text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5" />
-          </a>
+          </Link>
           <h1 className="text-2xl font-black text-white">Upload Content</h1>
         </div>
 

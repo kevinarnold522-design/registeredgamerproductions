@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Gamepad2, ArrowLeft, ArrowRight, Check, Mail, User, ShieldCheck } from "lucide-react";
 import { ACCOUNT_TYPES, TERMS_AND_CONDITIONS } from "@/lib/constants";
 import { base44 } from "@/api/base44Client";
 
 export default function Register() {
   const navigate = useNavigate();
-  const urlParams = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
   const preselectedType = urlParams.get("type");
 
   useEffect(() => {

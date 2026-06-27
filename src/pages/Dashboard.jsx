@@ -4,8 +4,10 @@ import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import SellerDashboard from "@/components/dashboard/SellerDashboard";
 import BuyerDashboard from "@/components/dashboard/BuyerDashboard";
 import AuthNavbar from "@/components/layout/AuthNavbar";
+import { useLocation } from "react-router-dom";
 
 export default function Dashboard() {
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ export default function Dashboard() {
   useEffect(() => {
     const init = async () => {
       // Check for ghost session from URL params
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(location.search);
       const ghostEmail = params.get('ghost_email');
       
       // Check for persistent ghost session
@@ -206,7 +208,7 @@ export default function Dashboard() {
     };
 
     init();
-  }, []);
+  }, [location.search]);
 
   if (loading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">

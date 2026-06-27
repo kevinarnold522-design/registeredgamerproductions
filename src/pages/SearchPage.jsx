@@ -10,11 +10,13 @@ import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
 import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { CATEGORIES, isServiceListing } from "@/lib/constants";
+import { Link, useLocation } from "react-router-dom";
 
 const PER_PAGE = 10;
 
 export default function SearchPage() {
-  const params = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
   const query = (params.get("q") || "").replace(/[<>]/g, "").trim();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -78,7 +80,7 @@ export default function SearchPage() {
               {paged.map(l => {
                 const cat = CATEGORIES.find(c => c.id === l.category);
                 return (
-                  <a key={l.id} href={`/listing?id=${l.id}`} style={{ "--listing-glow-color": { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" }[l.card_glow_color || "purple"] }} className={`rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-colors listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`}>
+                  <Link key={l.id} to={`/listing?id=${l.id}`} style={{ "--listing-glow-color": { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" }[l.card_glow_color || "purple"] }} className={`rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-colors listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`}>
                     <div className="h-36 bg-gray-800 relative overflow-hidden">
                       {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                         <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
@@ -100,7 +102,7 @@ export default function SearchPage() {
                       </div>
                       <p className="theme-glow-action inline-flex items-center gap-1 text-gray-400 text-[10px] mt-1 rounded-lg px-1 py-0.5"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> Posted Date: {l.created_date ? new Date(l.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>
                     </div>
-                  </a>
+                  </Link>
                 );
               })}
             </div>

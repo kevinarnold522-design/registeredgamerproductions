@@ -7,19 +7,20 @@ import { isAdmin } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { TOP_FRANCHISES } from "@/lib/franchises";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import PostComposer from "@/components/community/PostComposer";
 import GroupChat from "@/components/community/GroupChat";
 
 export default function CommunitySectionPage() {
   const { user } = useAuth();
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [listings, setListings] = useState([]);
   const [community, setCommunity] = useState(null);
   const [loading, setLoading] = useState(true);
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const franchiseId = params.get("franchise") || "";
   const sectionId = params.get("section") || "";
   const sectionName = params.get("name") || sectionId;

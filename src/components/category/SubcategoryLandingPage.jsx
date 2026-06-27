@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Eye, Plus, Tag, Search, Send } from "lucide-react";
+import { Link } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
@@ -10,7 +11,7 @@ import { formatListingPrice } from "@/lib/currency";
 
 const PER_PAGE = 10;
 
-export default function SubcategoryLandingPage({ user, profile, cat, sub, parentCategoryName }) {
+export default function SubcategoryLandingPage({ user, profile: _profile, cat, sub, parentCategoryName }) {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -44,9 +45,9 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
     <div className="min-h-screen bg-gray-950 text-white px-4 py-8 max-w-6xl mx-auto relative z-10">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <a href="/" className="hover:text-white transition-colors">Home</a>
+        <Link to="/" className="hover:text-white transition-colors">Home</Link>
         <span>/</span>
-        <a href={`/category?cat=${cat}`} className="hover:text-white transition-colors capitalize">{parentCategoryName}</a>
+        <Link to={`/category?cat=${cat}`} className="hover:text-white transition-colors capitalize">{parentCategoryName}</Link>
         <span>/</span>
         <span className="text-white capitalize">{sub.replace(/_/g, " ")}</span>
       </div>
@@ -58,12 +59,12 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
           <p className="text-gray-400 text-sm mt-1">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
         </div>
         {user && (
-          <a
-            href={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
+          <Link
+            to={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity"
           >
             {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
-          </a>
+          </Link>
         )}
       </div>
 
@@ -90,12 +91,12 @@ export default function SubcategoryLandingPage({ user, profile, cat, sub, parent
           <p className="text-gray-400 font-semibold mb-1">No listings yet</p>
           <p className="text-gray-600 text-sm">Be the first to post in this subcategory!</p>
           {user && (
-            <a
-              href={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
+            <Link
+              to={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
               className="mt-4 inline-block px-5 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm hover:opacity-90"
             >
               {cat === "games" ? "Add a Game" : "Post"}
-            </a>
+            </Link>
           )}
         </div>
       ) : (

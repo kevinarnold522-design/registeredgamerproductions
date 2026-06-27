@@ -18,6 +18,7 @@ import { Gamepad2, Wrench, Cloud } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
+import { useNavigate } from "react-router-dom";
 
 class DeferredSectionsBoundary extends React.Component {
   constructor(props) {
@@ -106,6 +107,7 @@ const FirstLoginTutorial = lazyWithRetry(() => import("@/components/tutorial/Fir
 const CategoryMovingDashboard = lazyWithRetry(() => import("@/components/home/CategoryMovingDashboard"));
 
 export default function Home() {
+  const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(true);
   const [showDeferredSections, setShowDeferredSections] = useState(false);
   const [profile, setProfile] = useState(null);
@@ -317,16 +319,16 @@ export default function Home() {
           setProfile(newProfile);
           // Redirect new Google users to complete their profile
           if (needsSetup) {
-            window.location.href = "/channel?setup=1";
+            navigate("/channel?setup=1");
           }
         }
       } catch {}
     };
     loadProfile();
-  }, [isAuthenticated, user?.email]);
+  }, [isAuthenticated, navigate, user?.email]);
 
   return (
-    <div className="min-h-screen text-white relative z-10">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden text-white relative z-10">
       {showSplash && <SplashScreen onDismiss={() => setShowSplash(false)} />}
       {!showSplash && (
         <>

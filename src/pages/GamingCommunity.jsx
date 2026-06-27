@@ -6,9 +6,8 @@ import { uploadFileToR2 } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { useAuth } from "@/lib/AuthContext";
-import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
+import { isAdmin } from "@/lib/constants";
 import { TOP_FRANCHISES } from "@/lib/franchises";
-import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import RecommendModal from "@/components/shared/RecommendModal";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import AnimatedController from "@/components/shared/AnimatedController";
@@ -20,6 +19,7 @@ import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import { formatListingPrice } from "@/lib/currency";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
+import { useNavigate } from "react-router-dom";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
@@ -477,6 +477,7 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
 }
 
 export default function GamingCommunity() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [search, setSearch] = useState("");
@@ -679,11 +680,11 @@ export default function GamingCommunity() {
   };
 
   const handleCardClick = (franchise) => {
-    window.location.href = `/community/${franchise.id}`;
+    navigate(`/community/${franchise.id}`);
   };
 
   const handleSelectFranchise = (franchise) => {
-    window.location.href = `/community/${franchise.id}`;
+    navigate(`/community/${franchise.id}`);
   };
 
   const toggleHide = (id) => {
@@ -706,7 +707,7 @@ export default function GamingCommunity() {
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <div className="pt-6 px-4 max-w-7xl mx-auto">
-        <button onClick={() => window.history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-2">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-2">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
       </div>
@@ -963,7 +964,7 @@ export default function GamingCommunity() {
                   <p className="text-5xl mb-3">👈</p>
                   <p className="text-gray-500 text-sm font-semibold">Select a community</p>
                   <p className="text-gray-600 text-xs mt-1">to open its newsfeed</p>
-                  <button onClick={() => { if (filtered[0]) window.location.href = `/community/${filtered[0].id}`; }}
+                  <button onClick={() => { if (filtered[0]) navigate(`/community/${filtered[0].id}`); }}
                     className="mt-4 px-4 py-2 rounded-xl text-xs font-bold text-purple-300 border border-purple-700/40 hover:bg-purple-900/20 transition-all">
                     Or browse full community &rarr;
                   </button>

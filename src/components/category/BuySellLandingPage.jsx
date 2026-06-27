@@ -3,7 +3,8 @@ import SubcategoryCards from "./SubcategoryCards";
 import { motion } from "framer-motion";
 import { Search, ShoppingCart, Send, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { CATEGORIES, isAdmin } from "@/lib/constants";
+import { CATEGORIES } from "@/lib/constants";
+import { Link } from "react-router-dom";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import Pagination from "@/components/shared/Pagination";
@@ -12,37 +13,6 @@ import { formatListingPrice } from "@/lib/currency";
 const PER_PAGE = 15;
 
 const buySellCat = CATEGORIES.find(c => c.id === "buy_sell");
-
-const SUBCATEGORY_GROUPS = [
-  {
-    label: "Game Accounts",
-    icon: "🎮",
-    color: "from-purple-900/40 to-purple-950",
-    border: "border-purple-500/30",
-    subs: ["Game Accounts - Mobile", "Game Accounts - PC", "Game Accounts - Console"],
-  },
-  {
-    label: "Items & Cosmetics",
-    icon: "💎",
-    color: "from-blue-900/40 to-blue-950",
-    border: "border-blue-500/30",
-    subs: ["In-Game Items", "Skins & Cosmetics", "Gift Cards & Vouchers", "Game Keys / Codes"],
-  },
-  {
-    label: "Gaming Gear",
-    icon: "🖥️",
-    color: "from-pink-900/40 to-pink-950",
-    border: "border-pink-500/30",
-    subs: ["Gaming Gear - Keyboards", "Gaming Gear - Mice", "Gaming Gear - Monitors", "Gaming Gear - Headsets", "Gaming Gear - Controllers", "Gaming Gear - Chairs", "Gaming PCs & Laptops", "Console Hardware"],
-  },
-  {
-    label: "Premium Mods",
-    icon: "⭐",
-    color: "from-yellow-900/40 to-yellow-950",
-    border: "border-yellow-500/30",
-    subs: ["Premium Mods - WWE 2K", "Premium Mods - GTA 5", "Premium Mods - GTA SA", "Premium Mods - FIFA / EA FC", "Premium Mods - PES", "Premium Mods - NBA 2K", "Premium Mods - Football Life", "Premium Mods - PPSSPP / PSP", "Premium Mods - Minecraft", "Premium Mods - Android", "Premium Mods - PC Titles"],
-  },
-];
 
 function ListingCard({ listing, index }) {
   return (
@@ -109,7 +79,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
       <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #12100a 0%, #0a0800 50%, #030712 100%)" }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(234,179,8,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(234,179,8,0.6) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
         <div className="max-w-7xl mx-auto relative z-10">
-          <a href="/" className="text-yellow-400 text-sm hover:text-yellow-300 mb-4 flex items-center gap-1">← Back to Home</a>
+          <Link to="/" className="text-yellow-400 text-sm hover:text-yellow-300 mb-4 flex items-center gap-1">← Back to Home</Link>
           <div className="flex items-center gap-3 mb-3">
             <span className="px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 text-xs font-black uppercase">Marketplace</span>
             <span className="px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-black uppercase">Buy · Sell · Trade</span>
@@ -132,10 +102,10 @@ export default function BuySellLandingPage({ user, profile, sub }) {
               All
             </button>
             {buySellCat?.subcategories.map(s => (
-              <a key={s} href={`/category?cat=buy_sell&sub=${encodeURIComponent(s)}`}
+              <Link key={s} to={`/category?cat=buy_sell&sub=${encodeURIComponent(s)}`}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${activeSub === s ? "bg-yellow-500/20 border border-yellow-500/50 text-yellow-300" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
                 {s}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -149,9 +119,9 @@ export default function BuySellLandingPage({ user, profile, sub }) {
               className="bg-transparent text-white text-sm placeholder-gray-600 outline-none flex-1" />
           </div>
           {canPost && (
-            <a href="/create-listing?cat=buy_sell" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap">
+            <Link to="/create-listing?cat=buy_sell" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap">
               <Send className="w-4 h-4" /> Post
-            </a>
+            </Link>
           )}
         </div>
 
@@ -164,7 +134,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
             <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-700" />
             <p className="text-gray-400 font-bold">No listings in this category yet</p>
             <p className="text-gray-600 text-sm mt-1">Be the first to list something!</p>
-            {canPost && <a href="/create-listing?cat=buy_sell" className="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-600 text-white font-bold text-sm"><Send className="w-4 h-4" /> Post</a>}
+            {canPost && <Link to="/create-listing?cat=buy_sell" className="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-yellow-600 text-white font-bold text-sm"><Send className="w-4 h-4" /> Post</Link>}
           </div>
         ) : (
           <>

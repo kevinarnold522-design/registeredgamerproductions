@@ -4,8 +4,10 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import { ArrowLeft, Search } from "lucide-react";
 import { isAdmin } from "@/lib/constants";
 import BanUserButton from "@/components/admin/BanUserButton";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function UsersLanding() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [users, setUsers] = useState([]);
@@ -18,6 +20,12 @@ export default function UsersLanding() {
     const load = async () => {
       const me = await base44.auth.me();
       setUser(me);
+      if (!me?.email) {
+        setProfile(null);
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
       const myProfiles = await base44.entities.UserProfile.filter({ user_email: me.email });
       setProfile(myProfiles[0] || null);
       const rows = await base44.entities.UserProfile.list("-created_date", 1000);
@@ -48,7 +56,7 @@ export default function UsersLanding() {
     <div className="min-h-screen bg-gray-950 text-white">
       <AuthNavbar user={user} profile={profile} />
       <main className="pt-20 max-w-6xl mx-auto px-4 pb-12">
-        <button onClick={() => history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6"><ArrowLeft className="w-4 h-4" /> Back</button>
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6"><ArrowLeft className="w-4 h-4" /> Back</button>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
             <p className="text-purple-400 text-xs font-bold uppercase tracking-widest">Admin</p>
@@ -66,7 +74,7 @@ export default function UsersLanding() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filtered.map(u => (
               <div key={u.id} className={`p-4 rounded-2xl bg-gray-900 border transition-all flex flex-col gap-3 ${u.is_banned ? "border-red-700/50" : "border-gray-800 hover:border-purple-500/50"}`}>
-                <a href={`/profile?email=${encodeURIComponent(u.user_email)}`} className="flex items-center gap-3">
+                <Link to={`/profile?email=${encodeURIComponent(u.user_email)}`} className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-purple-900/50 overflow-hidden flex items-center justify-center text-2xl flex-shrink-0">
                     {u.avatar_url ? <img src={u.avatar_url} className="w-full h-full object-cover" /> : "🎮"}
                   </div>
@@ -78,7 +86,7 @@ export default function UsersLanding() {
                       {u.is_banned && <span className="inline-block px-2 py-0.5 rounded-lg bg-red-900/40 text-red-300 text-[10px] font-bold">BANNED</span>}
                     </div>
                   </div>
-                </a>
+                </Link>
                 {admin && u.user_email !== user?.email && (
                   <div className="flex justify-end">
                     <BanUserButton profile={u} onChange={(banned) => handleBanChange(u.id, banned)} />

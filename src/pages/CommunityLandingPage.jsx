@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Users, Share2, Search, Shield, Plus, Camera, X, Check, Upload, Link2, SlidersHorizontal, Eye, Trash2, Image, Video } from "lucide-react";
 import PostComposer from "@/components/community/PostComposer";
@@ -17,11 +17,11 @@ import { Link, useParams } from "react-router-dom";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GroupChat from "@/components/community/GroupChat";
-import AnimatedController from "@/components/shared/AnimatedController";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
+import { useLocation } from "react-router-dom";
 
 export default function CommunityLandingPage() {
   const { user } = useAuth();
@@ -58,7 +58,8 @@ export default function CommunityLandingPage() {
   const coverRef = React.useRef(null);
 
   const routeParams = useParams();
-  const params = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
   const franchiseId = routeParams.id || params.get("id") || params.get("franchise") || "";
 
   const franchise = TOP_FRANCHISES.find(f => f.id === franchiseId) || {

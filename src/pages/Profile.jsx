@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Star, Zap, Gem, Crown, Camera } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
@@ -123,8 +123,9 @@ export default function Profile() {
   const [bannerPreview, setBannerPreview] = useState(null);
   const avatarInputRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const targetEmail = params.get("email");
 
   useEffect(() => {

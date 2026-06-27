@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Upload, Plus, ArrowLeft, Play, Youtube, Link, ExternalLink, Package, Monitor, Gamepad2, CheckCircle, Store, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag, LayoutGrid } from "lucide-react";
+import { Upload, Plus, ArrowLeft, Play, Youtube, ExternalLink, Package, Monitor, Gamepad2, CheckCircle, Store, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag, LayoutGrid } from "lucide-react";
 
 const NEWSFEED_TARGETS = [
   { id: "games", label: "Games" },
@@ -45,6 +44,7 @@ import BrandLogo from "@/components/shared/BrandLogo";
 import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { supabase } from "@/lib/supabaseClient";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function extractYouTubeId(url) {
   if (!url) return null;
@@ -61,6 +61,8 @@ const LISTING_ORPHAN_CLEANUP_INTERVAL = 12 * 60 * 60 * 1000;
 
 export default function CreateListing() {
   const { user: authUser, isLoadingAuth } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,7 @@ export default function CreateListing() {
   const cleanupQueuedRef = useRef(false);
   const accessTokenRef = useRef("");
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const editId = params.get("edit");
   const defaultCat = params.get("cat") || "buy_sell";
   const defaultSub = params.get("sub") || "";
@@ -638,9 +640,9 @@ export default function CreateListing() {
     if (mod?.requiresReview) {
       setModerationResult(mod);
     } else if (savedListing?.id) {
-      window.location.href = `/listing?id=${savedListing.id}`;
+      navigate(`/listing?id=${savedListing.id}`);
     } else {
-      window.location.href = "/dashboard?tab=listings";
+      navigate("/dashboard?tab=listings");
     }
     } catch (err) {
       const pendingUploads = [...pendingUploadsRef.current];

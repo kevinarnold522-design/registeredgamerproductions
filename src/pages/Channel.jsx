@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Youtube, Instagram, Twitter, Facebook, Globe, Play,
+  Youtube, Globe, Play,
   Users, Eye, Heart, Edit2, Check, Plus, ExternalLink, Upload, Wand2,
-  MessageCircle, Share2, Image as ImageIcon, X, Send, Gamepad2, Package, Video, Sparkles, CircleDollarSign
+  MessageCircle, Share2, Image as ImageIcon, X, Gamepad2, Package, Video, Sparkles, CircleDollarSign
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ import { uploadFileToR2, uploadFileWithFallback } from "@/lib/uploadToR2";
 import { updateProfileMedia } from "@/lib/updateProfileMedia";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import PostCard from "@/components/channel/PostCard";
-import ChannelThemePicker, { THEMES, buildProfileTheme } from "@/components/channel/ChannelThemePicker";
+import ChannelThemePicker, { buildProfileTheme } from "@/components/channel/ChannelThemePicker";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
 import { isAdmin } from "@/lib/constants";
 import EditProfileModal from "@/components/profile/EditProfileModal";
@@ -20,6 +20,7 @@ import BrandLogo from "@/components/shared/BrandLogo";
 import { formatListingPrice } from "@/lib/currency";
 import GlowStat from "@/components/shared/GlowStat";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const CONTENT_SUBCATEGORIES = [
   "gameplay", "tutorial", "review", "highlights", "mods", "esports", "vlog", "livestream", "other"
@@ -42,6 +43,8 @@ const SOCIAL_PLATFORMS = [
 ];
 
 export default function Channel() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [videos, setVideos] = useState([]);
@@ -70,11 +73,11 @@ export default function Channel() {
   const [newComment, setNewComment] = useState({});
   const [channelTheme, setChannelTheme] = useState(() => localStorage.getItem("channel_theme") || "default");
   const [startingChat, setStartingChat] = useState(false);
-  const setupMode = new URLSearchParams(window.location.search).get("setup") === "1";
+  const setupMode = new URLSearchParams(location.search).get("setup") === "1";
   const [showEditProfile, setShowEditProfile] = useState(setupMode);
 
   // Check if viewing someone else's channel via ?email=
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(location.search);
   const viewEmail = urlParams.get("email");
   const isNewAccount = urlParams.get("new_account") === "1";
   const [targetEmail, setTargetEmail] = useState(null);
@@ -178,7 +181,7 @@ export default function Channel() {
     if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
     if (!targetEmail) return;
     setStartingChat(true);
-    window.location.href = `/messages?with=${encodeURIComponent(targetEmail)}`;
+    navigate(`/messages?with=${encodeURIComponent(targetEmail)}`);
   };
 
   const handleRemoveCover = async () => {

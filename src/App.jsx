@@ -18,6 +18,7 @@ import PageTransition from '@/components/layout/PageTransition';
 import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker';
 import GlobalHtmlAd from '@/components/ads/GlobalHtmlAd';
 import FloatingNewsfeed from '@/components/home/FloatingNewsfeed';
+import MobileSpaceBackdrop from '@/components/home/MobileSpaceBackdrop';
 // Add page imports here
 import GamingCommunity from "./pages/GamingCommunity";
 import Home from "./pages/Home";
@@ -151,6 +152,22 @@ const AuthenticatedApp = () => {
 function App() {
   useEffect(() => {
     clearAssetRecoveryState();
+
+    if (typeof document !== 'undefined') {
+      document.documentElement.style.maxWidth = '100%';
+      document.documentElement.style.overflowX = 'hidden';
+      document.body.style.maxWidth = '100%';
+      document.body.style.overflowX = 'hidden';
+    }
+
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.documentElement.style.maxWidth = '';
+        document.documentElement.style.overflowX = '';
+        document.body.style.maxWidth = '';
+        document.body.style.overflowX = '';
+      }
+    };
   }, []);
 
   return (
@@ -161,8 +178,9 @@ function App() {
             <PageTransition />
             <InAppBrowserLinkFix />
             <VisitorCountryTracker />
+            <MobileSpaceBackdrop />
             <ShootingStars />
-            <div style={{ position: "relative", zIndex: 10 }}>
+            <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: "100%", overflowX: "clip" }}>
               <SidebarLayout>
                 <AuthenticatedApp />
               </SidebarLayout>

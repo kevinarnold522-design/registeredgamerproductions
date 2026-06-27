@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { GitBranch, Search, Check, X, Gamepad2, Wrench, RefreshCw, Eye, Link2, Image, FileText, ShoppingBag } from "lucide-react";
+import { motion } from "framer-motion";
+import { GitBranch, Search, Check, Gamepad2, Wrench, RefreshCw, Eye, FileText, ShoppingBag } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin, CATEGORIES } from "@/lib/constants";
 import { useAuth } from "@/lib/AuthContext";
 import { adminUpdateEntity, adminCreateEntity } from "@/lib/adminEntity";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import { TOP_FRANCHISES } from "@/lib/franchises";
+import { useNavigate } from "react-router-dom";
 
 const MODDING_SUBS = [
   "WWE2K","Football Life","GTA 5","GTA SA","GTA 4","FIFA","NBA2K","PES","PPSSPP/PSP","PS2","Android","PC"
@@ -29,6 +30,7 @@ const MODDING_TO_FRANCHISE_MAP = {
 };
 
 export default function RoutingDashboard() {
+  const navigate = useNavigate();
   const { user: authUser, isLoadingAuth } = useAuth();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -46,7 +48,7 @@ export default function RoutingDashboard() {
       // Wait for the shared Supabase auth context to resolve before gating.
       if (isLoadingAuth) return;
       const me = authUser;
-      if (!me || !isAdmin(me.email)) { window.location.href = "/"; return; }
+      if (!me || !isAdmin(me.email)) { navigate("/"); return; }
       setUser(me);
       const [profiles, listingsData, postsData, commsData] = await Promise.all([
         base44.entities.UserProfile.filter({ user_email: me.email }),
@@ -61,7 +63,7 @@ export default function RoutingDashboard() {
       setLoading(false);
     };
     init();
-  }, [authUser, isLoadingAuth]);
+  }, [authUser, isLoadingAuth, navigate]);
 
   const allFranchises = TOP_FRANCHISES;
   const dynamicCategories = CATEGORIES.map(category => {

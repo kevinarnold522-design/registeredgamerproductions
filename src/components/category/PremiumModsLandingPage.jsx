@@ -60,7 +60,7 @@ export default function PremiumModsLandingPage({ user }) {
       {/* Hero */}
       <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #2a1a00, #030712)" }}>
         <div className="max-w-7xl mx-auto relative z-10">
-          <a href="/" className="text-amber-400 text-sm hover:text-amber-300 mb-4 flex items-center gap-1">← Back to Home</a>
+          <Link to="/" className="text-amber-400 text-sm hover:text-amber-300 mb-4 flex items-center gap-1">← Back to Home</Link>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
             <span className="bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Premium Mods</span> & Paid Content
           </h1>
