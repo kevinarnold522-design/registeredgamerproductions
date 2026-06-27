@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Gamepad2, Zap, Radio, ShieldCheck, Lock, Globe2, CircleDollarSign, Clapperboard, Headphones, Wrench, ShoppingCart, Trophy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { isAdmin as checkIsAdmin } from "@/lib/constants";
 
 function CreateListingHeroButton() {
   const { user } = useAuth();
@@ -37,28 +38,37 @@ function SignInHeroButton() {
 
 function LiveStats() {
   const [stats, setStats] = useState({ listings: 0 });
-  const [isAdmin, setIsAdmin] = useState(false);
   const [adminUserCount, setAdminUserCount] = useState(0);
+  const { user } = useAuth();
+
+  // Use the central auth state (already populated for both mobile + desktop)
+  // so the admin-gated "Registered Gamers" stat shows consistently across
+  // viewports instead of relying on a parallel fetch that can race on mobile.
+  const isAdmin = React.useMemo(() => checkIsAdmin(user?.email || ""), [user?.email]);
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
       try {
-        const auth = await base44.auth.isAuthenticated();
-        if (auth) {
-          const me = await base44.auth.me();
-          const { isAdmin: checkAdmin } = await import("@/lib/constants");
-          if (checkAdmin(me?.email)) {
-            setIsAdmin(true);
-            const profiles = await base44.entities.UserProfile.list();
-            setAdminUserCount(profiles.length);
-          }
-        }
         const listings = await base44.entities.Listing.list();
-        setStats({ listings: listings.filter((l) => l.status === "active").length });
+        if (cancelled) return;
+        const active = Array.isArray(listings)
+          ? listings.filter((l) => l.status === "active").length
+          : 0;
+        setStats({ listings: active });
       } catch {}
+
+      if (isAdmin) {
+        try {
+          const profiles = await base44.entities.UserProfile.list();
+          if (cancelled) return;
+          setAdminUserCount(Array.isArray(profiles) ? profiles.length : 0);
+        } catch {}
+      }
     };
     load();
-  }, []);
+    return () => { cancelled = true; };
+  }, [isAdmin]);
 
   // Shared stat-card style so every stat (Registered Gamers, Active Listings,
   // LIVE, ON AIR) has the exact same glowing purple/pink design.
@@ -72,28 +82,28 @@ function LiveStats() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-    className="flex flex-wrap justify-center gap-6 mb-8 text-center">
+    className="flex flex-wrap justify-center gap-3 sm:gap-6 mb-8 text-center" data-testid="hero-live-stats">
       {/* Registered Gamers — admin only */}
       {isAdmin &&
-      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-registered-gamers">
         <div className={valueClass}>{adminUserCount > 0 ? adminUserCount.toLocaleString() : "—"}</div>
         <div className={labelClass}><Zap className="w-3 h-3" /> Registered Gamers</div>
       </motion.div>
       }
 
-      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-active-listings">
         <div className={valueClass}>{stats.listings > 0 ? stats.listings.toLocaleString() : "—"}</div>
         <div className={labelClass}>Active Listings</div>
       </motion.div>
 
-      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-platform-status">
         <div className={valueClass}>
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" /> LIVE
         </div>
         <div className={labelClass}>Platform Status</div>
       </motion.div>
 
-      <motion.div whileHover={{ scale: 1.05 }} className="relative px-6 py-3 rounded-2xl" style={cardStyle}>
+      <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-streaming-now">
         <div className={valueClass}><Radio className="w-5 h-5" /> ON AIR</div>
         <div className={labelClass}>Streaming Now</div>
       </motion.div>

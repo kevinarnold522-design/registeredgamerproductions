@@ -18,6 +18,7 @@ import PageTransition from '@/components/layout/PageTransition';
 import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker';
 import GlobalHtmlAd from '@/components/ads/GlobalHtmlAd';
 import FloatingNewsfeed from '@/components/home/FloatingNewsfeed';
+import RouteErrorBoundary from '@/components/system/RouteErrorBoundary';
 // Add page imports here
 import GamingCommunity from "./pages/GamingCommunity";
 import Home from "./pages/Home";
@@ -115,6 +116,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <RouteErrorBoundary>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
@@ -160,6 +162,7 @@ const AuthenticatedApp = () => {
       {/* Add your page Route elements here */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </RouteErrorBoundary>
   );
 };
 

@@ -117,21 +117,27 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   useEffect(() => { setActiveSub(sub || "all"); }, [sub]);
 
   useEffect(() => {
+    setLoading(true);
+    const safeFilter = (query, sort, limit) =>
+      base44.entities.Listing.filter(query, sort, limit).catch(() => []);
+
     const listingsPromise = cat === "modding"
       ? Promise.all([
-          base44.entities.Listing.filter({ status: "active", category: "modding" }, "-created_date", 80),
-          base44.entities.Listing.filter({ status: "active", category: "premium_mods" }, "-created_date", 80),
+          safeFilter({ status: "active", category: "modding" }, "-created_date", 80),
+          safeFilter({ status: "active", category: "premium_mods" }, "-created_date", 80),
         ]).then(([mods, premiumMods]) => [...mods, ...premiumMods])
-      : base44.entities.Listing.filter({ status: "active", category: cat }, "-created_date", 80);
+      : safeFilter({ status: "active", category: cat }, "-created_date", 80);
 
     // Also pull listings the seller/admin manually targeted to this category's newsfeed
-    const newsfeedPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date", 120)
-      .then(all => all.filter(x => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes(cat) && x.category !== "games"))
+    const newsfeedPromise = safeFilter({ status: "active" }, "-created_date", 120)
+      .then(all => (Array.isArray(all) ? all : []).filter(x => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes(cat) && x.category !== "games"))
       .catch(() => []);
 
     Promise.all([listingsPromise, newsfeedPromise]).then(([base, extra]) => {
-      const seen = new Set(base.map(x => x.id));
-      const l = [...base, ...extra.filter(x => !seen.has(x.id))];
+      const safeBase = Array.isArray(base) ? base : [];
+      const safeExtra = Array.isArray(extra) ? extra : [];
+      const seen = new Set(safeBase.map(x => x.id));
+      const l = [...safeBase, ...safeExtra.filter(x => !seen.has(x.id))];
       let cleaned = l.filter(x => x.is_approved !== false);
       // Marketplace discovery categories must never show service-type listings
       if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
@@ -150,6 +156,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         cleaned = cleaned.filter(x => [x.tool_target_game, x.game_name, x.subcategory, ...(x.subcategories || [])].filter(Boolean).map(v => String(v).toLowerCase().replace(/\s+/g, "")).some(v => v === normalizedSub || (normalizedSub === "gta" && v.startsWith("gta"))));
       }
       setListings(cleaned);
+      setLoading(false);
+    }).catch(() => {
+      setListings([]);
       setLoading(false);
     });
   }, [cat, activeSub]);

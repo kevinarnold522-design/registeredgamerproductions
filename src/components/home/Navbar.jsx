@@ -116,9 +116,9 @@ export default function Navbar() {
             </div>
 
             {/* CENTER: Brand name */}
-            <Link to="/" className="hidden lg:flex items-center flex-shrink-0 whitespace-nowrap">
-              <span className="font-black text-white text-2xl">Gamer</span>
-              <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-2xl">.Productions</span>
+            <Link to="/" className="flex items-center flex-shrink-0 whitespace-nowrap">
+              <span className="font-black text-white text-base sm:text-xl lg:text-2xl">Gamer</span>
+              <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-base sm:text-xl lg:text-2xl">.Productions</span>
             </Link>
 
             {/* RIGHT */}

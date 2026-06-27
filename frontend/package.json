@@ -1,0 +1,9 @@
+{
+  "name": "frontend-wrapper",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "start": "cd /app && yarn vite --host 0.0.0.0 --port 3000",
+    "build": "cd /app && yarn build"
+  }
+}

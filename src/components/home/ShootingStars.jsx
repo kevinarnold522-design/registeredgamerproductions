@@ -2,14 +2,15 @@ import React, { useEffect, useRef } from "react";
 
 export default function ShootingStars() {
   const canvasRef = useRef(null);
+  // Mirror desktop on mobile too — only honor explicit reduced-motion requests.
   const [enabled, setEnabled] = React.useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return true;
-    return !window.matchMedia("(max-width: 1023px), (prefers-reduced-motion: reduce)").matches;
+    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia("(max-width: 1023px), (prefers-reduced-motion: reduce)");
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setEnabled(!media.matches);
     update();
     if (typeof media.addEventListener === "function") {
