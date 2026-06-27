@@ -108,7 +108,14 @@ const CategoryMovingDashboard = lazyWithRetry(() => import("@/components/home/Ca
 
 export default function Home() {
   const navigate = useNavigate();
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return sessionStorage.getItem("gp_splash_seen") !== "1";
+    } catch {
+      return false;
+    }
+  });
   const [showDeferredSections, setShowDeferredSections] = useState(false);
   const [profile, setProfile] = useState(null);
   const [showAdSign, setShowAdSign] = useState(false);
@@ -142,6 +149,13 @@ export default function Home() {
     const t = setTimeout(() => setShowDeferredSections(true), 240);
     return () => clearTimeout(t);
   }, [showSplash]);
+
+  const dismissSplash = () => {
+    try {
+      sessionStorage.setItem("gp_splash_seen", "1");
+    } catch {}
+    setShowSplash(false);
+  };
 
   // Page mounted successfully — clear the chunk-retry guard so a future
   // stale-chunk failure can reload again.
@@ -329,7 +343,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden text-white relative z-10">
-      {showSplash && <SplashScreen onDismiss={() => setShowSplash(false)} />}
+      {showSplash && <SplashScreen onDismiss={dismissSplash} />}
       {!showSplash && (
         <>
           <div className="relative z-10">

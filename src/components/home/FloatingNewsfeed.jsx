@@ -142,9 +142,9 @@ export function InlineFloatingNewsfeed() {
   const loopItems = [...listings, ...listings];
 
   return (
-    <div className="relative z-20 w-full flex flex-col items-end pr-0 sm:pr-2 mt-2 mb-3">
+    <div className="relative z-20 w-full px-4 sm:px-6 mt-2 mb-4">
       <div
-        className="lg:hidden w-48 rounded-l-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
+        className="lg:hidden w-full max-w-3xl mx-auto rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
         style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
       >
         <div className="flex items-center gap-2 px-3 py-2 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
@@ -156,7 +156,7 @@ export function InlineFloatingNewsfeed() {
         </div>
 
         {/* Vertical auto-scrolling marquee for mobile */}
-        <div className="relative h-96 overflow-hidden">
+        <div className="relative h-80 sm:h-96 overflow-hidden">
           <div
             className="flex flex-col"
             style={{

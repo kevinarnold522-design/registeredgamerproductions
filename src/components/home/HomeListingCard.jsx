@@ -4,6 +4,7 @@ import { Eye, ChevronLeft, ChevronRight, Crown, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import { useNavigate } from "react-router-dom";
 
 /** @type {Record<string, Array<{ solid: string, soft: string }>>} */
 const glowPalettes = {
@@ -63,6 +64,7 @@ function getHashedGlow(category, listing, index) {
 export default function HomeListingCard({ listing, index = 0, className = "", user = null, profile = null }) {
   const safeListing = listing || {};
   const entities = /** @type {any} */ (base44.entities || {});
+  const navigate = useNavigate();
   const [liveListing, setLiveListing] = useState(safeListing);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sellerAvatar, setSellerAvatar] = useState(safeListing.seller_avatar || "");
@@ -234,9 +236,13 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
             {liveListing.is_free || !liveListing.price ? "FREE" : formatListingPrice(liveListing.price, liveListing.currency)}
           </span>
           {/* Seller profile with avatar */}
-          <a
-            href={`/channel?email=${encodeURIComponent(liveListing.seller_email || "")}`}
-            onClick={(e) => e.stopPropagation()}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              navigate(`/channel?email=${encodeURIComponent(liveListing.seller_email || "")}`);
+            }}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
@@ -245,7 +251,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
                 : <span className="text-white text-[9px] font-bold">{(liveListing.seller_username || "G")[0].toUpperCase()}</span>}
             </div>
             <span className="text-gray-300 text-xs font-bold truncate">@{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</span>
-          </a>
+          </button>
         </div>
         
 

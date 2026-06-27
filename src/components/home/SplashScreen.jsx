@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 export default function SplashScreen({ onDismiss }) {
   const [tapped, setTapped] = React.useState(false);
   const dismissingRef = React.useRef(false);
+  const starCount = typeof window !== "undefined" && window.innerWidth < 768 ? 20 : 60;
 
   const dismissSmooth = React.useCallback(() => {
     if (dismissingRef.current) return;
@@ -13,7 +14,7 @@ export default function SplashScreen({ onDismiss }) {
   }, [onDismiss]);
   
   useEffect(() => {
-    const autoDismiss = setTimeout(() => dismissSmooth(), 2500);
+    const autoDismiss = setTimeout(() => dismissSmooth(), 900);
     const handlePointer = () => dismissSmooth();
     window.addEventListener("pointerdown", handlePointer, { passive: true });
     window.addEventListener("touchstart", handlePointer, { passive: true });
@@ -35,7 +36,7 @@ export default function SplashScreen({ onDismiss }) {
     >
       {/* Animated stars */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 60 }).map((_, i) => (
+        {Array.from({ length: starCount }).map((_, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-white"

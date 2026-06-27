@@ -3,8 +3,10 @@ import { Heart, MessageCircle, Bookmark, Eye, Flag, Trophy, TrendingUp } from "l
 import { base44 } from "@/api/base44Client";
 import RepostButton from "@/components/shared/RepostButton";
 import ShareButton from "@/components/shared/ShareButton";
+import { useNavigate } from "react-router-dom";
 
 export default function ListingEngagementBar({ listing, user, profile, compact = false, hideReport = false, hideRepost = false, showBars = false, showRankings = false }) {
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(listing.likes || 0);
   const [saved, setSaved] = useState(false);
@@ -157,11 +159,17 @@ export default function ListingEngagementBar({ listing, user, profile, compact =
         </button>
 
         {/* Comments */}
-        <a href={`/listing?id=${listing.id}#comments`} onClick={e => e.stopPropagation()}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            navigate(`/listing?id=${listing.id}#comments`);
+          }}
           className={`${statClass} text-gray-400 hover:text-purple-200 transition-colors`}>
           <MessageCircle className={iconSize} />
           <span className={`${countWidth} text-left tabular-nums`}>{commentCount}</span>
-        </a>
+        </button>
       </div>
 
       {/* Right cluster: actions */}

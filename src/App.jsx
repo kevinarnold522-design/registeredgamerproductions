@@ -5,7 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { clearAssetRecoveryState } from '@/lib/assetRecovery';
 // Added "Navigate" to standard react-router-dom handling
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ShootingStars from '@/components/home/ShootingStars';
@@ -18,7 +18,6 @@ import PageTransition from '@/components/layout/PageTransition';
 import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker';
 import GlobalHtmlAd from '@/components/ads/GlobalHtmlAd';
 import FloatingNewsfeed from '@/components/home/FloatingNewsfeed';
-import MobileSpaceBackdrop from '@/components/home/MobileSpaceBackdrop';
 // Add page imports here
 import GamingCommunity from "./pages/GamingCommunity";
 import Home from "./pages/Home";
@@ -61,9 +60,16 @@ import GamingNewsfeed from "./pages/GamingNewsfeed";
 const AuthenticatedApp = () => {
   // Pulling 'user' mapping from Base44 state engine layout
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const location = useLocation();
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  // Only block routes that truly require auth/admin state. Public pages should
+  // render immediately instead of being held behind the auth bootstrap.
+  const isAdminPath = location.pathname === '/admin-editor'
+    || location.pathname === '/admin/created-accounts'
+    || location.pathname === '/routing-dashboard'
+    || location.pathname === '/users';
+
+  if (isLoadingPublicSettings || (isLoadingAuth && isAdminPath)) {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-gray-950">
         <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
@@ -73,7 +79,7 @@ const AuthenticatedApp = () => {
   }
 
   // Handle authentication errors
-  if (authError) {
+  if (!isLoadingAuth && authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
@@ -87,6 +93,15 @@ const AuthenticatedApp = () => {
   const AdminRoute = ({ element }) => {
     const MASTER_EMAIL = 'kevinarnold522@gmail.com';
     
+    if (isLoadingAuth) {
+      return (
+        <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-gray-950">
+          <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+          <p className="text-gray-400 text-sm">Loading...</p>
+        </div>
+      );
+    }
+
     // Safely pull the email value regardless of how Base44 nests it
     const currentEmail = user?.email || user?.attributes?.email || user?.primaryEmail || "";
     const isMasterAdmin = currentEmail.toLowerCase() === MASTER_EMAIL.toLowerCase();
@@ -178,7 +193,6 @@ function App() {
             <PageTransition />
             <InAppBrowserLinkFix />
             <VisitorCountryTracker />
-            <MobileSpaceBackdrop />
             <ShootingStars />
             <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: "100%", overflowX: "clip" }}>
               <SidebarLayout>
