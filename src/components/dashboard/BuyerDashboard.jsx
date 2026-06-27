@@ -18,6 +18,7 @@ export default function BuyerDashboard({ user, profile }) {
   const [loading, setLoading] = useState(true);
   const [showTransition, setShowTransition] = useState(false);
   const [localProfile, setLocalProfile] = useState(profile);
+  const activeAvatarUrl = localProfile?.avatar_url || user?.avatar_url || user?.profile?.avatar_url || "";
 
   useEffect(() => { setLocalProfile(profile); }, [profile]);
 
@@ -54,7 +55,7 @@ export default function BuyerDashboard({ user, profile }) {
         {/* User info */}
         <div className="flex flex-col items-center text-center gap-2 mb-6 px-2">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl overflow-hidden">
-            {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "🎮"}
+            {activeAvatarUrl ? <img src={activeAvatarUrl} alt="" className="w-full h-full object-cover" /> : "🎮"}
           </div>
           <div>
             <p className="text-white font-black text-sm leading-tight">{profile?.username || user?.full_name}</p>

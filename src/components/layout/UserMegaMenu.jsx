@@ -20,6 +20,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
 
   const accountLabel = admin ? "CEO & President" : accountType === "regular" ? "Gamer" : typeInfo?.label || "User";
   const accountColor = admin ? "text-yellow-400" : isSeller ? "text-purple-400" : "text-blue-400";
+  const activeAvatarUrl = profile?.avatar_url || user?.avatar_url || user?.profile?.avatar_url || "";
 
   const [showAdBomb, setShowAdBomb] = useState(false);
 
@@ -81,7 +82,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
         className="flex items-center gap-2 pl-1 pr-3 py-1.5 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-700/50 transition-colors"
       >
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-sm overflow-hidden">
-          {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-white" />}
+          {activeAvatarUrl ? <img src={activeAvatarUrl} alt="" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-white" />}
         </div>
         <div className="hidden sm:block text-left">
           <div className="flex items-center gap-1">
@@ -110,7 +111,7 @@ export default function UserMegaMenu({ user, profile, favCount, cartCount, onFav
               <div className="p-4 border-b border-gray-800 bg-gradient-to-r from-purple-900/30 to-pink-900/20 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xl overflow-hidden">
-                    {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-white" />}
+                    {activeAvatarUrl ? <img src={activeAvatarUrl} alt="" className="w-full h-full object-cover" /> : <User className="w-4 h-4 text-white" />}
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">

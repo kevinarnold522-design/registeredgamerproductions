@@ -15,6 +15,7 @@ export default function PostComposer({ user, profile, franchise, community, isJo
   const [showEffectSelector, setShowEffectSelector] = useState(false);
   const [posting, setPosting] = useState(false);
   const [uploadingMusic, setUploadingMusic] = useState(false);
+  const activeAvatarUrl = profile?.avatar_url || user?.avatar_url || user?.profile?.avatar_url || "";
 
   const canPost = isJoined || admin || isModerator;
 
@@ -60,7 +61,7 @@ export default function PostComposer({ user, profile, franchise, community, isJo
       franchise_id: franchise.id,
       author_email: user.email,
       author_username: profile?.username || user.full_name || "Gamer",
-      author_avatar: profile?.avatar_url || "",
+      author_avatar: activeAvatarUrl,
       content,
       image_urls: images,
       video_urls: videos,
@@ -101,8 +102,8 @@ export default function PostComposer({ user, profile, franchise, community, isJo
     <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mb-5">
       <div className="flex gap-3 items-start">
         <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 bg-gray-800">
-          {profile?.avatar_url
-            ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt="" />
+          {activeAvatarUrl
+            ? <img src={activeAvatarUrl} className="w-full h-full object-cover" alt="" />
             : <div className="w-full h-full flex items-center justify-center text-sm">{franchise.emoji || "🎮"}</div>}
         </div>
         <div className="flex-1 min-w-0">

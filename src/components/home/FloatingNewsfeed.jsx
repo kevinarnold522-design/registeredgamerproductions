@@ -43,7 +43,6 @@ export default function FloatingNewsfeed() {
     if (typeof window === "undefined") return true;
     return window.innerWidth >= 1024;
   });
-  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -82,8 +81,6 @@ export default function FloatingNewsfeed() {
         <div
           className="pointer-events-auto w-44 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
           style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
         >
           <div className="flex items-center gap-2 px-3 py-2.5 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
             <Newspaper className="w-4 h-4 text-purple-300" />
@@ -99,7 +96,6 @@ export default function FloatingNewsfeed() {
               className="flex flex-col"
               style={{
                 animation: `fn-vscroll ${listings.length * 3.2}s linear infinite`,
-                animationPlayState: paused ? "paused" : "running",
               }}
             >
               {loopItems.map((item, i) => (

@@ -78,8 +78,15 @@ export default function BuySellLandingPage({ user, profile, sub }) {
   const canPost = user;
 
   useEffect(() => {
-    base44.entities.Listing.filter({ status: "active", category: "buy_sell" }, "-created_date", 80).then(l => {
-      setListings(l);
+    const basePromise = base44.entities.Listing.filter({ status: "active", category: "buy_sell" }, "-created_date", 80);
+    const extraPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date", 120)
+      .then((all) => all.filter((x) => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes("buy_sell") && x.category !== "games"))
+      .catch(() => []);
+
+    Promise.all([basePromise, extraPromise]).then(([base, extra]) => {
+      const seen = new Set((base || []).map((x) => x.id));
+      const merged = [...(base || []), ...(extra || []).filter((x) => !seen.has(x.id))].filter((x) => x.is_approved !== false);
+      setListings(merged);
       setLoading(false);
     });
   }, []);

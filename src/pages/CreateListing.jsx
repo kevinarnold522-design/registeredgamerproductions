@@ -585,7 +585,10 @@ export default function CreateListing() {
       card_font_family: form.card_font_family,
       card_font_color: form.card_font_color,
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
-      newsfeed_categories: Array.from(new Set([...(form.newsfeed_categories || []), ...(isPaidMod ? ["premium_mods"] : [])])),
+      newsfeed_categories: Array.from(new Set([
+        ...(form.newsfeed_categories || []),
+        ...(isPaidMod ? ["premium_mods", "store", "buy_sell"] : []),
+      ])),
       modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
       platform: undefined,

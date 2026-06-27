@@ -25,6 +25,7 @@ export default function SellerDashboard({ user, profile }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [localProfile, setLocalProfile] = useState(profile);
+  const activeAvatarUrl = localProfile?.avatar_url || user?.avatar_url || user?.profile?.avatar_url || "";
 
   useEffect(() => { setLocalProfile(profile); }, [profile]);
 
@@ -78,7 +79,7 @@ export default function SellerDashboard({ user, profile }) {
         {/* User info */}
         <div className="flex flex-col items-center text-center gap-2 mb-6 px-2">
           <div className="w-14 h-14 rounded-xl bg-purple-500/20 border border-purple-500/50 flex items-center justify-center overflow-hidden">
-            {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <Store className="w-7 h-7 text-purple-400" />}
+            {activeAvatarUrl ? <img src={activeAvatarUrl} alt="" className="w-full h-full object-cover" /> : <Store className="w-7 h-7 text-purple-400" />}
           </div>
           <div>
             <p className="text-white font-black text-sm leading-tight">{profile?.username || user?.full_name}</p>

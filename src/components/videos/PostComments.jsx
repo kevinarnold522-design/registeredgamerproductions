@@ -11,6 +11,7 @@ export default function PostComments({ postId, postType = "video" }) {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const activeAvatarUrl = profile?.avatar_url || user?.avatar_url || user?.profile?.avatar_url || "";
 
   useEffect(() => {
     const init = async () => {
@@ -38,7 +39,7 @@ export default function PostComments({ postId, postType = "video" }) {
       post_type: postType,
       author_email: user.email,
       author_username: profile?.username || user.full_name,
-      author_avatar: profile?.avatar_url || "",
+      author_avatar: activeAvatarUrl,
       content: newComment.trim(),
     });
     setComments(prev => [comment, ...prev]);
@@ -63,7 +64,7 @@ export default function PostComments({ postId, postType = "video" }) {
             {user ? (
               <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-xs overflow-hidden flex-shrink-0">
-                  {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : "G"}
+                  {activeAvatarUrl ? <img src={activeAvatarUrl} alt="" className="w-full h-full object-cover" /> : "G"}
                 </div>
                 <div className="flex-1 flex gap-2">
                   <input
