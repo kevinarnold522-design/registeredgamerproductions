@@ -54,6 +54,19 @@
     <!-- Ad control: delay logic + FB/IG 4-min delay + rotation state -->
     <script>
       (function() {
+        // Mobile-safe mode: disable ad script bootstrapping on mobile/tablet
+        // to prevent third-party overlays from blanking the page.
+        var isMobileViewport = false;
+        try {
+          isMobileViewport = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
+        } catch (e) {
+          isMobileViewport = false;
+        }
+        if (isMobileViewport) {
+          window.__adsBlocked = true;
+          return;
+        }
+
         // Detect Facebook/Instagram in-app browser or referrer
         var ua = navigator.userAgent || '';
         var ref = document.referrer || '';
@@ -214,6 +227,14 @@
     <!-- Close Ad Button injected into DOM after ads load (hidden for admin/mod/tier1) -->
     <script>
     (function() {
+      var isMobileViewport = false;
+      try {
+        isMobileViewport = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
+      } catch (e) {
+        isMobileViewport = false;
+      }
+      if (isMobileViewport) return;
+
       // Inject a floating close-ad button after a short delay once ads are active
       function maybeInjectCloseBtn() {
         if (window.__adsBlocked || window.__adminBlocked) return;

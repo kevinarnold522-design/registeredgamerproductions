@@ -27,6 +27,19 @@ export default function GlobalHtmlAd() {
   const [ad, setAd] = useState(null);
   const [show, setShow] = useState(false);
   const [exempt, setExempt] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 1023px)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 1023px)");
+    const onChange = () => setIsMobileViewport(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   // Ad-free option bans ALL ad codes for the user (admin-set no_ads,
   // account moderators, and admins never see ad codes).
@@ -58,7 +71,7 @@ export default function GlobalHtmlAd() {
     return () => clearTimeout(timer);
   }, [ad]);
 
-  if (!ad || !show || exempt) return null;
+  if (!ad || !show || exempt || isMobileViewport) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">

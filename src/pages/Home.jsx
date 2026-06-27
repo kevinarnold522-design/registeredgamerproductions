@@ -60,7 +60,20 @@ export default function Home() {
   const [showAdSign, setShowAdSign] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 1023px)").matches;
+  });
   useScrollReveal();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 1023px)");
+    const onChange = () => setIsMobileViewport(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   // Page mounted successfully — clear the chunk-retry guard so a future
   // stale-chunk failure can reload again.
@@ -97,7 +110,7 @@ export default function Home() {
   // - 0-3 min after splash dismissed: no ads for anyone
   // - After 3 min: ads start for non-signed-in users only
   // - Signed-in users: ads permanently disabled
-  const adFree = isAuthenticated || profile?.no_ads === true;
+  const adFree = isAuthenticated || profile?.no_ads === true || isMobileViewport;
 
   useEffect(() => {
     // Always clean up ads for ad-free users (signed-in OR admin-granted no_ads)
