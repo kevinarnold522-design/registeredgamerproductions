@@ -3,16 +3,24 @@ import { motion } from "framer-motion";
 
 export default function SplashScreen({ onDismiss }) {
   const [tapped, setTapped] = React.useState(false);
+  const dismissingRef = React.useRef(false);
+
+  const dismissSmooth = React.useCallback(() => {
+    if (dismissingRef.current) return;
+    dismissingRef.current = true;
+    setTapped(true);
+    setTimeout(() => onDismiss(), 180);
+  }, [onDismiss]);
   
   useEffect(() => {
-    const autoDismiss = setTimeout(() => onDismiss(), 2500);
-    const handleClick = () => onDismiss();
+    const autoDismiss = setTimeout(() => dismissSmooth(), 2500);
+    const handleClick = () => dismissSmooth();
     window.addEventListener("click", handleClick);
     return () => {
       clearTimeout(autoDismiss);
       window.removeEventListener("click", handleClick);
     };
-  }, [onDismiss]);
+  }, [dismissSmooth]);
 
   return (
     <div
@@ -20,7 +28,7 @@ export default function SplashScreen({ onDismiss }) {
       style={{
         background: "radial-gradient(ellipse at center, #0f0f2e 0%, #000000 100%)",
       }}
-      onClick={onDismiss}
+      onClick={dismissSmooth}
     >
       {/* Animated stars */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -61,7 +69,7 @@ export default function SplashScreen({ onDismiss }) {
             filter: tapped ? "drop-shadow(0 0 24px rgba(168,85,247,0.8))" : "none",
             cursor: "pointer"
           }}
-          onClick={(e) => { e.stopPropagation(); setTapped(true); setTimeout(() => onDismiss(), 450); }}
+          onClick={(e) => { e.stopPropagation(); dismissSmooth(); }}
         />
         <div className="text-xs tracking-[0.4em] text-purple-400 uppercase mb-3">Welcome to</div>
         <div className="flex items-baseline justify-center gap-1 mb-2">

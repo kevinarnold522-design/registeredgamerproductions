@@ -56,6 +56,7 @@ const CategoryMovingDashboard = lazyWithRetry(() => import("@/components/home/Ca
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
+  const [showHandoff, setShowHandoff] = useState(false);
   const [showDeferredSections, setShowDeferredSections] = useState(false);
   const [profile, setProfile] = useState(null);
   const [showAdSign, setShowAdSign] = useState(false);
@@ -87,6 +88,18 @@ export default function Home() {
       return;
     }
     const t = setTimeout(() => setShowDeferredSections(true), 240);
+    return () => clearTimeout(t);
+  }, [showSplash]);
+
+  // Keep a tiny branded bridge after splash closes to avoid a perceived black frame
+  // while first paint and heavy lazy sections settle on slower mobile devices.
+  useEffect(() => {
+    if (showSplash) {
+      setShowHandoff(false);
+      return;
+    }
+    setShowHandoff(true);
+    const t = setTimeout(() => setShowHandoff(false), 450);
     return () => clearTimeout(t);
   }, [showSplash]);
 
@@ -277,6 +290,14 @@ export default function Home() {
       {showSplash && <SplashScreen onDismiss={() => setShowSplash(false)} />}
       {!showSplash && (
         <>
+          {showHandoff && (
+            <div className="fixed inset-0 z-[45] pointer-events-none flex items-center justify-center" style={{ background: "radial-gradient(ellipse at center, rgba(76,29,149,0.38) 0%, rgba(5,5,16,0.9) 100%)" }}>
+              <div className="flex items-center gap-3 px-4 py-2 rounded-xl border border-purple-500/30 bg-black/35 text-purple-200 text-sm font-semibold">
+                <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                Loading GAMER.PRODUCTIONS...
+              </div>
+            </div>
+          )}
           <div className="relative z-10">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
             {user && <AIAssistBanner user={user} />}
