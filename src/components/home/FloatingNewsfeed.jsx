@@ -136,9 +136,9 @@ export function InlineFloatingNewsfeed() {
   const loopItems = [...listings, ...listings];
 
   return (
-    <div className="fixed bottom-24 lg:bottom-auto lg:top-auto right-0 lg:right-0 z-30 w-full lg:w-auto flex flex-col items-end lg:items-end">
+    <div className="relative z-20 w-full flex flex-col items-end pr-0 sm:pr-2 mt-2 mb-3">
       <div
-        className="lg:hidden w-48 max-h-screen rounded-l-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden mr-0"
+        className="lg:hidden w-48 rounded-l-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
         style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
       >
         <div className="flex items-center gap-2 px-3 py-2 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">

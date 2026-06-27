@@ -50,6 +50,12 @@ export default function ListingsLanding({ mode = "mine" }) {
     <div className="min-h-screen bg-gray-950 text-white">
       <AuthNavbar user={user} profile={profile} />
       <main className="pt-20 max-w-7xl mx-auto px-4 pb-12">
+        <div className="mb-6">
+          <MascotShowcase
+            compact={false}
+          />
+        </div>
+
         <button onClick={() => history.back()} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6"><ArrowLeft className="w-4 h-4" /> Back</button>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
@@ -64,12 +70,6 @@ export default function ListingsLanding({ mode = "mine" }) {
             </div>
             <a href="/create-listing" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-700 text-white text-sm font-bold"><Plus className="w-4 h-4" /> Post</a>
           </div>
-        </div>
-
-        <div className="mb-6">
-          <MascotShowcase
-            compact={false}
-          />
         </div>
 
         {loading ? (
