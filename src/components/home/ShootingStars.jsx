@@ -2,8 +2,19 @@ import React, { useEffect, useRef } from "react";
 
 export default function ShootingStars() {
   const canvasRef = useRef(null);
+  const [enabled, setEnabled] = React.useState(true);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 1023px), (prefers-reduced-motion: reduce)");
+    const update = () => setEnabled(!media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -1085,7 +1096,9 @@ export default function ShootingStars() {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", resize);
     };
-  }, []);
+  }, [enabled]);
+
+  if (!enabled) return null;
 
   return (
     <canvas

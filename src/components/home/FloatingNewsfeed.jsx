@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Newspaper, Star, ChevronRight, ChevronLeft } from "lucide-react";
+import { Newspaper, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -38,11 +38,6 @@ function FeedRow({ item }) {
 // Auto-scrolls vertically (marquee loop) and stays fixed wherever the user goes.
 export default function FloatingNewsfeed() {
   const [listings, setListings] = useState([]);
-  // Open by default on desktop; collapsed on mobile so it never covers content.
-  const [open, setOpen] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return window.innerWidth >= 1024;
-  });
 
   useEffect(() => {
     const load = async () => {
@@ -61,53 +56,37 @@ export default function FloatingNewsfeed() {
   // Duplicate the list so the vertical marquee loops seamlessly.
   const loopItems = [...listings, ...listings];
 
-  if (typeof window !== "undefined" && window.location.pathname === "/" && window.innerWidth < 1024) {
-    return null;
-  }
-
   return (
     <div className="flex fixed top-20 lg:top-24 right-2 lg:right-3 z-30 flex-col items-end pointer-events-none">
-      {/* Toggle handle */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="pointer-events-auto mb-2 flex items-center gap-1 px-2 py-1.5 rounded-l-xl bg-purple-900/80 border border-purple-600/50 text-purple-100 text-[10px] font-black backdrop-blur-sm hover:bg-purple-800/80 transition-colors"
-        style={{ boxShadow: "0 0 14px rgba(168,85,247,0.4)" }}
+      <div
+        className="pointer-events-auto w-44 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
+        style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
       >
-        {open ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-        {open ? "Hide" : "News"}
-      </button>
-
-      {open && (
-        <div
-          className="pointer-events-auto w-44 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
-          style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
-        >
-          <div className="flex items-center gap-2 px-3 py-2.5 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
-            <Newspaper className="w-4 h-4 text-purple-300" />
-            <div className="min-w-0">
-              <h3 className="text-white font-black text-xs leading-none">Featured Newsfeed</h3>
-              <p className="text-gray-500 text-[9px] mt-0.5">Latest listings · live</p>
-            </div>
-          </div>
-
-          {/* Vertical auto-scrolling marquee */}
-          <div className="relative h-[45vh] lg:h-[60vh] overflow-hidden">
-            <div
-              className="flex flex-col"
-              style={{
-                animation: `fn-vscroll ${listings.length * 3.2}s linear infinite`,
-              }}
-            >
-              {loopItems.map((item, i) => (
-                <FeedRow key={`${item.id}-${i}`} item={item} />
-              ))}
-            </div>
-            {/* Fade edges */}
-            <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-gray-950/95 to-transparent" />
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-950/95 to-transparent" />
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
+          <Newspaper className="w-4 h-4 text-purple-300" />
+          <div className="min-w-0">
+            <h3 className="text-white font-black text-xs leading-none">Featured Newsfeed</h3>
+            <p className="text-gray-500 text-[9px] mt-0.5">Latest listings · live</p>
           </div>
         </div>
-      )}
+
+        {/* Vertical auto-scrolling marquee */}
+        <div className="relative h-[45vh] lg:h-[60vh] overflow-hidden">
+          <div
+            className="flex flex-col"
+            style={{
+              animation: `fn-vscroll ${Math.max(14, listings.length * 3.2)}s linear infinite`,
+            }}
+          >
+            {loopItems.map((item, i) => (
+              <FeedRow key={`${item.id}-${i}`} item={item} />
+            ))}
+          </div>
+          {/* Fade edges */}
+          <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-gray-950/95 to-transparent" />
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-950/95 to-transparent" />
+        </div>
+      </div>
 
       <style>{`
         @keyframes fn-vscroll {
@@ -121,7 +100,6 @@ export default function FloatingNewsfeed() {
 
 export function InlineFloatingNewsfeed() {
   const [listings, setListings] = useState([]);
-  const [open, setOpen] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -142,46 +120,35 @@ export function InlineFloatingNewsfeed() {
 
   return (
     <div className="fixed bottom-24 lg:bottom-auto lg:top-auto right-0 lg:right-0 z-30 w-full lg:w-auto flex flex-col items-end lg:items-end">
-      {/* Toggle button for mobile */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="lg:hidden pointer-events-auto mb-1 mr-2 flex items-center gap-1 px-2 py-1 rounded-l-lg bg-purple-900/80 border border-purple-600/50 text-purple-100 text-[9px] font-black backdrop-blur-sm hover:bg-purple-800/80 transition-colors"
-        style={{ boxShadow: "0 0 14px rgba(168,85,247,0.4)" }}
+      <div
+        className="lg:hidden w-48 max-h-screen rounded-l-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden mr-0"
+        style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
       >
-        {open ? "Hide" : "News"}
-      </button>
-
-      {open && (
-        <div
-          className="lg:hidden w-48 max-h-screen rounded-l-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden mr-0"
-          style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
-        >
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
-            <Newspaper className="w-3.5 h-3.5 text-purple-300" />
-            <div className="min-w-0">
-              <h3 className="text-white font-black text-xs leading-none">Featured</h3>
-              <p className="text-gray-500 text-[8px] mt-0.5">Live feed</p>
-            </div>
-          </div>
-          
-          {/* Vertical auto-scrolling marquee for mobile */}
-          <div className="relative h-96 overflow-hidden">
-            <div
-              className="flex flex-col"
-              style={{
-                animation: `fn-vscroll ${listings.length * 3.2}s linear infinite`,
-              }}
-            >
-              {loopItems.map((item, i) => (
-                <FeedRow key={`${item.id}-${i}`} item={item} />
-              ))}
-            </div>
-            {/* Fade edges */}
-            <div className="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-gray-950/95 to-transparent" />
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-gray-950/95 to-transparent" />
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
+          <Newspaper className="w-3.5 h-3.5 text-purple-300" />
+          <div className="min-w-0">
+            <h3 className="text-white font-black text-xs leading-none">Featured</h3>
+            <p className="text-gray-500 text-[8px] mt-0.5">Live feed</p>
           </div>
         </div>
-      )}
+
+        {/* Vertical auto-scrolling marquee for mobile */}
+        <div className="relative h-96 overflow-hidden">
+          <div
+            className="flex flex-col"
+            style={{
+              animation: `fn-vscroll ${Math.max(14, listings.length * 3.2)}s linear infinite`,
+            }}
+          >
+            {loopItems.map((item, i) => (
+              <FeedRow key={`${item.id}-${i}`} item={item} />
+            ))}
+          </div>
+          {/* Fade edges */}
+          <div className="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-gray-950/95 to-transparent" />
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-gray-950/95 to-transparent" />
+        </div>
+      </div>
 
       <style>{`
         @keyframes fn-vscroll {
