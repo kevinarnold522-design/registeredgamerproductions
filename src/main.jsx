@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
+import AppErrorBoundary from '@/components/system/AppErrorBoundary'
 import '@/index.css'
 
 // When Base44 OAuth completes, it redirects back with ?access_token=...
@@ -28,5 +29,7 @@ import '@/index.css'
 })();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <App />
+  <AppErrorBoundary>
+    <App />
+  </AppErrorBoundary>
 )

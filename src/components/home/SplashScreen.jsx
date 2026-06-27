@@ -14,11 +14,13 @@ export default function SplashScreen({ onDismiss }) {
   
   useEffect(() => {
     const autoDismiss = setTimeout(() => dismissSmooth(), 2500);
-    const handleClick = () => dismissSmooth();
-    window.addEventListener("click", handleClick);
+    const handlePointer = () => dismissSmooth();
+    window.addEventListener("pointerdown", handlePointer, { passive: true });
+    window.addEventListener("touchstart", handlePointer, { passive: true });
     return () => {
       clearTimeout(autoDismiss);
-      window.removeEventListener("click", handleClick);
+      window.removeEventListener("pointerdown", handlePointer);
+      window.removeEventListener("touchstart", handlePointer);
     };
   }, [dismissSmooth]);
 
@@ -29,6 +31,7 @@ export default function SplashScreen({ onDismiss }) {
         background: "radial-gradient(ellipse at center, #0f0f2e 0%, #000000 100%)",
       }}
       onClick={dismissSmooth}
+      onTouchStart={dismissSmooth}
     >
       {/* Animated stars */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

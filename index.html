@@ -37,9 +37,6 @@
     <!-- Canonical -->
     <link rel="canonical" href="https://gamerproductions.vercel.app" />
     <meta name="referrer" content="no-referrer-when-downgrade" />
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3263429104429364"
-         crossorigin="anonymous"></script>
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -69,6 +66,18 @@
           window.__adsBlocked = true;
           return;
         }
+
+        // Defer AdSense load so first paint is not blocked on startup.
+        setTimeout(function() {
+          if (window.__adsBlocked || window.__adminBlocked) return;
+          if (document.getElementById('__adsense_boot')) return;
+          var adsense = document.createElement('script');
+          adsense.id = '__adsense_boot';
+          adsense.async = true;
+          adsense.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3263429104429364';
+          adsense.crossOrigin = 'anonymous';
+          document.head.appendChild(adsense);
+        }, 3500);
 
         // Detect Facebook/Instagram in-app browser or referrer
         var ref = document.referrer || '';
@@ -273,7 +282,11 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#c4b5fd;font-size:1rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+        Loading GAMER.PRODUCTIONS...
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
