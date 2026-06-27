@@ -5,9 +5,64 @@ import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 
+/** @type {Record<string, Array<{ solid: string, soft: string }>>} */
+const glowPalettes = {
+  games: [
+    { solid: "#3b82f6", soft: "rgba(59,130,246,0.8)" },
+    { solid: "#06b6d4", soft: "rgba(6,182,212,0.8)" },
+    { solid: "#8b5cf6", soft: "rgba(139,92,246,0.8)" },
+  ],
+  modding: [
+    { solid: "#22c55e", soft: "rgba(34,197,94,0.8)" },
+    { solid: "#84cc16", soft: "rgba(132,204,22,0.8)" },
+    { solid: "#10b981", soft: "rgba(16,185,129,0.8)" },
+  ],
+  premium_mods: [
+    { solid: "#f59e0b", soft: "rgba(245,158,11,0.85)" },
+    { solid: "#ec4899", soft: "rgba(236,72,153,0.85)" },
+    { solid: "#f43f5e", soft: "rgba(244,63,94,0.85)" },
+  ],
+  paid_tools: [
+    { solid: "#06b6d4", soft: "rgba(6,182,212,0.8)" },
+    { solid: "#3b82f6", soft: "rgba(59,130,246,0.8)" },
+    { solid: "#14b8a6", soft: "rgba(20,184,166,0.8)" },
+  ],
+  tournaments: [
+    { solid: "#ef4444", soft: "rgba(239,68,68,0.8)" },
+    { solid: "#f97316", soft: "rgba(249,115,22,0.82)" },
+    { solid: "#eab308", soft: "rgba(234,179,8,0.82)" },
+  ],
+  content_streaming: [
+    { solid: "#ec4899", soft: "rgba(236,72,153,0.85)" },
+    { solid: "#a855f7", soft: "rgba(168,85,247,0.8)" },
+    { solid: "#6366f1", soft: "rgba(99,102,241,0.82)" },
+  ],
+  default: [
+    { solid: "#a855f7", soft: "rgba(168,85,247,0.8)" },
+    { solid: "#3b82f6", soft: "rgba(59,130,246,0.8)" },
+    { solid: "#ec4899", soft: "rgba(236,72,153,0.85)" },
+    { solid: "#22c55e", soft: "rgba(34,197,94,0.8)" },
+  ],
+};
 
+/**
+ * @param {string} category
+ * @param {any} listing
+ * @param {number} index
+ */
+function getHashedGlow(category, listing, index) {
+  const palette = glowPalettes[String(category || "").toLowerCase()] || glowPalettes.default;
+  const seed = `${listing?.id || ""}:${listing?.title || ""}:${listing?.seller_email || ""}:${index}`;
+  const hash = Array.from(seed).reduce((total, char) => total + char.charCodeAt(0), 0);
+  return palette[hash % palette.length];
+}
+
+/**
+ * @param {{ listing?: any, index?: number, className?: string, user?: any, profile?: any }} props
+ */
 export default function HomeListingCard({ listing, index = 0, className = "", user = null, profile = null }) {
   const safeListing = listing || {};
+  const entities = /** @type {any} */ (base44.entities || {});
   const [liveListing, setLiveListing] = useState(safeListing);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sellerAvatar, setSellerAvatar] = useState(safeListing.seller_avatar || "");
@@ -24,15 +79,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
       case "custom": return { solid: liveListing.card_glow_hex || "#a855f7", soft: (liveListing.card_glow_hex || "#a855f7") };
       case "purple": return { solid: "#a855f7", soft: "rgba(168,85,247,0.8)" };
       default:
-        switch (String(liveListing.category || "").toLowerCase()) {
-          case "games": return { solid: "#3b82f6", soft: "rgba(59,130,246,0.8)" };
-          case "modding": return { solid: "#22c55e", soft: "rgba(34,197,94,0.8)" };
-          case "premium_mods": return { solid: "#f59e0b", soft: "rgba(245,158,11,0.85)" };
-          case "paid_tools": return { solid: "#06b6d4", soft: "rgba(6,182,212,0.8)" };
-          case "tournaments": return { solid: "#ef4444", soft: "rgba(239,68,68,0.8)" };
-          case "content_streaming": return { solid: "#ec4899", soft: "rgba(236,72,153,0.85)" };
-          default: return { solid: "#a855f7", soft: "rgba(168,85,247,0.8)" };
-        }
+        return getHashedGlow(liveListing.category, liveListing, index);
     }
   };
 
@@ -46,27 +93,27 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
   // Resolve seller avatar from their profile when not embedded on the listing
   useEffect(() => {
     if (listing?.seller_avatar) { setSellerAvatar(listing.seller_avatar); return; }
-    if (!listing?.seller_email) return;
-    base44.entities.UserProfile.filter({ user_email: listing.seller_email })
-      .then((rows) => { if (rows[0]?.avatar_url) setSellerAvatar(rows[0].avatar_url); })
+    if (!listing?.seller_email || !entities.UserProfile?.filter) return;
+    entities.UserProfile.filter({ user_email: listing.seller_email })
+      .then((/** @type {any[]} */ rows) => { if (rows[0]?.avatar_url) setSellerAvatar(rows[0].avatar_url); })
       .catch(() => {});
-  }, [listing?.seller_email, listing?.seller_avatar]);
+  }, [entities.UserProfile, listing?.seller_email, listing?.seller_avatar]);
 
   useEffect(() => {
-    if (!listing?.id) return;
+    if (!listing?.id || !entities.Listing?.subscribe) return;
     let unsubscribe = () => {};
     try {
-      unsubscribe = base44.entities.Listing.subscribe((event) => {
+      unsubscribe = entities.Listing.subscribe((/** @type {any} */ event) => {
         if (event?.data?.id !== listing.id) return;
         if (event.type === "update") {
-          setLiveListing((prev) => ({ ...prev, ...event.data }));
+          setLiveListing((/** @type {any} */ prev) => ({ ...prev, ...event.data }));
         }
       });
     } catch {}
     return () => {
       try { unsubscribe(); } catch {}
     };
-  }, [listing?.id]);
+  }, [entities.Listing, listing?.id]);
 
   // Auto-transition images every 3 seconds if multiple images
   useEffect(() => {
@@ -77,13 +124,13 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
     return () => clearInterval(interval);
   }, [hasMultipleImages, liveListing.images?.length]);
 
-  const handlePrevImage = (e) => {
+  const handlePrevImage = (/** @type {import("react").MouseEvent<HTMLButtonElement>} */ e) => {
     e.preventDefault();
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev - 1 + liveListing.images.length) % liveListing.images.length);
   };
 
-  const handleNextImage = (e) => {
+  const handleNextImage = (/** @type {import("react").MouseEvent<HTMLButtonElement>} */ e) => {
     e.preventDefault();
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev + 1) % liveListing.images.length);
@@ -130,7 +177,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
                 </button>
                 {/* Image indicators */}
                 <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-                  {liveListing.images.map((imageSrc, i) => (
+                  {liveListing.images.map((/** @type {string} */ imageSrc, /** @type {number} */ i) => (
                     <div
                       key={imageSrc || i}
                       className={`w-1.5 h-1.5 rounded-full transition-colors ${

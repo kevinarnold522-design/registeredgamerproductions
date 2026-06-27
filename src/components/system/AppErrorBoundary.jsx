@@ -1,4 +1,5 @@
 import React from "react";
+import { tryRecoverFromAssetError } from "@/lib/assetRecovery";
 
 export default class AppErrorBoundary extends React.Component {
   constructor(props) {
@@ -14,13 +15,15 @@ export default class AppErrorBoundary extends React.Component {
     try {
       // Keep this lightweight so it never causes a secondary crash.
       console.error("App render crash", error);
-    } catch (_) {}
+    } catch {}
   }
 
   handleReload = () => {
     try {
-      window.location.reload();
-    } catch (_) {}
+      if (!tryRecoverFromAssetError()) {
+        window.location.reload();
+      }
+    } catch {}
   };
 
   render() {

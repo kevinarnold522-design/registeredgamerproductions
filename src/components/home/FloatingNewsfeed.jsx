@@ -74,7 +74,13 @@ export default function FloatingNewsfeed() {
   const loopItems = [...listings, ...listings];
 
   return (
-    <div className="flex fixed top-20 lg:top-24 right-2 lg:right-3 z-30 flex-col items-end pointer-events-none">
+    <div
+      className="flex fixed z-30 flex-col items-end pointer-events-none"
+      style={{
+        top: "5.5rem",
+        right: "max(0.75rem, env(safe-area-inset-right))",
+      }}
+    >
       <div
         className="pointer-events-auto w-44 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
         style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}

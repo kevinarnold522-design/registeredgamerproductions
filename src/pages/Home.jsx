@@ -13,6 +13,7 @@ import GuestAuthDock from "@/components/home/GuestAuthDock";
 import HeyGamerWelcomeModal from "@/components/home/HeyGamerWelcomeModal";
 import HeyGamerBanner from "@/components/home/HeyGamerBanner";
 import { isNewJoiner } from "@/lib/isNewJoiner";
+import { clearAssetRecoveryState, isLikelyAssetVersionError, tryRecoverFromAssetError } from "@/lib/assetRecovery";
 import { Gamepad2, Wrench, Cloud } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -23,9 +24,7 @@ import useScrollReveal from "@/hooks/useScrollReveal";
 const lazyWithRetry = (importer) =>
   lazy(() =>
     importer().catch((err) => {
-      if (!sessionStorage.getItem("chunk_reloaded")) {
-        sessionStorage.setItem("chunk_reloaded", "1");
-        window.location.reload();
+      if (isLikelyAssetVersionError(err) && tryRecoverFromAssetError()) {
         return new Promise(() => {});
       }
       throw err;
@@ -92,7 +91,9 @@ export default function Home() {
 
   // Page mounted successfully — clear the chunk-retry guard so a future
   // stale-chunk failure can reload again.
-  useEffect(() => { sessionStorage.removeItem("chunk_reloaded"); }, []);
+  useEffect(() => {
+    clearAssetRecoveryState();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user) {
