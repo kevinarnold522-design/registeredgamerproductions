@@ -546,18 +546,21 @@ export default function CreateListing() {
 
     const ytId = extractYouTubeId(form.youtube_url) || extractYouTubeId(form.preview_video_url);
     const priceVal = parseFloat(form.price) || 0;
+    const isPaidMod = priceVal > 0 && (form.category === "modding" || form.category === "premium_mods");
+    const effectiveCategory = isPaidMod ? "premium_mods" : form.category;
     const existingListing = editId ? await base44.entities.Listing.get(editId) : null;
     const sellerEmail = existingListing?.seller_email || user.email;
     const sellerName = existingListing?.seller_username || profile?.username || profile?.display_name || sellerEmail?.split("@")[0] || "Gamer";
     const data = {
       ...form,
+      category: effectiveCategory,
       digital_subcategory: form.digital_subcategory_custom?.trim() || form.digital_subcategory,
       digital_subcategory_custom: undefined,
       price: priceVal,
       currency: form.currency === "PHP" ? "USD" : (form.currency || "USD"),
       is_free: priceVal === 0,
       // All paid mods are automatically Premium
-      is_premium: form.is_premium || ((form.category === "modding" || form.category === "premium_mods") && priceVal > 0),
+      is_premium: form.is_premium || isPaidMod,
       // Every listing is treated as digital content
       product_type: form.product_type || "digital",
       // Donation links only apply to paid listings — clear them on free ones
@@ -582,18 +585,19 @@ export default function CreateListing() {
       card_font_family: form.card_font_family,
       card_font_color: form.card_font_color,
       subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
+      newsfeed_categories: Array.from(new Set([...(form.newsfeed_categories || []), ...(isPaidMod ? ["premium_mods"] : [])])),
       modding_subcategory: form.modding_subcategory || undefined,
       subcategory: undefined,
       platform: undefined,
       ign_rating: form.ign_rating !== "" ? parseFloat(form.ign_rating) : undefined,
       store_platforms: form.store_platforms || [],
-      tool_target_game: (form.category === "paid_tools" || form.category === "premium_mods") ? (form.tool_target_game || form.game_name || undefined) : undefined,
+      tool_target_game: (effectiveCategory === "paid_tools" || effectiveCategory === "premium_mods") ? (form.tool_target_game || form.game_name || undefined) : undefined,
       preview_video_url: form.preview_video_url || undefined,
       is_approved: mod?.is_approved !== false,
       status: mod?.requiresReview ? "pending" : "active",
     };
 
-    if (form.category === "games") {
+    if (effectiveCategory === "games") {
       data.community_franchise_id = undefined;
       data.bulk_cross_post_ids = [];
     }
