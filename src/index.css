@@ -439,10 +439,11 @@ body {
 
   body {
     @apply text-foreground;
-    background: transparent;
+    background-color: #050510;
+    background-image: radial-gradient(circle at 20% 0%, rgba(88, 28, 135, 0.28), transparent 52%), radial-gradient(circle at 80% 12%, rgba(190, 24, 93, 0.2), transparent 50%);
   }
   html {
-    background: transparent;
+    background-color: #050510;
   }
 }
 

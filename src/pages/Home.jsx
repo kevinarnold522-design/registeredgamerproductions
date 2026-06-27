@@ -114,13 +114,15 @@ export default function Home() {
   // - 0-3 min after splash dismissed: no ads for anyone
   // - After 3 min: ads start for non-signed-in users only
   // - Signed-in users: ads permanently disabled
-  const adFree = isAuthenticated || profile?.no_ads === true || isMobileViewport;
+  const adFree = isAuthenticated || profile?.no_ads === true;
 
   useEffect(() => {
     // Always clean up ads for ad-free users (signed-in OR admin-granted no_ads)
     if (adFree) {
       document.querySelectorAll("[data-zone]").forEach(el => el.remove());
-      document.querySelectorAll("[data-ad-slot]").forEach(el => { el.style.display = "none"; });
+      document.querySelectorAll("[data-ad-slot]").forEach((el) => {
+        if (el instanceof HTMLElement) el.style.display = "none";
+      });
       return;
     }
   }, [adFree]);
@@ -140,10 +142,49 @@ export default function Home() {
       document.body.appendChild(el);
     };
 
+    const clearInjectedZones = () => {
+      document.querySelectorAll("[data-zone]").forEach((el) => el.remove());
+    };
+
+    const showInlineSlots = () => {
+      document.querySelectorAll("[data-ad-slot]").forEach((el) => {
+        if (el instanceof HTMLElement) el.style.display = "block";
+      });
+    };
+
+    // Mobile: rotate one ad zone at a time instead of flooding the viewport.
+    if (isMobileViewport) {
+      const mobileSlots = [
+        { slot: "243750", style: "position:fixed;bottom:0;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;" },
+        { slot: "243751", style: "position:fixed;top:64px;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;" },
+        { slot: "243752", style: "position:fixed;bottom:72px;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;" },
+      ];
+      let rotateId;
+      let idx = 0;
+      const tMobile = setTimeout(() => {
+        showInlineSlots();
+        const first = mobileSlots[idx % mobileSlots.length];
+        clearInjectedZones();
+        injectBanner(first.slot, first.style);
+        idx += 1;
+        rotateId = setInterval(() => {
+          const next = mobileSlots[idx % mobileSlots.length];
+          clearInjectedZones();
+          injectBanner(next.slot, next.style);
+          idx += 1;
+        }, 120000);
+      }, 180000);
+
+      return () => {
+        clearTimeout(tMobile);
+        if (rotateId) clearInterval(rotateId);
+      };
+    }
+
     // 3 min grace period, then ads start
     const t1 = setTimeout(() => {
       injectBanner("243750", "position:fixed;bottom:0;left:0;right:0;z-index:39;text-align:center;pointer-events:auto;");
-      document.querySelectorAll("[data-ad-slot]").forEach(el => { el.style.display = "block"; });
+      showInlineSlots();
     }, 180000);
 
     // 10 min: more ads
@@ -161,7 +202,7 @@ export default function Home() {
     }, 1200000);
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [adFree, showSplash]);
+  }, [adFree, showSplash, isMobileViewport]);
 
   // Load or auto-create user profile once auth is confirmed
   useEffect(() => {
