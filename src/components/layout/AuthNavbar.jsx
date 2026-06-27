@@ -202,6 +202,17 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
   const userTypeLabel = admin && !isManagingAsGhost ? "CEO & President" : contextAccountType === "regular" ? "Gamer" : contextAccountType.replace("_", " ");
   const userTypeColor = admin && !isManagingAsGhost ? "text-yellow-300 border-yellow-700/40 bg-yellow-900/20" : contextAccountType === "business" ? "text-green-300 border-green-700/40 bg-green-900/20" : contextAccountType === "digital_creator" ? "text-purple-300 border-purple-700/40 bg-purple-900/20" : "text-blue-300 border-blue-700/40 bg-blue-900/20";
 
+  // Prefer ghost avatar during impersonation, then explicit profile avatar,
+  // then auth/user fallbacks so Google sign-in photos still render.
+  const activeAvatarUrl = isManagingAsGhost
+    ? (ghostAccountData?.avatar_url || "")
+    : (
+      profile?.avatar_url ||
+      user?.avatar_url ||
+      user?.profile?.avatar_url ||
+      ""
+    );
+
   // All marketplace categories surfaced directly in the navbar
   const categoryLinks = [
     { icon: Gamepad2, label: "Games", href: "/category?cat=games" },
@@ -304,8 +315,8 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
           <Link to={isManagingAsGhost ? `/profile?email=${encodeURIComponent(ghostAccountEmail)}&ghost_session=1` : "/profile"} className={`flex items-center gap-3 rounded-xl p-2 hover:bg-gray-800/60 transition-all ${collapsed && !isMobile ? "justify-center" : ""}`}>
             <div className="relative flex-shrink-0">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                {(isManagingAsGhost && ghostAccountData?.avatar_url) || profile?.avatar_url
-                  ? <img src={isManagingAsGhost ? ghostAccountData?.avatar_url : profile?.avatar_url} className="w-full h-full object-cover" alt="" />
+                {activeAvatarUrl
+                  ? <img src={activeAvatarUrl} className="w-full h-full object-cover" alt="" />
                   : <User className="w-5 h-5 text-white" />
                 }
               </div>
