@@ -23,9 +23,10 @@ function CreateListingHeroButton() {
 function SignInHeroButton() {
   const { user, isLoadingAuth } = useAuth();
   if (isLoadingAuth || user) return null;
+  const loginReturnUrl = typeof window !== "undefined" ? `${window.location.origin}/` : "/";
   return (
     <motion.button
-      onClick={() => base44.auth.redirectToLogin("https://gamerproductions.vercel.app/")}
+      onClick={() => base44.auth.redirectToLogin(loginReturnUrl)}
       whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
       className="px-10 py-4 rounded-xl bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-500 text-white font-black text-lg hover:from-gray-700 hover:to-gray-600 transition-all flex items-center justify-center gap-2 shadow-lg">
       
