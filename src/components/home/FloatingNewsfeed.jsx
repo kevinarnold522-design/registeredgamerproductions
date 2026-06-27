@@ -38,6 +38,23 @@ function FeedRow({ item }) {
 // Auto-scrolls vertically (marquee loop) and stays fixed wherever the user goes.
 export default function FloatingNewsfeed() {
   const [listings, setListings] = useState([]);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 1023px)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 1023px)");
+    const onChange = () => setIsMobileViewport(media.matches);
+    onChange();
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -51,7 +68,7 @@ export default function FloatingNewsfeed() {
     load();
   }, []);
 
-  if (listings.length === 0) return null;
+  if (isMobileViewport || listings.length === 0) return null;
 
   // Duplicate the list so the vertical marquee loops seamlessly.
   const loopItems = [...listings, ...listings];
