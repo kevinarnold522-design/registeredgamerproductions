@@ -462,16 +462,30 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
               exit={{ x: -280 }}
               transition={{ type: "tween", duration: 0.25 }}
               id="auth-sidebar-drawer"
-              className="fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 overflow-y-scroll overflow-x-hidden gamer-sidebar-scroll"
+              className="fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 flex flex-col overflow-x-hidden gamer-sidebar-scroll"
             >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30 flex-shrink-0">
                 <span className="font-black text-white text-sm">Navigation Menu</span>
-                <button onClick={() => setMobileOpen(false)} className="p-1 text-gray-400 hover:text-white">
+                <button onClick={() => setMobileOpen(false)} className="p-1 text-gray-400 hover:text-white" data-testid="mobile-drawer-close-btn">
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <ScrollDownHint label="Scroll down for all options" />
-              {sidebarInner(true)}
+              <div className="flex-shrink-0">
+                <ScrollDownHint label="Scroll down for all options" />
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+                {sidebarInner(true)}
+              </div>
+              {/* Sticky Sign Out — always visible at the bottom of the mobile navbar drawer */}
+              <div className="flex-shrink-0 border-t border-purple-900/30 bg-gray-950/95 backdrop-blur-md px-3 py-3" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}>
+                <button
+                  onClick={handleLogout}
+                  data-testid="mobile-navbar-signout-btn"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-red-600/90 to-rose-600/90 text-white text-sm font-black shadow-[0_0_18px_rgba(244,63,94,0.35)] hover:opacity-95 transition"
+                >
+                  <LogOut className="w-4 h-4" /> {isManagingAsGhost ? "Back to Admin" : "Sign Out"}
+                </button>
+              </div>
             </motion.div>
           </>
         )}

@@ -10,10 +10,15 @@ export default function FavoritesDropdown({ isOpen, onClose, userEmail }) {
   useEffect(() => {
     if (isOpen && userEmail) {
       setLoading(true);
-      base44.entities.Favorite.filter({ user_email: userEmail }).then((r) => {
-        setItems(r);
-        setLoading(false);
-      });
+      base44.entities.Favorite.filter({ user_email: userEmail })
+        .then((r) => {
+          setItems(Array.isArray(r) ? r : []);
+          setLoading(false);
+        })
+        .catch(() => {
+          setItems([]);
+          setLoading(false);
+        });
     }
   }, [isOpen, userEmail]);
 

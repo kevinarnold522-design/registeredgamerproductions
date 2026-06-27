@@ -1,11 +1,13 @@
-# Gamer.Productions — Mobile Web Fixes (Iteration)
+# Gamer.Productions — Mobile Web Fixes
 
 ## Original Problem Statement
 > import registeredgamerproductions and fix mobile web version layout to match with pc version and also fix error for mobile web loading issue detected we hit a startup error on this device tap reload to continue error, also for mobile web version active total listings and registered users not showing and active status
 >
-> Follow-up: when i click a category i get the error in gamer.productions my domain connected to cloudflare pages
+> Follow-up 1: when i click a category i get the error in gamer.productions my domain connected to cloudflare pages
 >
-> push to github once fixing all
+> Follow-up 2: fix page hiccup error, mobile version has no signout option in navbar, mobile web has no total listing number showing no total registered numbers showing fix it, fix page hiccup this section had trouble loading, also fix for mobile version it show some content failed to load
+>
+> Push to github once fixing all
 
 ## Repository
 - GitHub: https://github.com/kevinarnold522-design/registeredgamerproductions
@@ -14,54 +16,58 @@
 
 ## What Was Fixed In This Session
 
-### 1. Mobile layout now mirrors PC
-- `ShootingStars` space backdrop (canvas with stars/asteroids/rockets/UFOs/astronauts) is no longer disabled at mobile widths. Only `prefers-reduced-motion` users now opt out.
-- `Navbar` brand text "Gamer.Productions" is visible on mobile (was `hidden lg:flex` — now `flex` with responsive font sizes).
-- `LiveStats` tiles (Active Listings / Platform Status / Streaming Now / Registered Gamers admin-only) now use tighter padding + gap on mobile so all tiles render side-by-side / wrap cleanly instead of looking missing.
-- `InlineFloatingNewsfeed` (mobile-friendly inline marquee) restored on Home below the marquee ticker — desktop continues to see the right-edge floating newsfeed; mobile sees the inline variant. Both pull from the same Supabase listings feed.
+### Session 1 — Mobile mirrors PC + stats + category errors
+- `ShootingStars` space backdrop enabled on mobile (only opt-out: `prefers-reduced-motion`).
+- `Navbar` brand text "Gamer.Productions" visible on mobile.
+- `LiveStats`: now consumes the central `AuthContext` instead of doing its own auth fetch race. `data-testid`s added on every tile. Renders 0 instead of "—" so admins always see numeric values (per Session 2 below).
+- `InlineFloatingNewsfeed` (mobile-friendly inline marquee) restored on Home below the marquee ticker.
+- `AppErrorBoundary` auto-recovers from stale-chunk errors and has a friendlier copy + **Go Home** button.
+- New `RouteErrorBoundary` wraps the `<Routes>` block in `App.jsx`. Single-page crashes no longer escalate to the global "we hit a startup error" UI.
+- `GenericCategoryPage` data fetches wrapped in `.catch(() => [])` so a Supabase hiccup can't throw past React.
 
-### 2. "Active Listings / Registered Users / Active Status" missing on mobile
-- Root cause: `LiveStats` ran its own parallel `base44.auth.isAuthenticated() → me()` chain instead of using the central `AuthContext`. On mobile that fetch can race / time out, so `isAdmin` never flipped true and "Registered Gamers" was hidden.
-- Fix: `LiveStats` now consumes `useAuth()` directly and computes `isAdmin` via `@/lib/constants` synchronously from `user.email`. Mobile + desktop behave identically.
-- Each stat tile now carries a `data-testid` (`stat-active-listings`, `stat-platform-status`, `stat-streaming-now`, `stat-registered-gamers`) for easy QA.
+### Session 2 — Page hiccup root cause + signout + stats reliability
+- **Root cause of "page hiccup" on Category / Dashboard / Channel / Profile pages**: `NotificationBell` (rendered by `AuthNavbar` on every signed-in page) called `setNotifications(n)` without verifying `n` was an array. On a flaky Supabase response (`null`/`undefined`), the next render's `notifications.filter()` threw, which my new `RouteErrorBoundary` then caught — producing the "page hiccup" UI. **Fixed** by clamping to `Array.isArray(r) ? r : []` and adding `.catch(() => setNotifications([]))`. Same hardening applied to `FavoritesDropdown`.
+- **Mobile sign-out**: New **sticky red "Sign Out" button** anchored at the **bottom of the mobile drawer**, always visible regardless of scroll position. Respects iOS safe-area inset. `data-testid="mobile-navbar-signout-btn"`.
+- **Home page stats reliability**: `LiveStats` tiles now always render `(value || 0).toLocaleString()` instead of `"—"`. So even before the Supabase fetch resolves, a numeric value is shown — and the Registered Gamers tile always appears for admin users.
+- **Dashboard `init` resilience**: every `await` wrapped in try/catch. `JSON.parse(localStorage…)` no longer throws. `setLoading(false)` is now reached even when the Supabase calls fail, so admins never see a stuck spinner.
 
-### 3. "We hit a startup error on this device" on category clicks
-- Root cause: `AppErrorBoundary` (mounted at the root in `main.jsx`) caught *any* render crash and showed a full-screen "startup error" with only a Reload button. On Cloudflare Pages, intermittent crashes inside category-page sub-components (e.g. listings filter parsing failure when a partial Supabase response comes back, stale chunk after a redeploy) escalated to that full UI.
-- Fixes:
-  - `AppErrorBoundary`: detects stale-chunk errors (`isLikelyAssetVersionError`) and auto-recovers via `tryRecoverFromAssetError()` before showing UI. Friendlier copy + new **Go Home** button so users aren't trapped.
-  - New `RouteErrorBoundary` wraps the `<Routes>` block in `App.jsx`. A crash inside any single page now shows a small retry card *inside* the layout (nav stays usable) instead of nuking the whole app.
-  - `GenericCategoryPage`: all `base44.entities.Listing.filter(...)` calls are now wrapped with `.catch(() => [])` and the outer `Promise.all` has a final `.catch` that sets an empty list + clears `loading`. A flaky network response can no longer throw past React.
-
-## Architecture / File Map
-- `/app/src/App.jsx` — Router root + `RouteErrorBoundary`
-- `/app/src/components/system/AppErrorBoundary.jsx` — global boundary (auto-recovers, friendlier UI)
-- `/app/src/components/system/RouteErrorBoundary.jsx` — per-route boundary (new)
-- `/app/src/components/home/Navbar.jsx` — public navbar, brand text visible on mobile
-- `/app/src/components/home/HeroSection.jsx` — `LiveStats` uses `useAuth()`; responsive tiles
-- `/app/src/components/home/ShootingStars.jsx` — enabled on mobile (only opt-out: reduced motion)
-- `/app/src/components/home/FloatingNewsfeed.jsx` — desktop-only floating; mobile uses `InlineFloatingNewsfeed`
+## Files Touched
+- `/app/src/App.jsx` — Router + `RouteErrorBoundary` wrapper
+- `/app/src/components/system/AppErrorBoundary.jsx` — friendlier copy, asset-recovery auto-reload, Go Home button
+- `/app/src/components/system/RouteErrorBoundary.jsx` — new per-route boundary
+- `/app/src/components/layout/AuthNavbar.jsx` — sticky **Sign Out** button at drawer bottom
+- `/app/src/components/notifications/NotificationBell.jsx` — `Array.isArray` guard + `.catch`
+- `/app/src/components/layout/FavoritesDropdown.jsx` — `Array.isArray` guard + `.catch`
+- `/app/src/components/home/HeroSection.jsx` — `LiveStats` uses `useAuth`, always shows numeric value
+- `/app/src/components/home/Navbar.jsx` — brand text on mobile
+- `/app/src/components/home/ShootingStars.jsx` — enabled on mobile
+- `/app/src/components/home/FloatingNewsfeed.jsx` — desktop-only floating; mobile uses InlineFloatingNewsfeed
 - `/app/src/components/category/GenericCategoryPage.jsx` — hardened data fetches
+- `/app/src/pages/Dashboard.jsx` — try/catch around every async step
+- `/app/src/pages/Home.jsx` — restored `InlineFloatingNewsfeed` for mobile
+- `/app/vite.config.js` — `server.host/port/allowedHosts/hmr.clientPort` set so preview URL serves through ingress
 - `/app/frontend/package.json` — wrapper so supervisor `yarn start` boots Vite from `/app` on port 3000
-- `/app/vite.config.js` — `server.host/port/allowedHosts/hmr.clientPort` set so the preview URL serves through ingress
 
 ## Implementation Status
-- [x] Mobile space backdrop matches PC
-- [x] Mobile navbar brand matches PC
-- [x] Active Listings / Platform Status / Streaming Now visible on mobile
-- [x] Registered Gamers (admin only) visible on mobile when signed in as admin
-- [x] Featured Newsfeed surfaced on mobile (inline variant)
-- [x] Category pages no longer escalate sub-component crashes to global startup error
+- [x] Mobile layout mirrors PC (space backdrop, brand text, newsfeed)
+- [x] Active Listings + Platform Status + Streaming Now visible on mobile
+- [x] Registered Gamers tile visible on mobile for admin (always renders numeric value)
+- [x] Sticky Sign Out button at the bottom of the mobile drawer (`data-testid="mobile-navbar-signout-btn"`)
+- [x] Page hiccup root cause patched in `NotificationBell` + `FavoritesDropdown`
+- [x] Dashboard init fully wrapped in try/catch
+- [x] Category page fetches no longer throw past React
 - [x] Lint clean on all touched files
 
 ## Next Action Items
-1. **Push the changes to GitHub** — click the **Save to GitHub** button in the chat input area at the bottom of the Emergent screen. Select the `main` branch (or your working branch) and confirm. The diff covers ~9 files; no risky rewrites.
-2. Trigger a fresh Cloudflare Pages deploy from the new commit so the production domain picks up the mobile fixes.
-3. After deploy, re-test on the actual mobile devices that previously hit the startup error (especially when navigating Home → category card).
+1. **Push the changes to GitHub** — click **Save to GitHub** in the chat input area at the bottom of the Emergent screen. If the push fails with 403 again, follow the GitHub reconnect steps already shared (Profile → GitHub → Disconnect → Reconnect → confirm Emergent has write access to `kevinarnold522-design/registeredgamerproductions`).
+2. After GitHub push, trigger a Cloudflare Pages deploy so the production domain picks up the fixes.
+3. After deploy, re-test on the real mobile device while signed in as admin: Home stats should show numbers, no "page hiccup" on category / dashboard / channel / profile, and the red **Sign Out** button should be visible at the bottom of the slide-out menu.
 
 ## Future / Backlog (Suggested)
-- **P1** — Move the four ad-loading inline scripts out of `index.html` into a deferred module so Cloudflare's static cache delivers a smaller first paint.
-- **P1** — Add a top-bar mobile sign-in CTA so guest users don't need the floating "Get Started" dock obscuring the hero on small screens.
-- **P2** — Lazy-load `ShootingStars` after first paint (intersection observer) so it doesn't compete for the main thread on very low-end Android devices.
+- **P1** — Move the four inline ad-bootstrap scripts in `index.html` into a deferred module so Cloudflare's static cache serves a smaller first paint.
+- **P1** — Audit every `.then(setX)` chain across the codebase for the same null-response pattern. I patched the highest-impact ones (NotificationBell, FavoritesDropdown); others may still trigger occasional page hiccups under flaky network conditions.
+- **P2** — Lazy-load `ShootingStars` after first paint so it doesn't compete for the main thread on very low-end Android devices.
+- **P2** — Add a real telemetry hook in `RouteErrorBoundary.componentDidCatch` (Sentry, PostHog, or a Cloudflare Worker endpoint) so future production crashes are visible without needing user screenshots.
 
 ## Smart Enhancement Suggestion
-Why don't you wire a tiny `Listing.create` redirect on the inline mobile Featured Newsfeed — tapping a listing today opens its page, but adding a "Promote this listing" mini-CTA inside the card for sellers would convert idle scroll time into paid Featured boosts. Low-effort change, high revenue lift, mirrors how TikTok Shop monetizes its inline feed.
+Why don't you add a "Promote this listing" mini-CTA inside the mobile inline Featured Newsfeed cards? Idle scroll time on mobile becomes paid Featured boosts — same playbook TikTok Shop uses to monetize its inline feed. Low effort, high revenue lift.

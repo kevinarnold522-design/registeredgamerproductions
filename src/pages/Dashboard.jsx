@@ -15,29 +15,34 @@ export default function Dashboard() {
 
   useEffect(() => {
     const init = async () => {
-      // Check for ghost session from URL params
-      const params = new URLSearchParams(location.search);
-      const ghostEmail = params.get('ghost_email');
-      
-      // Check for persistent ghost session
-      const impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}');
-      const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
-      
-      let emailToLoad;
-      let me = null;
-      if (ghostEmail) {
-        emailToLoad = ghostEmail;
-      } else if (isGhostLogin) {
-        emailToLoad = impersonationData.targetEmail;
-      } else {
-        me = await base44.auth.me();
-        emailToLoad = me?.email;
-        setUser(me);
-      }
-      
-      if (!emailToLoad) { setLoading(false); return; }
-      
-      const profiles = await base44.entities.UserProfile.filter({ user_email: emailToLoad });
+      try {
+        // Check for ghost session from URL params
+        const params = new URLSearchParams(location.search);
+        const ghostEmail = params.get('ghost_email');
+
+        // Check for persistent ghost session
+        let impersonationData = {};
+        try { impersonationData = JSON.parse(localStorage.getItem('impersonation_session') || '{}'); } catch { impersonationData = {}; }
+        const isGhostLogin = impersonationData.isImpersonating && impersonationData.isGhostLogin && impersonationData.isPersistent;
+
+        let emailToLoad;
+        let me = null;
+        if (ghostEmail) {
+          emailToLoad = ghostEmail;
+        } else if (isGhostLogin) {
+          emailToLoad = impersonationData.targetEmail;
+        } else {
+          try { me = await base44.auth.me(); } catch { me = null; }
+          emailToLoad = me?.email;
+          setUser(me);
+        }
+
+        if (!emailToLoad) { setLoading(false); return; }
+
+        let profiles = [];
+        try {
+          profiles = await base44.entities.UserProfile.filter({ user_email: emailToLoad });
+        } catch { profiles = []; }
       if (profiles.length > 0) {
         setProfile(profiles[0]);
         // If ghost account, update user object with ghost data
@@ -51,14 +56,20 @@ export default function Dashboard() {
         // Check pending setup from registration
         const pending = localStorage.getItem("pending_profile");
         if (pending) {
-          const data = JSON.parse(pending);
-          const newProfile = await base44.entities.UserProfile.create({
-            ...data,
-            user_email: emailToLoad,
-            joined_date: new Date().toISOString(),
-          });
-          setProfile(newProfile);
-          localStorage.removeItem("pending_profile");
+          let data = {};
+          try { data = JSON.parse(pending); } catch { data = {}; }
+          let newProfile = null;
+          try {
+            newProfile = await base44.entities.UserProfile.create({
+              ...data,
+              user_email: emailToLoad,
+              joined_date: new Date().toISOString(),
+            });
+          } catch (_) { newProfile = null; }
+          if (newProfile) {
+            setProfile(newProfile);
+            localStorage.removeItem("pending_profile");
+          }
           // Send beautiful HTML welcome email
           try {
             // Load custom email settings
@@ -205,6 +216,10 @@ export default function Dashboard() {
       }
 
       setLoading(false);
+      } catch (e) {
+        try { console.error("Dashboard init failed", e); } catch {}
+        setLoading(false);
+      }
     };
 
     init();

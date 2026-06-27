@@ -11,7 +11,8 @@ export default function NotificationBell({ userEmail }) {
   useEffect(() => {
     if (!userEmail) return;
     base44.entities.Notification.filter({ user_email: userEmail }, "-created_date", 20)
-      .then(n => setNotifications(n));
+      .then(n => setNotifications(Array.isArray(n) ? n : []))
+      .catch(() => setNotifications([]));
   }, [userEmail]);
 
   useEffect(() => {

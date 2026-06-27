@@ -86,13 +86,13 @@ function LiveStats() {
       {/* Registered Gamers — admin only */}
       {isAdmin &&
       <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-registered-gamers">
-        <div className={valueClass}>{adminUserCount > 0 ? adminUserCount.toLocaleString() : "—"}</div>
+        <div className={valueClass}>{(adminUserCount || 0).toLocaleString()}</div>
         <div className={labelClass}><Zap className="w-3 h-3" /> Registered Gamers</div>
       </motion.div>
       }
 
       <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-active-listings">
-        <div className={valueClass}>{stats.listings > 0 ? stats.listings.toLocaleString() : "—"}</div>
+        <div className={valueClass}>{(stats.listings || 0).toLocaleString()}</div>
         <div className={labelClass}>Active Listings</div>
       </motion.div>
 
