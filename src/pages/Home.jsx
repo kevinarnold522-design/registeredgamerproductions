@@ -19,6 +19,58 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
 
+class DeferredSectionsBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error) {
+    if (isLikelyAssetVersionError(error) && tryRecoverFromAssetError()) {
+      return;
+    }
+
+    try {
+      console.error("Deferred homepage sections failed", error);
+    } catch {}
+  }
+
+  handleRetry = () => {
+    this.setState({ hasError: false });
+    if (!tryRecoverFromAssetError()) {
+      window.location.reload();
+    }
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="mx-auto mt-6 max-w-5xl px-4">
+          <div className="rounded-3xl border border-purple-500/30 bg-gray-950/85 px-5 py-6 text-center shadow-[0_0_30px_rgba(168,85,247,0.18)]">
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-purple-300">Refreshing content</p>
+            <p className="mt-2 text-sm text-gray-400">
+              Some homepage sections did not load on this device. You can keep browsing or reload fresh content.
+            </p>
+            <button
+              type="button"
+              onClick={this.handleRetry}
+              className="mt-4 inline-flex rounded-full border border-purple-400/50 bg-purple-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-purple-500"
+            >
+              Reload sections
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 // Retry a lazy import once on chunk-load failure (recovers from stale
 // Vite chunks after a deploy instead of crashing the page).
 const lazyWithRetry = (importer) =>
@@ -292,84 +344,86 @@ export default function Home() {
             <InlineFloatingNewsfeed />
 
             {showDeferredSections && (
-              <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
-                {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
+              <DeferredSectionsBoundary>
+                <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
+                  {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
 
-              {/* GET VERIFIED BADGE — prominent top banner */}
-              <VerifiedBadgeBanner />
+                {/* GET VERIFIED BADGE — prominent top banner */}
+                <VerifiedBadgeBanner />
 
-              {/* First 10K Free Verified Badge promotion */}
-              <First10KBanner user={user} profile={profile} />
+                {/* First 10K Free Verified Badge promotion */}
+                <First10KBanner user={user} profile={profile} />
 
-              {/* Live Moving Dashboard (marketplace listings) — newsfeed now floats globally on the right */}
-              <MovingDashboard currentUser={user} currentProfile={profile} />
+                {/* Live Moving Dashboard (marketplace listings) — newsfeed now floats globally on the right */}
+                <MovingDashboard currentUser={user} currentProfile={profile} />
 
-              {/* Games moving dashboard */}
-              <CategoryMovingDashboard
-                title="Games"
-                subtitle="Fresh game listings across PC, console & mobile."
-                accent="#a855f7"
-                icon={Gamepad2}
-                filterFn={(l) => l.category === "games"}
-                viewAllHref="/category?cat=games"
-                user={user}
-                profile={profile}
-              />
+                {/* Games moving dashboard */}
+                <CategoryMovingDashboard
+                  title="Games"
+                  subtitle="Fresh game listings across PC, console & mobile."
+                  accent="#a855f7"
+                  icon={Gamepad2}
+                  filterFn={(l) => l.category === "games"}
+                  viewAllHref="/category?cat=games"
+                  user={user}
+                  profile={profile}
+                />
 
-              {/* Cloud Gaming moving dashboard */}
-              <CategoryMovingDashboard
-                title="Cloud Gaming"
-                subtitle="Stream and play instantly — GeForce NOW, Xbox Cloud, PS Plus & more."
-                accent="#38bdf8"
-                icon={Cloud}
-                filterFn={(l) => l.category === "cloud_gaming"}
-                viewAllHref="/category?cat=cloud_gaming"
-                user={user}
-                profile={profile}
-              />
+                {/* Cloud Gaming moving dashboard */}
+                <CategoryMovingDashboard
+                  title="Cloud Gaming"
+                  subtitle="Stream and play instantly — GeForce NOW, Xbox Cloud, PS Plus & more."
+                  accent="#38bdf8"
+                  icon={Cloud}
+                  filterFn={(l) => l.category === "cloud_gaming"}
+                  viewAllHref="/category?cat=cloud_gaming"
+                  user={user}
+                  profile={profile}
+                />
 
-              {/* Tools moving dashboard */}
-              <CategoryMovingDashboard
-                title="Tools"
-                subtitle="Premium utilities, launchers, automation & creator software."
-                accent="#f472b6"
-                icon={Wrench}
-                filterFn={(l) => l.category === "paid_tools"}
-                viewAllHref="/category?cat=paid_tools"
-                user={user}
-                profile={profile}
-                reverse
-              />
+                {/* Tools moving dashboard */}
+                <CategoryMovingDashboard
+                  title="Tools"
+                  subtitle="Premium utilities, launchers, automation & creator software."
+                  accent="#f472b6"
+                  icon={Wrench}
+                  filterFn={(l) => l.category === "paid_tools"}
+                  viewAllHref="/category?cat=paid_tools"
+                  user={user}
+                  profile={profile}
+                  reverse
+                />
 
-              {/* Listing of the Week — right after marketplace listings */}
-              <ListingOfWeek />
+                {/* Listing of the Week — right after marketplace listings */}
+                <ListingOfWeek />
 
-              {/* Content/Streaming - Merged */}
-              <LiveStreamSection />
-              <VideosSection />
+                {/* Content/Streaming - Merged */}
+                <LiveStreamSection />
+                <VideosSection />
 
-              <PaidModsSection />
-              <MonetizationBadge />
+                <PaidModsSection />
+                <MonetizationBadge />
 
-              {/* Official socials — right below the Get Monetized section */}
-              <div className="max-w-7xl mx-auto px-4 py-4">
-                <GamerSocialsBar />
-              </div>
+                {/* Official socials — right below the Get Monetized section */}
+                <div className="max-w-7xl mx-auto px-4 py-4">
+                  <GamerSocialsBar />
+                </div>
 
-              <FeaturedGames />
-              <CommunitySection />
+                <FeaturedGames />
+                <CommunitySection />
 
-              {/* What GAMER Productions is — moved to bottom above footer */}
-              <BusinessModelSection />
+                {/* What GAMER Productions is — moved to bottom above footer */}
+                <BusinessModelSection />
 
-              <Footer />
-              <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
-              <AdminLinkScanner userEmail={user?.email} />
-              {/* Activities (daily rewards) — new joiners only */}
-              {profile && isNewJoiner(profile) && <DailyRewards user={user} profile={profile} />}
-              {user && profile && isNewJoiner(profile) && <DailyRewardPopup user={user} />}
-                <AdminApprovalPanel userEmail={user?.email} />
-              </Suspense>
+                <Footer />
+                <FeedbackWidget userEmail={user?.email} userName={user?.full_name} />
+                <AdminLinkScanner userEmail={user?.email} />
+                {/* Activities (daily rewards) — new joiners only */}
+                {profile && isNewJoiner(profile) && <DailyRewards user={user} profile={profile} />}
+                {user && profile && isNewJoiner(profile) && <DailyRewardPopup user={user} />}
+                  <AdminApprovalPanel userEmail={user?.email} />
+                </Suspense>
+              </DeferredSectionsBoundary>
             )}
           </div>
         </>
