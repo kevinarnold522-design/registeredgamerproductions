@@ -2,7 +2,10 @@ import React, { useEffect, useRef } from "react";
 
 export default function ShootingStars() {
   const canvasRef = useRef(null);
-  const [enabled, setEnabled] = React.useState(true);
+  const [enabled, setEnabled] = React.useState(() => {
+    if (typeof window === "undefined") return true;
+    return !window.matchMedia("(max-width: 1023px), (prefers-reduced-motion: reduce)").matches;
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;

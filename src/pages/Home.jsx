@@ -56,6 +56,7 @@ const CategoryMovingDashboard = lazyWithRetry(() => import("@/components/home/Ca
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
+  const [showDeferredSections, setShowDeferredSections] = useState(false);
   const [profile, setProfile] = useState(null);
   const [showAdSign, setShowAdSign] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -78,6 +79,16 @@ export default function Home() {
     media.addListener(onChange);
     return () => media.removeListener(onChange);
   }, []);
+
+  // Avoid mounting all heavy lazy sections in the same frame the splash closes.
+  useEffect(() => {
+    if (showSplash) {
+      setShowDeferredSections(false);
+      return;
+    }
+    const t = setTimeout(() => setShowDeferredSections(true), 240);
+    return () => clearTimeout(t);
+  }, [showSplash]);
 
   // Page mounted successfully — clear the chunk-retry guard so a future
   // stale-chunk failure can reload again.
@@ -279,8 +290,9 @@ export default function Home() {
             <MarqueeTicker />
             <InlineFloatingNewsfeed />
 
-            <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
-              {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
+            {showDeferredSections && (
+              <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
+                {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
 
               {/* GET VERIFIED BADGE — prominent top banner */}
               <VerifiedBadgeBanner />
@@ -355,8 +367,9 @@ export default function Home() {
               {/* Activities (daily rewards) — new joiners only */}
               {profile && isNewJoiner(profile) && <DailyRewards user={user} profile={profile} />}
               {user && profile && isNewJoiner(profile) && <DailyRewardPopup user={user} />}
-              <AdminApprovalPanel userEmail={user?.email} />
-            </Suspense>
+                <AdminApprovalPanel userEmail={user?.email} />
+              </Suspense>
+            )}
           </div>
         </>
       )}
