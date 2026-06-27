@@ -27,6 +27,23 @@ export default function GlobalHtmlAd() {
   const [ad, setAd] = useState(null);
   const [show, setShow] = useState(false);
   const [exempt, setExempt] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 1023px)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 1023px)");
+    const onChange = () => setIsMobileViewport(media.matches);
+    onChange();
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
 
   // Ad-free option bans ALL ad codes for the user (admin-set no_ads,
   // account moderators, and admins never see ad codes).
@@ -61,15 +78,15 @@ export default function GlobalHtmlAd() {
   if (!ad || !show || exempt) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-pink-500/40 bg-gray-950 shadow-[0_0_50px_rgba(236,72,153,.35)]">
+    <div className={isMobileViewport ? "fixed inset-x-3 bottom-3 z-[80] flex justify-center" : "fixed inset-0 z-[80] flex items-center justify-center px-4 bg-black/70"}>
+      <div className={isMobileViewport ? "relative w-full max-w-md overflow-hidden rounded-2xl border border-pink-500/40 bg-gray-950 shadow-[0_0_24px_rgba(236,72,153,.28)]" : "relative w-full max-w-md overflow-hidden rounded-3xl border border-pink-500/40 bg-gray-950 shadow-[0_0_50px_rgba(236,72,153,.35)]"}>
         <button onClick={() => setShow(false)} className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 border border-white/10 text-white flex items-center justify-center">
           <X className="w-4 h-4" />
         </button>
         <div className="px-5 pt-5">
           <p className="text-pink-300 text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2"><Megaphone className="w-3.5 h-3.5" /> Sponsored</p>
         </div>
-        <div className="p-5">
+        <div className={isMobileViewport ? "p-4 max-h-[56vh] overflow-y-auto" : "p-5"}>
           <AdHtml html={ad.ad_html_code} />
         </div>
       </div>
