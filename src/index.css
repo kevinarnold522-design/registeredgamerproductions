@@ -479,6 +479,48 @@ body {
 .bg-\[\#111\], .bg-\[\#111111\], .bg-\[\#181818\], .bg-\[\#1a1a1a\], .bg-\[\#0d0d0d\] { background-color: rgba(74, 22, 96, 0.42) !important; }
 .bg-\[\#1f1f2e\], .bg-\[\#171723\], .bg-\[\#13131f\], .bg-\[\#0c0c16\] { background-color: rgba(88, 24, 104, 0.42) !important; }
 .bg-zinc-800, .bg-neutral-800, .bg-slate-800, .bg-gray-800 { background-color: rgba(96, 28, 110, 0.4) !important; }
+
+/* ─── Mobile background performance mode ─── */
+@media (max-width: 1023px) {
+  html, body, #root {
+    background: #050510 !important;
+    background-image: none !important;
+  }
+
+  /* Simplify gradient utility backgrounds to reduce paint cost on mobile GPUs */
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl {
+    background-image: none !important;
+  }
+
+  /* Backdrop blur is expensive on many mobile browsers */
+  .backdrop-blur,
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Disable decorative glow borders/animations that trigger heavy compositing */
+  .std-edge-glow::after,
+  .listing-glow-lines::after,
+  .listing-glow-frame::before {
+    display: none !important;
+  }
+
+  .active-listing-glow {
+    animation: none !important;
+    box-shadow: none !important;
+  }
+}
 /* Pink-leaning panels for variety */
 .bg-gray-800\/90, .bg-gray-800\/80, .bg-gray-800\/70, .bg-gray-800\/60, .bg-gray-800\/50 { background-color: rgba(120, 30, 92, 0.38) !important; }
 .bg-\[\#14101f\], .bg-\[\#12101a\] { background-color: rgba(122, 32, 96, 0.4) !important; }
