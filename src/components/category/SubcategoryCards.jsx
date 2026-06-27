@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, GripVertical, Eye, Filter, CheckSquare, Square, Gamepad2, Package } from "lucide-react";
+import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, Eye, Filter, CheckSquare, Square, Gamepad2, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
@@ -447,12 +448,18 @@ function VisibleListingRow({ item, userProfile }) {
 
   useEffect(() => {
     if (!rowRef.current || !item?.id) return;
+    if (typeof window === "undefined" || typeof window.IntersectionObserver !== "function") return;
+
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting || countedRef.current) return;
       countedRef.current = true;
       const key = `subcat_view_seen_${item.id}`;
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, "1");
+      try {
+        if (typeof window.sessionStorage !== "undefined") {
+          if (window.sessionStorage.getItem(key)) return;
+          window.sessionStorage.setItem(key, "1");
+        }
+      } catch {}
       base44.entities.Listing.update(item.id, { views: (item.views || 0) + 1 }).catch(() => {});
     }, { threshold: 0.55 });
     observer.observe(rowRef.current);
@@ -460,7 +467,7 @@ function VisibleListingRow({ item, userProfile }) {
   }, [item?.id]);
 
   return (
-    <a ref={rowRef} key={item.id} href={`/listing?id=${item.id}`}
+    <Link ref={rowRef} key={item.id} to={`/listing?id=${item.id}`}
       className="flex gap-3 px-3 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
       <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
         {item.images?.[0]
@@ -475,7 +482,7 @@ function VisibleListingRow({ item, userProfile }) {
           <span className="flex items-center gap-1 text-[10px] text-cyan-300 font-bold"><Eye className="w-3 h-3" />{(item.views || 0).toLocaleString()}</span>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 

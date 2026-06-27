@@ -33,7 +33,7 @@ export default function CategoryPage() {
   const [showRecommend, setShowRecommend] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white relative z-10">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-gray-950 text-white relative z-10">
       {!isLoadingAuth && (user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />)}
       {/* Recommend Category bar */}
       <div className="pt-16 lg:pt-2 px-4 max-w-7xl mx-auto">
