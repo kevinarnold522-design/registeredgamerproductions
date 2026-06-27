@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Package, TrendingUp, Zap, Monitor, Smartphone, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import MascotShowcase from "@/components/shared/MascotShowcase";
 import HomeListingCard from "@/components/home/HomeListingCard";
@@ -222,10 +223,10 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
       {/* Cyberpunk bottom accent */}
       <div className="max-w-7xl mx-auto px-4 mt-10 flex items-center gap-3">
         <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, transparent, ${CP.cyan}40, ${CP.purple}60, ${CP.pink}40, transparent)` }} />
-        <a href="/category?cat=games" className="flex items-center gap-1.5 px-4 py-1.5 rounded-sm text-xs font-bold transition-all hover:opacity-80"
+        <Link to="/category?cat=games" className="flex items-center gap-1.5 px-4 py-1.5 rounded-sm text-xs font-bold transition-all hover:opacity-80"
           style={{ background: `${CP.cyan}15`, border: `1px solid ${CP.cyan}40`, color: CP.cyan }}>
           <ExternalLink className="w-3 h-3" /> VIEW ALL
-        </a>
+        </Link>
         <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, transparent, ${CP.pink}40, ${CP.purple}60, ${CP.cyan}40, transparent)` }} />
       </div>
     </section>

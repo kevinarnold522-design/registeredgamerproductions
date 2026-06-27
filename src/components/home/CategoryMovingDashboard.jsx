@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import HomeListingCard from "@/components/home/HomeListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { computeMonthlyRanks } from "@/lib/monthlyRank";
@@ -85,10 +86,10 @@ export default function CategoryMovingDashboard({
       {viewAllHref && (
         <div className="max-w-7xl mx-auto px-4 mt-6 flex items-center gap-3">
           <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, transparent, ${accent}50, transparent)` }} />
-          <a href={viewAllHref} className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all hover:opacity-80"
+          <Link to={viewAllHref} className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all hover:opacity-80"
             style={{ background: `${accent}15`, border: `1px solid ${accent}40`, color: accent }}>
             <ExternalLink className="w-3 h-3" /> VIEW ALL
-          </a>
+          </Link>
           <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, transparent, ${accent}50, transparent)` }} />
         </div>
       )}

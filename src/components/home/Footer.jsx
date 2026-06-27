@@ -11,7 +11,7 @@ const links = {
     { label: "Gaming Gear", href: "/category?cat=buy_sell" },
     { label: "Buy & Sell", href: "/category?cat=buy_sell" },
     { label: "Tournaments", href: "/category?cat=tournaments" },
-    { label: "Content", href: "/category?cat=content" },
+    { label: "Content", href: "/category?cat=content_streaming" },
   ],
   Community: [
     { label: "Forums", href: "#" },

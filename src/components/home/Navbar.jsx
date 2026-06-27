@@ -16,7 +16,7 @@ const navLinks = [
 { label: "Content", href: "/category?cat=content_streaming" },
 { label: "Go Live", href: "/studio", live: true },
 { label: "Tournaments", href: "/category?cat=tournaments" },
-{ label: "Marketplace", href: "/category?cat=premium_mods" }];
+{ label: "Marketplace", href: "/category?cat=buy_sell" }];
 
 
 const accountTypes = [

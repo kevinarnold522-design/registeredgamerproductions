@@ -120,7 +120,7 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
         style={{ background: `radial-gradient(circle, ${cat.glowColor}, transparent)` }}
         animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />
 
-      <div className="relative z-10 h-full flex items-center px-6 md:px-12 gap-6 py-6">
+      <div className="relative z-10 flex h-full flex-col items-start justify-center gap-5 px-5 py-6 sm:px-6 md:flex-row md:items-center md:px-12">
         <motion.div animate={hovered ? { rotate: [0, -10, 10, 0], scale: 1.15 } : { scale: 1 }} transition={{ duration: 0.5 }}>
           <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-black/30 border-2 flex items-center justify-center flex-shrink-0"
             style={{ borderColor: cat.glowColor, boxShadow: hovered ? `0 0 30px ${cat.glowColor}` : "none" }}>
@@ -141,10 +141,10 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
               <span className="px-3 py-1 rounded-full bg-black/40 text-white/70 text-[10px] font-black uppercase tracking-wider">{cat.badge}</span>
             )}
           </div>
-          <h3 className="text-white font-black text-2xl md:text-3xl mb-1.5 truncate">{cat.title}</h3>
-          <p className="text-white/60 text-sm md:text-base max-w-xl">{cat.sub}</p>
+          <h3 className="mb-1.5 text-2xl font-black text-white md:text-3xl">{cat.title}</h3>
+          <p className="max-w-xl text-sm text-white/60 md:text-base">{cat.sub}</p>
         </div>
-        <div className="hidden md:flex items-center gap-2 text-white/70 font-bold text-sm">Explore →</div>
+        <div className="flex items-center gap-2 text-sm font-bold text-white/70 md:ml-auto">Explore →</div>
       </div>
     </motion.div>
   );
@@ -286,7 +286,7 @@ export default function CategoryCards() {
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden block group"
           style={{
-            height: "240px",
+            minHeight: "240px",
             border: `2px solid ${modHovered ? "rgba(249,115,22,0.8)" : "rgba(249,115,22,0.3)"}`,
             transition: "border-color 0.3s",
             boxShadow: modHovered ? "0 0 40px 8px rgba(249,115,22,0.3)" : "0 0 20px rgba(249,115,22,0.1)",
@@ -301,7 +301,7 @@ export default function CategoryCards() {
             style={{ background: "radial-gradient(circle, rgba(249,115,22,0.3), transparent)" }}
             animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 3, repeat: Infinity }} />
 
-          <div className="relative z-10 h-full flex items-center px-8 md:px-16 gap-8">
+          <div className="relative z-10 flex h-full flex-col items-start justify-center gap-6 px-5 py-6 sm:px-8 md:flex-row md:items-center md:px-16">
             <motion.div animate={modHovered ? { rotate: [0, -10, 10, 0], scale: 1.15 } : { scale: 1 }} transition={{ duration: 0.5 }}>
               <div className="w-20 h-20 rounded-2xl bg-orange-900/40 border-2 border-orange-500/50 flex items-center justify-center"
                 style={{ boxShadow: modHovered ? "0 0 30px rgba(249,115,22,0.6)" : "none" }}>
@@ -323,7 +323,7 @@ export default function CategoryCards() {
                 ))}
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-2 text-orange-300 font-bold text-sm">Explore →</div>
+            <div className="flex items-center gap-2 text-sm font-bold text-orange-300 md:ml-auto">Explore →</div>
           </div>
         </motion.div>
 
@@ -332,7 +332,7 @@ export default function CategoryCards() {
           onClick={() => navigate(defaultCommunity.href)}
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden"
-          style={{ height: "200px", border: "2px solid rgba(139,92,246,0.5)", boxShadow: "0 0 30px rgba(139,92,246,0.15)" }}
+          style={{ minHeight: "200px", border: "2px solid rgba(139,92,246,0.5)", boxShadow: "0 0 30px rgba(139,92,246,0.15)" }}
           whileHover={{ scale: 1.005, boxShadow: "0 0 50px rgba(139,92,246,0.3)" }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-950 to-gray-950" />
@@ -340,7 +340,7 @@ export default function CategoryCards() {
           <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl pointer-events-none"
             style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent)" }}
             animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />
-          <div className="relative z-10 h-full flex items-center px-8 md:px-16 gap-8">
+          <div className="relative z-10 flex h-full flex-col items-start justify-center gap-6 px-5 py-6 sm:px-8 md:flex-row md:items-center md:px-16">
             <div className="w-20 h-20 rounded-2xl bg-purple-900/40 border-2 border-purple-500/50 flex items-center justify-center">
               <IconCommunity size={44} color="#a78bfa" />
             </div>
@@ -354,7 +354,7 @@ export default function CategoryCards() {
                 Join communities for <strong className="text-purple-300">Call of Duty, Minecraft, GTA, Valorant, FIFA, NBA2K, UFC, WWE, Mario</strong> & 40+ more franchises.
               </p>
             </div>
-            <div className="hidden md:flex items-center gap-2 text-purple-300 font-bold text-sm">Explore →</div>
+            <div className="flex items-center gap-2 text-sm font-bold text-purple-300 md:ml-auto">Explore →</div>
           </div>
         </motion.div>
 

@@ -93,6 +93,16 @@ export const CATEGORIES = [
     ],
   },
   {
+    id: "buy_sell",
+    label: "Buy & Sell",
+    icon: "buy_sell",
+    subcategories: [
+      "Game Accounts", "In-Game Items", "Skins", "Gift Cards",
+      "Gaming Gear", "PC Parts", "Accessories", "Top Tech Equipment",
+      "Services",
+    ],
+  },
+  {
     id: "paid_tools",
     label: "Tools",
     icon: "tools",
@@ -111,6 +121,12 @@ export const CATEGORIES = [
     label: "Content/Streaming",
     icon: "content_streaming",
     subcategories: ["Gaming Videos", "Live Streams", "Tutorials", "Reviews", "Highlights", "Clips", "Gameplay Streams", "Esports Events"],
+  },
+  {
+    id: "livestream",
+    label: "Live Streams",
+    icon: "livestream",
+    subcategories: ["Twitch", "YouTube Live", "Facebook Gaming", "Kick", "Esports Events", "Creator Streams"],
   },
   {
     id: "cloud_gaming",

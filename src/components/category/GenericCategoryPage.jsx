@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send, Eye, EyeOff, LayoutGrid } from "lucide-react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
@@ -219,7 +220,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       <div className="relative py-14 px-4" style={{ background: `linear-gradient(135deg, #2a0a2e, #3a0d36)` }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: meta.grid, backgroundSize: "50px 50px" }} />
         <div className="max-w-7xl mx-auto relative z-10">
-          <a href="/" className="text-sm hover:opacity-80 mb-4 flex items-center gap-1" style={{ color: meta.color }}>← Back to Home</a>
+          <Link to="/" className="mb-4 flex items-center gap-1 text-sm hover:opacity-80" style={{ color: meta.color }}>← Back to Home</Link>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-2">{meta.title}</h1>
           <p className="max-w-xl mb-1 text-base" style={{ color: `${meta.color}99` }}>{meta.subtitle}</p>
         </div>
@@ -234,7 +235,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                 <h2 className="text-white text-2xl font-black">Shop paid mods by game</h2>
                 <p className="text-gray-500 text-sm mt-1">Choose a game card below to browse its landing page, newsfeed, and custom cards.</p>
               </div>
-              {canPost && <a href="/create-listing?cat=premium_mods" className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-bold hover:bg-amber-500/30">Sell a Premium Mod</a>}
+              {canPost && <Link to="/create-listing?cat=premium_mods" className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-bold hover:bg-amber-500/30">Sell a Premium Mod</Link>}
             </div>
           </div>
         </div>
@@ -256,15 +257,15 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         <div className="bg-gray-950/95 backdrop-blur-sm border-b border-gray-800 sticky top-16 z-30">
           <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
             <div className="flex gap-2 min-w-max">
-              <a href={`/category?cat=${cat}`}
+              <Link to={`/category?cat=${cat}`}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${!activeSub || activeSub === "all" ? "bg-gray-700 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
                 All
-              </a>
+              </Link>
               {categoryData.subcategories.map(s => (
-                <a key={s} href={`/category?cat=${cat}&sub=${encodeURIComponent(s)}`}
+                <Link key={s} to={`/category?cat=${cat}&sub=${encodeURIComponent(s)}`}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${activeSub === s ? "bg-gray-700 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
                   {s}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
@@ -289,14 +290,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               {hideCategory ? <LayoutGrid className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />} {hideCategory ? "Show Category" : "Hide Category"}
             </button>
             {canPost && cat !== "tournaments" && (
-              <a href={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
+              <Link to={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
                 {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
-              </a>
+              </Link>
             )}
             {cat === "tournaments" && (
-              <a href="/tournaments" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600/20 border border-green-600/40 text-green-300 text-sm font-semibold hover:bg-green-600/30 whitespace-nowrap">
+              <Link to="/tournaments" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600/20 border border-green-600/40 text-green-300 text-sm font-semibold hover:bg-green-600/30 whitespace-nowrap">
                 <Plus className="w-4 h-4" /> {canPost ? "Create Tournament" : "View Tournaments"}
-              </a>
+              </Link>
             )}
           </div>
         </div>
