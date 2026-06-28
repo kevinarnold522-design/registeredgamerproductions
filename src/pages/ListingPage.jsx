@@ -290,43 +290,28 @@ export default function ListingPage() {
       return;
     }
 
-    const isExempt = user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator");
-    if (isExempt) {
-      // Increment download count for exempt users too
-      base44.entities.Listing.get(listing.id).then(fresh => {
-        const newDownloads = (fresh.downloads || 0) + 1;
-        base44.entities.Listing.update(listing.id, { downloads: newDownloads });
-        setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
-      }).catch(() => {});
-      autoFollowSeller();
-      window.open(url, "_blank");
-      return;
-    }
     // Auto-join community + auto-follow seller on download for signed-in users
     if (user) {
       if (listing.community_franchise_id) autoJoinCommunity(listing.community_franchise_id);
       autoJoinCommunity("modding");
       autoFollowSeller();
     }
-    setPendingDownloadUrl(url);
-    setShowAdOverlay(true);
+
+    // Direct route to the download/external link — no ad gate, no "Continue" step.
+    base44.entities.Listing.get(listing.id).then(fresh => {
+      const newDownloads = (fresh.downloads || 0) + 1;
+      base44.entities.Listing.update(listing.id, { downloads: newDownloads });
+      setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
+    }).catch(() => {});
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  // Legacy ad-gate completion handler — kept for backwards compatibility with any
+  // overlay that might still call it, but the download flow now bypasses ads.
   const handleAdDone = () => {
     setShowAdOverlay(false);
-    if (!user) {
-      base44.auth.redirectToLogin(window.location.href);
-      return;
-    }
     if (pendingDownloadUrl) {
-      // Fetch current download count fresh from DB then increment
-      base44.entities.Listing.get(listing.id).then(fresh => {
-        const newDownloads = (fresh.downloads || 0) + 1;
-        return base44.entities.Listing.update(listing.id, { downloads: newDownloads }).then(() => newDownloads);
-      }).then(newDownloads => {
-        setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
-      }).catch(() => {});
-      window.open(pendingDownloadUrl, "_blank");
+      window.open(pendingDownloadUrl, "_blank", "noopener,noreferrer");
       setPendingDownloadUrl(null);
     }
   };
@@ -438,9 +423,9 @@ export default function ListingPage() {
 
       <StickySearchBar />
 
-      {showAdOverlay && (
-        <DownloadAdUnlock onComplete={handleAdDone} />
-      )}
+      {/* Download ad gate intentionally disabled — clicking Download now routes
+          straight to the listing's download/external link. */}
+      {/* {showAdOverlay && <DownloadAdUnlock onComplete={handleAdDone} />} */}
       <ScheduledAdOverlay listing={listing} />
       <ListingPageAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
       {/* Vignette ad — listing landing pages only */}
