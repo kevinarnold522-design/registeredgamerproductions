@@ -279,12 +279,37 @@ export default function ListingPage() {
 
   const handleDownload = () => {
     const url = listing.download_url || listing.external_link;
+    const donationUrl = listing.kofi_url || listing.buymeacoffee_url || listing.patreon_url || "";
+    const isPaid = !isFree && Number(listing.price) > 0;
+    const isPaidMod = isPaid && (listing.category === "premium_mods" || listing.category === "modding" || listing.is_premium === true);
+    const isOwnerOrAdmin = user && (isAdmin(user.email) || user.email === listing.seller_email);
+
+    // Paid mods route buyers to the seller's Ko-fi / BuyMeACoffee / Patreon link
+    // instead of the attached download file. The attached file is never served
+    // for paid mods unless the viewer is the owner/admin.
+    if (isPaidMod && !isOwnerOrAdmin) {
+      if (!donationUrl) {
+        alert("This paid mod has no purchase link set yet. Please contact the seller.");
+        return;
+      }
+      if (user) {
+        if (listing.community_franchise_id) autoJoinCommunity(listing.community_franchise_id);
+        autoJoinCommunity("modding");
+        autoFollowSeller();
+      }
+      base44.entities.Listing.get(listing.id).then(fresh => {
+        const newDownloads = (fresh.downloads || 0) + 1;
+        base44.entities.Listing.update(listing.id, { downloads: newDownloads });
+        setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
+      }).catch(() => {});
+      window.open(donationUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
     if (!url) return;
 
-    // Paid listing → require purchase before unlocking the download
-    const needsPurchase = !isFree && Number(listing.price) > 0;
-    const isOwnerOrAdmin = user && (isAdmin(user.email) || user.email === listing.seller_email);
-    if (needsPurchase && !purchased && !isOwnerOrAdmin) {
+    // Paid (non-mod) listings still gate on purchase before unlocking the file.
+    if (isPaid && !purchased && !isOwnerOrAdmin) {
       if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
       setShowBuyModal(true);
       return;
@@ -409,7 +434,10 @@ export default function ListingPage() {
   const ytId = getListingYouTubeId(listing);
   const ytEmbedUrl = ytId ? `https://www.youtube.com/watch?v=${ytId}` : "";
   const isFree = !listing.price || listing.price === 0 || listing.is_free;
-  const hasDownload = listing.download_url || listing.external_link;
+  const isPaidMod = !isFree && (listing.category === "premium_mods" || listing.category === "modding" || listing.is_premium === true);
+  // Paid mods can be unlocked via a donation link even when no file is attached.
+  const hasDonationUrl = !!(listing.kofi_url || listing.buymeacoffee_url || listing.patreon_url);
+  const hasDownload = !!listing.download_url || !!listing.external_link || (isPaidMod && hasDonationUrl);
   const sellerTheme = buildProfileTheme(seller || {}, seller?.profile_theme_style || "default");
   const listingTheme = listing.listing_theme_color || sellerTheme.background || "#030712";
   const glowStyle = { ...getListingGlowStyle(listing), boxShadow: `${sellerTheme.border}, ${getListingGlowStyle(listing).boxShadow || "none"}` };

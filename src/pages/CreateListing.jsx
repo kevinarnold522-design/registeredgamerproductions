@@ -1010,6 +1010,44 @@ export default function CreateListing() {
                     <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder={`Enter price in ${getCurrencySymbol(form.currency === "PHP" ? "USD" : (form.currency || "USD"))}`}
                       className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
                   </div>
+
+                  {/* Support / Donation Links — paid listings only, anchored under the price row */}
+                  <div className="rounded-2xl border border-orange-700/40 bg-gradient-to-br from-orange-900/15 to-yellow-900/10 p-4 space-y-3">
+                    <h4 className="text-orange-200 font-bold flex items-center gap-2 text-sm">
+                      <Coffee className="w-4 h-4 text-orange-300" /> Support & Donation Links
+                    </h4>
+                    <div className="rounded-lg border border-orange-400/30 bg-orange-500/10 px-3 py-2 text-orange-200 text-[11px] leading-snug flex items-start gap-2" data-testid="donation-routing-message">
+                      <Info className="w-3.5 h-3.5 text-orange-300 mt-0.5 flex-shrink-0" />
+                      <span>Buyers will safely get routed to buy from Ko-fi, BuyMeACoffee, Patreon.</span>
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                        <Coffee className="w-3 h-3 text-orange-400" /> Ko-fi URL
+                      </label>
+                      <input value={form.kofi_url} onChange={e => setForm({ ...form, kofi_url: e.target.value })}
+                        placeholder="https://ko-fi.com/yourname"
+                        data-testid="listing-kofi-url-input"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                        <Coffee className="w-3 h-3 text-yellow-400" /> Buy Me a Coffee URL
+                      </label>
+                      <input value={form.buymeacoffee_url} onChange={e => setForm({ ...form, buymeacoffee_url: e.target.value })}
+                        placeholder="https://buymeacoffee.com/yourname"
+                        data-testid="listing-buymeacoffee-url-input"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                        <DollarSign className="w-3 h-3 text-red-400" /> Patreon URL
+                      </label>
+                      <input value={form.patreon_url} onChange={e => setForm({ ...form, patreon_url: e.target.value })}
+                        placeholder="https://patreon.com/yourname"
+                        data-testid="listing-patreon-url-input"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 text-sm" />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1312,39 +1350,7 @@ export default function CreateListing() {
             </label>
           </div>
 
-          {/* Support / Donation Links — only for PAID listings (not free mods) */}
-          {(parseFloat(form.price) || 0) > 0 && (
-          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
-            <h3 className="text-white font-bold flex items-center gap-2">
-              <Coffee className="w-4 h-4 text-orange-300" /> Support & Donation Links
-            </h3>
-            <p className="text-gray-500 text-xs">Let your fans support you directly via Ko-fi, Buy Me a Coffee, or Patreon</p>
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
-                <Coffee className="w-3 h-3 text-orange-400" /> Ko-fi URL
-              </label>
-              <input value={form.kofi_url} onChange={e => setForm({ ...form, kofi_url: e.target.value })}
-                placeholder="https://ko-fi.com/yourname"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm" />
-            </div>
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
-                <Coffee className="w-3 h-3 text-yellow-400" /> Buy Me a Coffee URL
-              </label>
-              <input value={form.buymeacoffee_url} onChange={e => setForm({ ...form, buymeacoffee_url: e.target.value })}
-                placeholder="https://buymeacoffee.com/yourname"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 text-sm" />
-            </div>
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
-                <DollarSign className="w-3 h-3 text-red-400" /> Patreon URL
-              </label>
-              <input value={form.patreon_url} onChange={e => setForm({ ...form, patreon_url: e.target.value })}
-                placeholder="https://patreon.com/yourname"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 text-sm" />
-            </div>
-          </div>
-          )}
+          {/* Support / Donation Links moved up under the Pricing block for paid listings. */}
 
           {/* Card Animation Style */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
