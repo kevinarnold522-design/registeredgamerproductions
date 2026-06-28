@@ -384,9 +384,9 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
           ))}
         </div>
 
-        {/* Utilities Footer */}
+        {/* Utilities Footer — desktop only; the mobile drawer has a sticky Sign Out button at its bottom. */}
         <div className={`p-2 space-y-0.5 ${collapsed && !isMobile ? "flex flex-col items-center" : ""}`}>
-          {s && (
+          {s && !isMobile && (
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-red-400 hover:bg-red-900/20 text-xs font-semibold transition-all"
@@ -473,7 +473,8 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
               <div className="flex-shrink-0">
                 <ScrollDownHint label="Scroll down for all options" />
               </div>
-              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+              {/* Scrollable nav content — sidebarInner handles its own internal scroll */}
+              <div className="flex-1 min-h-0 flex flex-col">
                 {sidebarInner(true)}
               </div>
               {/* Sticky Sign Out — always visible at the bottom of the mobile navbar drawer */}

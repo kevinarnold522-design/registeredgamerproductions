@@ -130,7 +130,9 @@ export default function StandardListingCard({ listing: initialListing, user, pro
   const ytId = getListingYouTubeId(listing);
   const stay = formatStay(listing);
 
-  const hasDownload = listing.download_url || listing.external_link;
+  const isPaidMod = !isFree && (listing.category === "premium_mods" || listing.category === "modding" || listing.is_premium === true);
+  const hasDonationUrl = !!(listing.kofi_url || listing.buymeacoffee_url || listing.patreon_url);
+  const hasDownload = !!listing.download_url || !!listing.external_link || (isPaidMod && hasDonationUrl);
   const anim = animationProps(listing.card_animation);
   const titleFont = FONT_FAMILIES[listing.card_font_family];
   const titleColor = listing.card_font_color && listing.card_font_color !== "#ffffff" ? listing.card_font_color : undefined;
