@@ -46,6 +46,9 @@ export async function handleFunction(name, body, env, request) {
     case "loginAsGhost":           return loginAsGhost(body, env, request);
     case "uploadToR2":             return uploadToR2(body, env, request);
     case "listMedia":              return listMedia(body, env, request);
+    case "githubImportRepo":       return githubImportRepo(body, env, request);
+    case "githubReadRepoFile":     return githubReadRepoFile(body, env, request);
+    case "githubSaveRepoFile":     return githubSaveRepoFile(body, env, request);
     default:
       return { status: 404, body: { error: `Function '${name}' not found` } };
   }
@@ -71,6 +74,190 @@ function isAdmin(user) {
   if (!user) return false;
   const email = String(user.email || "").toLowerCase();
   return user.role === "admin" || ADMIN_EMAILS.map((item) => item.toLowerCase()).includes(email) || email === MASTER_EMAIL.toLowerCase();
+}
+
+function parseGitHubRepoUrl(input = "") {
+  const trimmed = String(input || "").trim();
+  if (!trimmed) throw new Error("Missing GitHub repository URL");
+
+  try {
+    const url = new URL(trimmed);
+    if (!/github\.com$/i.test(url.hostname)) throw new Error("Only github.com repositories are supported");
+    const parts = url.pathname.replace(/^\/+|\/+$/g, "").replace(/\.git$/, "").split("/");
+    if (parts.length < 2) throw new Error("Invalid GitHub repository URL");
+    return { owner: parts[0], repo: parts[1] };
+  } catch {
+    const cleaned = trimmed.replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/, "").replace(/^\/+|\/+$/g, "");
+    const parts = cleaned.split("/");
+    if (parts.length < 2) throw new Error("Invalid GitHub repository URL");
+    return { owner: parts[0], repo: parts[1] };
+  }
+}
+
+async function githubApi(token, path, init = {}) {
+  const res = await fetch(`https://api.github.com${path}`, {
+    ...init,
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "GamerProductions-VibeCoding",
+      ...(init.headers || {}),
+    },
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+  if (!res.ok) {
+    throw new Error(data?.message || `GitHub request failed (${res.status})`);
+  }
+  return data;
+}
+
+function encodeUtf8Base64(value = "") {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+function decodeUtf8Base64(value = "") {
+  const binary = atob((value || "").replace(/\n/g, ""));
+  const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+async function requireAdminGithub(body, env, request) {
+  const user = await getUser(env, request);
+  if (!isAdmin(user)) {
+    return { error: { status: 403, body: { error: "Forbidden: Admin only" } } };
+  }
+  const githubToken = String(body?.githubToken || "").trim();
+  if (!githubToken) {
+    return { error: { status: 400, body: { error: "Missing GitHub token" } } };
+  }
+  return { user, githubToken };
+}
+
+async function githubImportRepo(body, env, request) {
+  const auth = await requireAdminGithub(body, env, request);
+  if (auth.error) return auth.error;
+
+  const { githubToken } = auth;
+  const { owner, repo } = parseGitHubRepoUrl(body?.repoUrl);
+  const viewer = await githubApi(githubToken, "/user");
+  let repoInfo = await githubApi(githubToken, `/repos/${owner}/${repo}`);
+  let targetOwner = owner;
+  let targetRepo = repo;
+  let forkedFrom = "";
+
+  const canPush = Boolean(repoInfo?.permissions?.push || repoInfo?.permissions?.admin || String(repoInfo?.owner?.login || "").toLowerCase() === String(viewer?.login || "").toLowerCase());
+
+  if (!canPush) {
+    await githubApi(githubToken, `/repos/${owner}/${repo}/forks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ default_branch_only: false }),
+    });
+    targetOwner = viewer.login;
+    targetRepo = repo;
+    forkedFrom = `${owner}/${repo}`;
+
+    for (let attempt = 0; attempt < 12; attempt++) {
+      try {
+        repoInfo = await githubApi(githubToken, `/repos/${targetOwner}/${targetRepo}`);
+        break;
+      } catch (err) {
+        if (attempt === 11) throw err;
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
+  }
+
+  const branch = repoInfo.default_branch || "main";
+  const tree = await githubApi(githubToken, `/repos/${targetOwner}/${targetRepo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
+  const files = Array.isArray(tree?.tree)
+    ? tree.tree
+        .filter((item) => item.type === "blob")
+        .slice(0, 500)
+        .map((item) => ({ path: item.path, type: item.type, size: item.size || 0, sha: item.sha }))
+    : [];
+
+  return {
+    status: 200,
+    body: {
+      owner: targetOwner,
+      repo: targetRepo,
+      full_name: `${targetOwner}/${targetRepo}`,
+      branch,
+      html_url: repoInfo.html_url,
+      forked_from: forkedFrom,
+      files,
+    },
+  };
+}
+
+async function githubReadRepoFile(body, env, request) {
+  const auth = await requireAdminGithub(body, env, request);
+  if (auth.error) return auth.error;
+
+  const { githubToken } = auth;
+  const owner = String(body?.owner || "").trim();
+  const repo = String(body?.repo || "").trim();
+  const branch = String(body?.branch || "").trim() || "main";
+  const path = String(body?.path || "").trim();
+  if (!owner || !repo || !path) return { status: 400, body: { error: "Missing repository file parameters" } };
+
+  const file = await githubApi(githubToken, `/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}`);
+  return {
+    status: 200,
+    body: {
+      path: file.path,
+      sha: file.sha,
+      content: decodeUtf8Base64(file.content || ""),
+      html_url: file.html_url,
+    },
+  };
+}
+
+async function githubSaveRepoFile(body, env, request) {
+  const auth = await requireAdminGithub(body, env, request);
+  if (auth.error) return auth.error;
+
+  const { githubToken } = auth;
+  const owner = String(body?.owner || "").trim();
+  const repo = String(body?.repo || "").trim();
+  const branch = String(body?.branch || "").trim() || "main";
+  const path = String(body?.path || "").trim();
+  const content = String(body?.content ?? "");
+  const sha = String(body?.sha || "").trim();
+  const message = String(body?.message || `Update ${path}`).trim();
+
+  if (!owner || !repo || !path) return { status: 400, body: { error: "Missing repository save parameters" } };
+
+  const payload = {
+    message,
+    content: encodeUtf8Base64(content),
+    branch,
+    ...(sha ? { sha } : {}),
+  };
+
+  const saved = await githubApi(githubToken, `/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  return {
+    status: 200,
+    body: {
+      path: saved?.content?.path || path,
+      sha: saved?.content?.sha || sha,
+      commit_sha: saved?.commit?.sha || "",
+      html_url: saved?.content?.html_url || `https://github.com/${owner}/${repo}/blob/${branch}/${path}`,
+      branch,
+      repo: `${owner}/${repo}`,
+    },
+  };
 }
 
 // Send an email via the Base44 Core integration (email delivery stays on Base44).

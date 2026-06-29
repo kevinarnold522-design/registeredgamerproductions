@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Bot, Sparkles, CheckCircle2, Github, RefreshCw, Wand2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import WebsiteBuilderPromptTools from "@/components/admin/WebsiteBuilderPromptTools";
+import WebsiteVibeCodingPanel from "@/components/admin/WebsiteVibeCodingPanel";
 
 export default function WebsiteAIBuilder({ content, setContent, editableSections }) {
   const [prompt, setPrompt] = useState("");
@@ -70,6 +71,8 @@ Return practical website-building help. Use content_updates only for exact edita
 
   return (
     <div className="space-y-5">
+      <WebsiteVibeCodingPanel />
+
       <div className="rounded-2xl border border-purple-700/50 bg-gradient-to-br from-purple-950/40 to-gray-900 p-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center"><Bot className="w-5 h-5 text-white" /></div>
