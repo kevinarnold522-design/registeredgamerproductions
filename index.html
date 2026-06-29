@@ -290,16 +290,19 @@
           var host = window.location.hostname;
           var isLocal = host === 'localhost' || host === '127.0.0.1';
 
-          if (!isLocal && !document.querySelector('link[href="/assets/index.css"]')) {
+          var hostedCss = '/assets/hosted-entry.css?v=20260630b';
+          var hostedJs = '/assets/hosted-entry.js?v=20260630b';
+
+          if (!isLocal && !document.querySelector('link[href^="/assets/hosted-entry.css"]')) {
             var link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = '/assets/index.css';
+            link.href = hostedCss;
             document.head.appendChild(link);
           }
 
           var entry = document.createElement('script');
           entry.type = 'module';
-          entry.src = isLocal ? '/src/main.jsx' : '/assets/index.js';
+          entry.src = isLocal ? '/src/main.jsx' : hostedJs;
           document.body.appendChild(entry);
         } catch (_) {}
       })();
