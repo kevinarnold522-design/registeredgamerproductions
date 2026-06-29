@@ -87,7 +87,6 @@ export default function CreateListing() {
   const [images, setImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef(null);
-  const videoFileRef = useRef(null);
   const downloadFileRef = useRef(null);
   const pendingUploadsRef = useRef([]);
   const listingSavedRef = useRef(false);
@@ -427,27 +426,6 @@ export default function CreateListing() {
     }
   };
 
-  const handleVideoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > MAX_UPLOAD_BYTES) {
-      alert(`Video uploads must be ${MAX_UPLOAD_LABEL} or smaller.`);
-      e.target.value = "";
-      return;
-    }
-    setUploadingImages(true);
-    try {
-      const upload = await uploadFileWithFallback(file, "listing-videos");
-      rememberPendingUpload(upload);
-      setForm(f => ({ ...f, video_url: upload.file_url }));
-    } catch (err) {
-      alert(err?.message || "Video upload failed. Please try again.");
-    } finally {
-      setUploadingImages(false);
-      e.target.value = "";
-    }
-  };
-
   const handleDownloadFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -473,18 +451,14 @@ export default function CreateListing() {
     const removedUrl = images[idx];
     setImages((prev) => prev.filter((_, i) => i !== idx));
     const pendingUpload = findPendingUploadByUrl(removedUrl);
-    if (pendingUpload) {
-      await cleanupListingUploads([pendingUpload]).catch(() => {});
-    }
+    await cleanupListingUploads([pendingUpload || { file_url: removedUrl }]).catch(() => {});
   };
 
   const removeUploadedField = async (field) => {
     const url = form[field];
     setForm((prev) => ({ ...prev, [field]: "" }));
     const pendingUpload = findPendingUploadByUrl(url);
-    if (pendingUpload) {
-      await cleanupListingUploads([pendingUpload]).catch(() => {});
-    }
+    await cleanupListingUploads([pendingUpload || { file_url: url }]).catch(() => {});
   };
 
   const collectListingMediaUrls = (listingLike = {}) => {
@@ -504,45 +478,70 @@ export default function CreateListing() {
   const [showSaveFilter, setShowSaveFilter] = useState(false);
   const [showLoadFilter, setShowLoadFilter] = useState(false);
 
-  const handleSaveFilter = () => {
-    if (!filterName.trim()) return;
+  const persistTemplate = (name) => {
+    if (!name.trim()) return;
     const filterData = {
-      name: filterName,
+      name: name.trim(),
       data: {
         product_type: form.product_type,
         category: form.category,
         subcategories: form.subcategories,
+        newsfeed_categories: form.newsfeed_categories,
         digital_subcategory: form.digital_subcategory,
+        digital_subcategory_custom: form.digital_subcategory_custom,
         physical_subcategory: form.physical_subcategory,
         condition: form.condition,
         is_premium: form.is_premium,
         platforms: form.platforms,
         store_platforms: form.store_platforms,
         game_platform: form.game_platform,
+        game_name: form.game_name,
+        quantity: form.quantity,
+        location: form.location,
+        description: form.description,
         tags: form.tags,
-        card_animation: form.card_animation,
+        keywords: form.keywords,
         card_glow_style: form.card_glow_style,
         card_glow_color: form.card_glow_color,
         card_glow_hex: form.card_glow_hex,
         card_glow_speed: form.card_glow_speed,
         listing_theme_color: form.listing_theme_color,
+        card_font_family: form.card_font_family,
+        card_font_color: form.card_font_color,
         community_franchise_id: form.community_franchise_id,
         modding_subcategory: form.modding_subcategory,
-        kofi_url: form.kofi_url,
-        buymeacoffee_url: form.buymeacoffee_url,
-        patreon_url: form.patreon_url,
+        bulk_cross_post_ids: form.bulk_cross_post_ids,
+        ign_rating: form.ign_rating,
+        tool_target_game: form.tool_target_game,
+        youtube_url: form.youtube_url,
+        preview_video_url: form.preview_video_url,
         download_host: form.download_host,
       }
     };
-    const updated = [...savedFilters.filter(f => f.name !== filterName), filterData];
+    const updated = [...savedFilters.filter(f => f.name !== name.trim()), filterData];
     setSavedFilters(updated);
     localStorage.setItem("listing_saved_filters", JSON.stringify(updated));
+  };
+
+  const handleSaveFilter = () => {
+    if (!filterName.trim()) return;
+    persistTemplate(filterName);
     setFilterName("");
     setShowSaveFilter(false);
   };
 
   const handleLoadFilter = (filter) => {
-    setForm(f => ({ ...f, ...filter.data, title: f.title, external_link: f.external_link }));
+    setForm(f => ({
+      ...f,
+      ...filter.data,
+      title: f.title,
+      external_link: "",
+      download_url: "",
+      kofi_url: "",
+      buymeacoffee_url: "",
+      patreon_url: "",
+    }));
+    if (filter.data?.game_name) setGameSearch(filter.data.game_name);
     setShowLoadFilter(false);
   };
 
@@ -682,6 +681,10 @@ export default function CreateListing() {
     if (mod?.requiresReview) {
       setModerationResult(mod);
     } else if (savedListing?.id) {
+      if (!editId && typeof window !== "undefined" && window.confirm("Do you want to save this listing setup as a template for your next post?")) {
+        const templateName = window.prompt("Template name", `${form.category || "listing"} template`);
+        if (templateName?.trim()) persistTemplate(templateName);
+      }
       navigate(`/listing?id=${savedListing.id}`);
     } else {
       navigate("/dashboard?tab=listings");
@@ -735,58 +738,7 @@ export default function CreateListing() {
             <ArrowLeft className="w-5 h-5" />
           </a>
           <h1 className="text-2xl font-black text-white">{editId ? "Edit Listing" : form.category === "games" ? "Add a Game" : form.category === "premium_mods" ? "Sell a Premium Mod" : "Post"}</h1>
-          <div className="ml-auto flex flex-col items-end gap-2">
-            <p className="text-cyan-400/70 text-[10px] text-right max-w-xs leading-tight italic">Autopopulates the same taggings, SEO taggings, Gaming Community &amp; Modding Community as well as Gaming Platform if your posting similar contents</p>
-            <div className="flex gap-2">
-            {savedFilters.length > 0 && (
-              <button type="button" onClick={() => setShowLoadFilter(v => !v)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-xs font-bold hover:bg-cyan-900/50 transition-colors">
-                <FolderOpen className="w-3 h-3" /> Load Filter ({savedFilters.length})
-              </button>
-            )}
-            <button type="button" onClick={() => setShowSaveFilter(v => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs font-bold hover:bg-purple-900/50 transition-colors">
-              <Save className="w-3 h-3" /> Save Filter
-            </button>
-            </div>
-          </div>
         </div>
-
-        {/* Save Filter Modal */}
-        {showSaveFilter && (
-          <div className="mb-6 p-4 bg-gray-900 rounded-2xl border border-purple-700/50">
-            <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><Save className="w-4 h-4 text-purple-300" /> Save Current Settings as Filter</p>
-            <p className="text-gray-500 text-xs mb-3">Saves everything except listing title and external link. Load it anytime for new listings.</p>
-            <div className="flex gap-2">
-              <input value={filterName} onChange={e => setFilterName(e.target.value)} placeholder="Filter name (e.g. GTA Mods Setup)"
-                className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-              <button type="button" onClick={handleSaveFilter} disabled={!filterName.trim()}
-                className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-bold disabled:opacity-50 hover:bg-purple-700 transition-colors">Save</button>
-              <button type="button" onClick={() => setShowSaveFilter(false)}
-                className="px-4 py-2 rounded-xl bg-gray-800 text-gray-400 text-sm hover:bg-gray-700 transition-colors">Cancel</button>
-            </div>
-          </div>
-        )}
-
-        {/* Load Filter Panel */}
-        {showLoadFilter && (
-          <div className="mb-6 p-4 bg-gray-900 rounded-2xl border border-cyan-700/40">
-            <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><FolderOpen className="w-4 h-4 text-cyan-300" /> Load Saved Filter</p>
-            <div className="space-y-2">
-              {savedFilters.map(f => (
-                <div key={f.name} className="flex items-center justify-between p-3 bg-gray-800 rounded-xl">
-                  <span className="text-white text-sm font-semibold">{f.name}</span>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => handleLoadFilter(f)}
-                      className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold hover:bg-cyan-700 transition-colors">Load</button>
-                    <button type="button" onClick={() => handleDeleteFilter(f.name)}
-                      className="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 text-xs font-bold hover:bg-red-900/60 transition-colors">Delete</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-gradient-to-br from-purple-900/25 to-pink-900/15 rounded-2xl border border-purple-700/40 p-6 space-y-5">
@@ -804,6 +756,31 @@ export default function CreateListing() {
                 placeholder="What are you listing?"
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm"
               />
+            </div>
+
+            <div ref={gameDropdownRef} className="relative">
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Title</label>
+              <input
+                value={gameSearch}
+                onChange={e => { setGameSearch(e.target.value); setForm(f => ({ ...f, game_name: e.target.value })); setShowGameDropdown(true); }}
+                onFocus={() => setShowGameDropdown(true)}
+                placeholder="Search gaming communities..."
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm"
+              />
+              {showGameDropdown && (
+                <div className="absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                  {gamingCommunities.filter(c => c.name.toLowerCase().includes(gameSearch.toLowerCase())).slice(0, 20).map(c => (
+                    <button key={c.id} type="button"
+                      onClick={() => { setGameSearch(c.name); setForm(f => ({ ...f, game_name: c.name, community_franchise_id: f.category === "games" ? "" : c.id })); setShowGameDropdown(false); }}
+                      className="w-full text-left px-4 py-2.5 text-white text-sm hover:bg-purple-900/40 transition-colors border-b border-gray-800/50 last:border-0">
+                      {c.name}
+                    </button>
+                  ))}
+                  {gamingCommunities.filter(c => c.name.toLowerCase().includes(gameSearch.toLowerCase())).length === 0 && (
+                    <p className="px-4 py-3 text-gray-500 text-sm">No matching games found</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
@@ -956,27 +933,10 @@ export default function CreateListing() {
               )}
             </div>
 
-            {/* Upload video file */}
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Upload Video File (optional, max {MAX_UPLOAD_LABEL})</label>
-              {form.video_url ? (
-                <div className="flex items-center gap-3">
-                  <video src={form.video_url} controls className="w-48 rounded-xl" />
-                  <button type="button" onClick={() => removeUploadedField("video_url")} className="text-red-400 text-xs hover:text-red-300">Remove</button>
-                </div>
-              ) : (
-                <button type="button" onClick={() => videoFileRef.current?.click()}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-gray-700 hover:border-blue-500 text-gray-500 hover:text-blue-400 text-sm transition-colors">
-                  <Upload className="w-4 h-4" /> Upload Video
-                </button>
-              )}
-              <input ref={videoFileRef} type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
-            </div>
-
-            {/* Universal preview media — YouTube link OR uploaded video, any category */}
+            {/* Universal preview media */}
             <div className="pt-2 border-t border-gray-800">
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><Play className="w-3 h-3 text-purple-400" /> Product Preview Media (optional)</label>
-              <p className="text-gray-500 text-xs mb-2">Paste a YouTube link, or it uses the uploaded video above. Shows as a preview across the platform.</p>
+              <p className="text-gray-500 text-xs mb-2">Paste a YouTube link for a preview shown across the platform.</p>
               <input value={form.preview_video_url} onChange={e => setForm({ ...form, preview_video_url: e.target.value })}
                 placeholder="https://youtube.com/watch?v=... (or leave blank)"
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
@@ -1062,32 +1022,6 @@ export default function CreateListing() {
                   className="w-full bg-gray-800 border border-blue-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
               </div>
             )}
-
-            {/* Game Title — searchable dropdown from GamingCommunities */}
-            <div ref={gameDropdownRef} className="relative">
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Title</label>
-              <input
-                value={gameSearch}
-                onChange={e => { setGameSearch(e.target.value); setForm(f => ({ ...f, game_name: e.target.value })); setShowGameDropdown(true); }}
-                onFocus={() => setShowGameDropdown(true)}
-                placeholder="Search gaming communities..."
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm"
-              />
-              {showGameDropdown && (
-                <div className="absolute z-50 w-full mt-1 bg-gray-900 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-y-auto">
-                  {gamingCommunities.filter(c => c.name.toLowerCase().includes(gameSearch.toLowerCase())).slice(0, 20).map(c => (
-                    <button key={c.id} type="button"
-                      onClick={() => { setGameSearch(c.name); setForm(f => ({ ...f, game_name: c.name, community_franchise_id: f.category === "games" ? "" : c.id })); setShowGameDropdown(false); }}
-                      className="w-full text-left px-4 py-2.5 text-white text-sm hover:bg-purple-900/40 transition-colors border-b border-gray-800/50 last:border-0">
-                      {c.name}
-                    </button>
-                  ))}
-                  {gamingCommunities.filter(c => c.name.toLowerCase().includes(gameSearch.toLowerCase())).length === 0 && (
-                    <p className="px-4 py-3 text-gray-500 text-sm">No matching games found</p>
-                  )}
-                </div>
-              )}
-            </div>
 
             {/* Combined Platform + Store Multi-Select */}
             <div>
@@ -1476,6 +1410,63 @@ export default function CreateListing() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-white font-bold flex items-center gap-2">
+                  <FolderOpen className="w-4 h-4 text-cyan-300" /> Listing Templates
+                </h3>
+                <p className="text-gray-500 text-xs mt-1">Save your current setup and reuse it later. Templates skip the title, download links, and support links when loaded.</p>
+              </div>
+              <div className="flex gap-2">
+                {savedFilters.length > 0 && (
+                  <button type="button" onClick={() => setShowLoadFilter(v => !v)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-xs font-bold hover:bg-cyan-900/50 transition-colors">
+                    <FolderOpen className="w-3 h-3" /> Load Template ({savedFilters.length})
+                  </button>
+                )}
+                <button type="button" onClick={() => setShowSaveFilter(v => !v)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs font-bold hover:bg-purple-900/50 transition-colors">
+                  <Save className="w-3 h-3" /> Save Template
+                </button>
+              </div>
+            </div>
+
+            {showSaveFilter && (
+              <div className="p-4 bg-gray-800 rounded-2xl border border-purple-700/50">
+                <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><Save className="w-4 h-4 text-purple-300" /> Save Current Settings as Template</p>
+                <p className="text-gray-500 text-xs mb-3">Saves your categories, SEO tags, platforms, styling, and placement settings.</p>
+                <div className="flex gap-2">
+                  <input value={filterName} onChange={e => setFilterName(e.target.value)} placeholder="Template name (e.g. Football Life Mods)"
+                    className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                  <button type="button" onClick={handleSaveFilter} disabled={!filterName.trim()}
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-bold disabled:opacity-50 hover:bg-purple-700 transition-colors">Save</button>
+                  <button type="button" onClick={() => setShowSaveFilter(false)}
+                    className="px-4 py-2 rounded-xl bg-gray-900 text-gray-400 text-sm hover:bg-gray-700 transition-colors">Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {showLoadFilter && (
+              <div className="p-4 bg-gray-800 rounded-2xl border border-cyan-700/40">
+                <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><FolderOpen className="w-4 h-4 text-cyan-300" /> Load Saved Template</p>
+                <div className="space-y-2">
+                  {savedFilters.map(f => (
+                    <div key={f.name} className="flex items-center justify-between p-3 bg-gray-900 rounded-xl">
+                      <span className="text-white text-sm font-semibold">{f.name}</span>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => handleLoadFilter(f)}
+                          className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold hover:bg-cyan-700 transition-colors">Load</button>
+                        <button type="button" onClick={() => handleDeleteFilter(f.name)}
+                          className="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 text-xs font-bold hover:bg-red-900/60 transition-colors">Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Moderation result banner */}

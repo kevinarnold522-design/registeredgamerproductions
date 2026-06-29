@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Play, DollarSign, Youtube, Gamepad2, CheckCircle } from "lucide-react";
+import { DollarSign, Youtube, CheckCircle } from "lucide-react";
 
 export default function VideoHeroBanner() {
   return (
@@ -25,8 +25,7 @@ export default function VideoHeroBanner() {
               🎬 Start Sharing Your Videos &amp; Get Monetized!
             </p>
             <p className="text-gray-300 text-xs">
-              Earn <span className="text-green-400 font-bold">$1 per 1,000 views</span> · Link your YouTube · 
-              Get the <span className="text-yellow-400 font-bold">🎮 Gaming Checkmark</span>
+              Earn <span className="text-green-400 font-bold">1$ per 1000 Views</span> by linking all Download links to <span className="text-cyan-300 font-bold">Linkvertise/Shrinkme.io</span>
             </p>
           </div>
         </motion.div>

@@ -5,6 +5,7 @@ import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 
 const PER_PAGE = 8;
 
@@ -49,8 +50,9 @@ export default function AllCategoriesNewsfeed({ user, profile }) {
         <div className="divide-y divide-gray-800/60">
           {pageItems.map(item => (
             <a key={item.id} href={`/listing?id=${item.id}`} className="flex gap-3 p-3 hover:bg-purple-950/20 transition-colors">
-              <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
+              <div className="relative w-16 h-16 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
                 {item.images?.[0] ? <ListingImageFrame src={item.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-1.5" backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
+                <ListerAvatarBadge listing={item} size="w-[18px] h-[18px]" className="absolute bottom-1 right-1" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-white font-bold text-xs truncate">{item.title}</p>

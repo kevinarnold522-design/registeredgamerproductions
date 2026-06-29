@@ -4,8 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
-
-const GP_LOGO = "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png";
+import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 
 // A small "Featured" listing row with the Gamer.Productions logo badge.
 function FeedRow({ item }) {
@@ -20,8 +19,7 @@ function FeedRow({ item }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>
         )}
-        {/* Gamer.Productions logo badge */}
-        <img src={GP_LOGO} alt="" className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full ring-1 ring-purple-400/70" />
+        <ListerAvatarBadge listing={item} size="w-4 h-4" className="absolute bottom-0.5 right-0.5" />
       </div>
       <div className="min-w-0 flex-1">
         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-yellow-500/50 bg-gradient-to-r from-[#3b2a00] to-[#5a3d00] text-yellow-300 text-[8px] font-black uppercase tracking-wide shadow-[0_0_12px_rgba(234,179,8,0.25)]">

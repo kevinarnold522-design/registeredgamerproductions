@@ -10,6 +10,7 @@ import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
+import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
@@ -74,7 +75,7 @@ export default function GamingNewsfeed() {
                       <img src={item.images[0]} className="relative w-full h-full object-contain p-1.5" alt="" />
                     </>
                   ) : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
-                  <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="" className="absolute bottom-1 right-1 w-5 h-5 rounded-full ring-1 ring-purple-400/70" />
+                  <ListerAvatarBadge listing={item} size="w-5 h-5" className="absolute bottom-1 right-1" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-yellow-500/50 bg-gradient-to-r from-[#3b2a00] to-[#5a3d00] text-yellow-300 text-[9px] font-black uppercase tracking-wide mb-1 shadow-[0_0_12px_rgba(234,179,8,0.25)]"><Star className="w-2.5 h-2.5 fill-yellow-300 text-yellow-300" /> Featured</span>
