@@ -5,6 +5,7 @@ import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2 } from "lucide-re
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
 import MascotShowcase from "@/components/shared/MascotShowcase";
+import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -62,6 +63,7 @@ export default function ListingsLanding({ mode = "mine" }) {
           <MascotShowcase
             compact={false}
           />
+          <GamerSocialsBar className="mt-4" />
         </div>
 
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6"><ArrowLeft className="w-4 h-4" /> Back</button>

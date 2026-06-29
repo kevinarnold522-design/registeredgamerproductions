@@ -7,6 +7,8 @@ import { CATEGORIES } from "@/lib/constants";
 import { Link } from "react-router-dom";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import MascotShowcase from "@/components/shared/MascotShowcase";
 import Pagination from "@/components/shared/Pagination";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -89,6 +91,11 @@ export default function BuySellLandingPage({ user, profile, sub }) {
           </h1>
           <p className="text-yellow-200/60 text-base max-w-xl">Trade game accounts, in-game items, skins, gaming gear, gift cards and premium mods.</p>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 pt-8">
+        <MascotShowcase compact={false} />
+        <GamerSocialsBar className="mt-4" />
       </div>
 
       <SubcategoryCards cat="buy_sell" categoryName="Buy & Sell" user={user} userEmail={user?.email} userProfile={profile} />

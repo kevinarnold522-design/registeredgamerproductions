@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import MascotShowcase from "@/components/shared/MascotShowcase";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -66,6 +68,11 @@ export default function PremiumModsLandingPage({ user }) {
           </h1>
           <p className="text-amber-200/60 text-base max-w-xl">Premium quality mods for your favorite games.</p>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 pt-8">
+        <MascotShowcase compact={false} />
+        <GamerSocialsBar className="mt-4" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">

@@ -116,7 +116,7 @@ function LiveStats() {
     border: "1px solid rgba(139,92,246,0.4)",
     boxShadow: "0 0 20px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.1)",
   };
-  const valueClass = "text-3xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent flex items-center justify-center gap-1.5";
+  const valueClass = "flex items-center justify-center gap-1.5 text-3xl font-black text-purple-200 drop-shadow-[0_0_10px_rgba(168,85,247,0.55)]";
   const labelClass = "text-xs text-purple-300 uppercase tracking-wider mt-1 font-semibold flex items-center justify-center gap-1";
 
   return (

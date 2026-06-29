@@ -14,6 +14,7 @@ import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
 import MascotShowcase from "@/components/shared/MascotShowcase";
+import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import StandardListingCard from "@/components/listings/StandardListingCard";
 import { isServiceListing } from "@/lib/constants";
@@ -255,6 +256,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           <MascotShowcase
             compact={cat !== "games" && cat !== "modding" && cat !== "premium_mods"}
           />
+          <GamerSocialsBar className="mt-4" />
         </div>
       )}
 
