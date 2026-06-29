@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Gamepad2, Zap, Radio, ShieldCheck, Lock, Globe2, CircleDollarSign, Clapperboard, Headphones, Wrench, ShoppingCart, Trophy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabaseClient";
+import { getActiveListings } from "@/lib/homeDataCache";
 import { useAuth } from "@/lib/AuthContext";
-import { isAdmin as checkIsAdmin } from "@/lib/constants";
 
 function CreateListingHeroButton() {
   const { user } = useAuth();
@@ -37,38 +38,76 @@ function SignInHeroButton() {
 }
 
 function LiveStats() {
-  const [stats, setStats] = useState({ listings: 0 });
-  const [adminUserCount, setAdminUserCount] = useState(0);
-  const { user } = useAuth();
-
-  // Use the central auth state (already populated for both mobile + desktop)
-  // so the admin-gated "Registered Gamers" stat shows consistently across
-  // viewports instead of relying on a parallel fetch that can race on mobile.
-  const isAdmin = React.useMemo(() => checkIsAdmin(user?.email || ""), [user?.email]);
+  const [stats, setStats] = useState({
+    listings: 0,
+    registeredGamers: 0,
+    liveStreams: 0,
+    platformUptime: "24/7",
+  });
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
-        const listings = await base44.entities.Listing.list();
-        if (cancelled) return;
-        const active = Array.isArray(listings)
-          ? listings.filter((l) => l.status === "active").length
-          : 0;
-        setStats({ listings: active });
-      } catch {}
+        const [
+          activeListingsCountRes,
+          registeredGamersCountRes,
+          liveStreamsCountRes,
+        ] = await Promise.all([
+          supabase.from("Listing").select("id", { count: "exact", head: true }).eq("data->>status", "active"),
+          supabase.from("UserProfile").select("id", { count: "exact", head: true }),
+          supabase.from("Listing").select("id", { count: "exact", head: true }).eq("data->>status", "active").eq("data->>category", "livestream"),
+        ]);
 
-      if (isAdmin) {
+        if (cancelled) return;
+
+        const nextStats = {
+          listings: activeListingsCountRes.count || 0,
+          registeredGamers: registeredGamersCountRes.count || 0,
+          liveStreams: liveStreamsCountRes.count || 0,
+          platformUptime: "24/7",
+        };
+
+        // Fallback to the shared listings cache if count queries are blocked or
+        // delayed, so homepage stats still render on mobile standalone bundles.
+        if (!nextStats.listings) {
+          try {
+            const activeListings = await getActiveListings();
+            nextStats.listings = Array.isArray(activeListings) ? activeListings.length : 0;
+            nextStats.liveStreams = Array.isArray(activeListings)
+              ? activeListings.filter((item) => item.category === "livestream").length
+              : 0;
+          } catch {}
+        }
+
+        if (!nextStats.registeredGamers) {
+          try {
+            const profiles = await base44.entities.UserProfile.list();
+            nextStats.registeredGamers = Array.isArray(profiles) ? profiles.length : 0;
+          } catch {}
+        }
+
+        setStats(nextStats);
+      } catch {
         try {
-          const profiles = await base44.entities.UserProfile.list();
+          const [activeListings, profiles] = await Promise.all([
+            getActiveListings(),
+            base44.entities.UserProfile.list().catch(() => []),
+          ]);
           if (cancelled) return;
-          setAdminUserCount(Array.isArray(profiles) ? profiles.length : 0);
+          const activeRows = Array.isArray(activeListings) ? activeListings : [];
+          setStats({
+            listings: activeRows.length,
+            registeredGamers: Array.isArray(profiles) ? profiles.length : 0,
+            liveStreams: activeRows.filter((item) => item.category === "livestream").length,
+            platformUptime: "24/7",
+          });
         } catch {}
       }
     };
     load();
     return () => { cancelled = true; };
-  }, [isAdmin]);
+  }, []);
 
   // Shared stat-card style so every stat (Registered Gamers, Active Listings,
   // LIVE, ON AIR) has the exact same glowing purple/pink design.
@@ -83,13 +122,10 @@ function LiveStats() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
     className="flex flex-wrap justify-center gap-3 sm:gap-6 mb-8 text-center" data-testid="hero-live-stats">
-      {/* Registered Gamers — admin only */}
-      {isAdmin &&
       <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-registered-gamers">
-        <div className={valueClass}>{(adminUserCount || 0).toLocaleString()}</div>
+        <div className={valueClass}>{(stats.registeredGamers || 0).toLocaleString()}</div>
         <div className={labelClass}><Zap className="w-3 h-3" /> Registered Gamers</div>
       </motion.div>
-      }
 
       <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-active-listings">
         <div className={valueClass}>{(stats.listings || 0).toLocaleString()}</div>
@@ -98,13 +134,15 @@ function LiveStats() {
 
       <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-platform-status">
         <div className={valueClass}>
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" /> LIVE
+          {stats.platformUptime}
         </div>
-        <div className={labelClass}>Platform Status</div>
+        <div className={labelClass}>
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block" /> Platform Status
+        </div>
       </motion.div>
 
       <motion.div whileHover={{ scale: 1.05 }} className="relative px-4 sm:px-6 py-3 rounded-2xl" style={cardStyle} data-testid="stat-streaming-now">
-        <div className={valueClass}><Radio className="w-5 h-5" /> ON AIR</div>
+        <div className={valueClass}>{(stats.liveStreams || 0).toLocaleString()}</div>
         <div className={labelClass}>Streaming Now</div>
       </motion.div>
     </motion.div>);
