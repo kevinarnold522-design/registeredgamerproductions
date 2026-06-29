@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 
 const PER_PAGE = 8;
 
@@ -54,6 +55,7 @@ export default function AllCategoriesNewsfeed({ user, profile }) {
               <div className="min-w-0 flex-1">
                 <p className="text-white font-bold text-xs truncate">{item.title}</p>
                 {item.category && <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-full bg-purple-900/40 border border-purple-500/30 text-[8px] font-black text-purple-200 capitalize">{String(item.category).replace(/_/g, " ")}</span>}
+                {item.download_host && <div className="mt-1"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
                 <p className="text-purple-300 text-xs font-black mt-1">{item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}</p>
                 <div className="mt-1"><ListingEngagementBar listing={item} user={user} profile={profile} compact hideReport /></div>
               </div>

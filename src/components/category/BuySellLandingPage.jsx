@@ -7,6 +7,7 @@ import { CATEGORIES } from "@/lib/constants";
 import { Link } from "react-router-dom";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import Pagination from "@/components/shared/Pagination";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -26,6 +27,7 @@ function ListingCard({ listing, index }) {
       <div className="p-4">
         <p className="text-white font-bold text-sm truncate mb-1">{listing.title}</p>
         <p className="text-gray-500 text-xs line-clamp-2 mb-2">{listing.description || "No description."}</p>
+        {listing.download_host && <div className="mb-2"><DownloadHostBadge host={listing.download_host} size="sm" /></div>}
         <div className="flex items-center justify-between">
           <span className="text-yellow-400 font-black text-sm">{!listing.price || listing.is_free ? "FREE" : formatListingPrice(listing.price, listing.currency)}</span>
           {listing.subcategory && (

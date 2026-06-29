@@ -12,6 +12,7 @@ import CommunityPostCard from "@/components/community/CommunityPostCard";
 import PostComposer from "@/components/community/PostComposer";
 import GroupChat from "@/components/community/GroupChat";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 
 export default function CommunitySectionPage() {
   const { user } = useAuth();
@@ -209,6 +210,7 @@ export default function CommunitySectionPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold text-xs line-clamp-2 group-hover:text-purple-300 transition-colors">{listing.title}</p>
+                      {listing.download_host && <div className="mt-1"><DownloadHostBadge host={listing.download_host} size="sm" /></div>}
                       <p className="font-black text-xs mt-1" style={{ color: accentColor }}>
                         {listing.is_free ? "FREE" : `$${listing.price}`}
                       </p>

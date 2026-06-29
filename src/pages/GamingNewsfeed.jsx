@@ -7,6 +7,7 @@ import Navbar from "@/components/home/Navbar";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 
 export default function GamingNewsfeed() {
@@ -78,6 +79,7 @@ export default function GamingNewsfeed() {
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-yellow-500/50 bg-gradient-to-r from-[#3b2a00] to-[#5a3d00] text-yellow-300 text-[9px] font-black uppercase tracking-wide mb-1 shadow-[0_0_12px_rgba(234,179,8,0.25)]"><Star className="w-2.5 h-2.5 fill-yellow-300 text-yellow-300" /> Featured</span>
                   <p className="text-white font-bold text-sm truncate">{item.title}</p>
                   <p className="text-gray-500 text-xs line-clamp-2 mt-1">{item.description}</p>
+                  {item.download_host && <div className="mt-2"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
                   <p className="text-purple-300 text-sm font-black mt-1">{item.is_free || !item.price ? "FREE" : `$${item.price?.toLocaleString()}`}</p>
                   <div className="mt-2"><ListingEngagementBar listing={item} user={user} profile={profile} compact /></div>
                 </div>

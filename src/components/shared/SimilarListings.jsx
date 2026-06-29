@@ -3,6 +3,7 @@ import { Eye, Play } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 
 export default function SimilarListings({ listing, compact = false }) {
   const [items, setItems] = useState([]);
@@ -49,6 +50,7 @@ export default function SimilarListings({ listing, compact = false }) {
               </div>
               <div className="p-2">
                 <p className="text-white text-xs font-bold truncate">{l.title}</p>
+                {l.download_host && <div className="mt-1"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
                 <p className="text-purple-400 text-xs font-black mt-0.5">{free ? "FREE" : `$${l.price?.toLocaleString()}`}</p>
               </div>
             </a>

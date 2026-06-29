@@ -3,6 +3,7 @@ import { Search, Play, Eye, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import StickySearchBar from "@/components/shared/StickySearchBar";
@@ -95,6 +96,7 @@ export default function SearchPage() {
                     <div className="p-3">
                       <p className="text-white text-sm font-bold truncate">{l.title}</p>
                       <p className="text-gray-500 text-xs mt-1 capitalize">{cat?.label || l.category}</p>
+                      {l.download_host && <div className="mt-2"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
                       {l.store_platforms?.length > 0 && <div className="mt-2"><StorePlatformBadges platforms={l.store_platforms} links={l.store_platform_links} size="sm" /></div>}
                       {l.tool_target_game && <p className="text-blue-300 text-xs mt-2">For: {l.tool_target_game}</p>}
                       <div className="flex items-center justify-between mt-2">

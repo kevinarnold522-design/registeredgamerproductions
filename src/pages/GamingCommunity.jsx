@@ -20,6 +20,7 @@ import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import { formatListingPrice } from "@/lib/currency";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { useNavigate } from "react-router-dom";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
@@ -212,6 +213,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                       <div className="p-2 flex-1 flex flex-col">
                         <p className="text-white text-[11px] font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{item.title}</p>
                         <p className="text-gray-500 text-[8px] inline-flex items-center gap-1 mt-1"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> {item.created_date ? new Date(item.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}</p>
+                        {item.download_host && <div className="mt-1"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
                         <p className="font-black text-[11px] mt-0.5" style={{ color: franchise.accent }}>{item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}</p>
                         <div className="mt-1.5">
                           <ListingEngagementBar listing={item} user={user} profile={profile} compact />

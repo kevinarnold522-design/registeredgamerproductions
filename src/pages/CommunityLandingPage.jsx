@@ -6,6 +6,7 @@ import MemberLeaderboard from "@/components/community/MemberLeaderboard";
 import PostNotifications from "@/components/community/PostNotifications";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
@@ -728,6 +729,7 @@ export default function CommunityLandingPage() {
                     </div>
                     <div className="p-2.5">
                       <p className="text-white text-xs font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{l.title}</p>
+                      {l.download_host && <div className="mt-1.5"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
                       <div className="flex items-center justify-between mt-1">
                         <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `$${l.price}`}</p>
                         <span className="flex items-center gap-0.5 text-[9px] text-gray-500">

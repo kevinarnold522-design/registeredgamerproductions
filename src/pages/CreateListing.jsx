@@ -41,6 +41,7 @@ import AIListingAssistant from "@/components/listings/AIListingAssistant";
 import ImageSortableList from "@/components/ImageSortableList";
 import SearchableSelect from "@/components/listings/SearchableSelect";
 import BrandLogo from "@/components/shared/BrandLogo";
+import DownloadHostBadge, { DOWNLOAD_HOST_OPTIONS } from "@/components/shared/DownloadHostBadge";
 import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { supabase } from "@/lib/supabaseClient";
@@ -107,13 +108,6 @@ export default function CreateListing() {
     ...PLATFORMS.map(p => ({ id: p.id, label: p.id, type: "platform", brand: p.brand })),
     ...GAMES_STORES.map(s => ({ id: s.id, label: s.label, type: "store", color: s.color, iconText: s.iconText, brand: s.id })),
   ];
-  const DOWNLOAD_HOSTS = [
-    { id: "mediafire", label: "Mediafire", color: "#1E90FF" },
-    { id: "modsfire", label: "Modsfire", color: "#FF4500" },
-    { id: "mega", label: "Mega", color: "#D9272D" },
-    { id: "sharemods", label: "Sharemods", color: "#22C55E" },
-  ];
-
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -864,18 +858,17 @@ export default function CreateListing() {
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Download Host (shown as logo on listing)</label>
               <div className="flex flex-wrap gap-3">
-                {DOWNLOAD_HOSTS.map(h => (
+                {DOWNLOAD_HOST_OPTIONS.map(h => (
                   <button key={h.id} type="button"
                     onClick={() => setForm(f => ({ ...f, download_host: f.download_host === h.id ? "" : h.id }))}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${form.download_host === h.id ? "border-opacity-100 text-white" : "border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-500"}`}
                     style={form.download_host === h.id ? { borderColor: h.color, background: `${h.color}22`, color: h.color } : {}}>
-                    <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: h.color }} />
-                    {h.label}
+                    <DownloadHostBadge host={h.id} size="sm" />
                     {form.download_host === h.id && <CheckCircle className="w-3 h-3" />}
                   </button>
                 ))}
               </div>
-              {form.download_host && <p className="text-green-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> {DOWNLOAD_HOSTS.find(h => h.id === form.download_host)?.label} logo will display on your listing</p>}
+              {form.download_host && <p className="text-green-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> {DOWNLOAD_HOST_OPTIONS.find(h => h.id === form.download_host)?.label} logo will display on your listing everywhere</p>}
             </div>
           </div>
 

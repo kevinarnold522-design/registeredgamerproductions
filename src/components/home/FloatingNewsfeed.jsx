@@ -3,6 +3,7 @@ import { Newspaper, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 
 const GP_LOGO = "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png";
 
@@ -27,6 +28,7 @@ function FeedRow({ item }) {
           <Star className="w-2.5 h-2.5 fill-yellow-300 text-yellow-300" /> Featured
         </span>
         <p className="text-white font-bold text-[11px] truncate mt-0.5">{item.title}</p>
+        {item.download_host && <div className="mt-1"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
         <p className="text-purple-300 text-[11px] font-black">
           {item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}
         </p>

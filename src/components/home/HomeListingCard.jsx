@@ -4,6 +4,7 @@ import { Eye, ChevronLeft, ChevronRight, Crown, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { useNavigate } from "react-router-dom";
 
 /** @type {Record<string, Array<{ solid: string, soft: string }>>} */
@@ -218,7 +219,18 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
         
         {/* PAID sign at bottom-right */}
         {!liveListing.is_free && liveListing.price > 0 && (
-          <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: "linear-gradient(135deg,#f59e0b,#ec4899)", color: "#000", boxShadow: "0 0 10px rgba(245,158,11,0.6)" }}>💎 PAID</span>
+          <span
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[10px] font-black tracking-[0.18em]"
+            style={{
+              background: "linear-gradient(135deg, #050505 0%, #141414 50%, #2c2200 100%)",
+              borderColor: "rgba(234,179,8,0.72)",
+              color: "#facc15",
+              boxShadow: "0 0 14px rgba(234,179,8,0.32)",
+            }}
+          >
+            <span className="inline-block h-2 w-2 rounded-sm border border-amber-300/60 bg-gradient-to-br from-yellow-300 to-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.45)]" />
+            PAID
+          </span>
         )}
         
         {/* Super glow bar effect - dynamic color by listing/category */}
@@ -253,7 +265,11 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
             <span className="text-gray-300 text-xs font-bold truncate">@{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</span>
           </button>
         </div>
-        
+        {liveListing.download_host && (
+          <div className="mb-3">
+            <DownloadHostBadge host={liveListing.download_host} size="sm" />
+          </div>
+        )}
 
       </div>
       <div className="px-5 pb-4 pt-0" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>

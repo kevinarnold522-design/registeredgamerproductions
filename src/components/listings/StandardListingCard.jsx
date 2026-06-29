@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Package, CalendarDays, Star, Clock, Download, Play, Crown, Trophy } from "lucide-react";
+import { Eye, Package, CalendarDays, Star, Clock, Download, Play, Trophy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
@@ -174,8 +174,9 @@ export default function StandardListingCard({ listing: initialListing, user, pro
         {isFree ? (
           <span className="absolute bottom-2 right-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         ) : (
-          <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-0.5 text-[10px] font-black bg-gradient-to-r from-yellow-400 to-amber-500 text-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.6)]">
-            <Crown className="w-2.5 h-2.5 fill-black" /> PREMIUM
+          <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 rounded-lg border border-amber-400/70 bg-gradient-to-br from-black via-gray-950 to-[#2c2200] px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-amber-300 shadow-[0_0_14px_rgba(234,179,8,0.35)]">
+            <span className="inline-block h-2 w-2 rounded-sm border border-amber-300/60 bg-gradient-to-br from-yellow-300 to-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.45)]" />
+            PAID
           </span>
         )}
         <span className="theme-glow-action absolute bottom-2 left-2 z-10 flex items-center gap-1 text-[10px] bg-black/70 text-cyan-300 font-bold px-1.5 py-0.5 rounded-full">

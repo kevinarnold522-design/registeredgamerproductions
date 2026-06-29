@@ -8,6 +8,7 @@ import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
@@ -478,6 +479,7 @@ function VisibleListingRow({ item, userProfile }) {
       <div className="flex-1 min-w-0">
         <p className="text-white text-xs font-bold line-clamp-1 group-hover:text-purple-300 transition-colors">{item.title}</p>
         <p className="text-gray-500 text-[10px]">by @{item.seller_username} · Listing</p>
+        {item.download_host && <div className="mt-1"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
         <div className="flex items-center justify-between gap-2 mt-0.5">
           <p className="font-black text-xs text-purple-300">{item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}</p>
           <span className="flex items-center gap-1 text-[10px] text-cyan-300 font-bold"><Eye className="w-3 h-3" />{(item.views || 0).toLocaleString()}</span>

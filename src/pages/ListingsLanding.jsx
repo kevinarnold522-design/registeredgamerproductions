@@ -5,6 +5,7 @@ import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2 } from "lucide-re
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -98,6 +99,7 @@ export default function ListingsLanding({ mode = "mine" }) {
                     <div className="p-3">
                       <p className="font-bold text-sm truncate">{l.title}</p>
                       <p className="text-gray-500 text-[11px] truncate">by @{l.seller_username || l.seller_email?.split("@")[0] || "gamer"}</p>
+                      {l.download_host && <div className="mt-1"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
                       <p className="text-purple-300 text-xs font-black">{!l.price || l.is_free ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
                     </div>
                   </Link>
