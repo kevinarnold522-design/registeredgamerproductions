@@ -15,7 +15,6 @@ import CommunityPostCard from "@/components/community/CommunityPostCard";
 import GroupChat from "@/components/community/GroupChat";
 import PostComposer from "@/components/community/PostComposer";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import { formatListingPrice } from "@/lib/currency";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
@@ -703,13 +702,10 @@ export default function GamingCommunity() {
     <div className="min-h-screen bg-gray-950 text-white">
       <CommunityTagAd adFree={admin || profile?.no_ads} />
       <AnimatedController />
-      {/* Official socials — pinned to the very top */}
-      <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
-        <GamerSocialsBar />
-      </div>
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <div className="pt-6 px-4 max-w-7xl mx-auto">
+        <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-2">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
@@ -997,7 +993,6 @@ export default function GamingCommunity() {
           accentColor={activeFranchise.accent}
         />
       )}
-      <GamerBrandFooter />
     </div>
   );
 }
