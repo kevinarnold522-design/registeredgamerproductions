@@ -13,8 +13,6 @@ import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
-import MascotShowcase from "@/components/shared/MascotShowcase";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import StandardListingCard from "@/components/listings/StandardListingCard";
 import { isServiceListing } from "@/lib/constants";
@@ -219,7 +217,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           <p className="text-white font-black text-2xl mb-2">Live Streaming Coming Soon</p>
           <p className="text-gray-500">Integrated live streaming will be available soon. Connect your stream now!</p>
         </div>
-        <GamerBrandFooter />
       </div>
     );
   }
@@ -236,6 +233,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         </div>
       </div>
 
+      <GamerBrandFooter position="top" />
+
       {cat === "premium_mods" && (
         <div className="max-w-7xl mx-auto px-4 pt-8">
           <div className="rounded-3xl border border-amber-700/30 bg-gradient-to-br from-amber-950/40 to-gray-900 p-5">
@@ -248,15 +247,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               {canPost && <Link to="/create-listing?cat=premium_mods" className="px-4 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-bold hover:bg-amber-500/30">Sell a Premium Mod</Link>}
             </div>
           </div>
-        </div>
-      )}
-
-      {!hideCategory && (
-        <div className="max-w-7xl mx-auto px-4 pt-8">
-          <MascotShowcase
-            compact={cat !== "games" && cat !== "modding" && cat !== "premium_mods"}
-          />
-          <GamerSocialsBar className="mt-4" />
         </div>
       )}
 
@@ -401,7 +391,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           </>
         )}
       </div>
-      <GamerBrandFooter />
     </div>
   );
 }

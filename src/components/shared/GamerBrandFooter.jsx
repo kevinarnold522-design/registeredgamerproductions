@@ -4,7 +4,7 @@ import MascotShowcase from "@/components/shared/MascotShowcase";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 
-export default function GamerBrandFooter({ showMascots = true }) {
+export default function GamerBrandFooter({ showMascots = true, position = "bottom", className = "" }) {
   const socials = [
     { label: "YouTube", href: OFFICIAL_LINKS.youtube, icon: Youtube, color: "text-red-300" },
     { label: "Facebook", href: OFFICIAL_LINKS.facebook, icon: Facebook, color: "text-blue-300" },
@@ -15,7 +15,9 @@ export default function GamerBrandFooter({ showMascots = true }) {
   ];
 
   return (
-    <footer className="relative px-4 pt-8 pb-10 bg-gray-950 border-t border-purple-900/30">
+    <section
+      className={`relative px-4 ${position === "top" ? "pt-8 pb-6" : "pt-8 pb-10 bg-gray-950 border-t border-purple-900/30"} ${className}`}
+    >
       <div className="max-w-7xl mx-auto space-y-6">
         {showMascots && <MascotShowcase compact />}
         <div className="rounded-3xl border border-purple-500/25 bg-gray-900/70 p-5 text-center shadow-[0_0_34px_rgba(124,58,237,0.16)]">
@@ -36,6 +38,6 @@ export default function GamerBrandFooter({ showMascots = true }) {
           </div>
         </div>
       </div>
-    </footer>
+    </section>
   );
 }

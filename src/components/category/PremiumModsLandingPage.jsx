@@ -5,8 +5,6 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
-import MascotShowcase from "@/components/shared/MascotShowcase";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -70,10 +68,7 @@ export default function PremiumModsLandingPage({ user }) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pt-8">
-        <MascotShowcase compact={false} />
-        <GamerSocialsBar className="mt-4" />
-      </div>
+      <GamerBrandFooter position="top" />
 
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Sell a Premium Mod — homepage game cards */}
@@ -182,7 +177,6 @@ export default function PremiumModsLandingPage({ user }) {
           </div>
         )}
       </div>
-      <GamerBrandFooter />
     </div>
   );
 }

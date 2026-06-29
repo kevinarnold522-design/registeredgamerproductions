@@ -17,9 +17,7 @@ import { Link, useParams } from "react-router-dom";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GroupChat from "@/components/community/GroupChat";
-import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
 import { useLocation } from "react-router-dom";
 
@@ -269,10 +267,6 @@ export default function CommunityLandingPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <CommunityTagAd adFree={admin || profile?.no_ads} />
-      {/* Official socials — pinned to the very top */}
-      <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
-        <GamerSocialsBar />
-      </div>
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       {/* Hero Cover */}
@@ -351,9 +345,7 @@ export default function CommunityLandingPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 -mt-4 relative z-10">
-        <MascotShowcase
-          compact
-        />
+        <GamerBrandFooter position="top" className="px-0 pt-0 pb-2" />
       </div>
 
       {/* Tiered Membership Modal */}
@@ -762,7 +754,6 @@ export default function CommunityLandingPage() {
           );
         })()}
       </div>
-      <GamerBrandFooter />
     </div>
   );
 }

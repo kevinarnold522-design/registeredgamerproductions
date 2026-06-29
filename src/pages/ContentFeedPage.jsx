@@ -608,6 +608,8 @@ export default function ContentFeedPage() {
         </div>
       </div>
 
+      <GamerBrandFooter position="top" />
+
       {/* Category filter strip */}
       <div className="bg-gray-950/98 backdrop-blur-sm border-b border-gray-800 sticky top-14 lg:top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
@@ -688,7 +690,6 @@ export default function ContentFeedPage() {
           />
         )}
       </AnimatePresence>
-      <GamerBrandFooter />
     </div>
   );
 }

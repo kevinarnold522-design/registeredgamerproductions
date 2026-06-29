@@ -7,8 +7,6 @@ import { isAdmin, isServiceListing } from "@/lib/constants";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import EnhancedListingCard from "@/components/community/EnhancedListingCard";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
-import MascotShowcase from "@/components/shared/MascotShowcase";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
@@ -346,10 +344,6 @@ export default function SubcategoryLandingPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <CommunityTagAd adFree={admin || profile?.no_ads} />
-      {/* Official socials — pinned to the very top of every subcategory */}
-      <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
-        <GamerSocialsBar />
-      </div>
       {!isLoadingAuth && (user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />)}
 
       <div className="pt-20 px-4 max-w-7xl mx-auto pb-16">
@@ -386,11 +380,7 @@ export default function SubcategoryLandingPage() {
           </div>
         </div>
 
-        <div className="mb-8">
-          <MascotShowcase
-            compact={false}
-          />
-        </div>
+        <GamerBrandFooter position="top" className="px-0 pt-0 pb-8" />
 
         {cards.length === 0 && !admin && (
           <div className="text-center py-24">
@@ -491,8 +481,6 @@ export default function SubcategoryLandingPage() {
           ))}
         </div>
       </div>
-
-      <GamerBrandFooter />
 
       <AnimatePresence>
         {showAdd && <AddCardModal onClose={() => setShowAdd(false)} onAdd={handleAdd} />}
