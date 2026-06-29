@@ -16,12 +16,34 @@ import { getBase44Direct } from "@/lib/base44Direct";
 // backend calls always reach the worker (never the React app → no more 404s).
 const WORKER_URL = "https://website-connected-gamerproductions.kevinarnold522.workers.dev";
 
+function isLocalOrigin(hostname = "") {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
 function resolveApiBase() {
   const fromEnv = (import.meta.env.VITE_CF_API_URL || "").replace(/\/$/, "");
+  try {
+    const currentOrigin = window.location.origin.replace(/\/$/, "");
+    const { hostname } = window.location;
+
+    // The live Cloudflare custom domain should use same-origin functions/routes.
+    // Forcing it over to the fallback workers.dev host can break auth/session
+    // flow and first-load data on the main site even when Vercel/local work.
+    if (!isLocalOrigin(hostname) && (hostname === "gamer.productions" || hostname === "www.gamer.productions")) {
+      return currentOrigin;
+    }
+  } catch {}
+
   if (!fromEnv) return WORKER_URL;
   try {
-    // If the env var points at the app's own origin, it's wrong — use the worker.
-    if (new URL(fromEnv).origin === window.location.origin) return WORKER_URL;
+    const envOrigin = new URL(fromEnv).origin.replace(/\/$/, "");
+    const currentOrigin = window.location.origin.replace(/\/$/, "");
+    // Same-origin is correct on deployed first-party hosts. Only force the
+    // worker fallback during local development where the frontend has no
+    // backend functions mounted on the same origin.
+    if (envOrigin === currentOrigin) {
+      return isLocalOrigin(window.location.hostname) ? WORKER_URL : currentOrigin;
+    }
   } catch {
     return WORKER_URL;
   }
