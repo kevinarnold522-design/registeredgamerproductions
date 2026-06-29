@@ -4,7 +4,7 @@ import AppErrorBoundary from '@/components/system/AppErrorBoundary'
 import lazyWithRetry from '@/lib/lazyWithRetry'
 import '@/index.css'
 
-const App = lazyWithRetry(() => import('@/App.jsx'))
+const App = lazyWithRetry(() => import('@/App.jsx'));
 
 // When Base44 OAuth completes, it redirects back with ?access_token=...
 // Persist the token and reload cleanly so the SDK boots fully authenticated.
