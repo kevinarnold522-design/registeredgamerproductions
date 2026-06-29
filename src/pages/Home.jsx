@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import SplashScreen from "@/components/home/SplashScreen";
 import Navbar from "@/components/home/Navbar";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -15,6 +15,7 @@ import HeyGamerBanner from "@/components/home/HeyGamerBanner";
 import { isNewJoiner } from "@/lib/isNewJoiner";
 import { clearAssetRecoveryState, isLikelyAssetVersionError, tryRecoverFromAssetError } from "@/lib/assetRecovery";
 import { isLikelyMobileWebDevice } from "@/lib/deviceProfile";
+import lazyWithRetry from "@/lib/lazyWithRetry";
 import { Gamepad2, Wrench, Cloud } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -72,18 +73,6 @@ class DeferredSectionsBoundary extends React.Component {
     return this.props.children;
   }
 }
-
-// Retry a lazy import once on chunk-load failure (recovers from stale
-// Vite chunks after a deploy instead of crashing the page).
-const lazyWithRetry = (importer) =>
-  lazy(() =>
-    importer().catch((err) => {
-      if (isLikelyAssetVersionError(err) && tryRecoverFromAssetError()) {
-        return new Promise(() => {});
-      }
-      throw err;
-    })
-  );
 
 // Below-the-fold sections are lazy-loaded so the page paints faster
 const BusinessModelSection = lazyWithRetry(() => import("@/components/home/BusinessModelSection"));

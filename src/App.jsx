@@ -1,10 +1,11 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { clearAssetRecoveryState } from '@/lib/assetRecovery';
 import { isLikelyMobileWebDevice } from '@/lib/deviceProfile';
+import lazyWithRetry from '@/lib/lazyWithRetry';
 // Added "Navigate" to standard react-router-dom handling
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
@@ -28,43 +29,43 @@ import RouteErrorBoundary from '@/components/system/RouteErrorBoundary';
 // out on mobile networks, causing the "PAGE HICCUP" card. Each page is now a
 // code-split chunk so one slow / failed page never blocks the rest of the app.
 // -----------------------------------------------------------------------------
-const Home = lazy(() => import("./pages/Home"));
-const GamingCommunity = lazy(() => import("./pages/GamingCommunity"));
-const Register = lazy(() => import("./pages/Register"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const CreateListing = lazy(() => import("./pages/CreateListing"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Channel = lazy(() => import("./pages/Channel"));
-const CategoryPage = lazy(() => import("./pages/CategoryPage.jsx"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const Messages = lazy(() => import("./pages/Messages"));
-const PaymentPage = lazy(() => import("./pages/PaymentPage"));
-const AIVideoStudioPage = lazy(() => import("./pages/AIVideoStudioPage"));
-const StudioPage = lazy(() => import("./pages/StudioPage"));
-const MusicLibrary = lazy(() => import("./pages/MusicLibrary"));
-const AboutUs = lazy(() => import("./pages/AboutUs"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const AdminWebsiteEditor = lazy(() => import("./pages/AdminWebsiteEditor"));
-const ContactPage = lazy(() => import("./pages/ContactPage"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const TermsDMCA = lazy(() => import("./pages/TermsDMCA"));
-const CommunitySectionPage = lazy(() => import("./pages/CommunitySectionPage"));
-const CommunityLandingPage = lazy(() => import("./pages/CommunityLandingPage"));
-const SocialMediaManager = lazy(() => import("./pages/SocialMediaManager"));
-const TournamentsPage = lazy(() => import("./pages/TournamentsPage"));
-const SubcategoryLandingPage = lazy(() => import("./pages/SubcategoryLandingPage"));
-const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
-const ListingPage = lazy(() => import("./pages/ListingPage.jsx"));
-const RoutingDashboard = lazy(() => import("./pages/RoutingDashboard"));
-const EarningsDashboard = lazy(() => import("./pages/EarningsDashboard"));
-const UploadContent = lazy(() => import("./pages/UploadContent"));
-const ContentFeedPage = lazy(() => import("./pages/ContentFeedPage"));
-const CreatedAccountsPage = lazy(() => import("./pages/CreatedAccountsPage"));
-const SearchPage = lazy(() => import("./pages/SearchPage.jsx"));
-const UsersLanding = lazy(() => import("./pages/UsersLanding"));
-const ListingsLanding = lazy(() => import("./pages/ListingsLanding"));
-const OrdersLanding = lazy(() => import("./pages/OrdersLanding"));
-const GamingNewsfeed = lazy(() => import("./pages/GamingNewsfeed"));
+const Home = lazyWithRetry(() => import("./pages/Home"));
+const GamingCommunity = lazyWithRetry(() => import("./pages/GamingCommunity"));
+const Register = lazyWithRetry(() => import("./pages/Register"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const CreateListing = lazyWithRetry(() => import("./pages/CreateListing"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const Channel = lazyWithRetry(() => import("./pages/Channel"));
+const CategoryPage = lazyWithRetry(() => import("./pages/CategoryPage.jsx"));
+const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
+const Messages = lazyWithRetry(() => import("./pages/Messages"));
+const PaymentPage = lazyWithRetry(() => import("./pages/PaymentPage"));
+const AIVideoStudioPage = lazyWithRetry(() => import("./pages/AIVideoStudioPage"));
+const StudioPage = lazyWithRetry(() => import("./pages/StudioPage"));
+const MusicLibrary = lazyWithRetry(() => import("./pages/MusicLibrary"));
+const AboutUs = lazyWithRetry(() => import("./pages/AboutUs"));
+const Analytics = lazyWithRetry(() => import("./pages/Analytics"));
+const AdminWebsiteEditor = lazyWithRetry(() => import("./pages/AdminWebsiteEditor"));
+const ContactPage = lazyWithRetry(() => import("./pages/ContactPage"));
+const PrivacyPolicy = lazyWithRetry(() => import("./pages/PrivacyPolicy"));
+const TermsDMCA = lazyWithRetry(() => import("./pages/TermsDMCA"));
+const CommunitySectionPage = lazyWithRetry(() => import("./pages/CommunitySectionPage"));
+const CommunityLandingPage = lazyWithRetry(() => import("./pages/CommunityLandingPage"));
+const SocialMediaManager = lazyWithRetry(() => import("./pages/SocialMediaManager"));
+const TournamentsPage = lazyWithRetry(() => import("./pages/TournamentsPage"));
+const SubcategoryLandingPage = lazyWithRetry(() => import("./pages/SubcategoryLandingPage"));
+const LeaderboardPage = lazyWithRetry(() => import("./pages/LeaderboardPage"));
+const ListingPage = lazyWithRetry(() => import("./pages/ListingPage.jsx"));
+const RoutingDashboard = lazyWithRetry(() => import("./pages/RoutingDashboard"));
+const EarningsDashboard = lazyWithRetry(() => import("./pages/EarningsDashboard"));
+const UploadContent = lazyWithRetry(() => import("./pages/UploadContent"));
+const ContentFeedPage = lazyWithRetry(() => import("./pages/ContentFeedPage"));
+const CreatedAccountsPage = lazyWithRetry(() => import("./pages/CreatedAccountsPage"));
+const SearchPage = lazyWithRetry(() => import("./pages/SearchPage.jsx"));
+const UsersLanding = lazyWithRetry(() => import("./pages/UsersLanding"));
+const ListingsLanding = lazyWithRetry(() => import("./pages/ListingsLanding"));
+const OrdersLanding = lazyWithRetry(() => import("./pages/OrdersLanding"));
+const GamingNewsfeed = lazyWithRetry(() => import("./pages/GamingNewsfeed"));
 
 // Lightweight spinner while a page chunk is downloading on mobile.
 const RouteFallback = () => (
@@ -192,6 +193,29 @@ const AuthenticatedApp = () => {
 
 function App() {
   const [useLowOverheadMobileShell, setUseLowOverheadMobileShell] = useState(() => isLikelyMobileWebDevice());
+  const [bootUiReady, setBootUiReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    let cancelled = false;
+    const activate = () => {
+      if (!cancelled) setBootUiReady(true);
+    };
+
+    const idleHandle = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback(activate, { timeout: 900 })
+      : window.setTimeout(activate, 320);
+
+    return () => {
+      cancelled = true;
+      if (typeof window.cancelIdleCallback === 'function' && typeof idleHandle === 'number') {
+        window.cancelIdleCallback(idleHandle);
+        return;
+      }
+      window.clearTimeout(idleHandle);
+    };
+  }, []);
 
   useEffect(() => {
     const syncMobileShell = () => setUseLowOverheadMobileShell(isLikelyMobileWebDevice());
@@ -243,18 +267,18 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
-            {!useLowOverheadMobileShell && <PageTransition />}
+            {bootUiReady && !useLowOverheadMobileShell && <PageTransition />}
             <InAppBrowserLinkFix />
-            <VisitorCountryTracker />
+            {bootUiReady && <VisitorCountryTracker />}
             {useLowOverheadMobileShell ? <MobileSpaceBackdrop /> : <ShootingStars />}
-            <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: "100%", overflowX: "clip" }}>
+            <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
               <SidebarLayout>
                 <AuthenticatedApp />
               </SidebarLayout>
             </div>
             <LanguagePrompt />
-            {!useLowOverheadMobileShell && <FloatingNewsfeed />}
-            <GlobalHtmlAd />
+            {bootUiReady && !useLowOverheadMobileShell && <FloatingNewsfeed />}
+            {bootUiReady && <GlobalHtmlAd />}
           </Router>
           <Toaster />
           <SonnerToaster position="top-center" richColors />

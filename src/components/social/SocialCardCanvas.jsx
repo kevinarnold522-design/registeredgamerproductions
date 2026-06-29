@@ -35,6 +35,25 @@ const SOCIAL_LINKS = {
   youtube: "https://youtube.com/@registeredgamerproductions",
 };
 
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x, y, width, height, radius);
+    return;
+  }
+
+  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
 function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
   const words = text.split(" ");
   let lines = [], line = "";
@@ -108,7 +127,7 @@ function drawFBIcon(ctx, x, y, size, color) {
   ctx.save();
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.roundRect(x - size/2, y - size/2, size, size, size * 0.2);
+  drawRoundedRect(ctx, x - size/2, y - size/2, size, size, size * 0.2);
   ctx.fill();
   ctx.fillStyle = "#fff";
   ctx.font = `bold ${size * 0.65}px Arial, sans-serif`;
@@ -124,7 +143,7 @@ function drawYTIcon(ctx, x, y, size, color) {
   ctx.save();
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.roundRect(x - size/2, y - size/2, size, size, size * 0.2);
+  drawRoundedRect(ctx, x - size/2, y - size/2, size, size, size * 0.2);
   ctx.fill();
   // Play triangle
   ctx.fillStyle = "#fff";
@@ -261,9 +280,9 @@ export default function SocialCardCanvas({ post, onClose, userEmail }) {
     ctx.font = `bold ${Math.round(w * 0.024)}px Arial, sans-serif`;
     const pillW = ctx.measureText(catText).width + 40;
     ctx.fillStyle = t.accent + "30";
-    ctx.beginPath(); ctx.roundRect(w / 2 - pillW / 2, h * 0.31, pillW, 28, 14); ctx.fill();
+    ctx.beginPath(); drawRoundedRect(ctx, w / 2 - pillW / 2, h * 0.31, pillW, 28, 14); ctx.fill();
     ctx.strokeStyle = t.accent; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.roundRect(w / 2 - pillW / 2, h * 0.31, pillW, 28, 14); ctx.stroke();
+    ctx.beginPath(); drawRoundedRect(ctx, w / 2 - pillW / 2, h * 0.31, pillW, 28, 14); ctx.stroke();
     ctx.fillStyle = t.accent; ctx.textAlign = "center";
     ctx.fillText(catText, w / 2, h * 0.31 + 19);
 

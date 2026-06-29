@@ -198,7 +198,7 @@ export default function Channel() {
   const displayName = profile?.display_name || profile?.username || user?.full_name || "Gamer";
   const connectedSocials = SOCIAL_PLATFORMS.filter(p => profile?.social_links?.[p.key]);
   const totalViews = videos.reduce((s, v) => s + (Number(v.views) || 0), 0) + listings.reduce((s, l) => s + (Number(l.views) || 0), 0);
-  const totalDownloads = listings.reduce((s, l) => s + (Number(l.downloads) || 0), 0);
+  const totalSales = Number(profile?.total_sales) || listings.filter((listing) => listing.status === "sold").length;
   const totalComments = posts.reduce((s, p) => s + (Number(p.comments_count) || 0), 0);
   const totalShares = posts.reduce((s, p) => s + (Number(p.shares_count) || 0), 0) + listings.reduce((s, l) => s + (Number(l.shares) || 0), 0);
 
@@ -304,7 +304,7 @@ export default function Channel() {
                 </label>
               )}
             </div>
-            <div className="flex-1 pb-1">
+            <div className="flex-1 w-full min-w-0 pb-1">
               <div className="flex items-center gap-2 flex-wrap" style={{ lineHeight: 1 }}>
                 <h1 className="text-2xl font-black text-white leading-none">{displayName}</h1>
                 {(profile?.is_verified || isAdmin(user?.email)) && (
@@ -331,7 +331,7 @@ export default function Channel() {
                   {profile?.is_active !== false ? "Active" : "Offline"}
                 </span>
               </div>
-              {profile?.bio && <p className="text-gray-400 text-sm mt-1 max-w-xl">{profile.bio}</p>}
+              {profile?.bio && <p className="text-gray-400 text-sm mt-1 max-w-xl break-words">{profile.bio}</p>}
               {/* Points & Leaderboard rank */}
               <UserPointsBadge userEmail={profile?.user_email || user?.email} />
               {/* YouTube Channel Info */}
@@ -385,16 +385,16 @@ export default function Channel() {
               )}
             </div>
             {isOwner ? (
-              <div className="flex items-center gap-2">
+              <div className="flex w-full sm:w-auto flex-wrap items-center gap-2">
                 <ChannelThemePicker profile={profile} currentTheme={channelTheme} onSelect={handleThemeChange} onSaved={setProfile} />
-                <button onClick={() => setShowEditProfile(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
+                <button onClick={() => setShowEditProfile(true)} className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-700 transition-colors">
                   <Edit2 className="w-4 h-4" /> Edit Profile
                 </button>
               </div>
             ) : user ? (
-              <div className="flex items-center gap-2">
+              <div className="flex w-full sm:w-auto items-center gap-2">
                 <button onClick={handleStartMessage} disabled={startingChat}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
+                  className="flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
                   <MessageCircle className="w-4 h-4" /> {startingChat ? "Opening..." : "Message"}
                 </button>
               </div>
@@ -402,12 +402,12 @@ export default function Channel() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
             <GlowStat label="Total Listings" value={listings.length} icon={Package} color="text-purple-300" />
             <GlowStat label="Total Posts" value={posts.length} icon={ImageIcon} color="text-pink-300" />
             <GlowStat label="Registered Followers" value={profile?.followers_count || 0} icon={Users} color="text-green-300" />
             <GlowStat label="Views" value={totalViews} icon={Eye} color="text-cyan-300" />
-            <GlowStat label="Downloads" value={totalDownloads} icon={Upload} color="text-orange-300" />
+            <GlowStat label="Total Sales" value={totalSales} icon={CircleDollarSign} color="text-orange-300" />
             <GlowStat label="Comments" value={totalComments} icon={MessageCircle} color="text-blue-300" />
             <GlowStat label="Shares" value={totalShares} icon={Share2} color="text-yellow-300" />
           </div>
@@ -468,7 +468,7 @@ export default function Channel() {
 
           {/* Posts Section */}
           <div className="mb-12">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
               <h2 className="text-white font-black text-lg">Posts ({posts.length})</h2>
               {isOwner && (
                 <button onClick={() => setShowPostModal(true)} className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors">
@@ -537,7 +537,7 @@ export default function Channel() {
 
           {/* Listings */}
           <div className="mb-12">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
               <h2 className="text-white font-black text-lg">Listings ({listings.length})</h2>
               {isOwner && (
                 <a href="/create-listing" className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors">
@@ -551,7 +551,7 @@ export default function Channel() {
                 <p className="text-gray-400 font-semibold">No listings yet</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {listings.map((l, i) => (
                   <motion.a key={l.id}
                     href={`/listing?id=${l.id}`}
@@ -578,7 +578,7 @@ export default function Channel() {
 
           {/* Videos */}
           <div className="mb-12">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
               <h2 className="text-white font-black text-lg">Videos ({videos.length})</h2>
               {isOwner && (
                 <button onClick={() => setShowUploadModal(true)} className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 font-semibold transition-colors">

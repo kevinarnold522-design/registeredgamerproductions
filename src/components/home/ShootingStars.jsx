@@ -1,6 +1,25 @@
 import React, { useEffect, useRef } from "react";
 import { isLikelyMobileWebDevice } from "@/lib/deviceProfile";
 
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x, y, width, height, radius);
+    return;
+  }
+
+  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
 export default function ShootingStars() {
   const canvasRef = useRef(null);
   // Keep the full canvas effect for desktop only. Mobile/in-app browsers use
@@ -29,6 +48,7 @@ export default function ShootingStars() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     const resize = () => {
       // Canvas is position:fixed covering the viewport — sizing to the full
@@ -299,18 +319,18 @@ export default function ShootingStars() {
         // Backpack
         ctx.fillStyle = "#94a3b8";
         ctx.beginPath();
-        ctx.roundRect(-s * 0.5, -s * 0.35, s * 0.35, s * 0.8, s * 0.1);
+        drawRoundedRect(ctx, -s * 0.5, -s * 0.35, s * 0.35, s * 0.8, s * 0.1);
         ctx.fill();
 
         // Body suit (white)
         ctx.fillStyle = this.suitColor;
         ctx.beginPath();
-        ctx.roundRect(-s * 0.28, -s * 0.3, s * 0.56, s * 0.75, s * 0.18);
+        drawRoundedRect(ctx, -s * 0.28, -s * 0.3, s * 0.56, s * 0.75, s * 0.18);
         ctx.fill();
         // Colored chest stripe
         ctx.fillStyle = this.accentColor;
         ctx.beginPath();
-        ctx.roundRect(-s * 0.28, s * 0.02, s * 0.56, s * 0.1, s * 0.04);
+        drawRoundedRect(ctx, -s * 0.28, s * 0.02, s * 0.56, s * 0.1, s * 0.04);
         ctx.fill();
 
         // Arms (white with colored cuffs)
@@ -710,12 +730,12 @@ export default function ShootingStars() {
         // Backpack
         ctx.fillStyle = "#94a3b8";
         ctx.beginPath();
-        ctx.roundRect(-a * 0.5, -a * 0.35, a * 0.35, a * 0.8, a * 0.1);
+        drawRoundedRect(ctx, -a * 0.5, -a * 0.35, a * 0.35, a * 0.8, a * 0.1);
         ctx.fill();
         // Body
         ctx.fillStyle = "#e2e8f0";
         ctx.beginPath();
-        ctx.roundRect(-a * 0.28, -a * 0.3, a * 0.56, a * 0.75, a * 0.18);
+        drawRoundedRect(ctx, -a * 0.28, -a * 0.3, a * 0.56, a * 0.75, a * 0.18);
         ctx.fill();
         // Arms + legs
         ctx.strokeStyle = "#e2e8f0";
@@ -980,6 +1000,7 @@ export default function ShootingStars() {
     let frame = 0;
 
     const animate = () => {
+      try {
       frame++;
 
       // Deep space background gradient
@@ -1099,7 +1120,13 @@ export default function ShootingStars() {
       resolveShootingStarHits();
       drawExplosions();
 
-      animId = requestAnimationFrame(animate);
+        animId = requestAnimationFrame(animate);
+      } catch (error) {
+        try {
+          console.error("ShootingStars disabled after canvas error", error);
+        } catch {}
+        setEnabled(false);
+      }
     };
     animate();
 
