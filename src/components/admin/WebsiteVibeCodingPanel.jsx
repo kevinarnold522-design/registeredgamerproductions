@@ -69,7 +69,7 @@ Context: ${context || "none"}
   };
 
   const importRepository = async () => {
-    if (!githubToken.trim() || !repoUrl.trim()) return;
+    if (!repoUrl.trim()) return;
     setBusy((prev) => ({ ...prev, import: true }));
     setStatus("Importing repository with Base44-backed vibecoding…");
     try {
@@ -83,7 +83,12 @@ Context: ${context || "none"}
       setSelectedPath("");
       setFileContent("");
       setFileSha("");
-      setStatus(`Imported ${payload.owner}/${payload.repo} on ${payload.branch}.`);
+      const fileCount = Array.isArray(payload.files) ? payload.files.length : 0;
+      setStatus(
+        payload.push_enabled
+          ? `Imported ${payload.owner}/${payload.repo} on ${payload.branch} with ${fileCount} files. Save & Push is ready.`
+          : `Imported ${payload.owner}/${payload.repo} on ${payload.branch} with ${fileCount} files in read-only mode. Add a writable GitHub token to push changes.`
+      );
     } catch (err) {
       setStatus(err?.message || "Repository import failed.");
     } finally {
@@ -186,7 +191,7 @@ ${fileContent}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h4 className="flex items-center gap-2 text-lg font-black text-white"><FolderGit2 className="h-5 w-5 text-cyan-300" /> VibeCoding</h4>
-          <p className="text-xs text-gray-400">Real GitHub import, edit, and push workflow backed by Base44 AI credits.</p>
+          <p className="text-xs text-gray-400">Real GitHub import, edit, and push workflow backed by Base44 AI credits with live repository reads.</p>
         </div>
         <div className="rounded-xl border border-cyan-700/40 bg-gray-900/80 px-3 py-2 text-[11px] font-semibold text-cyan-200">
           Every import, read, AI edit, and save request consumes Base44 integration credits.
@@ -203,13 +208,13 @@ ${fileContent}
         <input
           value={githubToken}
           onChange={(e) => setGithubToken(e.target.value)}
-          placeholder="GitHub token"
+          placeholder="GitHub token for push access"
           className="w-full rounded-xl border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-white outline-none focus:border-cyan-500"
         />
         <button
           type="button"
           onClick={importRepository}
-          disabled={busy.import || !repoUrl.trim() || !githubToken.trim()}
+          disabled={busy.import || !repoUrl.trim()}
           className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-3 text-sm font-black text-white disabled:opacity-50"
         >
           {busy.import ? <Loader2 className="h-4 w-4 animate-spin" /> : <Github className="h-4 w-4" />}
@@ -223,6 +228,9 @@ ${fileContent}
             <span className="font-black text-white">{repoState.full_name}</span>
             <span className="flex items-center gap-1"><GitBranch className="h-4 w-4 text-cyan-300" /> {repoState.branch}</span>
             {repoState.forked_from && <span className="text-cyan-300">forked from {repoState.forked_from}</span>}
+            <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${repoState.push_enabled ? "bg-emerald-900/40 text-emerald-300" : "bg-amber-900/40 text-amber-300"}`}>
+              {repoState.push_enabled ? "Push Enabled" : "Read Only Import"}
+            </span>
           </div>
         </div>
       )}
@@ -295,7 +303,7 @@ ${fileContent}
             <button
               type="button"
               onClick={saveAndPush}
-              disabled={busy.save || !selectedPath || !fileContent.trim()}
+              disabled={busy.save || !selectedPath || !fileContent.trim() || !githubToken.trim()}
               className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 text-sm font-black text-white disabled:opacity-50"
             >
               {busy.save ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}

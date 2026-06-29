@@ -99,8 +99,8 @@ async function githubApi(token, path, init = {}) {
     ...init,
     headers: {
       Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${token}`,
       "User-Agent": "GamerProductions-VibeCoding",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init.headers || {}),
     },
   });
@@ -126,33 +126,50 @@ function decodeUtf8Base64(value = "") {
   return new TextDecoder().decode(bytes);
 }
 
-async function requireAdminGithub(body, env, request) {
+async function requireAdminUser(env, request) {
   const user = await getUser(env, request);
   if (!isAdmin(user)) {
     return { error: { status: 403, body: { error: "Forbidden: Admin only" } } };
   }
+  return { user };
+}
+
+async function requireAdminGithub(body, env, request) {
+  const base = await requireAdminUser(env, request);
+  if (base.error) return base;
   const githubToken = String(body?.githubToken || "").trim();
   if (!githubToken) {
     return { error: { status: 400, body: { error: "Missing GitHub token" } } };
   }
-  return { user, githubToken };
+  return { ...base, githubToken };
 }
 
 async function githubImportRepo(body, env, request) {
-  const auth = await requireAdminGithub(body, env, request);
+  const auth = await requireAdminUser(env, request);
   if (auth.error) return auth.error;
 
-  const { githubToken } = auth;
+  const githubToken = String(body?.githubToken || "").trim();
   const { owner, repo } = parseGitHubRepoUrl(body?.repoUrl);
-  const viewer = await githubApi(githubToken, "/user");
   let repoInfo = await githubApi(githubToken, `/repos/${owner}/${repo}`);
   let targetOwner = owner;
   let targetRepo = repo;
   let forkedFrom = "";
+  let pushEnabled = false;
 
-  const canPush = Boolean(repoInfo?.permissions?.push || repoInfo?.permissions?.admin || String(repoInfo?.owner?.login || "").toLowerCase() === String(viewer?.login || "").toLowerCase());
+  let viewer = null;
+  if (githubToken) {
+    try {
+      viewer = await githubApi(githubToken, "/user");
+    } catch {}
+  }
 
-  if (!canPush) {
+  const canPush = Boolean(
+    repoInfo?.permissions?.push ||
+    repoInfo?.permissions?.admin ||
+    (viewer && String(repoInfo?.owner?.login || "").toLowerCase() === String(viewer?.login || "").toLowerCase())
+  );
+
+  if (!canPush && githubToken && viewer) {
     await githubApi(githubToken, `/repos/${owner}/${repo}/forks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -173,6 +190,12 @@ async function githubImportRepo(body, env, request) {
     }
   }
 
+  pushEnabled = Boolean(
+    repoInfo?.permissions?.push ||
+    repoInfo?.permissions?.admin ||
+    (viewer && String(repoInfo?.owner?.login || "").toLowerCase() === String(viewer?.login || "").toLowerCase())
+  );
+
   const branch = repoInfo.default_branch || "main";
   const tree = await githubApi(githubToken, `/repos/${targetOwner}/${targetRepo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
   const files = Array.isArray(tree?.tree)
@@ -191,16 +214,18 @@ async function githubImportRepo(body, env, request) {
       branch,
       html_url: repoInfo.html_url,
       forked_from: forkedFrom,
+      push_enabled: pushEnabled,
+      imported_at: new Date().toISOString(),
       files,
     },
   };
 }
 
 async function githubReadRepoFile(body, env, request) {
-  const auth = await requireAdminGithub(body, env, request);
+  const auth = await requireAdminUser(env, request);
   if (auth.error) return auth.error;
 
-  const { githubToken } = auth;
+  const githubToken = String(body?.githubToken || "").trim();
   const owner = String(body?.owner || "").trim();
   const repo = String(body?.repo || "").trim();
   const branch = String(body?.branch || "").trim() || "main";

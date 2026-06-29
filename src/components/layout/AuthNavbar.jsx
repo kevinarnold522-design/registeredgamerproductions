@@ -402,7 +402,15 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
   return (
     <>
       {/* Top Bar — hamburger menu (all screen sizes; nav hidden until clicked) */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 h-16 flex items-center px-4 gap-3">
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 flex items-center px-4 gap-3"
+        style={{
+          zIndex: 220,
+          boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+          minHeight: "calc(4rem + env(safe-area-inset-top))",
+          paddingTop: "env(safe-area-inset-top)",
+        }}
+      >
 
         <button
           onClick={() => setMobileOpen((v) => !v)}
@@ -453,6 +461,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/70"
+              style={{ zIndex: 219 }}
               onClick={() => setMobileOpen(false)}
             />
             {/* Left side fly-out menu tree panel */}
@@ -463,6 +472,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
               transition={{ type: "tween", duration: 0.25 }}
               id="auth-sidebar-drawer"
               className="fixed top-0 left-0 bottom-0 z-[51] w-[88vw] max-w-72 bg-gray-950 border-r border-purple-900/30 flex flex-col overflow-x-hidden gamer-sidebar-scroll"
+              style={{ zIndex: 221, paddingTop: "env(safe-area-inset-top)" }}
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30 flex-shrink-0">
                 <span className="font-black text-white text-sm">Navigation Menu</span>

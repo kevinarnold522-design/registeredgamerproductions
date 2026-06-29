@@ -92,12 +92,16 @@ async function getSupabaseAccessToken({ refresh = false } = {}) {
 }
 
 async function request(path, { method = "GET", body, headers } = {}) {
+  return requestAbsolute(`${API_BASE}${path}`, { method, body, headers });
+}
+
+async function requestAbsolute(url, { method = "GET", body, headers } = {}) {
   let res;
   // Fail fast: never let a call hang forever if the worker is slow/unreachable.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
   try {
-    res = await fetch(`${API_BASE}${path}`, {
+    res = await fetch(url, {
       method,
       credentials: "include",
       signal: controller.signal,
@@ -235,21 +239,59 @@ const functions = {
   async invoke(name, payload = {}, opts = {}) {
     const accessToken = payload?.accessToken || await getSupabaseAccessToken({ refresh: true });
     const finalPayload = accessToken ? { ...payload, accessToken } : payload;
+    const shouldSkipDirectBase44 = /^github/i.test(name);
+
+    if (!shouldSkipDirectBase44) {
+      try {
+        const direct = getBase44Direct();
+        const data = await direct.functions.invoke(name, finalPayload);
+        return data?.data ? data : { data, status: 200 };
+      } catch (directError) {
+        try {
+          const data = await request(`/functions/${name}`, {
+            method: "POST",
+            body: finalPayload,
+            headers: opts.headers,
+          });
+          return { data, status: 200 };
+        } catch (fallbackError) {
+          if (
+            (fallbackError?.status === 404 || fallbackError?.status === 405) &&
+            API_BASE !== WORKER_URL
+          ) {
+            const data = await requestAbsolute(`${WORKER_URL}/functions/${name}`, {
+              method: "POST",
+              body: finalPayload,
+              headers: opts.headers,
+            });
+            return { data, status: 200 };
+          }
+          if (fallbackError?.isNetworkError) throw directError;
+          throw fallbackError;
+        }
+      }
+    }
 
     try {
-      const direct = getBase44Direct();
-      const data = await direct.functions.invoke(name, finalPayload);
-      return data?.data ? data : { data, status: 200 };
-    } catch (directError) {
       const data = await request(`/functions/${name}`, {
         method: "POST",
         body: finalPayload,
         headers: opts.headers,
-      }).catch((fallbackError) => {
-        if (fallbackError?.isNetworkError) throw directError;
-        throw fallbackError;
       });
       return { data, status: 200 };
+    } catch (fallbackError) {
+      if (
+        (fallbackError?.status === 404 || fallbackError?.status === 405) &&
+        API_BASE !== WORKER_URL
+      ) {
+        const data = await requestAbsolute(`${WORKER_URL}/functions/${name}`, {
+          method: "POST",
+          body: finalPayload,
+          headers: opts.headers,
+        });
+        return { data, status: 200 };
+      }
+      throw fallbackError;
     }
   },
 };
