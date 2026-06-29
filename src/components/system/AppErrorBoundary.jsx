@@ -14,7 +14,13 @@ export default class AppErrorBoundary extends React.Component {
   componentDidCatch(error) {
     try {
       // Keep this lightweight so it never causes a secondary crash.
-      console.error("App render crash", error);
+      const details = {
+        name: error?.name || "Error",
+        message: error?.message || String(error || ""),
+        stack: error?.stack || "",
+      };
+      window.__lastAppRenderError = details;
+      console.error("App render crash", details);
     } catch {}
 
     // Stale chunk after a deploy? Try a one-shot reload before showing UI.

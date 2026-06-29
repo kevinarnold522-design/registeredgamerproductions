@@ -213,7 +213,7 @@ export default function ModdingSection({ currentUser, currentProfile }) {
         </AnimatePresence>
 
         {/* Subcategory Filter — filtered by visible groups */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide">
+        <div className="mb-4 flex flex-wrap gap-2 overflow-visible pb-3 sm:flex-nowrap sm:overflow-x-auto scrollbar-hide">
           {["All", ...MODDING_SUBCATEGORIES.filter(g => isVisible(g) && !hiddenIds.has(g))].map((cat) => (
             <button key={cat} onClick={() => setActiveFilter(cat)}
               className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all relative group ${activeFilter === cat

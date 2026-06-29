@@ -462,7 +462,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
               exit={{ x: -280 }}
               transition={{ type: "tween", duration: 0.25 }}
               id="auth-sidebar-drawer"
-              className="fixed top-0 left-0 bottom-0 z-[51] w-72 bg-gray-950 border-r border-purple-900/30 flex flex-col overflow-x-hidden gamer-sidebar-scroll"
+              className="fixed top-0 left-0 bottom-0 z-[51] w-[88vw] max-w-72 bg-gray-950 border-r border-purple-900/30 flex flex-col overflow-x-hidden gamer-sidebar-scroll"
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-purple-900/30 flex-shrink-0">
                 <span className="font-black text-white text-sm">Navigation Menu</span>
@@ -474,7 +474,7 @@ export default function AuthNavbar({ user, profile, isGlobal = false }) {
                 <ScrollDownHint label="Scroll down for all options" />
               </div>
               {/* Scrollable nav content — sidebarInner handles its own internal scroll */}
-              <div className="flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 min-h-0 flex flex-col overscroll-contain">
                 {sidebarInner(true)}
               </div>
               {/* Sticky Sign Out — always visible at the bottom of the mobile navbar drawer */}

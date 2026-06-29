@@ -65,9 +65,9 @@ const platforms = [
 
 export default function PlatformLinksBar() {
   return (
-    <div className="w-full bg-gray-950 border-b border-gray-800/50 overflow-x-auto">
-      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center gap-1 min-w-max">
-        <span className="text-gray-500 text-xs font-semibold mr-2 whitespace-nowrap">🎮 Game Stores:</span>
+    <div className="w-full bg-gray-950 border-b border-gray-800/50 overflow-x-visible sm:overflow-x-auto">
+      <div className="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center gap-1 min-w-0 sm:min-w-max">
+        <span className="text-gray-500 text-xs font-semibold mr-2 whitespace-nowrap w-full sm:w-auto">🎮 Game Stores:</span>
         {platforms.map(p => (
           <a
             key={p.name}
@@ -81,7 +81,7 @@ export default function PlatformLinksBar() {
             {p.name}
           </a>
         ))}
-        <span className="ml-3 text-yellow-400 text-xs font-bold whitespace-nowrap">🔥 Best Deals Available!</span>
+        <span className="text-yellow-400 text-xs font-bold whitespace-nowrap w-full pt-1 sm:ml-3 sm:w-auto sm:pt-0">🔥 Best Deals Available!</span>
       </div>
     </div>
   );

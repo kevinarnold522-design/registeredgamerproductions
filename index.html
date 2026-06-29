@@ -284,6 +284,25 @@
         Loading GAMER.PRODUCTIONS...
       </div>
     </div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      (function loadAppEntry() {
+        try {
+          var host = window.location.hostname;
+          var isLocal = host === 'localhost' || host === '127.0.0.1';
+
+          if (!isLocal && !document.querySelector('link[href="/assets/index.css"]')) {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = '/assets/index.css';
+            document.head.appendChild(link);
+          }
+
+          var entry = document.createElement('script');
+          entry.type = 'module';
+          entry.src = isLocal ? '/src/main.jsx' : '/assets/index.js';
+          document.body.appendChild(entry);
+        } catch (_) {}
+      })();
+    </script>
   </body>
 </html>

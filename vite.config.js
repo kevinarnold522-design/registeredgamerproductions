@@ -1,6 +1,7 @@
 import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { resolve } from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -32,7 +33,22 @@ export default defineConfig({
     sourcemap: false,
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
+      input: {
+        app: resolve(__dirname, 'index.html'),
+        index: resolve(__dirname, 'src/main.jsx'),
+      },
       output: {
+        entryFileNames: (chunkInfo) => chunkInfo.name === 'index' ? 'assets/index.js' : 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo.name || '';
+          if (name.endsWith('.css')) {
+            return name.includes('index') || name === 'style.css'
+              ? 'assets/index.css'
+              : 'assets/[name]-[hash][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
         // Split heavy vendor libs into their own chunks so the initial mobile
         // download is small and one slow chunk doesn't take down the rest.
         manualChunks(id) {
