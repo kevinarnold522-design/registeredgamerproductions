@@ -35,6 +35,15 @@ export default function ListingImageSlider({ images = [], title = "", badge = nu
 
   return (
     <div className={`relative ${heightClass} bg-gray-900 rounded-t-2xl overflow-hidden group`}>
+      <div className="absolute inset-0">
+        <img
+          src={images[current]}
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-cover scale-110 blur-xl opacity-35"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/40" />
+      </div>
       <AnimatePresence custom={direction} initial={false}>
         <motion.img
           key={current}
@@ -46,12 +55,9 @@ export default function ListingImageSlider({ images = [], title = "", badge = nu
           transition={{ type: "tween", duration: 0.4 }}
           src={images[current]}
           alt={`${title} image ${current + 1}`}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain p-2"
         />
       </AnimatePresence>
-
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
 
       {/* Badges */}
       <div className="absolute top-2 left-2 flex gap-1">

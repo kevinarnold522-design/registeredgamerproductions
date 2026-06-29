@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Search, Play, Eye, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import StickySearchBar from "@/components/shared/StickySearchBar";
@@ -85,7 +86,7 @@ export default function SearchPage() {
                       {(l.preview_video_url || l.video_url || l.youtube_url) ? (
                         <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
                       ) : l.images?.[0] ? (
-                        <img src={l.images[0]} alt={l.title} className="w-full h-full object-cover" />
+                        <ListingImageFrame src={l.images[0]} alt={l.title} className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><Play className="w-10 h-10 text-gray-700" /></div>
                       )}

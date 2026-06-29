@@ -19,6 +19,7 @@ import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import { formatListingPrice } from "@/lib/currency";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import { useNavigate } from "react-router-dom";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
@@ -206,7 +207,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
                       }}
                       className="flex flex-col rounded-xl border border-gray-800 hover:border-purple-600/40 hover:bg-gray-800/30 transition-colors group bg-gray-900/60 overflow-hidden">
                       <div className="aspect-square bg-gray-800 overflow-hidden">
-                        {item.images?.[0] ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
+                        {item.images?.[0] ? <ListingImageFrame src={item.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
                       </div>
                       <div className="p-2 flex-1 flex flex-col">
                         <p className="text-white text-[11px] font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{item.title}</p>

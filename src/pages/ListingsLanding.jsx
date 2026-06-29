@@ -93,7 +93,12 @@ export default function ListingsLanding({ mode = "mine" }) {
                 <div key={l.id} className="w-full min-w-0 rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-all">
                   <Link to={`/listing?id=${l.id}`} className="block">
                     <div className="aspect-square bg-gray-800 relative flex items-center justify-center">
-                      {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt={l.title || "Listing"} /> : <Package className="w-10 h-10 text-gray-600" />}
+                      {l.images?.[0] ? (
+                        <>
+                          <img src={l.images[0]} className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-30" alt="" aria-hidden="true" />
+                          <img src={l.images[0]} className="relative w-full h-full object-contain p-2" alt={l.title || "Listing"} />
+                        </>
+                      ) : <Package className="w-10 h-10 text-gray-600" />}
                       <span className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
                     </div>
                     <div className="p-3">

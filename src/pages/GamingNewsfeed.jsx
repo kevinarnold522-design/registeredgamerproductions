@@ -66,11 +66,16 @@ export default function GamingNewsfeed() {
             ) : (
               <a key={`l-${item.id}`} href={`/listing?id=${item.id}`} className="flex gap-3 rounded-2xl border border-gray-800 bg-gray-900/70 p-3 hover:border-purple-600/40 transition-colors">
                 <div className="relative w-20 h-20 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
-                  {item.images?.[0] ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
+                  {item.images?.[0] ? (
+                    <>
+                      <img src={item.images[0]} className="absolute inset-0 w-full h-full object-cover scale-110 blur-lg opacity-35" alt="" aria-hidden="true" />
+                      <img src={item.images[0]} className="relative w-full h-full object-contain p-1.5" alt="" />
+                    </>
+                  ) : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
                   <img src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png" alt="" className="absolute bottom-1 right-1 w-5 h-5 rounded-full ring-1 ring-purple-400/70" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-500/90 to-amber-500/90 text-black text-[9px] font-black uppercase tracking-wide mb-1"><Star className="w-2.5 h-2.5 fill-black" /> Featured</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-yellow-500/50 bg-gradient-to-r from-[#3b2a00] to-[#5a3d00] text-yellow-300 text-[9px] font-black uppercase tracking-wide mb-1 shadow-[0_0_12px_rgba(234,179,8,0.25)]"><Star className="w-2.5 h-2.5 fill-yellow-300 text-yellow-300" /> Featured</span>
                   <p className="text-white font-bold text-sm truncate">{item.title}</p>
                   <p className="text-gray-500 text-xs line-clamp-2 mt-1">{item.description}</p>
                   <p className="text-purple-300 text-sm font-black mt-1">{item.is_free || !item.price ? "FREE" : `$${item.price?.toLocaleString()}`}</p>

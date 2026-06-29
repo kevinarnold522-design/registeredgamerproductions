@@ -3,6 +3,7 @@ import { Newspaper } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import { formatListingPrice } from "@/lib/currency";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 const PER_PAGE = 8;
 
@@ -48,7 +49,7 @@ export default function AllCategoriesNewsfeed({ user, profile }) {
           {pageItems.map(item => (
             <a key={item.id} href={`/listing?id=${item.id}`} className="flex gap-3 p-3 hover:bg-purple-950/20 transition-colors">
               <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
-                {item.images?.[0] ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
+                {item.images?.[0] ? <ListingImageFrame src={item.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-1.5" backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35" /> : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-white font-bold text-xs truncate">{item.title}</p>

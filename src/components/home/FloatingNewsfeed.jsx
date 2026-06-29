@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Newspaper, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 const GP_LOGO = "https://media.base44.com/images/public/6a126acdde36b8358b1010f3/db7734e8e_2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png";
 
@@ -14,7 +15,7 @@ function FeedRow({ item }) {
     >
       <div className="relative w-14 h-14 rounded-lg bg-gray-800 overflow-hidden flex-shrink-0">
         {item.images?.[0] ? (
-          <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
+          <ListingImageFrame src={item.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-1" backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-lg">🎮</div>
         )}
@@ -22,8 +23,8 @@ function FeedRow({ item }) {
         <img src={GP_LOGO} alt="" className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full ring-1 ring-purple-400/70" />
       </div>
       <div className="min-w-0 flex-1">
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gradient-to-r from-yellow-500/90 to-amber-500/90 text-black text-[8px] font-black uppercase tracking-wide">
-          <Star className="w-2.5 h-2.5 fill-black" /> Featured
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-yellow-500/50 bg-gradient-to-r from-[#3b2a00] to-[#5a3d00] text-yellow-300 text-[8px] font-black uppercase tracking-wide shadow-[0_0_12px_rgba(234,179,8,0.25)]">
+          <Star className="w-2.5 h-2.5 fill-yellow-300 text-yellow-300" /> Featured
         </span>
         <p className="text-white font-bold text-[11px] truncate mt-0.5">{item.title}</p>
         <p className="text-purple-300 text-[11px] font-black">

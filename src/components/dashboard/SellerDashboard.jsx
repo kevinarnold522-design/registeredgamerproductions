@@ -18,6 +18,7 @@ import PaymentSettingsTab from "./PaymentSettingsTab";
 import PaymentBillingSettings from "./PaymentBillingSettings";
 import AdvancedAnalytics from "./AdvancedAnalytics";
 import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 export default function SellerDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
@@ -224,7 +225,7 @@ export default function SellerDashboard({ user, profile }) {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {listings.map((l) => (
                 <div key={l.id} className={`bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden ${getListingGlowClass(l)}`} style={getListingGlowStyle(l)}>
-                  {l.images?.[0] && <img src={l.images[0]} alt="" className="w-full h-40 object-cover" />}
+                  {l.images?.[0] && <ListingImageFrame src={l.images[0]} alt="" className="w-full h-40" foregroundClassName="w-full h-full object-contain p-2" />}
                   <div className="p-4">
                     <p className="text-white font-bold truncate">{l.title}</p>
                     <p className="text-purple-400 font-black mt-1">${l.price?.toLocaleString()}</p>

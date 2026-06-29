@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Eye, Play } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 export default function SimilarListings({ listing, compact = false }) {
   const [items, setItems] = useState([]);
@@ -43,7 +44,7 @@ export default function SimilarListings({ listing, compact = false }) {
           return (
             <a key={l.id} href={`/listing?id=${l.id}`} className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/60 transition-all">
               <div className="aspect-square bg-gray-800 flex items-center justify-center overflow-hidden relative">
-                {l.images?.[0] ? <img src={l.images[0]} alt={l.title} loading="lazy" className="w-full h-full object-cover" /> : <Play className="w-8 h-8 text-gray-700" />}
+                {l.images?.[0] ? <ListingImageFrame src={l.images[0]} alt={l.title} className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" /> : <Play className="w-8 h-8 text-gray-700" />}
                 <span className="absolute top-1.5 right-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/70 text-cyan-300 text-[9px] font-bold"><Eye className="w-2.5 h-2.5" />{(l.views || 0).toLocaleString()}</span>
               </div>
               <div className="p-2">

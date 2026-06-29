@@ -11,6 +11,7 @@ import { Link, useLocation } from "react-router-dom";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import PostComposer from "@/components/community/PostComposer";
 import GroupChat from "@/components/community/GroupChat";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 export default function CommunitySectionPage() {
   const { user } = useAuth();
@@ -203,7 +204,7 @@ export default function CommunitySectionPage() {
                     className="flex gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-600/50 transition-all group">
                     <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-800">
                       {listing.images?.[0]
-                        ? <img src={listing.images[0]} className="w-full h-full object-cover" alt="" />
+                        ? <ListingImageFrame src={listing.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-1" backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35" />
                         : <div className="w-full h-full flex items-center justify-center text-xl">🎮</div>}
                     </div>
                     <div className="flex-1 min-w-0">

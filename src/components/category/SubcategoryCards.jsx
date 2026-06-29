@@ -7,6 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import { formatListingPrice } from "@/lib/currency";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
@@ -471,7 +472,7 @@ function VisibleListingRow({ item, userProfile }) {
       className="flex gap-3 px-3 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
       <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
         {item.images?.[0]
-          ? <img src={item.images[0]} className="w-full h-full object-cover" alt="" />
+          ? <ListingImageFrame src={item.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-1" backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35" />
           : <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-purple-300" /></div>}
       </div>
       <div className="flex-1 min-w-0">

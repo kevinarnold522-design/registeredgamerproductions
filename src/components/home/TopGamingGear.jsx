@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Monitor } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 export default function TopGamingGear() {
   const [listings, setListings] = useState([]);
@@ -65,7 +66,7 @@ export default function TopGamingGear() {
               className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-pink-700/50 transition-colors listing-glow-frame listing-glow-lines" style={{ "--listing-glow-color": "rgba(236,72,153,.85)" }}>
               <div className="relative h-44">
                 {listing.images?.[0] ? (
-                  <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" />
+                  <ListingImageFrame src={listing.images[0]} alt={listing.title} className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-800">🖥️</div>
                 )}
