@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock } from "lucide-react";
+import { Download, Heart, Share2, Eye, ArrowLeft, Play, Pencil, Star, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock, Trophy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -33,6 +33,8 @@ import ListingReportButton from "@/components/shared/ListingReportButton";
 import { useDwellTracker } from "@/components/listings/useDwellTracker";
 import { getListingYouTubeId } from "@/lib/youtube";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getPublisherRankMap } from "@/lib/publisherRank";
+import { listingScore } from "@/lib/leaderboardScore";
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -126,6 +128,7 @@ export default function ListingPage() {
   const [tier1Active, setTier1Active] = useState(false);
   const [purchased, setPurchased] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const [sellerRank, setSellerRank] = useState(null);
 
   // Track average stay / dwell time -> contributes to watchtime hours
   useDwellTracker(listing);
@@ -205,6 +208,13 @@ export default function ListingPage() {
       setUserRating(myRating?.rating || 0);
     }).catch(() => {});
   }, [listing?.id, user?.email]);
+
+  useEffect(() => {
+    if (!listing?.seller_email) return;
+    getPublisherRankMap()
+      .then((map) => setSellerRank(map?.[listing.seller_email] || null))
+      .catch(() => setSellerRank(null));
+  }, [listing?.seller_email]);
 
   useEffect(() => {
     if (!listing?.id) return;
@@ -442,6 +452,8 @@ export default function ListingPage() {
   const listingTheme = listing.listing_theme_color || sellerTheme.background || "#030712";
   const glowStyle = { ...getListingGlowStyle(listing), boxShadow: `${sellerTheme.border}, ${getListingGlowStyle(listing).boxShadow || "none"}` };
   const glowClass = getListingGlowClass(listing);
+  const primaryImage = listing.images?.[imgIdx] || listing.images?.[0] || "";
+  const listingPts = listingScore(listing, Math.round(avgRating * ratingCount * 2));
   // Comments render directly below the "Rate this listing" block
   const commentsBlock = <div id="comments"><ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} /></div>;
 
@@ -492,35 +504,18 @@ export default function ListingPage() {
           </div>
         </div>
 
-        {/* SELLER — top */}
-        {seller && (
-          <a href={`/channel?email=${encodeURIComponent(listing.seller_email)}`}
-            className="flex items-center gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-500/40 transition-colors mb-5">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
-              {seller.avatar_url
-                ? <img src={seller.avatar_url} className="w-full h-full object-cover" alt="" />
-                : <div className="w-full h-full flex items-center justify-center text-white font-bold">{(seller.username || "S")[0]}</div>}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-sm">{seller.display_name || seller.username}</p>
-              <p className="text-gray-500 text-xs">@{seller.username} · View Channel</p>
-            </div>
-            <span className="flex-shrink-0 text-purple-400 text-xs font-bold">View Channel →</span>
-          </a>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT: Media */}
           <div>
             <div className={`relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center mb-3 ${glowClass}`} style={glowStyle}>
-              {ytId ? (
+              {primaryImage ? (
+                <img src={primaryImage} alt={listing.title} className="w-full h-full object-cover" />
+              ) : ytId ? (
                 <UniversalVideoPreview url={ytEmbedUrl} className="w-full h-full" />
               ) : listing.video_url ? (
                 <video src={listing.video_url} controls className="w-full h-full object-contain" />
               ) : listing.preview_video_url ? (
                 <UniversalVideoPreview url={listing.preview_video_url} className="w-full h-full object-contain" />
-              ) : listing.images?.[imgIdx] ? (
-                <img src={listing.images[imgIdx]} alt={listing.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-3 text-gray-600">
                   <Play className="w-16 h-16" /><p className="text-sm">No media</p>
@@ -549,6 +544,45 @@ export default function ListingPage() {
                 ))}
               </div>
             )}
+
+            {(ytId || listing.preview_video_url || listing.video_url) && (
+              <div className="mt-3 rounded-2xl overflow-hidden border border-gray-800 bg-gray-900">
+                <div className="px-3 py-2 border-b border-gray-800 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400">
+                  Preview Video
+                </div>
+                <div className="aspect-video">
+                  {ytId ? (
+                    <UniversalVideoPreview url={ytEmbedUrl} className="w-full h-full" />
+                  ) : listing.video_url ? (
+                    <video src={listing.video_url} controls className="w-full h-full object-contain" />
+                  ) : (
+                    <UniversalVideoPreview url={listing.preview_video_url} className="w-full h-full object-contain" />
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 rounded-2xl border border-gray-800 bg-gray-900/70 p-4 space-y-3">
+              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} purchased={purchased} />}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="rounded-xl border border-purple-700/30 bg-purple-900/20 px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-300 font-black">Listing pts</p>
+                  <p className="text-white text-lg font-black">{listingPts}</p>
+                </div>
+                <div className="rounded-xl border border-amber-700/30 bg-amber-900/20 px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-amber-300 font-black">Seller rank</p>
+                  <p className="text-white text-lg font-black">{sellerRank ? `#${sellerRank}` : "Unranked"}</p>
+                </div>
+                <div className="rounded-xl border border-cyan-700/30 bg-cyan-900/20 px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-cyan-300 font-black">Views</p>
+                  <p className="text-white text-lg font-black">{formatCount(listing.views || 0)}</p>
+                </div>
+                <div className="rounded-xl border border-fuchsia-700/30 bg-fuchsia-900/20 px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-fuchsia-300 font-black">Downloads</p>
+                  <p className="text-white text-lg font-black">{formatCount(listing.downloads || 0)}</p>
+                </div>
+              </div>
+            </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <button onClick={handleLike}
@@ -627,6 +661,25 @@ export default function ListingPage() {
 
             <h1 className="text-2xl font-black text-white leading-tight sm:text-3xl">{listing.title}</h1>
 
+            {seller && (
+              <a href={`/channel?email=${encodeURIComponent(listing.seller_email)}`}
+                className="flex items-center gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-500/40 transition-colors">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-700 flex-shrink-0">
+                  {seller.avatar_url
+                    ? <img src={seller.avatar_url} className="w-full h-full object-cover" alt="" />
+                    : <div className="w-full h-full flex items-center justify-center text-white font-bold">{(seller.username || "S")[0]}</div>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-bold text-sm">{seller.display_name || seller.username}</p>
+                  <p className="text-gray-500 text-xs">@{seller.username} · View Channel</p>
+                </div>
+                <div className="text-right">
+                  {sellerRank && <p className="inline-flex items-center gap-1 text-amber-300 text-[11px] font-black"><Trophy className="w-3 h-3" /> #{sellerRank}</p>}
+                  <p className="text-purple-400 text-xs font-bold">View Channel →</p>
+                </div>
+              </a>
+            )}
+
             <div className="flex flex-wrap items-center gap-3">
               {!isFree && <span className="text-3xl font-black text-purple-300">{formatListingPrice(listing.price, listing.currency)}</span>}
               <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
@@ -700,7 +753,6 @@ export default function ListingPage() {
             )}
 
             <div className="flex flex-col gap-3">
-              {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} purchased={purchased} />}
               {/* Support / donation links — only for PAID listings (paid mods), never free ones */}
               {!isFree && (
               <div className="flex gap-2 flex-wrap">
