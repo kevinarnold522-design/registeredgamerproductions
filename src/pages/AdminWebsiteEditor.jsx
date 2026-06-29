@@ -5,10 +5,11 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import {
   Shield, Save, RefreshCw, Type, Palette, Link2, Globe, Eye,
-  Check, Edit3, Plus, Trash2, Layout, ArrowLeft, Megaphone, Bot
+  Check, Edit3, Plus, Trash2, Layout, ArrowLeft, Megaphone, Bot, FolderGit2
 } from "lucide-react";
 import HtmlAdManager from "@/components/admin/HtmlAdManager";
 import WebsiteAIBuilder from "@/components/admin/WebsiteAIBuilder";
+import WebsiteVibeCodingPanel from "@/components/admin/WebsiteVibeCodingPanel";
 
 const DEFAULT_COLORS = {
   primary: "#a855f7",
@@ -126,6 +127,7 @@ export default function AdminWebsiteEditor() {
 
   const tabs = [
     { id: "ai", label: "AI Builder", icon: Bot },
+    { id: "vibecoding", label: "VibeCoding", icon: FolderGit2 },
     { id: "content", label: "Text Content", icon: Type },
     { id: "colors", label: "Colors", icon: Palette },
     { id: "links", label: "Nav Links", icon: Link2 },
@@ -136,7 +138,7 @@ export default function AdminWebsiteEditor() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <AuthNavbar user={authUser} profile={profile} />
-      <div className="pt-20 max-w-5xl mx-auto px-4 pb-16">
+      <div className="pt-20 max-w-7xl mx-auto px-4 pb-16">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -161,14 +163,30 @@ export default function AdminWebsiteEditor() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 bg-gray-900 p-1 rounded-xl border border-gray-800">
+        <div className="mb-8 flex flex-wrap gap-2 rounded-xl border border-gray-800 bg-gray-900 p-1">
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold flex-1 justify-center transition-all ${activeTab === tab.id ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>
+              className={`flex min-w-[140px] flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all ${activeTab === tab.id ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
             </button>
           ))}
         </div>
+
+        {/* VIBECODING TAB */}
+        {activeTab === "vibecoding" && (
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-cyan-700/40 bg-cyan-950/20 p-5">
+              <h3 className="flex items-center gap-2 text-lg font-black text-white">
+                <FolderGit2 className="w-5 h-5 text-cyan-300" />
+                Website Editor VibeCoding
+              </h3>
+              <p className="mt-2 text-sm text-gray-300">
+                Import GitHub repositories, open files, generate edits, and save pushes directly from Website Editor using Base44 integration credits.
+              </p>
+            </div>
+            <WebsiteVibeCodingPanel />
+          </div>
+        )}
 
         {/* AI BUILDER TAB */}
         {activeTab === "ai" && (
