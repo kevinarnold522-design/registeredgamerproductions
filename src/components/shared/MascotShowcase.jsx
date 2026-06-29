@@ -43,9 +43,9 @@ export default function MascotShowcase({ compact = false }) {
       <div className="absolute inset-0 bg-gradient-to-r from-purple-900/25 via-cyan-900/10 to-pink-900/25" />
       <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, rgba(34,211,238,.5), transparent 24%), radial-gradient(circle at 80% 40%, rgba(236,72,153,.45), transparent 24%)" }} />
       
-      {/* Horizontal scrollable container */}
-      <div className="relative overflow-x-auto scroll-smooth pb-2">
-        <div className="flex items-end justify-start gap-2 sm:gap-4 flex-nowrap min-w-min px-2">
+      {/* Wrap on mobile so cards are never cut off; keep horizontal rail on larger screens */}
+      <div className="relative overflow-visible pb-2 sm:overflow-x-auto scroll-smooth">
+        <div className="flex flex-wrap items-end justify-center gap-3 px-2 sm:flex-nowrap sm:justify-start sm:gap-4 sm:min-w-min">
           {mascots.map((mascot, index) => (
             <motion.div
               key={mascot.id}
@@ -77,8 +77,8 @@ export default function MascotShowcase({ compact = false }) {
       </div>
 
       {/* Decorative fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-950/80 to-transparent pointer-events-none z-20" />
-      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-950/80 to-transparent pointer-events-none z-20" />
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-20 hidden w-8 bg-gradient-to-r from-gray-950/80 to-transparent sm:block" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 hidden w-8 bg-gradient-to-l from-gray-950/80 to-transparent sm:block" />
 
       <style>{`
         .scroll-smooth {

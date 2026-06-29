@@ -459,7 +459,7 @@ export default function ListingPage() {
       {/* Vignette ad — listing landing pages only */}
       <ListingVignetteAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
 
-      <div className="pt-20 max-w-7xl mx-auto w-full overflow-x-hidden px-4 pb-16">
+      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-20 pb-16">
         {/* Back + Edit */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">

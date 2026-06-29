@@ -148,7 +148,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       onTouchEnd={() => setTimeout(() => setTouchActive(false), 600)}
       onTouchCancel={() => setTouchActive(false)}
       style={{ "--std-glow": glow }}
-      className={`std-listing-card std-edge-glow rounded-2xl overflow-hidden group flex flex-col ${touchActive ? "std-touch-active" : ""} ${(!listing.status || listing.status === "active") ? "active-listing-glow" : ""}`}
+      className={`std-listing-card std-edge-glow w-full min-w-0 rounded-2xl overflow-hidden group flex flex-col ${touchActive ? "std-touch-active" : ""} ${(!listing.status || listing.status === "active") ? "active-listing-glow" : ""}`}
     >
       {/* TOP: Image */}
       <a href={`/listing?id=${listing.id}`} className="relative block w-full">

@@ -1,10 +1,8 @@
-import React, { Suspense } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
+import App from '@/App.jsx'
 import AppErrorBoundary from '@/components/system/AppErrorBoundary'
-import lazyWithRetry from '@/lib/lazyWithRetry'
 import '@/index.css'
-
-const App = lazyWithRetry(() => import('@/App.jsx'));
 
 // When Base44 OAuth completes, it redirects back with ?access_token=...
 // Persist the token and reload cleanly so the SDK boots fully authenticated.
@@ -46,35 +44,8 @@ const App = lazyWithRetry(() => import('@/App.jsx'));
   } catch (_) {}
 })();
 
-function BootFallback() {
-  return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#030712',
-        color: '#ffffff',
-        padding: '24px',
-        textAlign: 'center',
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-      <div>
-        <p style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Loading GAMER.PRODUCTIONS...</p>
-        <p style={{ marginTop: '10px', opacity: 0.75, fontSize: '14px' }}>
-          Preparing the live gaming hub.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <AppErrorBoundary>
-    <Suspense fallback={<BootFallback />}>
-      <App />
-    </Suspense>
+    <App />
   </AppErrorBoundary>
 )

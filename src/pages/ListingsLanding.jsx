@@ -55,9 +55,9 @@ export default function ListingsLanding({ mode = "mine" }) {
   };
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-gray-950 text-white">
+    <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950 text-white">
       <AuthNavbar user={user} profile={profile} />
-      <main className="pt-20 max-w-7xl mx-auto px-4 pb-12">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-20 pb-12">
         <div className="mb-6">
           <MascotShowcase
             compact={false}
@@ -88,7 +88,7 @@ export default function ListingsLanding({ mode = "mine" }) {
               const isOwner = user && (user.email === l.seller_email || user.email === l.created_by || user.id === l.created_by_id);
               const canManage = adminUser || isOwner;
               return (
-                <div key={l.id} className="rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-all">
+                <div key={l.id} className="w-full min-w-0 rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-all">
                   <Link to={`/listing?id=${l.id}`} className="block">
                     <div className="aspect-square bg-gray-800 relative flex items-center justify-center">
                       {l.images?.[0] ? <img src={l.images[0]} className="w-full h-full object-cover" alt={l.title || "Listing"} /> : <Package className="w-10 h-10 text-gray-600" />}
