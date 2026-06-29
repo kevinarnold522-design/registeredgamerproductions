@@ -1,17 +1,20 @@
 import React, { useEffect, useRef } from "react";
+import { isLikelyMobileWebDevice } from "@/lib/deviceProfile";
 
 export default function ShootingStars() {
   const canvasRef = useRef(null);
-  // Mirror desktop on mobile too — only honor explicit reduced-motion requests.
+  // Keep the full canvas effect for desktop only. Mobile/in-app browsers use
+  // the lighter CSS backdrop shell to avoid GPU stalls and black startup frames.
   const [enabled, setEnabled] = React.useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return true;
+    if (isLikelyMobileWebDevice()) return false;
     return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setEnabled(!media.matches);
+    const update = () => setEnabled(!media.matches && !isLikelyMobileWebDevice());
     update();
     if (typeof media.addEventListener === "function") {
       media.addEventListener("change", update);

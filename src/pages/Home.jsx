@@ -14,6 +14,7 @@ import HeyGamerWelcomeModal from "@/components/home/HeyGamerWelcomeModal";
 import HeyGamerBanner from "@/components/home/HeyGamerBanner";
 import { isNewJoiner } from "@/lib/isNewJoiner";
 import { clearAssetRecoveryState, isLikelyAssetVersionError, tryRecoverFromAssetError } from "@/lib/assetRecovery";
+import { isLikelyMobileWebDevice } from "@/lib/deviceProfile";
 import { Gamepad2, Wrench, Cloud } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -110,6 +111,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === "undefined") return false;
+    if (isLikelyMobileWebDevice()) return false;
     try {
       return sessionStorage.getItem("gp_splash_seen") !== "1";
     } catch {
@@ -146,7 +148,7 @@ export default function Home() {
       setShowDeferredSections(false);
       return;
     }
-    const t = setTimeout(() => setShowDeferredSections(true), 240);
+    const t = setTimeout(() => setShowDeferredSections(true), isMobileViewport ? 720 : 240);
     return () => clearTimeout(t);
   }, [showSplash]);
 
@@ -156,6 +158,19 @@ export default function Home() {
     } catch {}
     setShowSplash(false);
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isLikelyMobileWebDevice()) return;
+
+    try {
+      sessionStorage.setItem("gp_splash_seen", "1");
+    } catch {}
+
+    if (showSplash) {
+      setShowSplash(false);
+    }
+  }, [showSplash]);
 
   // Page mounted successfully — clear the chunk-retry guard so a future
   // stale-chunk failure can reload again.
