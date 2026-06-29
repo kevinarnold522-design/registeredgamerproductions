@@ -450,6 +450,7 @@ export default function ListingPage() {
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <StickySearchBar />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
 
       {/* Download ad gate intentionally disabled — clicking Download now routes
           straight to the listing's download/external link. */}
@@ -796,8 +797,6 @@ export default function ListingPage() {
           />
         )}
       </AnimatePresence>
-
-      <GamerBrandFooter />
     </div>
   );
 }

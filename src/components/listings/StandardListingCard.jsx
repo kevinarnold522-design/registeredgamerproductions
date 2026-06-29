@@ -174,7 +174,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
         {isFree ? (
           <span className="absolute bottom-2 right-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         ) : (
-          <span className="absolute top-2 left-2 z-10 inline-flex items-center rounded-lg border border-amber-400/70 bg-gradient-to-br from-black via-gray-950 to-[#2c2200] px-2.5 py-1 text-[10px] font-black italic tracking-[0.22em] font-serif text-amber-300 shadow-[0_0_14px_rgba(234,179,8,0.35)]">
+          <span className={`absolute z-10 inline-flex items-center rounded-lg border border-amber-400/70 bg-gradient-to-br from-black via-gray-950 to-[#2c2200] px-2.5 py-1 text-[10px] font-black italic tracking-[0.22em] font-serif text-amber-300 shadow-[0_0_14px_rgba(234,179,8,0.35)] ${isPaidMod ? "bottom-2 right-2" : "top-2 left-2"}`}>
             PAID
           </span>
         )}
@@ -214,7 +214,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
 
         <a href={`/listing?id=${listing.id}`} className="block">
           <p className="text-purple-400 text-[10px] font-semibold capitalize truncate">{listing.card_category_label || subcategory || listing.modding_subcategory || listing.digital_subcategory || listing.game_name || "Listing"}</p>
-          <h3 style={{ fontFamily: titleFont, color: titleColor }} className="text-white font-bold text-sm line-clamp-2 leading-tight group-hover:text-purple-300 transition-colors">{listing.title}</h3>
+          <h3 style={{ fontFamily: titleFont, color: titleColor }} className={`text-white text-sm line-clamp-2 leading-tight group-hover:text-purple-300 transition-colors ${isPaidMod ? "font-bold font-serif tracking-[0.03em]" : "font-bold"}`}>{listing.title}</h3>
           <p className="theme-glow-action inline-flex items-center gap-1 text-gray-500 text-[10px] mt-1">
             <CalendarDays className="w-3 h-3 icon-glow-hover" /> {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}
             {stay && <span className="text-cyan-300 ml-1 inline-flex items-center gap-0.5"><Clock className="w-3 h-3" /> {stay}</span>}

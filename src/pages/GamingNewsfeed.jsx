@@ -6,11 +6,11 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import CommunityPostCard from "@/components/community/CommunityPostCard";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
@@ -41,11 +41,8 @@ export default function GamingNewsfeed() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Official socials — pinned to the very top */}
-      <div className="w-full px-4 py-2.5 border-b border-purple-900/30 bg-gray-950/80 backdrop-blur-sm">
-        <GamerSocialsBar />
-      </div>
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <a href="/gaming-community" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-5"><ArrowLeft className="w-4 h-4" /> Back to communities</a>
         <div className="rounded-3xl border border-purple-700/40 bg-gradient-to-br from-purple-950/40 to-gray-900 p-6 mb-6">

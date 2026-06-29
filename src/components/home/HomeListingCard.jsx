@@ -240,7 +240,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
       </div>
       <div className="p-5">
         <p className="text-purple-400 text-xs font-semibold mb-1">{liveListing.subcategory || liveListing.platform || liveListing.game_name || "Game"}</p>
-        <h3 className="text-white font-bold text-lg mb-2 truncate">{liveListing.title}</h3>
+        <h3 className={`text-white text-lg mb-2 truncate ${(!liveListing.is_free && liveListing.price > 0) ? "font-black font-serif tracking-[0.03em]" : "font-bold"}`}>{liveListing.title}</h3>
         <p className="text-gray-500 text-xs mb-3 line-clamp-2">{liveListing.description}</p>
         <div className="flex items-center justify-between gap-3 mb-3">
           <span className="text-purple-400 font-black text-xl">

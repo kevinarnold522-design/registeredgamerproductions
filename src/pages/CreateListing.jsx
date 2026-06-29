@@ -117,12 +117,11 @@ export default function CreateListing() {
     { id: "Android", brand: "googleplay" },
     { id: "PPSSPP", brand: null },
     { id: "Xbox", brand: "xbox" },
-    { id: "Steam", brand: "steam" },
   ];
   const COMBINED_AVAILABLE_OPTIONS = [
     ...PLATFORMS.map(p => ({ id: p.id, label: p.id, type: "platform", brand: p.brand })),
     ...GAMES_STORES.map(s => ({ id: s.id, label: s.label, type: "store", color: s.color, iconText: s.iconText, brand: s.id })),
-  ];
+  ].filter((option, index, arr) => arr.findIndex((item) => item.label.toLowerCase() === option.label.toLowerCase()) === index);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -990,14 +989,14 @@ export default function CreateListing() {
             {/* Download Host Selector */}
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Choose Download Host</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 {DOWNLOAD_HOST_OPTIONS.map(h => (
                   <button key={h.id} type="button"
                     onClick={() => setForm(f => ({ ...f, download_host: f.download_host === h.id ? "" : h.id }))}
-                    className={`flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl border-2 text-sm font-bold transition-all min-h-[92px] ${form.download_host === h.id ? "border-opacity-100 text-white" : "border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-500"}`}
+                    className={`flex flex-col items-center justify-center gap-1.5 px-2 py-3 rounded-xl border-2 text-sm font-bold transition-all min-h-[74px] ${form.download_host === h.id ? "border-opacity-100 text-white" : "border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-500"}`}
                     style={form.download_host === h.id ? { borderColor: h.color, background: `${h.color}22`, color: h.color } : {}}>
                     <DownloadHostBadge host={h.id} size="md" showLabel={false} />
-                    <span className="text-[11px] font-bold leading-none">{h.label}</span>
+                    <span className="text-[10px] font-bold leading-none">{h.label}</span>
                     {form.download_host === h.id && <CheckCircle className="w-3 h-3" />}
                   </button>
                 ))}
@@ -1016,9 +1015,9 @@ export default function CreateListing() {
                 <label className="text-blue-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <Gamepad2 className="w-3 h-3" /> Game Platform Text
                 </label>
-                <p className="text-gray-500 text-xs mb-2">Manually add platform notes shown on the game listing, like PC, PS5, Android, or Steam.</p>
+                <p className="text-gray-500 text-xs mb-2">Manually add platform notes shown on the game listing, like PC, PS5, Android, or Switch.</p>
                 <input value={form.game_platform} onChange={e => setForm({ ...form, game_platform: e.target.value })}
-                  placeholder="e.g. PC / Steam / PS5 / Android"
+                  placeholder="e.g. PC / PS5 / Android / Switch"
                   className="w-full bg-gray-800 border border-blue-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
               </div>
             )}
@@ -1030,13 +1029,26 @@ export default function CreateListing() {
               </label>
               <div className="flex flex-wrap gap-2">
                 {COMBINED_AVAILABLE_OPTIONS.map(option => {
-                  const selected = option.type === "platform" ? (form.platforms || []).includes(option.id) : (form.store_platforms || []).includes(option.id);
+                  const isSteamOption = option.type === "store" && option.id === "steam";
+                  const selected = isSteamOption
+                    ? (form.store_platforms || []).includes("steam") || (form.platforms || []).includes("Steam")
+                    : option.type === "platform"
+                      ? (form.platforms || []).includes(option.id)
+                      : (form.store_platforms || []).includes(option.id);
                   return (
                     <button key={`${option.type}-${option.id}`} type="button"
-                      onClick={() => setForm(f => option.type === "platform"
-                        ? ({ ...f, platforms: selected ? (f.platforms || []).filter(x => x !== option.id) : [...(f.platforms || []), option.id] })
-                        : ({ ...f, store_platforms: selected ? (f.store_platforms || []).filter(x => x !== option.id) : [...(f.store_platforms || []), option.id] })
-                      )}
+                      onClick={() => setForm(f => {
+                        if (isSteamOption) {
+                          return {
+                            ...f,
+                            platforms: (f.platforms || []).filter(x => x !== "Steam"),
+                            store_platforms: selected ? (f.store_platforms || []).filter(x => x !== "steam") : [...(f.store_platforms || []), "steam"],
+                          };
+                        }
+                        return option.type === "platform"
+                          ? { ...f, platforms: selected ? (f.platforms || []).filter(x => x !== option.id) : [...(f.platforms || []), option.id] }
+                          : { ...f, store_platforms: selected ? (f.store_platforms || []).filter(x => x !== option.id) : [...(f.store_platforms || []), option.id] };
+                      })}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${selected ? "bg-purple-600 text-white border border-purple-500" : "bg-gray-800 text-gray-400 border border-gray-700 hover:border-purple-500/50"}`}>
                       {option.brand
                         ? <span className="inline-flex h-4 w-4 items-center justify-center"><BrandLogo brand={option.brand} label={option.label} className="w-3.5 h-3.5" /></span>
@@ -1230,6 +1242,7 @@ export default function CreateListing() {
                       </div>
                     </div>
 
+                    {!["modding", "premium_mods"].includes(form.category) && (
                     <div className="bg-orange-900/20 border border-orange-700/40 rounded-xl p-4 md:col-span-2">
                       <label className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
                         <Wrench className="w-3 h-3 text-orange-300" /> Modding Community Subcategory
@@ -1250,6 +1263,7 @@ export default function CreateListing() {
                         <option value="PC">PC Mods & Trainers</option>
                       </select>
                     </div>
+                    )}
                   </div>
                 )}
 

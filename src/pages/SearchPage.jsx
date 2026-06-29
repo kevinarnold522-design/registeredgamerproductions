@@ -66,6 +66,7 @@ export default function SearchPage() {
     <div className="min-h-screen bg-gray-950 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
       <StickySearchBar />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
       <main className="max-w-7xl mx-auto px-4 py-10">
         <div className="mb-6">
           <p className="text-purple-300 text-xs font-black uppercase tracking-widest flex items-center gap-2"><Search className="w-3 h-3" /> Search Results</p>
@@ -114,7 +115,6 @@ export default function SearchPage() {
           </>
         )}
       </main>
-      <GamerBrandFooter />
     </div>
   );
 }

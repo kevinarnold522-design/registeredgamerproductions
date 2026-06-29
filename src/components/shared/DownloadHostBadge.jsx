@@ -11,8 +11,8 @@ export const DOWNLOAD_HOSTS = {
 export const DOWNLOAD_HOST_OPTIONS = Object.values(DOWNLOAD_HOSTS);
 
 const SIZES = {
-  sm: { wrap: "text-[10px] px-1.5 py-1 gap-1", chip: "h-5 min-w-[4.25rem] max-w-[4.75rem] px-1", logo: "w-2.5 h-2.5", img: "h-full w-full object-contain" },
-  md: { wrap: "text-xs px-2 py-1.5 gap-1.5", chip: "h-6 min-w-[5.25rem] max-w-[6.75rem] px-1.5", logo: "w-3.5 h-3.5", img: "h-full w-full object-contain" },
+  sm: { wrap: "text-[10px] px-1 py-0.5 gap-1", chip: "h-4 min-w-[3.35rem] max-w-[3.8rem] px-1", logo: "w-2.5 h-2.5", img: "h-full w-full object-contain" },
+  md: { wrap: "text-[11px] px-1.5 py-1 gap-1", chip: "h-5 min-w-[4.2rem] max-w-[5rem] px-1", logo: "w-3 h-3", img: "h-full w-full object-contain" },
 };
 
 export default function DownloadHostBadge({ host, size = "md", showLabel }) {

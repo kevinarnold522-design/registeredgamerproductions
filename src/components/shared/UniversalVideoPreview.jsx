@@ -9,7 +9,7 @@ import { extractYouTubeId } from "@/lib/youtube";
 export default function UniversalVideoPreview({ url, poster, className = "" }) {
   const [errored, setErrored] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [embedHost, setEmbedHost] = useState("www.youtube-nocookie.com");
+  const [embedHost, setEmbedHost] = useState("www.youtube.com");
   const [embedFailed, setEmbedFailed] = useState(false);
   if (!url) return null;
 
@@ -35,7 +35,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
         <>
           {!embedFailed ? (
             <iframe
-              src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
+              src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1&modestbranding=1`}
               title="Video player"
               className={`${fill} ${className}`}
               frameBorder="0"
@@ -72,7 +72,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setEmbedHost("www.youtube-nocookie.com");
+          setEmbedHost("www.youtube.com");
           setEmbedFailed(false);
           setPlaying(true);
         }}
