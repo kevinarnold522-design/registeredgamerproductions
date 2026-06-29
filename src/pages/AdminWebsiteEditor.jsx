@@ -41,7 +41,7 @@ export default function AdminWebsiteEditor() {
 
   const [profile, setProfile] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
-  const [activeTab, setActiveTab] = useState("content");
+  const [activeTab, setActiveTab] = useState("vibecoding");
   const [content, setContent] = useState({});
   const [colors, setColors] = useState(DEFAULT_COLORS);
   const [customLinks, setCustomLinks] = useState([]);
