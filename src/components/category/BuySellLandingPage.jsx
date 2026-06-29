@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import Pagination from "@/components/shared/Pagination";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -132,7 +133,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
         <p className="text-gray-500 text-sm mb-4">{filtered.length} listings</p>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin" /></div>
+          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="22rem" />
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <ShoppingCart className="w-12 h-12 mx-auto mb-3 text-gray-700" />

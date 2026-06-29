@@ -6,6 +6,7 @@ import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -78,7 +79,7 @@ export default function ListingsLanding({ mode = "mine" }) {
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-gray-500">Loading listings...</div>
+          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="18rem" />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
             {filtered.map(l => {

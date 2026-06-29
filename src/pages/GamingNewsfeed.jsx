@@ -9,6 +9,7 @@ import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
@@ -55,7 +56,7 @@ export default function GamingNewsfeed() {
             </div>
           </div>
         </div>
-        {loading ? <div className="py-16 text-center text-gray-500">Loading newsfeed...</div> : (
+        {loading ? <BrandedLoadingScreen label="Loading Your Experience..." minHeight="20rem" /> : (
           <>
           {/* Numbered pagination — on top of the newsfeed */}
           {Math.ceil(items.length / PER_PAGE) > 1 && (

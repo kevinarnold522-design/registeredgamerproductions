@@ -37,7 +37,6 @@ const PHYSICAL_SUBCATEGORIES = [
   { id: "other", label: "Other Physical" },
 ];
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import AIListingAssistant from "@/components/listings/AIListingAssistant";
 import ImageSortableList from "@/components/ImageSortableList";
 import SearchableSelect from "@/components/listings/SearchableSelect";
 import BrandLogo from "@/components/shared/BrandLogo";
@@ -53,6 +52,23 @@ function extractYouTubeId(url) {
     /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
   );
   return match ? match[1] : null;
+}
+
+function parseCommaList(value = "") {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function buildTitleMetadata(title = "") {
+  const cleanTitle = title.trim();
+  if (!cleanTitle) return [];
+  const parts = cleanTitle
+    .split(/[\s\-_/|,]+/)
+    .map((item) => item.trim())
+    .filter((item) => item.length >= 3);
+  return Array.from(new Set([cleanTitle, ...parts])).slice(0, 8);
 }
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
@@ -80,7 +96,7 @@ export default function CreateListing() {
 
   const params = new URLSearchParams(location.search);
   const editId = params.get("edit");
-  const defaultCat = params.get("cat") || "buy_sell";
+  const defaultCat = params.get("cat") || "";
   const defaultSub = params.get("sub") || "";
   const defaultGame = params.get("game") || defaultSub;
 
@@ -113,14 +129,14 @@ export default function CreateListing() {
     description: "",
     price: "0",
     currency: "USD",
-    product_type: defaultCat === "premium_mods" ? "digital" : "",
+    product_type: "digital",
     category: defaultCat,
     subcategories: defaultSub ? [defaultSub] : [],
     newsfeed_categories: [],
     digital_subcategory: "",
     digital_subcategory_custom: "",
     physical_subcategory: "",
-    condition: defaultCat === "premium_mods" ? "digital" : "",
+    condition: "digital",
     is_premium: defaultCat === "premium_mods",
     platforms: [],
     quantity: 1,
@@ -156,6 +172,7 @@ export default function CreateListing() {
     tool_target_game: defaultCat === "premium_mods" ? defaultGame : "",
     preview_video_url: "",
   });
+  const autoMetaRef = useRef({ tags: "", keywords: "" });
 
   useEffect(() => {
     // Close game dropdown on outside click
@@ -165,6 +182,18 @@ export default function CreateListing() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  useEffect(() => {
+    const autoMeta = buildTitleMetadata(form.title).join(", ");
+    setForm((prev) => {
+      const next = {};
+      if (!prev.tags || prev.tags === autoMetaRef.current.tags) next.tags = autoMeta;
+      if (!prev.keywords || prev.keywords === autoMetaRef.current.keywords) next.keywords = autoMeta;
+      if (!Object.keys(next).length) return prev;
+      return { ...prev, ...next };
+    });
+    autoMetaRef.current = { tags: autoMeta, keywords: autoMeta };
+  }, [form.title]);
 
   // Build the category/subcategory option list from all existing listings, so
   // newly-added categories & subcategories appear in the pickers in real time.
@@ -223,7 +252,7 @@ export default function CreateListing() {
             description: l.description || "",
             price: l.price !== undefined ? String(l.price) : "0",
             currency: l.currency === "PHP" ? "USD" : (l.currency || "USD"),
-            product_type: l.product_type || "",
+            product_type: l.product_type || "digital",
             category: l.category || defaultCat,
             subcategories: l.subcategories || [],
             newsfeed_categories: l.newsfeed_categories || [],
@@ -523,12 +552,28 @@ export default function CreateListing() {
     localStorage.setItem("listing_saved_filters", JSON.stringify(updated));
   };
 
+  const handleCategoryChange = (val) => {
+    setForm((prev) => ({
+      ...prev,
+      category: val,
+      subcategories: [],
+      newsfeed_categories: [],
+      bulk_cross_post_ids: val === "games" ? [] : prev.bulk_cross_post_ids,
+      community_franchise_id: val === "games" ? "" : prev.community_franchise_id,
+      modding_subcategory: val === "games" ? "" : prev.modding_subcategory,
+      ign_rating: val === "games" ? prev.ign_rating : "",
+      tool_target_game: val === "paid_tools" || val === "premium_mods" ? prev.tool_target_game : "",
+      is_premium: val === "premium_mods" ? true : prev.is_premium,
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setModerationResult(null);
 
     try {
+    if (!form.category) throw new Error("Please select a main category.");
     // Run AI content moderation first (don't block posting if it fails/times out)
     let mod = null;
     try {
@@ -544,6 +589,9 @@ export default function CreateListing() {
     const priceVal = parseFloat(form.price) || 0;
     const isPaidMod = priceVal > 0 && (form.category === "modding" || form.category === "premium_mods");
     const effectiveCategory = isPaidMod ? "premium_mods" : form.category;
+    const autoMeta = buildTitleMetadata(form.title);
+    const mergedTags = Array.from(new Set([...autoMeta, ...parseCommaList(form.tags)]));
+    const mergedKeywords = Array.from(new Set([...autoMeta, ...parseCommaList(form.keywords)]));
     const existingListing = editId ? await base44.entities.Listing.get(editId) : null;
     const sellerEmail = existingListing?.seller_email || user.email;
     const sellerName = existingListing?.seller_username || profile?.username || profile?.display_name || sellerEmail?.split("@")[0] || "Gamer";
@@ -565,8 +613,8 @@ export default function CreateListing() {
       patreon_url: priceVal > 0 ? form.patreon_url : "",
       stock: parseInt(form.quantity) || 1,
       quantity: parseInt(form.quantity) || 1,
-      tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
-      keywords: form.keywords.split(",").map(t => t.trim()).filter(Boolean),
+      tags: mergedTags,
+      keywords: mergedKeywords,
       images,
       youtube_video_id: ytId || undefined,
       seller_email: sellerEmail,
@@ -654,6 +702,9 @@ export default function CreateListing() {
   const ytId = extractYouTubeId(form.youtube_url);
   const isDigital = form.product_type === "digital";
   const isPhysical = form.product_type === "physical";
+  const primarySubcategory = form.subcategories?.[0] || "";
+  const additionalSubcategories = form.subcategories?.slice(1) || [];
+  const availableAdditionalSubcategories = (selectedCat?.subcategories || []).filter((item) => item !== primarySubcategory);
 
   if (loading) return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -737,9 +788,131 @@ export default function CreateListing() {
           </div>
         )}
 
-        <AIListingAssistant form={form} setForm={setForm} images={images} setImages={setImages} />
-
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-gradient-to-br from-purple-900/25 to-pink-900/15 rounded-2xl border border-purple-700/40 p-6 space-y-5">
+            <div>
+              <h3 className="text-white font-black text-lg">Listing basics</h3>
+              <p className="text-gray-400 text-sm mt-1">Start with the essentials. Extra placement options stay hidden until you choose a category.</p>
+            </div>
+
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Title *</label>
+              <input
+                value={form.title}
+                onChange={e => setForm({ ...form, title: e.target.value })}
+                required
+                placeholder="What are you listing?"
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Description</label>
+              <textarea
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                rows={5}
+                placeholder="Describe what is included, game version, install steps, and anything buyers should know..."
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Digital product type</label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, product_type: "digital", condition: "digital" })}
+                  className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.product_type === "digital" ? "bg-purple-900/40 border-purple-500 shadow-lg shadow-purple-500/20" : "bg-gray-800 border-gray-700 hover:border-purple-500/50"}`}
+                >
+                  <Laptop className="w-9 h-9 text-purple-300" />
+                  <span className="text-white font-bold text-sm">Digital product</span>
+                  <span className="text-gray-400 text-xs text-center">Default for mods, tools, guides, files, and downloads</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, product_type: "physical", condition: "new" })}
+                  className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.product_type === "physical" ? "bg-pink-900/40 border-pink-500 shadow-lg shadow-pink-500/20" : "bg-gray-800 border-gray-700 hover:border-pink-500/50"}`}
+                >
+                  <Gamepad2 className="w-9 h-9 text-pink-300" />
+                  <span className="text-white font-bold text-sm">Physical product</span>
+                  <span className="text-gray-400 text-xs text-center">Consoles, accessories, controllers, and merchandise</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Pricing</label>
+              <div className="flex gap-3 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, price: "0" })}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${form.price === "0" || form.price === 0 ? "bg-green-900/40 border-2 border-green-500/70 text-green-400" : "bg-gray-800 border border-gray-700 text-gray-400"}`}
+                >
+                  Free
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, price: f.price === "0" || f.price === 0 ? "" : f.price }))}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${form.price !== "0" && form.price !== 0 && form.price !== "" ? "bg-purple-900/40 border-2 border-purple-500/70 text-purple-400" : "bg-gray-800 border border-gray-700 text-gray-400"}`}
+                >
+                  <DollarSign className="w-4 h-4 inline mr-1" /> Set Price
+                </button>
+              </div>
+
+              {(form.price !== "0" && form.price !== 0) && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <select
+                      value={form.currency === "PHP" ? "USD" : (form.currency || "USD")}
+                      onChange={e => setForm({ ...form, currency: e.target.value })}
+                      className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-purple-500 text-sm"
+                    >
+                      {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code} {c.symbol}</option>)}
+                    </select>
+                    <input
+                      type="number"
+                      value={form.price}
+                      onChange={e => setForm({ ...form, price: e.target.value })}
+                      required
+                      min="1"
+                      placeholder={`Enter price in ${getCurrencySymbol(form.currency === "PHP" ? "USD" : (form.currency || "USD"))}`}
+                      className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm"
+                    />
+                  </div>
+
+                  <div className="rounded-2xl border border-orange-700/40 bg-gradient-to-br from-orange-900/15 to-yellow-900/10 p-4 space-y-3">
+                    <h4 className="text-orange-200 font-bold flex items-center gap-2 text-sm">
+                      <Coffee className="w-4 h-4 text-orange-300" /> Support links for paid listings
+                    </h4>
+                    <div className="rounded-lg border border-orange-400/30 bg-orange-500/10 px-3 py-2 text-orange-200 text-[11px] leading-snug flex items-start gap-2" data-testid="donation-routing-message">
+                      <Info className="w-3.5 h-3.5 text-orange-300 mt-0.5 flex-shrink-0" />
+                      <span>These links only show when the listing has a paid price.</span>
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                        <Coffee className="w-3 h-3 text-orange-400" /> Ko-fi URL
+                      </label>
+                      <input value={form.kofi_url} onChange={e => setForm({ ...form, kofi_url: e.target.value })} placeholder="https://ko-fi.com/yourname" className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                        <Coffee className="w-3 h-3 text-yellow-400" /> Buy Me a Coffee URL
+                      </label>
+                      <input value={form.buymeacoffee_url} onChange={e => setForm({ ...form, buymeacoffee_url: e.target.value })} placeholder="https://buymeacoffee.com/yourname" className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 text-sm" />
+                    </div>
+                    <div>
+                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
+                        <DollarSign className="w-3 h-3 text-red-400" /> Patreon URL
+                      </label>
+                      <input value={form.patreon_url} onChange={e => setForm({ ...form, patreon_url: e.target.value })} placeholder="https://patreon.com/yourname" className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 text-sm" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Images */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6">
             <h3 className="text-white font-bold mb-4 flex items-center gap-2">
@@ -838,9 +1011,9 @@ export default function CreateListing() {
               <input ref={downloadFileRef} type="file" onChange={handleDownloadFileUpload} className="hidden" />
             </div>
 
-            {/* External link */}
+            {/* Download link */}
             <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">External Link (Google Drive, Mega, etc.)</label>
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Download Link</label>
               <input
                 value={form.external_link}
                 onChange={e => setForm({ ...form, external_link: e.target.value })}
@@ -856,14 +1029,15 @@ export default function CreateListing() {
 
             {/* Download Host Selector */}
             <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Download Host (shown as logo on listing)</label>
-              <div className="flex flex-wrap gap-3">
+              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Choose Download Host</label>
+              <div className="grid grid-cols-2 gap-3">
                 {DOWNLOAD_HOST_OPTIONS.map(h => (
                   <button key={h.id} type="button"
                     onClick={() => setForm(f => ({ ...f, download_host: f.download_host === h.id ? "" : h.id }))}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${form.download_host === h.id ? "border-opacity-100 text-white" : "border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-500"}`}
+                    className={`flex flex-col items-center justify-center gap-2 px-3 py-4 rounded-xl border-2 text-sm font-bold transition-all min-h-[92px] ${form.download_host === h.id ? "border-opacity-100 text-white" : "border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-500"}`}
                     style={form.download_host === h.id ? { borderColor: h.color, background: `${h.color}22`, color: h.color } : {}}>
-                    <DownloadHostBadge host={h.id} size="sm" />
+                    <DownloadHostBadge host={h.id} size="md" showLabel={false} />
+                    <span className="text-[11px] font-bold leading-none">{h.label}</span>
                     {form.download_host === h.id && <CheckCircle className="w-3 h-3" />}
                   </button>
                 ))}
@@ -872,41 +1046,10 @@ export default function CreateListing() {
             </div>
           </div>
 
-          {/* Product Type Selection */}
-          <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-2xl border border-purple-700/50 p-6">
-            <h3 className="text-white font-black text-lg mb-4 flex items-center gap-2">
-              <Package className="w-5 h-5 text-purple-300" /> Product Type
-            </h3>
-            <p className="text-gray-400 text-sm mb-4">Select whether you're selling a digital download or physical item</p>
-            <div className="grid grid-cols-2 gap-4">
-              <button type="button" onClick={() => setForm({ ...form, product_type: "digital", condition: "digital" })}
-                className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.product_type === "digital" ? "bg-purple-900/40 border-purple-500 shadow-lg shadow-purple-500/20" : "bg-gray-800 border-gray-700 hover:border-purple-500/50"}`}>
-                <Laptop className="w-9 h-9 text-purple-300" />
-                <span className="text-white font-bold text-sm">Digital Product</span>
-                <span className="text-gray-400 text-xs text-center">Mods, skins, maps, tools, guides</span>
-              </button>
-              <button type="button" onClick={() => setForm({ ...form, product_type: "physical", condition: "new" })}
-                className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.product_type === "physical" ? "bg-pink-900/40 border-pink-500 shadow-lg shadow-pink-500/20" : "bg-gray-800 border-gray-700 hover:border-pink-500/50"}`}>
-                <Gamepad2 className="w-9 h-9 text-pink-300" />
-                <span className="text-white font-bold text-sm">Physical Product</span>
-                <span className="text-gray-400 text-xs text-center">Consoles, controllers, merch</span>
-              </button>
-            </div>
-            {form.product_type && (
-              <div className="mt-4 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
-                <p className="text-green-400 text-xs font-semibold flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Selected: {form.product_type === "digital" ? "Digital Download" : "Physical Item"}</p>
-              </div>
-            )}
-          </div>
-
           {/* Details */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
-            <h3 className="text-white font-bold mb-2">Listing Details</h3>
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Title *</label>
-              <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required placeholder="What are you selling?"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-            </div>
+            <h3 className="text-white font-bold mb-2">Game, platform, and stock</h3>
+            <p className="text-gray-500 text-xs">Only the extra listing details live here. The basic title, description, product type, and pricing stay at the top.</p>
 
             {form.category === "games" && (
               <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-4">
@@ -974,77 +1117,6 @@ export default function CreateListing() {
             </div>
 
             <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Description</label>
-              <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={5}
-                placeholder="Describe your listing in detail — include game version, what's included, installation steps if needed..."
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm resize-none" />
-            </div>
-
-            {/* Free / Paid Toggle */}
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Pricing</label>
-              <div className="flex gap-3 mb-3">
-                <button type="button" onClick={() => setForm({ ...form, price: "0" })}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${form.price === "0" || form.price === 0 ? "bg-green-900/40 border-2 border-green-500/70 text-green-400" : "bg-gray-800 border border-gray-700 text-gray-400"}`}>
-                  Free
-                </button>
-                <button type="button" onClick={() => setForm(f => ({ ...f, price: f.price === "0" || f.price === 0 ? "" : f.price }))}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${form.price !== "0" && form.price !== 0 && form.price !== "" ? "bg-purple-900/40 border-2 border-purple-500/70 text-purple-400" : "bg-gray-800 border border-gray-700 text-gray-400"}`}>
-                  <DollarSign className="w-4 h-4 inline mr-1" /> Set Price
-                </button>
-              </div>
-              {(form.price !== "0" && form.price !== 0) && (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <select value={form.currency === "PHP" ? "USD" : (form.currency || "USD")} onChange={e => setForm({ ...form, currency: e.target.value })}
-                      className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                      {CURRENCY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.code} {c.symbol}</option>)}
-                    </select>
-                    <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required min="1" placeholder={`Enter price in ${getCurrencySymbol(form.currency === "PHP" ? "USD" : (form.currency || "USD"))}`}
-                      className="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-                  </div>
-
-                  {/* Support / Donation Links — paid listings only, anchored under the price row */}
-                  <div className="rounded-2xl border border-orange-700/40 bg-gradient-to-br from-orange-900/15 to-yellow-900/10 p-4 space-y-3">
-                    <h4 className="text-orange-200 font-bold flex items-center gap-2 text-sm">
-                      <Coffee className="w-4 h-4 text-orange-300" /> Support & Donation Links
-                    </h4>
-                    <div className="rounded-lg border border-orange-400/30 bg-orange-500/10 px-3 py-2 text-orange-200 text-[11px] leading-snug flex items-start gap-2" data-testid="donation-routing-message">
-                      <Info className="w-3.5 h-3.5 text-orange-300 mt-0.5 flex-shrink-0" />
-                      <span>Buyers will safely get routed to buy from Ko-fi, BuyMeACoffee, Patreon.</span>
-                    </div>
-                    <div>
-                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
-                        <Coffee className="w-3 h-3 text-orange-400" /> Ko-fi URL
-                      </label>
-                      <input value={form.kofi_url} onChange={e => setForm({ ...form, kofi_url: e.target.value })}
-                        placeholder="https://ko-fi.com/yourname"
-                        data-testid="listing-kofi-url-input"
-                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm" />
-                    </div>
-                    <div>
-                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
-                        <Coffee className="w-3 h-3 text-yellow-400" /> Buy Me a Coffee URL
-                      </label>
-                      <input value={form.buymeacoffee_url} onChange={e => setForm({ ...form, buymeacoffee_url: e.target.value })}
-                        placeholder="https://buymeacoffee.com/yourname"
-                        data-testid="listing-buymeacoffee-url-input"
-                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 text-sm" />
-                    </div>
-                    <div>
-                      <label className="text-gray-300 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block flex items-center gap-1.5">
-                        <DollarSign className="w-3 h-3 text-red-400" /> Patreon URL
-                      </label>
-                      <input value={form.patreon_url} onChange={e => setForm({ ...form, patreon_url: e.target.value })}
-                        placeholder="https://patreon.com/yourname"
-                        data-testid="listing-patreon-url-input"
-                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 text-sm" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Quantity</label>
               <input type="number" value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} min={1}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
@@ -1053,294 +1125,236 @@ export default function CreateListing() {
 
           {/* Category & Subcategories */}
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 space-y-4">
-            <h3 className="text-white font-bold mb-2">Category & Placement</h3>
+            <h3 className="text-white font-bold mb-2">Category, subcategories, and placement</h3>
             <div>
               <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Main Category *</label>
               <SearchableSelect
                 value={form.category}
-                onChange={(val) => setForm({ ...form, category: val, community_franchise_id: val === "games" ? "" : form.community_franchise_id, bulk_cross_post_ids: val === "games" ? [] : form.bulk_cross_post_ids })}
+                onChange={handleCategoryChange}
                 options={dynamicCategories.map(c => ({ value: c.id, label: c.label }))}
-                placeholder="Select a category"
+                placeholder="Select a category first"
               />
             </div>
 
-            {/* GAMES category — IGN rating + store platforms */}
-            {form.category === "games" && (
-              <div className="bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 space-y-4">
-                <div>
-                  <label className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> IGN Rating (out of 10)</label>
-                  <input type="number" step="0.1" min="0" max="10" value={form.ign_rating}
-                    onChange={e => setForm({ ...form, ign_rating: e.target.value })}
-                    placeholder="e.g. 9.5"
-                    className="w-full bg-gray-800 border border-emerald-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 text-sm" />
-                  <p className="text-emerald-400/70 text-xs mt-1">Numbers only, one decimal (e.g. 9.5)</p>
-                </div>
-                <div>
-                  <label className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Game Subcategory</label>
-                  <select value={form.subcategories?.[0] || ""} onChange={e => setForm({ ...form, subcategories: e.target.value ? [e.target.value] : [] })}
-                    className="w-full bg-gray-800 border border-emerald-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 text-sm">
-                    <option value="">— Select type —</option>
-                    <option value="Games">Games</option>
-                    <option value="How To / Guides">How To / Guides</option>
-                  </select>
-                </div>
-                {!isAdmin(user?.email) && !editId && (
-                  <p className="text-yellow-400/80 text-xs flex items-center gap-1.5"><Info className="w-3 h-3" /> Game submissions require admin approval before going live.</p>
+            {!form.category ? (
+              <div className="rounded-xl border border-dashed border-gray-700 bg-gray-900/50 px-4 py-4 text-gray-400 text-sm">
+                Pick a main category first. Then the matching subcategories, newsfeed targets, and bulk posting options will appear below.
+              </div>
+            ) : (
+              <>
+                {form.category === "games" && (
+                  <div className="bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4 space-y-4">
+                    <div>
+                      <label className="text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> IGN Rating (out of 10)</label>
+                      <input type="number" step="0.1" min="0" max="10" value={form.ign_rating} onChange={e => setForm({ ...form, ign_rating: e.target.value })} placeholder="e.g. 9.5" className="w-full bg-gray-800 border border-emerald-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 text-sm" />
+                    </div>
+                    {!isAdmin(user?.email) && !editId && (
+                      <p className="text-yellow-400/80 text-xs flex items-center gap-1.5"><Info className="w-3 h-3" /> Game submissions require admin approval before going live.</p>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
 
-            {/* PREMIUM MODS category — dedicated subcategory (hides unrelated subs) */}
-            {form.category === "premium_mods" && (
-              <div className="bg-amber-900/20 border border-amber-700/40 rounded-xl p-4">
-                <label className="text-amber-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Premium Mod Subcategory</label>
-                <select value={form.subcategories?.[0] || ""} onChange={e => setForm({ ...form, subcategories: e.target.value ? [e.target.value] : [] })}
-                  className="w-full bg-gray-800 border border-amber-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 text-sm">
-                  <option value="">— Select premium mod type —</option>
-                  {(CATEGORIES.find(c => c.id === "premium_mods")?.subcategories || []).map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-            )}
-
-            {/* TOOLS category — manual target game */}
-            {form.category === "paid_tools" && (
-              <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-4">
-                <label className="text-blue-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><Wrench className="w-3 h-3" /> What game is this tool for?</label>
-                <input value={form.tool_target_game} onChange={e => setForm({ ...form, tool_target_game: e.target.value })}
-                  placeholder="e.g. NBA 2K26, Football Life, GTA V, Valorant"
-                  className="w-full bg-gray-800 border border-blue-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
-              </div>
-            )}
-
-            {/* Product-type specific subcategory */}
-            {form.product_type === "digital" && (
-              <div className="bg-purple-900/20 border border-purple-700/40 rounded-xl p-4">
-                <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                  <Laptop className="w-3 h-3 text-purple-300" /> Digital Product Subcategory
-                </label>
-                <select value={form.digital_subcategory} onChange={e => setForm({ ...form, digital_subcategory: e.target.value })}
-                  className="w-full bg-gray-800 border border-purple-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                  <option value="">Select digital subcategory</option>
-                  {DIGITAL_SUBCATEGORIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                </select>
-                {form.digital_subcategory && (
-                  <p className="text-purple-400 text-xs mt-2">This will be auto-categorized under Digital: {DIGITAL_SUBCATEGORIES.find(s => s.id === form.digital_subcategory)?.label}</p>
+                {form.category === "paid_tools" && (
+                  <div className="bg-blue-900/20 border border-blue-700/40 rounded-xl p-4">
+                    <label className="text-blue-300 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><Wrench className="w-3 h-3" /> What game is this tool for?</label>
+                    <input value={form.tool_target_game} onChange={e => setForm({ ...form, tool_target_game: e.target.value })} placeholder="e.g. NBA 2K26, Football Life, GTA V, Valorant" className="w-full bg-gray-800 border border-blue-700/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm" />
+                  </div>
                 )}
-                <div className="mt-3">
-                  <label className="text-purple-300/80 text-[11px] font-semibold uppercase tracking-wider mb-1.5 block">Or type a custom subcategory</label>
-                  <input value={form.digital_subcategory_custom || ""} onChange={e => setForm({ ...form, digital_subcategory_custom: e.target.value })}
-                    placeholder="e.g. Emulators, Save Files, ROM Hacks..."
-                    className="w-full bg-gray-800 border border-purple-700/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 text-sm" />
-                  <p className="text-gray-500 text-[11px] mt-1">Leave blank to use the dropdown above. A custom value overrides it.</p>
-                </div>
-              </div>
-            )}
 
-            {form.product_type === "physical" && (
-              <div className="bg-pink-900/20 border border-pink-700/40 rounded-xl p-4">
-                <label className="text-pink-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                  <Boxes className="w-3 h-3 text-pink-300" /> Physical Product Subcategory
-                </label>
-                <select value={form.physical_subcategory} onChange={e => setForm({ ...form, physical_subcategory: e.target.value })}
-                  className="w-full bg-gray-800 border border-pink-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 text-sm">
-                  <option value="">Select physical subcategory</option>
-                  {PHYSICAL_SUBCATEGORIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                </select>
-                {form.physical_subcategory && (
-                  <p className="text-pink-400 text-xs mt-2">This will be auto-categorized under Physical: {PHYSICAL_SUBCATEGORIES.find(s => s.id === form.physical_subcategory)?.label}</p>
-                )}
-              </div>
-            )}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {form.product_type === "digital" && (
+                    <div className="bg-purple-900/20 border border-purple-700/40 rounded-xl p-4">
+                      <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                        <Laptop className="w-3 h-3 text-purple-300" /> Digital Product Subcategory
+                      </label>
+                      <select value={form.digital_subcategory} onChange={e => setForm({ ...form, digital_subcategory: e.target.value })} className="w-full bg-gray-800 border border-purple-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
+                        <option value="">Select digital subcategory</option>
+                        {DIGITAL_SUBCATEGORIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      </select>
+                      <input value={form.digital_subcategory_custom || ""} onChange={e => setForm({ ...form, digital_subcategory_custom: e.target.value })} placeholder="Optional custom digital subcategory" className="w-full mt-3 bg-gray-800 border border-purple-700/40 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 text-sm" />
+                    </div>
+                  )}
 
-            {/* Gaming Community — mandatory except standalone Games posts */}
-            {form.category !== "games" && <div className="bg-cyan-900/20 border border-cyan-500/60 rounded-xl p-4">
-              <label className="text-cyan-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                <Gamepad2 className="w-3 h-3 text-cyan-300" /> Gaming Community <span className="text-red-400 ml-1">*</span>
-              </label>
-              <p className="text-gray-500 text-xs mb-2">Your listing will appear in the selected gaming community feed. Required.</p>
-              <SearchableSelect
-                value={form.community_franchise_id}
-                onChange={(val) => setForm({ ...form, community_franchise_id: val })}
-                options={TOP_FRANCHISES.map(f => ({ value: f.id, label: `${f.name} (${f.genre})` }))}
-                placeholder="— Select a Gaming Community —"
-                borderClass="border-cyan-500/70 focus-within:border-cyan-400"
-              />
-              {form.community_franchise_id && (
-                <p className="text-cyan-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Will be shared with {TOP_FRANCHISES.find(f => f.id === form.community_franchise_id)?.name}</p>
-              )}
-            </div>}
+                  {form.product_type === "physical" && (
+                    <div className="bg-pink-900/20 border border-pink-700/40 rounded-xl p-4">
+                      <label className="text-pink-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                        <Boxes className="w-3 h-3 text-pink-300" /> Physical Product Subcategory
+                      </label>
+                      <select value={form.physical_subcategory} onChange={e => setForm({ ...form, physical_subcategory: e.target.value })} className="w-full bg-gray-800 border border-pink-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-pink-500 text-sm">
+                        <option value="">Select physical subcategory</option>
+                        {PHYSICAL_SUBCATEGORIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      </select>
+                    </div>
+                  )}
 
-            {/* Bulk Cross-Posting - Multiple Gaming Communities */}
-            {form.category !== "games" && <div className="bg-purple-900/20 border border-purple-500/60 rounded-xl p-4">
-              <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                <Megaphone className="w-3 h-3 text-purple-300" /> Bulk Cross-Posting (Optional)
-              </label>
-              <p className="text-gray-500 text-xs mb-3">Share your listing to multiple gaming communities at once</p>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-                {TOP_FRANCHISES.filter(f => f.id !== form.community_franchise_id).map(f => {
-                  const selected = form.bulk_cross_post_ids.includes(f.id);
-                  return (
-                    <button key={f.id} type="button"
-                      onClick={() => setForm(f => ({ 
-                        ...f, 
-                        bulk_cross_post_ids: selected 
-                          ? f.bulk_cross_post_ids.filter(id => id !== f.id)
-                          : [...f.bulk_cross_post_ids, f.id]
+                  <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4">
+                    <label className="text-gray-300 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Primary Subcategory</label>
+                    <select
+                      value={primarySubcategory}
+                      onChange={e => setForm(f => ({
+                        ...f,
+                        subcategories: e.target.value
+                          ? [e.target.value, ...(f.subcategories?.slice(1) || []).filter(x => x !== e.target.value).slice(0, 2)]
+                          : (f.subcategories?.slice(1) || []),
                       }))}
-                      className={`px-2 py-1.5 rounded-lg text-[10px] font-semibold transition-all text-left ${selected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}>
-                      {f.name}
-                    </button>
-                  );
-                })}
-              </div>
-              {form.bulk_cross_post_ids.length > 0 && (
-                <p className="text-purple-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Will cross-post to {form.bulk_cross_post_ids.length} communities</p>
-              )}
-            </div>}
-
-            {/* Modding Community Subcategory — optional, never for Games listings */}
-            {form.category !== "games" && <div className="bg-orange-900/20 border border-orange-700/40 rounded-xl p-4">
-              <label className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                <Wrench className="w-3 h-3 text-orange-300" /> Modding Community Subcategory (Optional)
-              </label>
-              <select value={form.modding_subcategory} onChange={e => setForm({ ...form, modding_subcategory: e.target.value })}
-                className="w-full bg-gray-800 border border-orange-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500 text-sm">
-                <option value="">— Not a mod listing —</option>
-                <option value="WWE2K">WWE2K Mods</option>
-                <option value="Football Life">Football Life / PES Mods</option>
-                <option value="GTA 5">GTA 5 Mods</option>
-                <option value="GTA SA">GTA San Andreas Mods</option>
-                <option value="GTA 4">GTA 4 Mods</option>
-                <option value="FIFA">FIFA / EA FC Mods</option>
-                <option value="NBA2K">NBA2K Mods</option>
-                <option value="PES">PES Option Files</option>
-                <option value="PPSSPP/PSP">PPSSPP / PSP ISOs</option>
-                <option value="PS2">PS2 Mods</option>
-                <option value="Android">Android Mods / APKs</option>
-                <option value="PC">PC Mods &amp; Trainers</option>
-              </select>
-              {form.modding_subcategory && (
-                <p className="text-orange-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Also listed in Modding: {form.modding_subcategory}</p>
-              )}
-            </div>}
-
-            {/* Store Subcategory — for paid/premium listings in buy_sell category */}
-            {(form.price > 0 || form.is_premium) && form.category === "buy_sell" && (
-              <div className="bg-green-900/20 border border-green-700/40 rounded-xl p-4">
-                <label className="text-green-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                  <Store className="w-3 h-3 text-green-300" /> Store Subcategory (Required for paid listings)
-                </label>
-                <select
-                  required
-                  value={form.subcategories?.[0] || ""}
-                  onChange={e => setForm({ ...form, subcategories: [e.target.value] })}
-                  className="w-full bg-gray-800 border border-green-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500 text-sm">
-                  <option value="">— Select Store Subcategory —</option>
-                  <option value="consoles">Gaming Consoles</option>
-                  <option value="controllers">Controllers</option>
-                  <option value="accessories">Accessories</option>
-                  <option value="merchandise">Merchandise</option>
-                  <option value="collectibles">Collectibles</option>
-                  <option value="digital">Digital Products</option>
-                  <option value="mods">Mods &amp; Tools</option>
-                  <option value="games">Games</option>
-                  <option value="cables">Cables / Adapters</option>
-                  <option value="other">Other</option>
-                </select>
-                {form.subcategories?.[0] && (
-                  <p className="text-green-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> Will be posted to Store: {form.subcategories[0]}</p>
-                )}
-              </div>
-            )}
-
-            {/* Additional subcategories (multi-select) — hidden for Games & Premium Mods which use their own selector */}
-            {form.category !== "games" && form.category !== "premium_mods" && <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Additional Subcategories (Optional)</label>
-              <p className="text-gray-500 text-xs mb-3">Show your listing in multiple subcategories for more visibility</p>
-              {selectedCat?.subcategories?.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {selectedCat.subcategories.map(s => {
-                    const isSelected = form.subcategories.includes(s);
-                    const atMax = form.subcategories.length >= 3 && !isSelected;
-                    return (
-                      <button key={s} type="button"
-                        disabled={atMax}
-                        onClick={() => {
-                          if (isSelected) {
-                            setForm(f => ({ ...f, subcategories: f.subcategories.filter(x => x !== s) }));
-                          } else if (!atMax) {
-                            setForm(f => ({ ...f, subcategories: [...f.subcategories, s] }));
-                          }
-                        }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isSelected ? "bg-purple-600 text-white" : atMax ? "bg-gray-800/40 text-gray-600 cursor-not-allowed" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}>
-                        {s} {isSelected && <CheckCircle className="w-3 h-3 inline ml-1" />}
-                      </button>
-                    );
-                  })}
+                      className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm"
+                    >
+                      <option value="">Select primary subcategory</option>
+                      {form.category === "games" ? (
+                        <>
+                          <option value="Games">Games</option>
+                          <option value="How To / Guides">How To / Guides</option>
+                        </>
+                      ) : (
+                        (selectedCat?.subcategories || []).map(s => <option key={s} value={s}>{s}</option>)
+                      )}
+                    </select>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-gray-500 text-xs italic">No subcategories available for this category</p>
-              )}
-              <div className="flex items-center justify-between mt-2">
-                {form.subcategories.length > 0 && (
-                  <p className="text-green-400 text-xs flex items-center gap-1.5"><CheckCircle className="w-3 h-3" /> {form.subcategories.length}/3 subcategories selected</p>
-                )}
-                {form.subcategories.length >= 3 && (
-                  <p className="text-yellow-400 text-xs">Maximum 3 subcategories reached</p>
-                )}
-              </div>
-            </div>}
 
-            {/* Newsfeed visibility — manually pick which categories this shows in (not for Games) */}
-            {form.category !== "games" && <div className="bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-4">
-              <label className="text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                <LayoutGrid className="w-3 h-3 text-indigo-300" /> Show in Newsfeeds (Optional)
-              </label>
-              <p className="text-gray-500 text-xs mb-3">Pick which category newsfeeds this listing also appears in. Leave empty to use its main category only.</p>
-              <div className="flex flex-wrap gap-2">
-                {NEWSFEED_TARGETS.map(t => {
-                  const sel = (form.newsfeed_categories || []).includes(t.id);
-                  return (
-                    <button key={t.id} type="button"
-                      onClick={() => setForm(f => ({ ...f, newsfeed_categories: sel ? (f.newsfeed_categories || []).filter(x => x !== t.id) : [...(f.newsfeed_categories || []), t.id] }))}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${sel ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-indigo-900/30"}`}>
-                      {t.label} {sel && <CheckCircle className="w-3 h-3 inline ml-1" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>}
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Condition</label>
-              <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
-                {form.product_type === "physical" ? (
-                  <>
-                    <option value="new">New</option>
-                    <option value="like_new">Like New</option>
-                    <option value="good">Good</option>
-                    <option value="fair">Fair</option>
-                  </>
-                ) : (
-                  <option value="digital">Digital Download</option>
+                {form.category !== "games" && form.category !== "premium_mods" && availableAdditionalSubcategories.length > 0 && (
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2 block">Additional Subcategories</label>
+                    <p className="text-gray-500 text-xs mb-3">Hidden until a main category is chosen. Add up to 2 extra subcategories.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableAdditionalSubcategories.map((s) => {
+                        const isSelected = additionalSubcategories.includes(s);
+                        const atMax = additionalSubcategories.length >= 2 && !isSelected;
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            disabled={atMax}
+                            onClick={() => setForm(f => {
+                              const first = f.subcategories?.[0];
+                              const rest = f.subcategories?.slice(1) || [];
+                              const nextRest = isSelected ? rest.filter(x => x !== s) : [...rest, s].slice(0, 2);
+                              return { ...f, subcategories: first ? [first, ...nextRest] : nextRest };
+                            })}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${isSelected ? "bg-purple-600 text-white" : atMax ? "bg-gray-800/40 text-gray-600 cursor-not-allowed" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}
+                          >
+                            {s} {isSelected && <CheckCircle className="w-3 h-3 inline ml-1" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
-              </select>
-            </div>
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Tags (comma separated)</label>
-              <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="gaming, mod, fps..."
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-            </div>
-            <div>
-              <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><Tag className="w-3 h-3" /> SEO Keywords (comma separated)</label>
-              <input value={form.keywords} onChange={e => setForm({ ...form, keywords: e.target.value })} placeholder="buy gta mod, ps5 controller cheap, gaming skin..."
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
-              <p className="text-gray-600 text-xs mt-1">Keywords help buyers discover your listing via search engines</p>
-            </div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={form.is_premium} onChange={e => setForm({ ...form, is_premium: e.target.checked })} className="w-4 h-4 rounded accent-purple-600" />
-              <span className="text-gray-300 text-sm font-medium">Mark as Premium listing</span>
-            </label>
+
+                {form.category !== "games" && (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-cyan-900/20 border border-cyan-500/60 rounded-xl p-4">
+                      <label className="text-cyan-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                        <Gamepad2 className="w-3 h-3 text-cyan-300" /> Gaming Community
+                      </label>
+                      <SearchableSelect
+                        value={form.community_franchise_id}
+                        onChange={(val) => setForm({ ...form, community_franchise_id: val })}
+                        options={TOP_FRANCHISES.map(f => ({ value: f.id, label: `${f.name} (${f.genre})` }))}
+                        placeholder="Select one main gaming community"
+                        borderClass="border-cyan-500/70 focus-within:border-cyan-400"
+                      />
+                    </div>
+
+                    <div className="bg-indigo-900/20 border border-indigo-700/40 rounded-xl p-4">
+                      <label className="text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                        <LayoutGrid className="w-3 h-3 text-indigo-300" /> Show in Newsfeeds
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {NEWSFEED_TARGETS.map(t => {
+                          const sel = (form.newsfeed_categories || []).includes(t.id);
+                          return (
+                            <button key={t.id} type="button" onClick={() => setForm(f => ({ ...f, newsfeed_categories: sel ? (f.newsfeed_categories || []).filter(x => x !== t.id) : [...(f.newsfeed_categories || []), t.id] }))} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${sel ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-indigo-900/30"}`}>
+                              {t.label} {sel && <CheckCircle className="w-3 h-3 inline ml-1" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="bg-purple-900/20 border border-purple-500/60 rounded-xl p-4 md:col-span-2">
+                      <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                        <Megaphone className="w-3 h-3 text-purple-300" /> Bulk Cross-Posting
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {TOP_FRANCHISES.filter(f => f.id !== form.community_franchise_id).map(franchise => {
+                          const selected = form.bulk_cross_post_ids.includes(franchise.id);
+                          return (
+                            <button
+                              key={franchise.id}
+                              type="button"
+                              onClick={() => setForm(f => ({
+                                ...f,
+                                bulk_cross_post_ids: selected ? f.bulk_cross_post_ids.filter(id => id !== franchise.id) : [...f.bulk_cross_post_ids, franchise.id]
+                              }))}
+                              className={`px-2.5 py-2 rounded-lg text-[11px] font-semibold transition-all text-left ${selected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}
+                            >
+                              {franchise.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="bg-orange-900/20 border border-orange-700/40 rounded-xl p-4 md:col-span-2">
+                      <label className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
+                        <Wrench className="w-3 h-3 text-orange-300" /> Modding Community Subcategory
+                      </label>
+                      <select value={form.modding_subcategory} onChange={e => setForm({ ...form, modding_subcategory: e.target.value })} className="w-full bg-gray-800 border border-orange-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500 text-sm">
+                        <option value="">Not a mod listing</option>
+                        <option value="WWE2K">WWE2K Mods</option>
+                        <option value="Football Life">Football Life / PES Mods</option>
+                        <option value="GTA 5">GTA 5 Mods</option>
+                        <option value="GTA SA">GTA San Andreas Mods</option>
+                        <option value="GTA 4">GTA 4 Mods</option>
+                        <option value="FIFA">FIFA / EA FC Mods</option>
+                        <option value="NBA2K">NBA2K Mods</option>
+                        <option value="PES">PES Option Files</option>
+                        <option value="PPSSPP/PSP">PPSSPP / PSP ISOs</option>
+                        <option value="PS2">PS2 Mods</option>
+                        <option value="Android">Android Mods / APKs</option>
+                        <option value="PC">PC Mods & Trainers</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Condition</label>
+                    <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })} className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 text-sm">
+                      {form.product_type === "physical" ? (
+                        <>
+                          <option value="new">New</option>
+                          <option value="like_new">Like New</option>
+                          <option value="good">Good</option>
+                          <option value="fair">Fair</option>
+                        </>
+                      ) : (
+                        <option value="digital">Digital Download</option>
+                      )}
+                    </select>
+                  </div>
+
+                  <label className="flex items-center gap-3 cursor-pointer rounded-xl border border-gray-800 bg-gray-800/60 px-4 py-3">
+                    <input type="checkbox" checked={form.is_premium} onChange={e => setForm({ ...form, is_premium: e.target.checked })} className="w-4 h-4 rounded accent-purple-600" />
+                    <span className="text-gray-300 text-sm font-medium">Mark as Premium listing</span>
+                  </label>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Tags</label>
+                    <input value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="Auto-filled from title, edit if needed" className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><Tag className="w-3 h-3" /> SEO Keywords</label>
+                    <input value={form.keywords} onChange={e => setForm({ ...form, keywords: e.target.value })} placeholder="Auto-filled from title, edit if needed" className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 text-sm" />
+                    <p className="text-gray-600 text-xs mt-1">Listing title keywords are added automatically for SEO and search tags.</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Support / Donation Links moved up under the Pricing block for paid listings. */}

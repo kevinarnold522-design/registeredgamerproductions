@@ -22,6 +22,7 @@ import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker'
 import GlobalHtmlAd from '@/components/ads/GlobalHtmlAd';
 import FloatingNewsfeed from '@/components/home/FloatingNewsfeed';
 import RouteErrorBoundary from '@/components/system/RouteErrorBoundary';
+import BrandedLoadingScreen from '@/components/shared/BrandedLoadingScreen';
 
 // -----------------------------------------------------------------------------
 // MOBILE-FRIENDLY LAZY ROUTES
@@ -69,12 +70,8 @@ const GamingNewsfeed = lazyWithRetry(() => import("./pages/GamingNewsfeed"));
 
 // Lightweight spinner while a page chunk is downloading on mobile.
 const RouteFallback = () => (
-  <div
-    className="flex items-center justify-center"
-    style={{ minHeight: "60vh", width: "100%" }}
-    data-testid="route-suspense-fallback"
-  >
-    <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+  <div data-testid="route-suspense-fallback">
+    <BrandedLoadingScreen label="Loading Your Experience..." minHeight="60vh" />
   </div>
 );
 
@@ -92,10 +89,7 @@ const AuthenticatedApp = () => {
 
   if (isLoadingPublicSettings || (isLoadingAuth && isAdminPath)) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-gray-950">
-        <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-        <p className="text-gray-400 text-sm">Loading...</p>
-      </div>
+      <BrandedLoadingScreen fullScreen label="Loading Your Experience..." />
     );
   }
 
@@ -116,10 +110,7 @@ const AuthenticatedApp = () => {
 
     if (isLoadingAuth) {
       return (
-        <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-gray-950">
-          <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-          <p className="text-gray-400 text-sm">Loading...</p>
-        </div>
+        <BrandedLoadingScreen fullScreen label="Loading Your Experience..." />
       );
     }
 

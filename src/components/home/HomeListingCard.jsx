@@ -220,7 +220,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
         {/* PAID sign at bottom-right */}
         {!liveListing.is_free && liveListing.price > 0 && (
           <span
-            className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[10px] font-black tracking-[0.18em]"
+            className="absolute bottom-3 right-3 inline-flex items-center rounded-lg border px-2.5 py-1 text-[10px] font-black italic tracking-[0.22em] font-serif"
             style={{
               background: "linear-gradient(135deg, #050505 0%, #141414 50%, #2c2200 100%)",
               borderColor: "rgba(234,179,8,0.72)",
@@ -228,7 +228,6 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
               boxShadow: "0 0 14px rgba(234,179,8,0.32)",
             }}
           >
-            <span className="inline-block h-2 w-2 rounded-sm border border-amber-300/60 bg-gradient-to-br from-yellow-300 to-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.45)]" />
             PAID
           </span>
         )}

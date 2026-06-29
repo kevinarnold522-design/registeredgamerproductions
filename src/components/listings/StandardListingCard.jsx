@@ -174,8 +174,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
         {isFree ? (
           <span className="absolute bottom-2 right-2 z-10 text-[10px] font-bold bg-green-500/90 text-black px-2 py-0.5 rounded-full">FREE</span>
         ) : (
-          <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 rounded-lg border border-amber-400/70 bg-gradient-to-br from-black via-gray-950 to-[#2c2200] px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-amber-300 shadow-[0_0_14px_rgba(234,179,8,0.35)]">
-            <span className="inline-block h-2 w-2 rounded-sm border border-amber-300/60 bg-gradient-to-br from-yellow-300 to-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.45)]" />
+          <span className="absolute top-2 left-2 z-10 inline-flex items-center rounded-lg border border-amber-400/70 bg-gradient-to-br from-black via-gray-950 to-[#2c2200] px-2.5 py-1 text-[10px] font-black italic tracking-[0.22em] font-serif text-amber-300 shadow-[0_0_14px_rgba(234,179,8,0.35)]">
             PAID
           </span>
         )}

@@ -13,6 +13,7 @@ import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { CATEGORIES, isServiceListing } from "@/lib/constants";
 import { Link, useLocation } from "react-router-dom";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 
 const PER_PAGE = 10;
 
@@ -73,7 +74,7 @@ export default function SearchPage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-64 rounded-2xl bg-gray-900 animate-pulse" />)}</div>
+          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="22rem" />
         ) : paged.length === 0 ? (
           <div className="text-center py-20 bg-gray-900 border border-gray-800 rounded-3xl text-gray-500">No matching listings found.</div>
         ) : (

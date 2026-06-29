@@ -13,6 +13,7 @@ import PostComposer from "@/components/community/PostComposer";
 import GroupChat from "@/components/community/GroupChat";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 
 export default function CommunitySectionPage() {
   const { user } = useAuth();
@@ -126,9 +127,7 @@ export default function CommunitySectionPage() {
             />
 
             {loading ? (
-              <div className="space-y-3">
-                {[1,2,3].map(i => <div key={i} className="h-24 rounded-2xl bg-gray-900 animate-pulse" />)}
-              </div>
+              <BrandedLoadingScreen label="Loading Your Experience..." minHeight="20rem" />
             ) : posts.length === 0 ? (
               <div className="text-center py-16 rounded-2xl bg-gray-900 border border-gray-800">
                 <p className="text-4xl mb-3">{franchise.emoji}</p>

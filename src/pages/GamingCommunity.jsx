@@ -21,6 +21,7 @@ import CommunityTagAd from "@/components/ads/CommunityTagAd";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { useNavigate } from "react-router-dom";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
@@ -170,7 +171,7 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
       {/* Feed: listings grid (4-up) + posts */}
       <div className="flex-1 overflow-y-auto p-2 space-y-3">
         {loading ? (
-          <div className="p-6 text-center text-gray-600 text-sm">Loading...</div>
+          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="18rem" />
         ) : totalItems === 0 ? (
           <div className="p-8 text-center">
             <p className="text-3xl mb-2">{franchise.emoji}</p>

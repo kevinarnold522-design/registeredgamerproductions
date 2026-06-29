@@ -7,6 +7,7 @@ import PostNotifications from "@/components/community/PostNotifications";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
 import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
@@ -587,7 +588,7 @@ export default function CommunityLandingPage() {
 
             {/* Posts */}
             {loading ? (
-              <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-32 rounded-2xl bg-gray-900 animate-pulse" />)}</div>
+              <BrandedLoadingScreen label="Loading Your Experience..." minHeight="22rem" />
             ) : filteredPosts.length === 0 ? (
               <div className="text-center py-16 rounded-2xl bg-gray-900 border border-gray-800">
                 <p className="text-4xl mb-3">{franchise.emoji}</p>

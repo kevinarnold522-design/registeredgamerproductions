@@ -6,6 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { formatListingPrice } from "@/lib/currency";
 
 // Homepage-style premium mod game cards
@@ -140,7 +141,7 @@ export default function PremiumModsLandingPage({ user }) {
         </div>
 
         {loading ? (
-          <div className="text-center py-16"><div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" /></div>
+          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="20rem" />
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 bg-gray-900/50 rounded-2xl border border-gray-800">
             <Gamepad2 className="w-12 h-12 mx-auto mb-4 text-gray-700" />

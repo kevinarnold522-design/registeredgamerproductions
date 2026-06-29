@@ -15,6 +15,7 @@ import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import ListingReportButton from "@/components/shared/ListingReportButton";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import StandardListingCard from "@/components/listings/StandardListingCard";
+import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -373,7 +374,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
         <div className="mb-3" />
         {loading ? (
-          <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>
+          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="22rem" />
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-gray-600">
             <p className="text-xl font-bold mb-2 text-gray-400">No listings yet</p>
