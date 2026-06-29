@@ -10,6 +10,16 @@ const ASSET_ERROR_PATTERNS = [
   "importing a module script failed",
   "unable to preload css",
   "failed to fetch module",
+  // Mobile-specific transient failures we also want to auto-recover from:
+  "failed to fetch",            // Chrome / Android WebView fetch abort
+  "networkerror",               // Firefox
+  "load failed",                // iOS Safari generic resource load failure
+  "the network connection was lost", // iOS Safari
+  "the operation couldn\u2019t be completed", // iOS Safari (smart-quote)
+  "the operation couldn't be completed",
+  "script error",               // cross-origin chunk script error
+  "err_network",
+  "err_internet_disconnected",
 ];
 
 export function isLikelyAssetVersionError(error) {

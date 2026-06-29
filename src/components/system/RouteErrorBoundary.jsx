@@ -6,21 +6,69 @@ import { isLikelyAssetVersionError, tryRecoverFromAssetError } from "@/lib/asset
 // global "we hit a startup error" screen. Stale chunk after a deploy triggers
 // an automatic recovery reload; everything else shows a friendly retry card so
 // the rest of the app (nav, home, etc.) is still usable.
+//
+// Mobile-hardening notes:
+// - `resetKey` (set to the current pathname by the caller) clears the error
+//   state when the user navigates to a different route, so a transient
+//   network blip on one page doesn't leave every subsequent page stuck on
+//   "Page hiccup".
+// - We auto-retry exactly once for transient errors (mobile networks
+//   commonly drop the first chunk fetch), then show the manual card.
 export default class RouteErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, lastResetKey: props.resetKey };
+    this._autoRetryDone = false;
+    this._autoRetryTimer = null;
   }
 
   static getDerivedStateFromError() {
     return { hasError: true };
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    // Reset error state whenever the route (resetKey) changes.
+    if (nextProps.resetKey !== prevState.lastResetKey) {
+      return { hasError: false, lastResetKey: nextProps.resetKey };
+    }
+    return null;
+  }
+
+  componentDidUpdate(prevProps) {
+    // Allow a fresh single auto-retry per route navigation.
+    if (prevProps.resetKey !== this.props.resetKey) {
+      this._autoRetryDone = false;
+      if (this._autoRetryTimer) {
+        clearTimeout(this._autoRetryTimer);
+        this._autoRetryTimer = null;
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    if (this._autoRetryTimer) {
+      clearTimeout(this._autoRetryTimer);
+      this._autoRetryTimer = null;
+    }
+  }
+
   componentDidCatch(error) {
     try { console.error("Route render error", error); } catch {}
+
+    // 1. Stale chunk after a deploy → full reload with cache-bust param.
     try {
       if (isLikelyAssetVersionError(error) && tryRecoverFromAssetError()) return;
     } catch {}
+
+    // 2. Transient mobile error → silent one-shot retry. Avoids the dead-end
+    //    "Page hiccup" card that users were getting on flaky cellular hops.
+    if (!this._autoRetryDone) {
+      this._autoRetryDone = true;
+      this._autoRetryTimer = setTimeout(() => {
+        this._autoRetryTimer = null;
+        this.setState({ hasError: false });
+      }, 600);
+    }
   }
 
   handleRetry = () => {

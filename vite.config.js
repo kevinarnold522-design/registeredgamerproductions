@@ -22,5 +22,34 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ]
+  ],
+  // Browser targets that cover the mobile devices users actually have. Older
+  // mobile-Safari (< 15) chokes on top-level await and a few newer syntax
+  // features, which was contributing to the "PAGE HICCUP" parse failures.
+  build: {
+    target: ['es2019', 'chrome87', 'safari14', 'firefox78', 'edge88'],
+    cssTarget: ['chrome87', 'safari14'],
+    sourcemap: false,
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        // Split heavy vendor libs into their own chunks so the initial mobile
+        // download is small and one slow chunk doesn't take down the rest.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('react-router')) return 'vendor-router';
+          if (id.includes('@tanstack')) return 'vendor-query';
+          if (id.includes('@radix-ui')) return 'vendor-radix';
+          if (id.includes('framer-motion')) return 'vendor-motion';
+          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+          if (id.includes('lucide-react')) return 'vendor-icons';
+          if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react';
+          return 'vendor';
+        },
+      },
+    },
+  },
+  esbuild: {
+    target: 'es2019',
+  },
 });
