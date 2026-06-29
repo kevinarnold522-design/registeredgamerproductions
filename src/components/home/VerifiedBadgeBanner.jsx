@@ -61,7 +61,7 @@ export default function VerifiedBadgeBanner() {
         </motion.div>
 
         {/* Perks grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
           {perks.slice(0, 4).map((perk, i) => (
             <motion.div
               key={i}
@@ -85,7 +85,7 @@ export default function VerifiedBadgeBanner() {
             <span className="text-purple-400 text-xs font-black uppercase tracking-widest px-3">🎬 Exclusive Studio Access</span>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-700/40 to-transparent" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
             {perks.slice(4).map((perk, i) => (
               <motion.div
                 key={i}

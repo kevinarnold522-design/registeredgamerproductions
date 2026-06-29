@@ -86,7 +86,7 @@ export default function HowWeHelpSection() {
         </motion.div>
 
         {/* Group Selector */}
-        <div className="grid grid-cols-3 gap-3 mb-10 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 gap-3 mb-10 max-w-2xl mx-auto sm:grid-cols-3">
           {groups.map((g) => (
             <motion.button key={g.id} whileTap={{ scale: 0.97 }}
               onClick={() => setActiveGroup(g.id)}

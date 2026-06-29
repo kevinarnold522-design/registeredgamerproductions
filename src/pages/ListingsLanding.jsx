@@ -55,7 +55,7 @@ export default function ListingsLanding({ mode = "mine" }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen overflow-x-hidden bg-gray-950 text-white">
       <AuthNavbar user={user} profile={profile} />
       <main className="pt-20 max-w-7xl mx-auto px-4 pb-12">
         <div className="mb-6">
@@ -72,18 +72,18 @@ export default function ListingsLanding({ mode = "mine" }) {
             <p className="text-gray-500 text-sm">Manage listing data and files.</p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <div className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2">
+            <div className="flex w-full items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 sm:w-auto">
               <Search className="w-4 h-4 text-gray-500" />
-              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search listings..." className="bg-transparent outline-none text-sm text-white w-36" />
+              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search listings..." className="w-full bg-transparent outline-none text-sm text-white sm:w-36" />
             </div>
-            <Link to="/create-listing" className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-700 text-white text-sm font-bold"><Plus className="w-4 h-4" /> Post</Link>
+            <Link to="/create-listing" className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-700 text-white text-sm font-bold sm:w-auto"><Plus className="w-4 h-4" /> Post</Link>
           </div>
         </div>
 
         {loading ? (
           <div className="py-16 text-center text-gray-500">Loading listings...</div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
             {filtered.map(l => {
               const isOwner = user && (user.email === l.seller_email || user.email === l.created_by || user.id === l.created_by_id);
               const canManage = adminUser || isOwner;

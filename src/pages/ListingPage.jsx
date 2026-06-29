@@ -459,33 +459,33 @@ export default function ListingPage() {
       {/* Vignette ad — listing landing pages only */}
       <ListingVignetteAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
 
-      <div className="pt-20 max-w-7xl mx-auto px-4 pb-16">
+      <div className="pt-20 max-w-7xl mx-auto w-full overflow-x-hidden px-4 pb-16">
         {/* Back + Edit */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
             {canEdit && (
               <a href={`/create-listing?edit=${listing.id}`}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-500/50 text-purple-300 text-sm font-bold hover:bg-purple-900/60 transition-all">
+                className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-900/40 border border-purple-500/50 text-purple-300 text-sm font-bold hover:bg-purple-900/60 transition-all sm:w-auto">
                 <Pencil className="w-4 h-4" /> Edit Listing
               </a>
             )}
             {canEdit && (
               <button onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all bg-red-950/50 border-red-700/50 text-red-300 hover:bg-red-900/60">
+                className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl border text-sm font-bold transition-all bg-red-950/50 border-red-700/50 text-red-300 hover:bg-red-900/60 sm:w-auto">
                 <Trash2 className="w-4 h-4" /> Delete Listing
               </button>
             )}
             {canPageEdit && (
               <button onClick={() => setShowPageEditor(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all">
+                className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all sm:w-auto">
                 <Pencil className="w-4 h-4" /> Page Editor
               </button>
             )}
             <button onClick={() => setShowRecommendModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all">
+            className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all sm:w-auto">
             <Lightbulb className="w-4 h-4" /> Recommend Subcategory
             </button>
           </div>
@@ -500,11 +500,11 @@ export default function ListingPage() {
                 ? <img src={seller.avatar_url} className="w-full h-full object-cover" alt="" />
                 : <div className="w-full h-full flex items-center justify-center text-white font-bold">{(seller.username || "S")[0]}</div>}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-white font-bold text-sm">{seller.display_name || seller.username}</p>
               <p className="text-gray-500 text-xs">@{seller.username} · View Channel</p>
             </div>
-            <span className="text-purple-400 text-xs font-bold">View Channel →</span>
+            <span className="flex-shrink-0 text-purple-400 text-xs font-bold">View Channel →</span>
           </a>
         )}
 
@@ -549,7 +549,7 @@ export default function ListingPage() {
               </div>
             )}
 
-            <div className="flex items-center gap-3 mt-4">
+            <div className="mt-4 flex flex-wrap items-center gap-3">
               <button onClick={handleLike}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all font-semibold text-sm ${liked ? "bg-purple-900/40 border-purple-500 text-purple-300" : "bg-gray-900 border-gray-700 text-gray-400 hover:border-purple-500/50"}`}>
                 <Heart className={`w-4 h-4 transition-all ${liked ? "fill-purple-400 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" : ""}`} />
@@ -563,7 +563,7 @@ export default function ListingPage() {
                 <RepostButton item={listing} type="listing" user={user} profile={profile} />
               </div>
               <ListingReportButton listingId={listing.id} position="static" />
-              <div className="theme-glow-action flex items-center gap-1.5 text-purple-300 text-sm ml-auto rounded-lg px-1.5 py-0.5">
+              <div className="theme-glow-action flex w-full items-center gap-1.5 text-purple-300 text-sm rounded-lg px-1.5 py-0.5 sm:ml-auto sm:w-auto">
                 <Eye className="w-4 h-4 theme-glow-icon" /> {formatCount(listing.views || 0)}
               </div>
             </div>
@@ -624,9 +624,9 @@ export default function ListingPage() {
               {listing.is_premium && <span className="px-2.5 py-1 rounded-full bg-yellow-900/40 border border-yellow-500/40 text-yellow-300 text-xs font-black">PREMIUM</span>}
             </div>
 
-            <h1 className="text-2xl font-black text-white leading-tight">{listing.title}</h1>
+            <h1 className="text-2xl font-black text-white leading-tight sm:text-3xl">{listing.title}</h1>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-3">
               {!isFree && <span className="text-3xl font-black text-purple-300">{formatListingPrice(listing.price, listing.currency)}</span>}
               <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
                 <Eye className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.views || 0)} views

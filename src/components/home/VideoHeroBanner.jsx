@@ -11,11 +11,11 @@ export default function VideoHeroBanner() {
         borderBottom: "1px solid rgba(220,38,38,0.3)",
       }}
     >
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto flex flex-col items-start gap-3 text-left sm:flex-row sm:items-center sm:justify-between">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3"
+          className="flex items-start gap-3 sm:items-center"
         >
           <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center flex-shrink-0">
             <Youtube className="w-5 h-5 text-white" />
@@ -34,7 +34,7 @@ export default function VideoHeroBanner() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3 flex-shrink-0"
+          className="flex w-full items-center gap-3 sm:w-auto sm:flex-shrink-0"
         >
           <div className="hidden md:flex items-center gap-4 text-xs text-gray-400">
             <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3 text-green-400" />1,000 Subs</span>
@@ -43,7 +43,7 @@ export default function VideoHeroBanner() {
           </div>
           <a
             href="/dashboard"
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 text-white font-bold text-sm hover:opacity-90 transition-opacity flex items-center gap-2 whitespace-nowrap"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 sm:w-auto whitespace-nowrap"
           >
             <DollarSign className="w-4 h-4" />
             Start Earning

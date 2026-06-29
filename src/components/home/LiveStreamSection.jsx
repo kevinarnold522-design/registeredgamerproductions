@@ -138,7 +138,7 @@ export default function LiveStreamSection() {
               </div>
 
               {/* Live Stats Preview */}
-              <div className="mt-8 grid grid-cols-3 gap-4">
+              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {[
                   { label: "Avg Stream Duration", value: "2h 14m", icon: <Video className="w-5 h-5 text-purple-400" />, glow: "rgba(168,85,247,0.4)", border: "rgba(168,85,247,0.3)" },
                   { label: "Peak Concurrent Viewers", value: "—", icon: <Eye className="w-5 h-5 text-pink-400" />, glow: "rgba(236,72,153,0.4)", border: "rgba(236,72,153,0.3)" },
