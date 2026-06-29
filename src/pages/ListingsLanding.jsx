@@ -4,8 +4,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2 } from "lucide-react";
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
-import MascotShowcase from "@/components/shared/MascotShowcase";
-import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -59,12 +58,7 @@ export default function ListingsLanding({ mode = "mine" }) {
     <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950 text-white">
       <AuthNavbar user={user} profile={profile} />
       <main className="mx-auto w-full max-w-7xl px-4 pt-20 pb-12">
-        <div className="mb-6">
-          <MascotShowcase
-            compact={false}
-          />
-          <GamerSocialsBar className="mt-4" />
-        </div>
+        <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
 
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6"><ArrowLeft className="w-4 h-4" /> Back</button>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">

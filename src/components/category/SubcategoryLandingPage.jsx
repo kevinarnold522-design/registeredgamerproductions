@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
 
@@ -51,6 +52,8 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
         <span>/</span>
         <span className="text-white capitalize">{sub.replace(/_/g, " ")}</span>
       </div>
+
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
