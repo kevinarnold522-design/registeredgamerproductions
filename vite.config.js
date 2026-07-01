@@ -1,4 +1,5 @@
 import base44 from "@base44/vite-plugin"
+import legacy from '@vitejs/plugin-legacy'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { resolve } from 'node:path'
@@ -36,6 +37,11 @@ export default defineConfig({
       },
     },
     react(),
+    legacy({
+      targets: ['defaults', 'iOS >= 12', 'Safari >= 12', 'Chrome >= 64'],
+      modernPolyfills: true,
+      renderLegacyChunks: true,
+    }),
   ],
   // Browser targets that cover the mobile devices users actually have. Older
   // mobile-Safari (< 15) chokes on top-level await and a few newer syntax

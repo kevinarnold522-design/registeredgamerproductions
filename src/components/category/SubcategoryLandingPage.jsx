@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Eye, Plus, Tag, Search, Send, ArrowLeft } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Eye, Plus, Tag, Send } from "lucide-react";
+import { Link } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
@@ -11,11 +11,11 @@ import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/categoryMatching";
+import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 
 const PER_PAGE = 10;
 
 export default function SubcategoryLandingPage({ user, profile: _profile, cat, sub, parentCategoryName }) {
-  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -48,13 +48,6 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 py-8 max-w-6xl mx-auto relative z-10">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-5 inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-white shadow-[0_0_16px_rgba(168,85,247,0.18)] transition-all hover:brightness-110"
-      >
-        <ArrowLeft className="h-4 w-4" /> Back
-      </button>
-
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <Link to="/" className="hover:text-white transition-colors">Home</Link>
@@ -66,32 +59,26 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
 
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
 
+      <LandingSearchHeader
+        searchValue={search}
+        onSearchChange={(e) => setSearch(e.target.value)}
+        searchPlaceholder="Search listings..."
+        rightSlot={user ? (
+          <Link
+            to={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
+            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity"
+          >
+            {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
+          </Link>
+        ) : null}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black capitalize">{sub.replace(/_/g, " ")}</h1>
           <p className="text-gray-400 text-sm mt-1">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
         </div>
-        {user && (
-          <Link
-            to={`/create-listing?cat=${cat}&sub=${sub}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold hover:opacity-90 transition-opacity"
-          >
-            {cat === "games" ? <Plus className="w-4 h-4" /> : <Send className="w-4 h-4" />} {cat === "games" ? "Add a Game" : cat === "premium_mods" ? "Sell a Premium Mod" : "Post"}
-          </Link>
-        )}
-      </div>
-
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-        <input
-          type="text"
-          placeholder="Search listings..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 text-white text-sm focus:border-purple-500 focus:outline-none"
-        />
       </div>
 
       {/* Listings */}

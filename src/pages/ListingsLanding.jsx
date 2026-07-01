@@ -2,19 +2,18 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
-import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2, Trophy, Download } from "lucide-react";
+import { Eye, Plus, Package, Pencil, Trash2, Trophy, Download } from "lucide-react";
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { getPublisherRankMap } from "@/lib/publisherRank";
 import { listingScore } from "@/lib/leaderboardScore";
-import MascotShowcase from "@/components/shared/MascotShowcase";
+import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 
 export default function ListingsLanding({ mode = "mine" }) {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [items, setItems] = useState([]);
@@ -75,31 +74,24 @@ export default function ListingsLanding({ mode = "mine" }) {
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-2" />
       <main className="mx-auto w-full max-w-7xl px-4 pt-6 pb-12">
-        <div className="mb-4">
-          <MascotShowcase compact={false} />
-        </div>
         <div className="mb-3 flex flex-col gap-3 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-black via-gray-950 to-gray-900 p-3 shadow-[0_0_32px_rgba(245,158,11,0.10)] sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-amber-400 text-xs font-bold uppercase tracking-widest">Listings</p>
             <h1 className="text-2xl font-black text-white sm:text-3xl">{mode === "all" ? "All Listings" : "My Listings"}</h1>
             <p className="text-gray-500 text-xs sm:text-sm">Compact landing view with leaderboard stats.</p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-            <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 sm:flex sm:w-auto sm:flex-nowrap">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back
-            </button>
-            <div className="flex min-w-0 items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 sm:w-auto">
-              <Search className="w-4 h-4 text-gray-500" />
-              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search listings..." className="w-full min-w-0 bg-transparent outline-none text-sm text-white sm:w-36" />
-            </div>
-            </div>
-            <Link to="/create-listing" className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-sm font-black sm:w-auto"><Plus className="w-4 h-4" /> Post</Link>
-          </div>
         </div>
+
+        <LandingSearchHeader
+          searchValue={q}
+          onSearchChange={(e) => setQ(e.target.value)}
+          searchPlaceholder="Search listings..."
+          rightSlot={
+            <Link to="/create-listing" className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 px-5 py-3 text-sm font-black text-black">
+              <Plus className="w-4 h-4" /> Post
+            </Link>
+          }
+        />
 
         {loading ? (
           <BrandedLoadingScreen label="Loading Listings..." minHeight="18rem" />

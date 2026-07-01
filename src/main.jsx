@@ -44,7 +44,7 @@ import '@/index.css'
   } catch (_) {}
 })();
 
-(function markBootstrapReady() {
+function markBootstrapReady() {
   if (typeof window === 'undefined') return;
 
   try {
@@ -61,10 +61,16 @@ import '@/index.css'
       window.history.replaceState({}, document.title, cleanUrl);
     }
   } catch (_) {}
-})();
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <AppErrorBoundary>
     <App />
   </AppErrorBoundary>
 )
+
+if (typeof window !== 'undefined') {
+  queueMicrotask(markBootstrapReady);
+  setTimeout(markBootstrapReady, 0);
+  requestAnimationFrame(markBootstrapReady);
+}

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Tag, Layers, Gamepad2, DollarSign, Search, Filter, ArrowLeft } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Tag, Layers, Gamepad2, DollarSign, Filter, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { formatListingPrice } from "@/lib/currency";
+import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 
 // Homepage-style premium mod game cards
 const PREMIUM_MOD_GAME_CARDS = [
@@ -20,7 +21,6 @@ const PREMIUM_MOD_GAME_CARDS = [
 ];
 
 export default function PremiumModsLandingPage({ user }) {
-  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -62,12 +62,6 @@ export default function PremiumModsLandingPage({ user }) {
       {/* Hero */}
       <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #2a1a00, #030712)" }}>
         <div className="max-w-7xl mx-auto relative z-10">
-          <button
-            onClick={() => navigate(-1)}
-            className="mb-4 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </button>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
             <span className="bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Premium Mods</span> & Paid Content
           </h1>
@@ -78,6 +72,17 @@ export default function PremiumModsLandingPage({ user }) {
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-3" />
 
       <div className="max-w-7xl mx-auto px-4 py-10">
+        <LandingSearchHeader
+          searchValue={search}
+          onSearchChange={(e) => setSearch(e.target.value)}
+          searchPlaceholder="Search premium mods..."
+          rightSlot={user ? (
+            <Link to="/create-listing?cat=premium_mods" className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-5 py-3 text-sm font-black text-white hover:opacity-90">
+              <Plus className="h-4 w-4" /> Sell a Premium Mod
+            </Link>
+          ) : null}
+        />
+
         {/* Sell a Premium Mod — homepage game cards */}
         <div className="mb-12">
           <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
@@ -117,11 +122,6 @@ export default function PremiumModsLandingPage({ user }) {
             <h3 className="text-white font-bold">Browse By</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search mods..."
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500" />
-            </div>
             <select value={game} onChange={e => setGame(e.target.value)}
               className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-500">
               <option value="">All Games</option>
