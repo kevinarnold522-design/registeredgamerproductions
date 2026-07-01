@@ -347,6 +347,18 @@ export default function SubcategoryLandingPage() {
       {!isLoadingAuth && (user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />)}
 
       <div className="pt-20 px-4 max-w-7xl mx-auto pb-16">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+          </div>
+        </div>
+        <GamerBrandFooter position="top" className="px-0 pt-0 pb-8" />
+
         <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
           <div>
             <p className="text-purple-400 text-xs font-semibold uppercase tracking-widest mb-1">{cat} · {sub}</p>
@@ -354,16 +366,6 @@ export default function SubcategoryLandingPage() {
             <p className="text-gray-500 text-sm mt-1">Explore cards in this subcategory{admin ? " · Hover cards to edit" : ""}</p>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-            <button onClick={() => setShowRecommend(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-cyan-300 border border-cyan-700/40 bg-cyan-900/20 hover:bg-cyan-900/40 transition-all">
-              <Lightbulb className="w-4 h-4" /> Recommend Subcategory
-            </button>
             {user && (
               <button onClick={() => navigate(`/create-listing?cat=${encodeURIComponent(cat)}&sub=${encodeURIComponent(sub)}${cat === "premium_mods" ? `&game=${encodeURIComponent(sub)}` : ""}`)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-black text-white"
@@ -380,8 +382,6 @@ export default function SubcategoryLandingPage() {
             )}
           </div>
         </div>
-
-        <GamerBrandFooter position="top" className="px-0 pt-0 pb-8" />
 
         {cards.length === 0 && !admin && (
           <div className="text-center py-24">

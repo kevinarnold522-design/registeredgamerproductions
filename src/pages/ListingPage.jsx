@@ -463,6 +463,18 @@ export default function ListingPage() {
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <StickySearchBar />
+      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-16">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+          </div>
+        </div>
+      </div>
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
 
       {/* Download ad gate intentionally disabled — clicking Download now routes
@@ -473,17 +485,9 @@ export default function ListingPage() {
       {/* Vignette ad — listing landing pages only */}
       <ListingVignetteAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
 
-      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-16 pb-12">
+      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-6 pb-12">
         {/* Back + Edit */}
-        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-          </div>
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
             {canEdit && (
               <a href={`/create-listing?edit=${listing.id}`}
@@ -503,10 +507,6 @@ export default function ListingPage() {
                 <Pencil className="w-4 h-4" /> Page Editor
               </button>
             )}
-            <button onClick={() => setShowRecommendModal(true)}
-            className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-sm font-bold hover:bg-cyan-900/50 transition-all sm:w-auto">
-            <Lightbulb className="w-4 h-4" /> Recommend Subcategory
-            </button>
           </div>
         </div>
 

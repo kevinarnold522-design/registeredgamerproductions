@@ -22,27 +22,12 @@ function isLocalOrigin(hostname = "") {
 
 function resolveApiBase() {
   const fromEnv = (import.meta.env.VITE_CF_API_URL || "").replace(/\/$/, "");
-  try {
-    const currentOrigin = window.location.origin.replace(/\/$/, "");
-    const { hostname } = window.location;
-
-    // The live Cloudflare custom domain should use same-origin functions/routes.
-    // Forcing it over to the fallback workers.dev host can break auth/session
-    // flow and first-load data on the main site even when Vercel/local work.
-    if (!isLocalOrigin(hostname) && (hostname === "gamer.productions" || hostname === "www.gamer.productions")) {
-      return currentOrigin;
-    }
-  } catch {}
-
   if (!fromEnv) return WORKER_URL;
   try {
     const envOrigin = new URL(fromEnv).origin.replace(/\/$/, "");
     const currentOrigin = window.location.origin.replace(/\/$/, "");
-    // Same-origin is correct on deployed first-party hosts. Only force the
-    // worker fallback during local development where the frontend has no
-    // backend functions mounted on the same origin.
     if (envOrigin === currentOrigin) {
-      return isLocalOrigin(window.location.hostname) ? WORKER_URL : currentOrigin;
+      return WORKER_URL;
     }
   } catch {
     return WORKER_URL;
