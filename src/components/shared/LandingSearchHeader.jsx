@@ -14,10 +14,10 @@ export default function LandingSearchHeader({
 
   return (
     <div className={`mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between ${className}`}>
-      <div className="flex w-full items-center overflow-hidden rounded-2xl border border-fuchsia-400/40 bg-[linear-gradient(135deg,rgba(88,28,135,0.82),rgba(124,58,237,0.78),rgba(217,70,239,0.7))] shadow-[0_0_24px_rgba(217,70,239,0.2)] lg:max-w-3xl">
+      <div className="gp-toolbar flex w-full items-center overflow-hidden lg:max-w-3xl">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex flex-shrink-0 items-center justify-center gap-2 self-stretch border-r border-white/10 bg-black/18 px-4 py-3 text-sm font-black text-white transition-all hover:bg-black/26"
+          className="touch-target inline-flex flex-shrink-0 items-center justify-center gap-2 self-stretch border-r border-white/10 bg-black/18 px-4 py-3 text-sm font-black text-white transition-all hover:bg-black/26"
         >
           <ArrowLeft className="h-4 w-4" /> Back
         </button>
@@ -31,7 +31,7 @@ export default function LandingSearchHeader({
           />
         </div>
       </div>
-      {rightSlot ? <div className="flex flex-wrap items-center gap-2">{rightSlot}</div> : null}
+      {rightSlot ? <div className="flex flex-wrap items-stretch gap-2">{rightSlot}</div> : null}
     </div>
   );
 }

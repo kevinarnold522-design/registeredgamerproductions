@@ -25,6 +25,7 @@ import CommunityTagAd from "@/components/ads/CommunityTagAd";
 import { useLocation } from "react-router-dom";
 
 export default function CommunityLandingPage() {
+  const asArray = (value) => Array.isArray(value) ? value : [];
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -74,39 +75,71 @@ export default function CommunityLandingPage() {
 
   useEffect(() => {
     if (user?.email) {
-      base44.entities.UserProfile.filter({ user_email: user.email }).then(p => setProfile(p[0] || null));
+      base44.entities.UserProfile.filter({ user_email: user.email }).then(p => {
+        const profiles = asArray(p);
+        setProfile(profiles[0] || null);
+      }).catch(() => setProfile(null));
     }
     loadData();
   }, [franchiseId, user?.email]);
 
   const loadData = async () => {
+    if (!franchiseId) {
+      setCommunity(null);
+      setMembers([]);
+      setPosts([]);
+      setListings([]);
+      setIsJoined(false);
+      setIsModerator(false);
+      setIsTier1(false);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
-    const [comms, membersData, postsData, listingsData] = await Promise.all([
-      base44.entities.GamingCommunity.filter({ franchise_id: franchiseId }),
-      base44.entities.CommunityMember.filter({ franchise_id: franchiseId }),
-      base44.entities.CommunityPost.filter({ franchise_id: franchiseId }),
-      base44.entities.Listing.filter({ community_franchise_id: franchiseId, status: "active" }),
-    ]);
-    const comm = comms[0] || null;
-    setCommunity(comm);
-    setEditLogoUrl(comm?.logo_url || "");
-    setEditLogoUrls(comm?.logo_urls || []);
-    setEditCoverUrl(comm?.cover_url || "");
-    setEditCoverUrls(comm?.cover_urls || (comm?.cover_url ? [comm.cover_url] : []));
-    setEditDesc(comm?.description || "");
-    setMembers(membersData);
-    const active = postsData.filter(p => p.status === "active")
-      .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-    setPosts(active);
-    setListings(listingsData);
-    if (user?.email) {
-      const myMember = membersData.find(m => m.user_email === user.email);
-      setIsJoined(!!myMember);
-      setIsModerator(myMember?.is_moderator || (comm?.moderator_emails || []).includes(user.email));
-      const [subs] = await Promise.all([
-        base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" }),
+    try {
+      const [comms, membersData, postsData, listingsData] = await Promise.all([
+        base44.entities.GamingCommunity.filter({ franchise_id: franchiseId }),
+        base44.entities.CommunityMember.filter({ franchise_id: franchiseId }),
+        base44.entities.CommunityPost.filter({ franchise_id: franchiseId }),
+        base44.entities.Listing.filter({ community_franchise_id: franchiseId, status: "active" }),
       ]);
-      setIsTier1(admin || subs.length > 0);
+      const safeCommunities = asArray(comms);
+      const safeMembers = asArray(membersData);
+      const safePosts = asArray(postsData);
+      const safeListings = asArray(listingsData);
+      const comm = safeCommunities[0] || null;
+      setCommunity(comm);
+      setEditLogoUrl(comm?.logo_url || "");
+      setEditLogoUrls(asArray(comm?.logo_urls).filter(Boolean));
+      setEditCoverUrl(comm?.cover_url || "");
+      setEditCoverUrls(asArray(comm?.cover_urls).filter(Boolean).length > 0 ? asArray(comm?.cover_urls).filter(Boolean) : (comm?.cover_url ? [comm.cover_url] : []));
+      setEditDesc(comm?.description || "");
+      setMembers(safeMembers);
+      const active = safePosts
+        .filter(p => p?.status === "active")
+        .sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0));
+      setPosts(active);
+      setListings(safeListings.filter(item => item && typeof item === "object"));
+      if (user?.email) {
+        const myMember = safeMembers.find(m => m?.user_email === user.email);
+        setIsJoined(!!myMember);
+        setIsModerator(!!myMember?.is_moderator || asArray(comm?.moderator_emails).includes(user.email));
+        const subs = await base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" }).catch(() => []);
+        setIsTier1(admin || asArray(subs).length > 0);
+      } else {
+        setIsJoined(false);
+        setIsModerator(false);
+        setIsTier1(false);
+      }
+    } catch {
+      setCommunity(null);
+      setMembers([]);
+      setPosts([]);
+      setListings([]);
+      setIsJoined(false);
+      setIsModerator(false);
+      setIsTier1(false);
     }
     setLoading(false);
   };
@@ -245,10 +278,16 @@ export default function CommunityLandingPage() {
   };
 
   const filteredPosts = posts
-    .filter(p => !search || p.content.toLowerCase().includes(search.toLowerCase()) || p.author_username?.toLowerCase().includes(search.toLowerCase()))
+    .filter(p => {
+      if (!search) return true;
+      const normalizedSearch = search.toLowerCase();
+      const content = String(p?.content || "").toLowerCase();
+      const author = String(p?.author_username || "").toLowerCase();
+      return content.includes(normalizedSearch) || author.includes(normalizedSearch);
+    })
     .sort((a, b) => {
-      if (sortOrder === "newest") return new Date(b.created_date) - new Date(a.created_date);
-      if (sortOrder === "oldest") return new Date(a.created_date) - new Date(b.created_date);
+      if (sortOrder === "newest") return new Date(b?.created_date || 0) - new Date(a?.created_date || 0);
+      if (sortOrder === "oldest") return new Date(a?.created_date || 0) - new Date(b?.created_date || 0);
       if (sortOrder === "popular") return (b.likes || 0) - (a.likes || 0);
       return 0;
     });

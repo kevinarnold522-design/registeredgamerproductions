@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { isAdmin } from "@/lib/constants";
 
 export default function GroupChat({ franchiseId, communityId, user, profile, accentColor = "#7c3aed", inline = false }) {
+  const asArray = (value) => Array.isArray(value) ? value : [];
   const [open, setOpen] = useState(inline);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -19,9 +20,13 @@ export default function GroupChat({ franchiseId, communityId, user, profile, acc
     if (!franchiseId) return;
     base44.entities.GroupChatMessage.filter({ franchise_id: franchiseId }, "created_date", 60)
       .then(msgs => {
-        const active = msgs.filter(m => !m.is_deleted);
+        const active = asArray(msgs).filter(m => !m?.is_deleted);
         setMessages(active);
         if (!open) setUnread(active.length > 0 ? Math.min(active.length, 9) : 0);
+      })
+      .catch(() => {
+        setMessages([]);
+        setUnread(0);
       });
 
     const unsub = base44.entities.GroupChatMessage.subscribe((event) => {

@@ -22,11 +22,13 @@ import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { useNavigate } from "react-router-dom";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
 // Newsfeed for a community franchise
 function CommunityNewsfeed({ franchise, community, user, profile }) {
+  const asArray = (value) => Array.isArray(value) ? value : [];
   const [posts, setPosts] = useState([]);
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,17 +41,24 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const allPosts = await base44.entities.CommunityPost.filter({ franchise_id: franchise.id });
-        let allListings = await base44.entities.Listing.filter({ community_franchise_id: franchise.id }, "-created_date", 120);
+        const allPosts = asArray(await base44.entities.CommunityPost.filter({ franchise_id: franchise.id }));
+        let allListings = asArray(await base44.entities.Listing.filter({ community_franchise_id: franchise.id }, "-created_date", 120));
         if (allListings.length === 0) {
           allListings = await base44.entities.Listing.list("-created_date", 120);
         }
-        setPosts(allPosts.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)).slice(0, 50));
-        setListings(allListings.filter(l => l.status === "active"));
+        const safeListings = asArray(allListings);
+        setPosts(allPosts.filter(p => p?.status === "active").sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0)).slice(0, 50));
+        setListings(safeListings.filter(l => l?.status === "active"));
       } catch { setPosts([]); setListings([]); }
       setLoading(false);
     };
-    load();
+    if (franchise?.id) {
+      load();
+      return;
+    }
+    setPosts([]);
+    setListings([]);
+    setLoading(false);
   }, [franchise.id]);
 
   const handlePostCreated = (post) => setPosts(prev => [post, ...prev]);
@@ -65,7 +74,8 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
   });
 
   const filteredPosts = posts.filter(p => {
-    if (feedFilters.search && !p.content?.toLowerCase().includes(feedFilters.search.toLowerCase()) && !p.author_username?.toLowerCase().includes(feedFilters.search.toLowerCase())) return false;
+    const normalizedSearch = feedFilters.search.toLowerCase();
+    if (feedFilters.search && !String(p?.content || "").toLowerCase().includes(normalizedSearch) && !String(p?.author_username || "").toLowerCase().includes(normalizedSearch)) return false;
     return true;
   });
 
@@ -480,7 +490,9 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
 }
 
 export default function GamingCommunity() {
+  const asArray = (value) => Array.isArray(value) ? value : [];
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [search, setSearch] = useState("");
@@ -509,11 +521,12 @@ export default function GamingCommunity() {
   const admin = isAdmin(user?.email);
 
   const onDragStart = useCallback((e) => {
+    if (isMobile) return;
     dragging.current = true;
     startX.current = e.clientX;
     startW.current = sidebarWidth;
     document.body.style.userSelect = "none";
-  }, [sidebarWidth]);
+  }, [isMobile, sidebarWidth]);
 
   useEffect(() => {
     const onMove = (e) => {
@@ -529,20 +542,35 @@ export default function GamingCommunity() {
 
   useEffect(() => {
     if (user?.email) {
-      base44.entities.UserProfile.filter({ user_email: user.email }).then(p => setProfile(p[0] || null));
+      base44.entities.UserProfile.filter({ user_email: user.email }).then(p => {
+        const profiles = asArray(p);
+        setProfile(profiles[0] || null);
+      }).catch(() => setProfile(null));
       base44.entities.CommunityMember.filter({ user_email: user.email }).then(m => {
-        setJoinedIds(new Set(m.map(x => x.franchise_id)));
-        setModeratorIds(new Set(m.filter(x => x.is_moderator).map(x => x.franchise_id)));
+        const memberships = asArray(m);
+        setJoinedIds(new Set(memberships.map(x => x?.franchise_id).filter(Boolean)));
+        setModeratorIds(new Set(memberships.filter(x => x?.is_moderator).map(x => x?.franchise_id).filter(Boolean)));
+      }).catch(() => {
+        setJoinedIds(new Set());
+        setModeratorIds(new Set());
       });
+    } else {
+      setProfile(null);
+      setJoinedIds(new Set());
+      setModeratorIds(new Set());
     }
     base44.entities.GamingCommunity.list().then(comms => {
+      const safeCommunities = asArray(comms);
       const counts = {}, map = {};
-      comms.forEach(c => {
+      safeCommunities.forEach(c => {
         counts[c.franchise_id] = c.member_count || 0;
         map[c.franchise_id] = c;
       });
       setMemberCounts(counts);
       setCommunities(map);
+    }).catch(() => {
+      setMemberCounts({});
+      setCommunities({});
     });
   }, [user]);
 
@@ -550,7 +578,7 @@ export default function GamingCommunity() {
     if (!user?.email || Object.keys(communities).length === 0) return;
     const modSet = new Set(moderatorIds);
     Object.values(communities).forEach(c => {
-      if ((c.moderator_emails || []).includes(user.email)) modSet.add(c.franchise_id);
+      if (asArray(c?.moderator_emails).includes(user.email)) modSet.add(c.franchise_id);
     });
     setModeratorIds(modSet);
   }, [communities, user?.email]);
@@ -587,15 +615,16 @@ export default function GamingCommunity() {
 
   useEffect(() => {
     base44.entities.GamingCommunity.list().then(comms => {
+      const safeCommunities = asArray(comms);
       const knownIds = new Set(TOP_FRANCHISES.map(f => f.id));
-      const extra = comms.filter(c => !knownIds.has(c.franchise_id));
+      const extra = safeCommunities.filter(c => !knownIds.has(c?.franchise_id));
       const newFranchises = extra.map(c => ({
         id: c.franchise_id, name: c.name, emoji: "🎮",
         color: c.color_primary || "#1a1a2e", accent: c.color_secondary || "#7c3aed",
         genre: c.genre || "Gaming",
       }));
       setExtraFranchises(newFranchises);
-    });
+    }).catch(() => setExtraFranchises([]));
   }, []);
 
   const allFranchises = [...TOP_FRANCHISES, ...extraFranchises];
@@ -634,6 +663,16 @@ export default function GamingCommunity() {
       setAutoOpened(true);
     }
   }, [filtered.length]);
+
+  React.useEffect(() => {
+    if (filtered.length === 0) {
+      setActiveFranchise(null);
+      return;
+    }
+    if (!activeFranchise || !filtered.some(item => item.id === activeFranchise.id)) {
+      setActiveFranchise(filtered[0]);
+    }
+  }, [filtered, activeFranchise]);
 
   const handleJoinCard = async (franchise) => {
     if (!user) { base44.auth.redirectToLogin(); return; }
@@ -683,10 +722,18 @@ export default function GamingCommunity() {
   };
 
   const handleCardClick = (franchise) => {
+    if (isMobile) {
+      setActiveFranchise(franchise);
+      return;
+    }
     navigate(`/community/${franchise.id}`);
   };
 
   const handleSelectFranchise = (franchise) => {
+    if (isMobile) {
+      setActiveFranchise(franchise);
+      return;
+    }
     navigate(`/community/${franchise.id}`);
   };
 
@@ -887,8 +934,11 @@ export default function GamingCommunity() {
         </AnimatePresence>
 
         {/* Split layout */}
-        <div className="flex gap-0">
-          <div className="flex-shrink-0 flex flex-col gap-3 overflow-y-auto pr-1" style={{ width: sidebarWidth, maxHeight: 800 }}>
+        <div className={isMobile ? "flex flex-col gap-4" : "flex gap-0"}>
+          <div
+            className={`flex-shrink-0 flex flex-col gap-3 pr-1 ${isMobile ? "w-full overflow-visible" : "overflow-y-auto"}`}
+            style={isMobile ? undefined : { width: sidebarWidth, maxHeight: 800 }}
+          >
             {filtered.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-4xl mb-3">🎮</p>
@@ -940,7 +990,7 @@ export default function GamingCommunity() {
 
           {/* Drag handle */}
           <div onMouseDown={onDragStart}
-            className="flex-shrink-0 w-3 flex items-center justify-center cursor-col-resize group mx-1"
+            className={`flex-shrink-0 w-3 items-center justify-center cursor-col-resize group mx-1 ${isMobile ? "hidden" : "flex"}`}
             title="Drag to resize">
             <div className="w-1 h-16 rounded-full bg-gray-700 group-hover:bg-purple-500 transition-colors">
               <GripVertical className="w-3 h-3 text-gray-500 group-hover:text-purple-300 -ml-1" />

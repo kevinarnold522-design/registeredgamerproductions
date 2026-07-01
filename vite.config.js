@@ -57,14 +57,12 @@ export default defineConfig({
         index: resolve(__dirname, 'src/main.jsx'),
       },
       output: {
-        entryFileNames: (chunkInfo) => chunkInfo.name === 'index' ? 'assets/index.js' : 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || '';
           if (name.endsWith('.css')) {
-            return name.includes('index') || name === 'style.css'
-              ? 'assets/index.css'
-              : 'assets/[name]-[hash][extname]';
+            return 'assets/[name]-[hash][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         },
