@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2, Trophy, Download } from "lucide-react";
+import { ArrowLeft, Plus, Search, Package, Pencil, Trash2, Trophy, Download } from "lucide-react";
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
@@ -103,7 +103,6 @@ export default function ListingsLanding({ mode = "mine" }) {
                           <img src={l.images[0]} className="relative w-full h-full object-contain p-2" alt={l.title || "Listing"} />
                         </>
                       ) : <Package className="w-10 h-10 text-gray-600" />}
-                      <span className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
                     </div>
                     <div className="p-3">
                       <p className="font-bold text-sm truncate">{l.title}</p>
@@ -125,16 +124,22 @@ export default function ListingsLanding({ mode = "mine" }) {
                             <div key={metric.label} className={`flex min-h-[72px] flex-col justify-between rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2.5 py-2 ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
                               <div className="mb-1 flex items-center justify-between gap-2">
                                 {metric.isPoints ? (
-                                  <span className="rounded-full border border-fuchsia-300/35 bg-black/20 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-100">PTS</span>
+                                  <p className="text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-100/75">Leaderboard score</p>
                                 ) : (
                                   <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
                                 )}
                                 <p className={`text-[8px] uppercase tracking-[0.16em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.label}</p>
                               </div>
-                              <div className="flex items-end gap-1">
-                                <p className={`text-base font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
-                                {metric.isPoints && <p className="pb-0.5 text-[8px] font-black uppercase tracking-[0.2em] text-fuchsia-200">pts</p>}
-                              </div>
+                              {metric.isPoints ? (
+                                <div className="flex flex-col items-start gap-0.5">
+                                  <p className={`text-lg font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                                  <p className="text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-200">pts</p>
+                                </div>
+                              ) : (
+                                <div className="flex items-end gap-1">
+                                  <p className={`text-base font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>

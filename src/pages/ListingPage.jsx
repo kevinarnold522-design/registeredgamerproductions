@@ -580,16 +580,22 @@ export default function ListingPage() {
                     <div key={metric.label} className={`flex min-h-[84px] flex-col justify-between rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-3 py-2.5 ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
                       <div className="mb-1 flex items-center justify-between gap-2">
                         {metric.isPoints ? (
-                          <span className="rounded-full border border-fuchsia-300/35 bg-black/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-100">PTS</span>
+                          <p className="text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-100/75">Leaderboard score</p>
                         ) : (
                           <p className={`text-[10px] font-black ${metric.accent}`}>{metric.rank}</p>
                         )}
                         <p className={`text-[10px] uppercase tracking-[0.18em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.label}</p>
                       </div>
-                      <div className="flex items-end gap-1">
-                        <p className={`text-lg font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
-                        {metric.isPoints && <p className="pb-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-200">pts</p>}
-                      </div>
+                      {metric.isPoints ? (
+                        <div className="flex flex-col items-start gap-0.5">
+                          <p className={`text-xl font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-fuchsia-200">pts</p>
+                        </div>
+                      ) : (
+                        <div className="flex items-end gap-1">
+                          <p className="text-lg font-black leading-none text-white">{metric.value}</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -610,9 +616,6 @@ export default function ListingPage() {
                 <RepostButton item={listing} type="listing" user={user} profile={profile} />
               </div>
               <ListingReportButton listingId={listing.id} position="static" />
-              <div className="theme-glow-action flex w-full items-center gap-1.5 text-purple-300 text-sm rounded-lg px-1.5 py-0.5 sm:ml-auto sm:w-auto">
-                <Eye className="w-4 h-4 theme-glow-icon" /> {formatCount(listing.views || 0)}
-              </div>
             </div>
 
             <div className="mt-4 p-4 bg-gray-900 rounded-2xl border border-gray-800">
@@ -693,12 +696,6 @@ export default function ListingPage() {
 
             <div className="flex flex-wrap items-center gap-3">
               {!isFree && <span className="text-3xl font-black text-purple-300">{formatListingPrice(listing.price, listing.currency)}</span>}
-              <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
-                <Eye className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.views || 0)} views
-              </span>
-              <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
-                <Download className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.downloads || 0)} downloads
-              </span>
               <span className="theme-glow-action text-purple-300 text-sm flex items-center gap-1 rounded-lg px-1.5 py-0.5">
                 <Share2 className="w-3.5 h-3.5 theme-glow-icon" /> {formatCount(listing.shares || 0)} shares
               </span>
