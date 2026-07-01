@@ -42,12 +42,15 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
   // Always fill the parent box so the player/thumbnail can't collapse to
   // zero height inside flex/grid containers.
   const fill = "absolute inset-0 w-full h-full";
+  const container = `relative w-full h-full overflow-hidden ${className}`;
 
   if (errored) {
     return (
-      <div className={`${fill} flex flex-col items-center justify-center gap-2 bg-gray-900 text-gray-600 ${className}`}>
-        <Play className="w-10 h-10" />
-        <p className="text-xs">Preview unavailable</p>
+      <div className={container}>
+        <div className={`${fill} flex flex-col items-center justify-center gap-2 bg-gray-900 text-gray-600`}>
+          <Play className="w-10 h-10" />
+          <p className="text-xs">Preview unavailable</p>
+        </div>
       </div>
     );
   }
@@ -56,13 +59,13 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     const youtubeWatchUrl = `https://www.youtube.com/watch?v=${ytId}`;
     if (playing) {
       return (
-        <>
+        <div className={container}>
           {!embedFailed ? (
             <iframe
               src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1&modestbranding=1`}
               title="Video player"
               key={`${ytId}-${embedHost}`}
-              className={`${fill} ${className}`}
+              className={fill}
               frameBorder="0"
               referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -78,7 +81,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
               }}
             />
           ) : (
-            <div className={`${fill} flex flex-col items-center justify-center gap-3 bg-gray-900/95 text-gray-300 p-4 text-center ${className}`}>
+            <div className={`${fill} flex flex-col items-center justify-center gap-3 bg-gray-900/95 text-gray-300 p-4 text-center`}>
               <p className="text-sm font-semibold">Embed blocked in this browser/network</p>
               <a
                 href={youtubeWatchUrl}
@@ -90,7 +93,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
               </a>
             </div>
           )}
-        </>
+        </div>
       );
     }
     return (
@@ -104,7 +107,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
           setEmbedLoaded(false);
           setPlaying(true);
         }}
-        className={`${fill} block group ${className}`}
+        className={`${container} block group`}
       >
         <img
           src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
@@ -128,7 +131,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
       controls
       playsInline
       preload="metadata"
-      className={`${fill} object-contain ${className}`}
+      className={`w-full h-full ${className || "object-contain"}`}
       onError={() => setErrored(true)}
     />
   );

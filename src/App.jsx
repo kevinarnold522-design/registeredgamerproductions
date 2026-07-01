@@ -260,7 +260,7 @@ function App() {
               </SidebarLayout>
             </div>
             <LanguagePrompt />
-            {bootUiReady && !isMobileViewport && <FloatingNewsfeed />}
+            {!isMobileViewport && <FloatingNewsfeed />}
             {bootUiReady && <GlobalHtmlAd />}
           </Router>
           <Toaster />

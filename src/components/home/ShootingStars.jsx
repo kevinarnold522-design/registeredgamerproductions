@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import { isLikelyMobileWebDevice } from "@/lib/deviceProfile";
 
 function drawRoundedRect(ctx, x, y, width, height, radius) {
   if (typeof ctx.roundRect === "function") {
@@ -22,18 +21,16 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 
 export default function ShootingStars() {
   const canvasRef = useRef(null);
-  // Keep the full canvas effect for desktop only. Mobile/in-app browsers use
-  // the lighter CSS backdrop shell to avoid GPU stalls and black startup frames.
+  // App-level viewport logic chooses desktop vs mobile backdrop.
   const [enabled, setEnabled] = React.useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return true;
-    if (isLikelyMobileWebDevice()) return false;
     return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setEnabled(!media.matches && !isLikelyMobileWebDevice());
+    const update = () => setEnabled(!media.matches);
     update();
     if (typeof media.addEventListener === "function") {
       media.addEventListener("change", update);

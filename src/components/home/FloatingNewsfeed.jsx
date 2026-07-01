@@ -69,10 +69,11 @@ export default function FloatingNewsfeed() {
     load();
   }, []);
 
-  if (isMobileViewport || listings.length === 0) return null;
+  if (isMobileViewport) return null;
 
   // Duplicate the list so the vertical marquee loops seamlessly.
-  const loopItems = [...listings, ...listings];
+  const hasItems = listings.length > 0;
+  const loopItems = hasItems ? [...listings, ...listings] : [];
 
   return (
     <div
@@ -96,16 +97,22 @@ export default function FloatingNewsfeed() {
 
         {/* Vertical auto-scrolling marquee */}
         <div className="relative h-[45vh] lg:h-[60vh] overflow-hidden">
-          <div
-            className="flex flex-col"
-            style={{
-              animation: `fn-vscroll ${Math.max(14, listings.length * 3.2)}s linear infinite`,
-            }}
-          >
-            {loopItems.map((item, i) => (
-              <FeedRow key={`${item.id}-${i}`} item={item} />
-            ))}
-          </div>
+          {hasItems ? (
+            <div
+              className="flex flex-col"
+              style={{
+                animation: `fn-vscroll ${Math.max(14, listings.length * 3.2)}s linear infinite`,
+              }}
+            >
+              {loopItems.map((item, i) => (
+                <FeedRow key={`${item.id}-${i}`} item={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center px-4 text-center">
+              <p className="text-xs text-gray-400">Loading featured listings...</p>
+            </div>
+          )}
           {/* Fade edges */}
           <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-gray-950/95 to-transparent" />
           <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-950/95 to-transparent" />
