@@ -42,8 +42,8 @@ jobs:
             exit 1
           fi
 
-      - name: Deploy with Wrangler
-        run: npx wrangler deploy
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy dist --project-name gamer-productions
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "deploy:cloudflare": "npm run build && npx wrangler deploy",
+    "deploy:cloudflare": "npm run build && npx wrangler pages deploy dist --project-name gamer-productions",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
