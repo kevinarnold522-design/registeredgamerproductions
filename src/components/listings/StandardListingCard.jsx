@@ -101,27 +101,43 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       .catch(() => {});
   }, [initialListing.seller_email, initialListing.seller_avatar]);
 
-  // Resolve the publisher's leaderboard rank (cached) so we can show it by their name
+  // Resolve the publisher's leaderboard rank after idle — expensive API call,
+  // deferred so it never blocks the initial category page render.
   useEffect(() => {
     if (!initialListing.seller_email) return;
     let active = true;
-    getPublisherRankMap().then((map) => {
-      if (active && map[initialListing.seller_email]) setPublisherRank(map[initialListing.seller_email]);
-    });
-    return () => { active = false; };
+    const run = () => {
+      getPublisherRankMap().then((map) => {
+        if (active && map[initialListing.seller_email]) setPublisherRank(map[initialListing.seller_email]);
+      }).catch(() => {});
+    };
+    const id = typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(run, { timeout: 3000 })
+      : window.setTimeout(run, 800);
+    return () => {
+      active = false;
+      if (typeof window !== "undefined" && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(id);
+      } else {
+        clearTimeout(id);
+      }
+    };
   }, [initialListing.seller_email]);
 
   // Realtime: keep this card's stats (views, likes, comments) in sync live
   useEffect(() => {
     if (!listing?.id) return;
-    const unsubscribe = base44.entities.Listing.subscribe((event) => {
-      if (event?.data?.id !== listing.id) return;
-      if (event.type === "update") {
-        setListing((prev) => ({ ...prev, ...event.data }));
-        if (typeof event.data.views === "number") setViewCount(event.data.views);
-      }
-    });
-    return unsubscribe;
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = base44.entities.Listing.subscribe((event) => {
+        if (event?.data?.id !== listing.id) return;
+        if (event.type === "update") {
+          setListing((prev) => ({ ...prev, ...event.data }));
+          if (typeof event.data.views === "number") setViewCount(event.data.views);
+        }
+      });
+    } catch {}
+    return () => { try { unsubscribe(); } catch {} };
   }, [listing?.id]);
 
   const glow = resolveGlow(listing);

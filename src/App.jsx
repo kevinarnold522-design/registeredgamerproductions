@@ -274,7 +274,7 @@ function App() {
             {bootUiReady && !isMobileViewport && <VisitorCountryTracker />}
             {!isMobileViewport && <ShootingStars />}
             {isMobileViewport && <MobileSpaceBackdrop />}
-            <div style={{ position: "relative", zIndex: 0, width: "100%", maxWidth: "100%", overflowX: "hidden", paddingRight: showDesktopNewsfeed ? '17rem' : 0 }}>
+            <div style={{ position: "relative", zIndex: 0, width: "100%", maxWidth: "100%", overflowX: "hidden", paddingRight: (!isMobileViewport && showDesktopNewsfeed) ? '17rem' : 0 }}>
               {isMobileViewport ? (
                 <AuthenticatedApp />
               ) : (
