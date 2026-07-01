@@ -21,24 +21,7 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 
 export default function ShootingStars() {
   const canvasRef = useRef(null);
-  // App-level viewport logic chooses desktop vs mobile backdrop.
-  const [enabled, setEnabled] = React.useState(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return true;
-    return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setEnabled(!media.matches);
-    update();
-    if (typeof media.addEventListener === "function") {
-      media.addEventListener("change", update);
-      return () => media.removeEventListener("change", update);
-    }
-    media.addListener(update);
-    return () => media.removeListener(update);
-  }, []);
+  const enabled = true;
 
   useEffect(() => {
     if (!enabled) return;

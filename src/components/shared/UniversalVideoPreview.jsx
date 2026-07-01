@@ -42,7 +42,25 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
   // Always fill the parent box so the player/thumbnail can't collapse to
   // zero height inside flex/grid containers.
   const fill = "absolute inset-0 w-full h-full";
-  const container = `relative w-full h-full overflow-hidden ${className}`;
+  const blockedLayoutPrefixes = [
+    "absolute",
+    "fixed",
+    "inset-",
+    "top-",
+    "right-",
+    "bottom-",
+    "left-",
+    "z-",
+    "h-screen",
+    "min-h-screen",
+    "w-screen",
+  ];
+  const safeClassName = String(className || "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((token) => !blockedLayoutPrefixes.some((prefix) => token === prefix || token.startsWith(prefix) || token.startsWith(`!${prefix}`)))
+    .join(" ");
+  const container = `relative isolate [contain:layout_paint] w-full h-full overflow-hidden ${safeClassName}`;
 
   if (errored) {
     return (
@@ -62,14 +80,13 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
         <div className={container}>
           {!embedFailed ? (
             <iframe
-              src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1&modestbranding=1`}
+              src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1&modestbranding=1&fs=0`}
               title="Video player"
               key={`${ytId}-${embedHost}`}
               className={fill}
               frameBorder="0"
               referrerPolicy="strict-origin-when-cross-origin"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
               onLoad={() => setEmbedLoaded(true)}
               onError={() => {
                 if (embedHost === "www.youtube.com") {
@@ -131,7 +148,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
       controls
       playsInline
       preload="metadata"
-      className={`w-full h-full ${className || "object-contain"}`}
+      className={`w-full h-full ${safeClassName || "object-contain"}`}
       onError={() => setErrored(true)}
     />
   );

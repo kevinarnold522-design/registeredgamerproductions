@@ -5,7 +5,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import VideoHeroBanner from "@/components/home/VideoHeroBanner";
 import HeroSection from "@/components/home/HeroSection";
 import MarqueeTicker from "@/components/home/MarqueeTicker";
-import { InlineFloatingNewsfeed } from "@/components/home/FloatingNewsfeed";
+import FloatingNewsfeed, { InlineFloatingNewsfeed } from "@/components/home/FloatingNewsfeed";
 import CategoryCards from "@/components/home/CategoryCards";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
@@ -347,6 +347,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden text-white relative z-10">
+      {!showSplash && <FloatingNewsfeed />}
       {showSplash && <SplashScreen onDismiss={dismissSplash} />}
       {!showSplash && (
         <>
