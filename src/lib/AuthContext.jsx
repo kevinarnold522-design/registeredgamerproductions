@@ -59,7 +59,8 @@ export const AuthProvider = ({ children }) => {
     if (!document.getElementById('admin-ad-block')) {
       const style = document.createElement('style');
       style.id = 'admin-ad-block';
-      style.textContent = `iframe, ins, .adsbygoogle { display: none !important; }`;
+      // Only hide ad-specific elements — NOT all iframes (that breaks YouTube embeds)
+      style.textContent = `ins, .adsbygoogle, [data-zone], [data-ad-slot] { display: none !important; }`;
       document.head.appendChild(style);
     }
   };

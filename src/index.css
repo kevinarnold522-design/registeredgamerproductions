@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Space background visibility ──────────────────────────────────────────────
+   The animated starfield/astronaut/rocket canvas sits at z-0 (below all
+   content). Make the page body transparent so the canvas shows through.
+   Sections with bg-gray-950 use Tailwind which generates solid colors; we
+   override them to semi-transparent so the space scene bleeds through.
+   Cards, modals, and interactive elements keep their solid backgrounds.
+*/
+html, body, #root {
+  background: transparent !important;
+}
+
+/* Semi-transparent page section backgrounds — lets the starfield show through */
+section.bg-gray-950,
+section.bg-gray-950\/90,
+section.bg-gray-950\/95,
+.page-section-bg {
+  background-color: rgba(3, 7, 18, 0.78) !important;
+}
+
+/* Page wrappers (min-h-screen) should be transparent */
+.min-h-screen:not([class*="bg-gray"]):not([class*="bg-black"]):not([class*="rounded"]) {
+  background: transparent;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
