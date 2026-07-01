@@ -359,7 +359,7 @@ export default function Home() {
             )}
             <VideoHeroBanner />
             <HeroSection />
-            <InlineFloatingNewsfeed />
+            {(!isMobileViewport || showDeferredSections) && <InlineFloatingNewsfeed />}
             <CategoryCards />
             <MarqueeTicker />
 

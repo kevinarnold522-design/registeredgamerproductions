@@ -134,21 +134,29 @@ export function InlineFloatingNewsfeed() {
   const [listings, setListings] = useState([]);
 
   useEffect(() => {
+    let active = true;
     const load = async () => {
       try {
-        const res = await base44.entities.Listing.list("-created_date", 24);
+        const res = await base44.entities.Listing.list("-created_date", 12);
         const all = Array.isArray(res) ? res : (res?.data || res?.records || []);
-        const active = all.filter((l) => (l.status ? l.status === "active" : true) && l.is_approved !== false);
-        setListings(active.slice(0, 12));
+        const visibleListings = all.filter((l) => (l.status ? l.status === "active" : true) && l.is_approved !== false);
+        if (active) setListings(visibleListings.slice(0, 5));
       } catch {}
     };
-    load();
+    const schedule = typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(load, { timeout: 1200 })
+      : window.setTimeout(load, 180);
+    return () => {
+      active = false;
+      if (typeof window !== "undefined" && typeof window.cancelIdleCallback === "function" && typeof schedule === "number") {
+        window.cancelIdleCallback(schedule);
+        return;
+      }
+      clearTimeout(schedule);
+    };
   }, []);
 
   if (listings.length === 0) return null;
-
-  // Duplicate the list so the vertical marquee loops seamlessly for mobile
-  const loopItems = [...listings, ...listings];
 
   return (
     <div className="relative z-20 w-full px-4 sm:px-6 mt-2 mb-4">
@@ -164,30 +172,12 @@ export function InlineFloatingNewsfeed() {
           </div>
         </div>
 
-        {/* Vertical auto-scrolling marquee for mobile */}
-        <div className="relative h-80 sm:h-96 overflow-hidden">
-          <div
-            className="flex flex-col"
-            style={{
-              animation: `fn-vscroll ${Math.max(14, listings.length * 3.2)}s linear infinite`,
-            }}
-          >
-            {loopItems.map((item, i) => (
-              <FeedRow key={`${item.id}-${i}`} item={item} />
-            ))}
-          </div>
-          {/* Fade edges */}
-          <div className="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-gray-950/95 to-transparent" />
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-gray-950/95 to-transparent" />
+        <div className="grid gap-1.5 p-2">
+          {listings.map((item) => (
+            <FeedRow key={item.id} item={item} />
+          ))}
         </div>
       </div>
-
-      <style>{`
-        @keyframes fn-vscroll {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-50%); }
-        }
-      `}</style>
     </div>
   );
 }
