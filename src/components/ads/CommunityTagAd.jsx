@@ -7,6 +7,11 @@ export default function CommunityTagAd({ adFree = false }) {
   useEffect(() => {
     if (adFree) return;
     try { if (window.self !== window.top) return; } catch { return; }
+    if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+      if (window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(pointer: coarse)").matches) {
+        return;
+      }
+    }
     if (document.getElementById("__community_tag_ad")) return;
 
     const s = document.createElement("script");
