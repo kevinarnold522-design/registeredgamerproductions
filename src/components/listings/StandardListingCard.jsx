@@ -59,26 +59,28 @@ const FONT_FAMILIES = {
 };
 // Map the card_animation choice to a framer-motion enter transition
 function animationProps(anim) {
+  // Use `animate` (not `whileInView`) so cards are always visible on mobile
+  // where IntersectionObserver may not fire reliably.
   switch (anim) {
     case "slide_up":
-      return { initial: { opacity: 0, y: 48 }, whileInView: { opacity: 1, y: 0 } };
+      return { initial: { opacity: 0, y: 48 }, animate: { opacity: 1, y: 0 } };
     case "slide_left":
-      return { initial: { opacity: 0, x: 60 }, whileInView: { opacity: 1, x: 0 } };
+      return { initial: { opacity: 0, x: 60 }, animate: { opacity: 1, x: 0 } };
     case "zoom":
-      return { initial: { opacity: 0, scale: 0.8 }, whileInView: { opacity: 1, scale: 1 } };
+      return { initial: { opacity: 0, scale: 0.8 }, animate: { opacity: 1, scale: 1 } };
     case "flip":
-      return { initial: { opacity: 0, rotateY: 90 }, whileInView: { opacity: 1, rotateY: 0 } };
+      return { initial: { opacity: 0, rotateY: 90 }, animate: { opacity: 1, rotateY: 0 } };
     case "bounce":
-      return { initial: { opacity: 0, y: 40 }, whileInView: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 12 } } };
+      return { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 380, damping: 12 } } };
     case "glow":
-      return { initial: { opacity: 0, scale: 0.94 }, whileInView: { opacity: 1, scale: 1 } };
+      return { initial: { opacity: 0, scale: 0.94 }, animate: { opacity: 1, scale: 1 } };
     case "rotate":
-      return { initial: { opacity: 0, rotate: -12, scale: 0.9 }, whileInView: { opacity: 1, rotate: 0, scale: 1 } };
+      return { initial: { opacity: 0, rotate: -12, scale: 0.9 }, animate: { opacity: 1, rotate: 0, scale: 1 } };
     case "none":
-      return { initial: false, whileInView: { opacity: 1 } };
+      return { initial: false };
     case "fade":
     default:
-      return { initial: { opacity: 0, y: 24, scale: 0.96 }, whileInView: { opacity: 1, y: 0, scale: 1 } };
+      return { initial: { opacity: 0, y: 24, scale: 0.96 }, animate: { opacity: 1, y: 0, scale: 1 } };
   }
 }
 

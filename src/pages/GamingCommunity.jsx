@@ -341,8 +341,8 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
       }}
       whileHover={{ scale: 1.02, boxShadow: `0 0 32px ${franchise.accent}55` }}
       initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
       {coverImages.length > 0 ? (
         <div className="absolute inset-0">
@@ -724,10 +724,8 @@ export default function GamingCommunity() {
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-900/40 border border-purple-700/50 text-purple-300 text-xs font-semibold mb-4">
               <Users className="w-3.5 h-3.5" /> 100+ Gaming Communities
             </span>
-            <h1 className="text-4xl sm:text-5xl font-black mb-3">
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                Gaming Community Hub
-              </span>
+            <h1 className="text-4xl sm:text-5xl font-black mb-3 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+              Gaming Community Hub
             </h1>
             <p className="text-gray-400 text-base max-w-2xl mx-auto mb-6">
               Join franchise communities &middot; Post, connect &amp; celebrate gaming culture worldwide

@@ -344,8 +344,7 @@ function SubcardItem({ item, cat, index, canAdmin, canDelete, isAccountMod, onIt
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
+      animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.03, type: "spring", stiffness: 120 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
