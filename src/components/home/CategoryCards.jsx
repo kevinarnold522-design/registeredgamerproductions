@@ -10,6 +10,7 @@ import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
 import { isAdmin } from "@/lib/constants";
 import { useAuth } from "@/lib/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const defaultModding = {
   icon: IconMod, iconColor: "#fb923c",
@@ -86,6 +87,7 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
   const [editing, setEditing] = useState(false);
   const navigate = useNavigate();
   const CatIcon = cat.icon;
+  const isMobile = useIsMobile();
 
   return (
     <motion.div
@@ -93,7 +95,7 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
       initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
       className="relative rounded-3xl cursor-pointer overflow-hidden block group"
-      style={{ minHeight: "200px", border: `2px solid ${hovered ? cat.glowColor : cat.glowColor.replace(/[\d.]+\)$/, "0.4)")}`, transition: "border-color 0.3s", boxShadow: hovered ? `0 0 40px 8px ${cat.glowColor}` : `0 0 20px ${cat.glowColor.replace(/[\d.]+\)$/, "0.12)")}` }}
+      style={{ minHeight: isMobile ? "168px" : "200px", border: `2px solid ${hovered ? cat.glowColor : cat.glowColor.replace(/[\d.]+\)$/, "0.4)")}`, transition: "border-color 0.3s", boxShadow: isMobile ? "none" : (hovered ? `0 0 40px 8px ${cat.glowColor}` : `0 0 20px ${cat.glowColor.replace(/[\d.]+\)$/, "0.12)")}`) }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       whileHover={{ scale: 1.005 }}
@@ -115,18 +117,18 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
       )}
 
       <div className={`absolute inset-0 bg-gradient-to-br ${cat.color}`} />
-      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `linear-gradient(${cat.glowColor} 1px, transparent 1px), linear-gradient(90deg, ${cat.glowColor} 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
-      <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+      {!isMobile && <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `linear-gradient(${cat.glowColor} 1px, transparent 1px), linear-gradient(90deg, ${cat.glowColor} 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />}
+      {!isMobile && <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl pointer-events-none"
         style={{ background: `radial-gradient(circle, ${cat.glowColor}, transparent)` }}
-        animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />
+        animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />}
 
-      <div className="relative z-10 flex h-full flex-col items-start justify-center gap-5 px-5 py-6 sm:px-6 md:flex-row md:items-center md:px-12">
+      <div className="relative z-10 flex h-full flex-col items-start justify-center gap-4 px-4 py-5 sm:px-5 md:flex-row md:items-center md:gap-6 md:px-12 md:py-6">
         <motion.div animate={hovered ? { rotate: [0, -10, 10, 0], scale: 1.15 } : { scale: 1 }} transition={{ duration: 0.5 }}>
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-black/30 border-2 flex items-center justify-center flex-shrink-0"
-            style={{ borderColor: cat.glowColor, boxShadow: hovered ? `0 0 30px ${cat.glowColor}` : "none" }}>
+          <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-black/30 border-2 flex items-center justify-center flex-shrink-0"
+            style={{ borderColor: cat.glowColor, boxShadow: !isMobile && hovered ? `0 0 30px ${cat.glowColor}` : "none" }}>
             {cat.customLogo
               ? <img src={cat.customLogo} className="w-12 h-12 md:w-14 md:h-14 rounded-xl object-cover" alt="" />
-              : <CatIcon size={40} color={cat.iconColor} />
+              : <CatIcon size={isMobile ? 30 : 40} color={cat.iconColor} />
             }
           </div>
         </motion.div>
@@ -141,8 +143,8 @@ function SmallCard({ cat, index, canAdmin, onUpdate }) {
               <span className="px-3 py-1 rounded-full bg-black/40 text-white/70 text-[10px] font-black uppercase tracking-wider">{cat.badge}</span>
             )}
           </div>
-          <h3 className="mb-1.5 text-2xl font-black text-white md:text-3xl">{cat.title}</h3>
-          <p className="max-w-xl text-sm text-white/60 md:text-base">{cat.sub}</p>
+          <h3 className="text-white font-black text-xl md:text-3xl mb-1.5 truncate">{cat.title}</h3>
+          <p className="text-white/60 text-xs md:text-base max-w-xl">{cat.sub}</p>
         </div>
         <div className="flex items-center gap-2 text-sm font-bold text-white/70 md:ml-auto">Explore →</div>
       </div>
@@ -236,6 +238,7 @@ export default function CategoryCards() {
   const [modHovered, setModHovered] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const admin = isAdmin(user?.email);
   const ModIcon = defaultModding.icon;
 
@@ -286,26 +289,26 @@ export default function CategoryCards() {
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden block group"
           style={{
-            minHeight: "240px",
+            minHeight: isMobile ? "220px" : "240px",
             border: `2px solid ${modHovered ? "rgba(249,115,22,0.8)" : "rgba(249,115,22,0.3)"}`,
             transition: "border-color 0.3s",
-            boxShadow: modHovered ? "0 0 40px 8px rgba(249,115,22,0.3)" : "0 0 20px rgba(249,115,22,0.1)",
+            boxShadow: isMobile ? "none" : (modHovered ? "0 0 40px 8px rgba(249,115,22,0.3)" : "0 0 20px rgba(249,115,22,0.1)"),
           }}
           onMouseEnter={() => setModHovered(true)}
           onMouseLeave={() => setModHovered(false)}
           whileHover={{ scale: 1.005 }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-orange-950 via-amber-950 to-gray-950" />
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(249,115,22,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.6) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-          <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-3xl pointer-events-none"
+          {!isMobile && <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(249,115,22,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.6) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />}
+          {!isMobile && <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-3xl pointer-events-none"
             style={{ background: "radial-gradient(circle, rgba(249,115,22,0.3), transparent)" }}
-            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 3, repeat: Infinity }} />
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 3, repeat: Infinity }} />}
 
-          <div className="relative z-10 flex h-full flex-col items-start justify-center gap-6 px-5 py-6 sm:px-8 md:flex-row md:items-center md:px-16">
+          <div className="relative z-10 flex h-full flex-col items-start justify-center gap-4 px-4 py-5 sm:px-6 md:flex-row md:items-center md:gap-8 md:px-16">
             <motion.div animate={modHovered ? { rotate: [0, -10, 10, 0], scale: 1.15 } : { scale: 1 }} transition={{ duration: 0.5 }}>
-              <div className="w-20 h-20 rounded-2xl bg-orange-900/40 border-2 border-orange-500/50 flex items-center justify-center"
-                style={{ boxShadow: modHovered ? "0 0 30px rgba(249,115,22,0.6)" : "none" }}>
-                <ModIcon size={44} color="#fb923c" />
+              <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-orange-900/40 border-2 border-orange-500/50 flex items-center justify-center"
+                style={{ boxShadow: !isMobile && modHovered ? "0 0 30px rgba(249,115,22,0.6)" : "none" }}>
+                <ModIcon size={isMobile ? 30 : 44} color="#fb923c" />
               </div>
             </motion.div>
             <div className="flex-1">
@@ -313,8 +316,8 @@ export default function CategoryCards() {
                 <span className="px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/40 text-orange-300 text-xs font-black uppercase tracking-wider">Featured</span>
                 <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black uppercase">Most Popular</span>
               </div>
-              <h3 className="text-white font-black text-3xl md:text-4xl mb-2">Modding Community</h3>
-              <p className="text-orange-200/70 text-base max-w-xl">
+              <h3 className="text-white font-black text-2xl md:text-4xl mb-2">Modding Community</h3>
+              <p className="text-orange-200/70 text-sm md:text-base max-w-xl">
                 Upload, share & download mods — <strong className="text-orange-300">PPSSPP, Football Life, PES, FIFA, NBA2K, GTA5, GTA SA, WWE2K, Minecraft, Android</strong> & more.
               </p>
               <div className="flex flex-wrap gap-2 mt-3">
@@ -332,25 +335,25 @@ export default function CategoryCards() {
           onClick={() => navigate(defaultCommunity.href)}
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="relative mb-6 rounded-3xl cursor-pointer overflow-hidden"
-          style={{ minHeight: "200px", border: "2px solid rgba(139,92,246,0.5)", boxShadow: "0 0 30px rgba(139,92,246,0.15)" }}
-          whileHover={{ scale: 1.005, boxShadow: "0 0 50px rgba(139,92,246,0.3)" }}
+          style={{ minHeight: isMobile ? "190px" : "200px", border: "2px solid rgba(139,92,246,0.5)", boxShadow: isMobile ? "none" : "0 0 30px rgba(139,92,246,0.15)" }}
+          whileHover={{ scale: 1.005, boxShadow: isMobile ? "none" : "0 0 50px rgba(139,92,246,0.3)" }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-950 to-gray-950" />
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(139,92,246,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.6) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-          <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+          {!isMobile && <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(139,92,246,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.6) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />}
+          {!isMobile && <motion.div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl pointer-events-none"
             style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent)" }}
-            animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />
-          <div className="relative z-10 flex h-full flex-col items-start justify-center gap-6 px-5 py-6 sm:px-8 md:flex-row md:items-center md:px-16">
-            <div className="w-20 h-20 rounded-2xl bg-purple-900/40 border-2 border-purple-500/50 flex items-center justify-center">
-              <IconCommunity size={44} color="#a78bfa" />
+            animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 3, repeat: Infinity }} />}
+          <div className="relative z-10 flex h-full flex-col items-start justify-center gap-4 px-4 py-5 sm:px-6 md:flex-row md:items-center md:gap-8 md:px-16">
+            <div className="w-14 h-14 md:w-20 md:h-20 rounded-2xl bg-purple-900/40 border-2 border-purple-500/50 flex items-center justify-center">
+              <IconCommunity size={isMobile ? 30 : 44} color="#a78bfa" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-black uppercase tracking-wider">NEW</span>
                 <span className="px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-black uppercase">50+ Franchises</span>
               </div>
-              <h3 className="text-white font-black text-3xl md:text-4xl mb-2">Gaming Community</h3>
-              <p className="text-purple-200/70 text-base max-w-xl">
+              <h3 className="text-white font-black text-2xl md:text-4xl mb-2">Gaming Community</h3>
+              <p className="text-purple-200/70 text-sm md:text-base max-w-xl">
                 Join communities for <strong className="text-purple-300">Call of Duty, Minecraft, GTA, Valorant, FIFA, NBA2K, UFC, WWE, Mario</strong> & 40+ more franchises.
               </p>
             </div>
@@ -359,7 +362,7 @@ export default function CategoryCards() {
         </motion.div>
 
         {/* Category cards — full-size like the community/modding cards */}
-        <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {allSmall.map((cat, i) => (
             <SmallCard
               key={cat.id || i}

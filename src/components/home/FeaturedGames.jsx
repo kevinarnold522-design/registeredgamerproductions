@@ -55,7 +55,7 @@ export default function FeaturedGames() {
             </h2>
             <p className="text-gray-500 text-sm mt-1">Listed by our community sellers</p>
           </div>
-          <a href="/?cat=games" className="text-purple-400 hover:text-purple-300 text-sm font-semibold transition-colors">All Games →</a>
+          <a href="/category?cat=games" className="text-purple-400 hover:text-purple-300 text-sm font-semibold transition-colors">All Games →</a>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {listings.map((listing, i) => (

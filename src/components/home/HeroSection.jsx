@@ -149,46 +149,52 @@ function LiveStats() {
 
 }
 
-export default function HeroSection() {
+export default function HeroSection({ isMobile = false }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   return (
-    <section className="relative flex flex-col items-center justify-center overflow-hidden pt-16">
+    <section className="relative flex flex-col items-center justify-center overflow-hidden pt-10 md:pt-16">
       {/* Background */}
       <div className="absolute inset-0" style={{
-        background: "radial-gradient(ellipse at 60% 40%, rgba(139,92,246,0.18) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.12) 0%, transparent 50%), rgba(3,7,18,0.35)"
+        background: isMobile
+          ? "linear-gradient(180deg, rgba(17,24,39,0.96) 0%, rgba(3,7,18,0.98) 100%)"
+          : "radial-gradient(ellipse at 60% 40%, rgba(139,92,246,0.18) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.12) 0%, transparent 50%), rgba(3,7,18,0.35)"
       }} />
       {/* Futuristic grid overlay */}
-      <div className="absolute inset-0 opacity-[0.04]" style={{
-        backgroundImage: "linear-gradient(rgba(139,92,246,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.8) 1px, transparent 1px)",
-        backgroundSize: "60px 60px"
-      }} />
+      {!isMobile && (
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          backgroundImage: "linear-gradient(rgba(139,92,246,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.8) 1px, transparent 1px)",
+          backgroundSize: "60px 60px"
+        }} />
+      )}
       {/* Scan line animation */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: "linear-gradient(180deg, transparent 0%, rgba(139,92,246,0.03) 50%, transparent 100%)", height: "200px" }}
-        animate={{ y: ["-200px", "calc(100vh + 200px)"] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "linear" }} />
+      {!isMobile && (
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(180deg, transparent 0%, rgba(139,92,246,0.03) 50%, transparent 100%)", height: "200px" }}
+          animate={{ y: ["-200px", "calc(100vh + 200px)"] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }} />
+      )}
       
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-10">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8 md:py-10">
         {/* GP Logo */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="flex flex-col items-center mb-4">
           <motion.img
             src="https://media.base44.com/images/public/6a126acdde36b8358b1010f3/2c492ba5e_86DEEF8D-A166-44B9-8CC9-D721135C9BB9.png"
             alt="GP"
             className="w-10 h-10 object-contain mb-5"
-            animate={{ scale: [1, 1.08, 1], rotate: [0, -4, 4, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            style={{ filter: "drop-shadow(0 0 14px rgba(168,85,247,0.8))" }} />
+            animate={isMobile ? undefined : { scale: [1, 1.08, 1], rotate: [0, -4, 4, 0] }}
+            transition={isMobile ? undefined : { duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            style={{ filter: isMobile ? "none" : "drop-shadow(0 0 14px rgba(168,85,247,0.8))" }} />
           
         </motion.div>
 
         {/* Badge */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex justify-center mb-6">
           <motion.span
-            animate={{ boxShadow: ["0 0 15px rgba(139,92,246,0.3)", "0 0 30px rgba(236,72,153,0.4)", "0 0 15px rgba(139,92,246,0.3)"] }}
-            transition={{ duration: 2.5, repeat: Infinity }}
+            animate={isMobile ? undefined : { boxShadow: ["0 0 15px rgba(139,92,246,0.3)", "0 0 30px rgba(236,72,153,0.4)", "0 0 15px rgba(139,92,246,0.3)"] }}
+            transition={isMobile ? undefined : { duration: 2.5, repeat: Infinity }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-900/40 border border-purple-700/50 text-purple-300 text-xs font-semibold tracking-wider uppercase">
             
             <Zap className="w-3 h-3" />
@@ -198,12 +204,12 @@ export default function HeroSection() {
 
         {/* Title */}
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-center mb-6">
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-black leading-tight">
+          <h1 className="text-3xl sm:text-6xl md:text-7xl font-black leading-tight">
             <span className="text-white">Welcome to </span>
             <motion.span
               className="block bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent"
-              animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-              transition={{ duration: 4, repeat: Infinity }}>
+              animate={isMobile ? undefined : { backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+              transition={isMobile ? undefined : { duration: 4, repeat: Infinity }}>
               
               GAMER.Productions
             </motion.span>
@@ -217,15 +223,15 @@ export default function HeroSection() {
               WebkitTextFillColor: "transparent",
               backgroundSize: "200% auto"
             }}
-            animate={{
+            animate={isMobile ? undefined : {
               opacity: [1, 0.2, 1, 0.2, 1],
               backgroundPosition: ["0% center", "100% center", "200% center"]
             }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
+            transition={isMobile ? undefined : { duration: 5, repeat: Infinity, ease: "easeInOut" }}>
             
             The One Stop Hub for All Gamers
           </motion.p>
-          <p className="mt-4 text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-4 text-gray-400 text-base md:text-xl max-w-2xl mx-auto leading-relaxed">
             Stream Live · Share Mods · Build Community · Sell & Earn —{" "}
             <span className="text-purple-400 font-semibold">worldwide</span>.
           </p>
@@ -245,7 +251,7 @@ export default function HeroSection() {
         {!user &&
           <motion.button onClick={() => navigate("/register")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
           className="px-10 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-          style={{ boxShadow: "0 0 30px rgba(139,92,246,0.5)" }}>
+          style={{ boxShadow: isMobile ? "none" : "0 0 30px rgba(139,92,246,0.5)" }}>
             <Zap className="w-5 h-5" /> Join Now
           </motion.button>
           }
