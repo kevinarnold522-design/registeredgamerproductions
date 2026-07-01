@@ -44,6 +44,25 @@ import '@/index.css'
   } catch (_) {}
 })();
 
+(function markBootstrapReady() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.__gpAppMounted = true;
+    if (window.__gpBootTimer) {
+      clearTimeout(window.__gpBootTimer);
+    }
+    sessionStorage.removeItem('gp_boot_recovery_attempts');
+
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('__boot_reload')) {
+      url.searchParams.delete('__boot_reload');
+      const cleanUrl = `${url.pathname}${url.search}${url.hash}`;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  } catch (_) {}
+})();
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <AppErrorBoundary>
     <App />

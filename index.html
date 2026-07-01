@@ -361,5 +361,78 @@
         } catch (_) {}
       })();
     </script>
+    <script>
+      (function bootWatchdog() {
+        var RECOVERY_KEY = 'gp_boot_recovery_attempts';
+        var RECOVERY_PARAM = '__boot_reload';
+        var MAX_ATTEMPTS = 2;
+
+        function isMobileLike() {
+          try {
+            return !!(
+              (window.matchMedia && window.matchMedia('(max-width: 1279px)').matches) ||
+              (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+            );
+          } catch (e) {
+            return false;
+          }
+        }
+
+        function getAttempts() {
+          try {
+            return parseInt(sessionStorage.getItem(RECOVERY_KEY) || '0', 10) || 0;
+          } catch (e) {
+            return 0;
+          }
+        }
+
+        function setAttempts(value) {
+          try {
+            sessionStorage.setItem(RECOVERY_KEY, String(value));
+          } catch (e) {}
+        }
+
+        function showFallback() {
+          try {
+            var root = document.getElementById('root');
+            if (!root) return;
+            root.innerHTML = '' +
+              '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#020617;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;">' +
+                '<div style="width:min(100%,560px);text-align:center;">' +
+                  '<div style="font-size:28px;font-weight:900;letter-spacing:0.02em;">GAMER.PRODUCTIONS</div>' +
+                  '<div style="margin-top:12px;font-size:18px;font-weight:700;">Reload needed</div>' +
+                  '<div style="margin-top:10px;font-size:14px;line-height:1.5;color:#cbd5e1;">This mobile browser kept an older boot state. Reload once to continue.</div>' +
+                  '<button id="__gp_boot_retry" style="margin-top:18px;border:1px solid rgba(168,85,247,0.45);background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:800;cursor:pointer;">Reload</button>' +
+                '</div>' +
+              '</div>';
+            var btn = document.getElementById('__gp_boot_retry');
+            if (btn) {
+              btn.onclick = function() {
+                window.location.reload();
+              };
+            }
+          } catch (e) {}
+        }
+
+        if (!isMobileLike()) return;
+
+        window.__gpBootTimer = setTimeout(function() {
+          if (window.__gpAppMounted === true) return;
+
+          var attempts = getAttempts();
+          if (attempts < MAX_ATTEMPTS) {
+            setAttempts(attempts + 1);
+            try {
+              var url = new URL(window.location.href);
+              url.searchParams.set(RECOVERY_PARAM, Date.now().toString(36));
+              window.location.replace(url.toString());
+              return;
+            } catch (e) {}
+          }
+
+          showFallback();
+        }, 9000);
+      })();
+    </script>
   </body>
 </html>
