@@ -20,24 +20,32 @@ export default function GamerBrandFooter({ showMascots = true, position = "botto
       className={`relative px-4 ${isTop ? "pt-2 pb-2" : "pt-8 pb-10 bg-gray-950 border-t border-purple-900/30"} ${className}`}
     >
       <div className={`max-w-7xl mx-auto ${isTop ? "space-y-2" : "space-y-6"}`}>
-        {showMascots && <MascotShowcase compact />}
         <div className={`rounded-3xl border border-purple-500/25 bg-gray-900/70 shadow-[0_0_34px_rgba(124,58,237,0.16)] ${isTop ? "p-2.5" : "p-5 text-center"}`}>
           {isTop ? (
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-300">Connect</p>
-                <p className="text-[11px] text-gray-500">Official links</p>
+            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="mb-1 flex items-center gap-2">
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-300">Mascots</p>
+                  <p className="text-[10px] text-gray-500">Community crew</p>
+                </div>
+                {showMascots && <MascotShowcase compact />}
               </div>
-              <div className="flex items-center justify-end flex-wrap gap-1.5">
-                {socials.map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <a key={item.label} href={item.href} target={item.href.startsWith("http") ? "_blank" : undefined} rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                      className="theme-glow-action inline-flex items-center justify-center rounded-xl bg-gray-950/80 border border-purple-500/25 px-2 py-1.5 text-gray-300 hover:text-white transition-all">
-                      {item.brand ? <BrandLogo brand={item.brand} label={item.label} className="w-3.5 h-3.5" /> : <Icon className={`w-3.5 h-3.5 theme-glow-icon ${item.color}`} />}
-                    </a>
-                  );
-                })}
+              <div className="flex w-full flex-col gap-1 lg:w-auto lg:min-w-[240px] lg:max-w-[280px] lg:items-end">
+                <div className="min-w-0 lg:text-right">
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-300">Connect</p>
+                  <p className="text-[11px] text-gray-500">Official links</p>
+                </div>
+                <div className="flex items-center justify-start flex-wrap gap-1.5 lg:justify-end">
+                  {socials.map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <a key={item.label} href={item.href} target={item.href.startsWith("http") ? "_blank" : undefined} rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        className="theme-glow-action inline-flex items-center justify-center rounded-xl bg-gray-950/80 border border-purple-500/25 px-2 py-1.5 text-gray-300 hover:text-white transition-all">
+                        {item.brand ? <BrandLogo brand={item.brand} label={item.label} className="w-3.5 h-3.5" /> : <Icon className={`w-3.5 h-3.5 theme-glow-icon ${item.color}`} />}
+                      </a>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : (
