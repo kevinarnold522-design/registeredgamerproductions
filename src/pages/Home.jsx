@@ -16,7 +16,7 @@ import { isNewJoiner } from "@/lib/isNewJoiner";
 import { clearAssetRecoveryState, isLikelyAssetVersionError, tryRecoverFromAssetError } from "@/lib/assetRecovery";
 import { isLikelyMobileWebDevice } from "@/lib/deviceProfile";
 import lazyWithRetry from "@/lib/lazyWithRetry";
-import { Gamepad2, Wrench, Cloud } from "lucide-react";
+import { Cloud, Gamepad2, Radio, Search, Trophy, Users, Wrench } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
@@ -95,6 +95,48 @@ const VerifiedBadgeBanner = lazyWithRetry(() => import("@/components/home/Verifi
 const First10KBanner = lazyWithRetry(() => import("@/components/home/First10KBanner"));
 const FirstLoginTutorial = lazyWithRetry(() => import("@/components/tutorial/FirstLoginTutorial"));
 const CategoryMovingDashboard = lazyWithRetry(() => import("@/components/home/CategoryMovingDashboard"));
+
+function MobileHomeLite({ isAuthenticated }) {
+  const quickLinks = [
+    { href: "/all-listings", label: "All Listings", icon: Trophy, tone: "from-purple-900/70 to-fuchsia-900/40" },
+    { href: "/category?cat=games", label: "Games", icon: Gamepad2, tone: "from-cyan-900/60 to-blue-900/30" },
+    { href: "/category?cat=modding", label: "Modding", icon: Wrench, tone: "from-amber-900/60 to-orange-900/30" },
+    { href: "/gaming-community", label: "Community", icon: Users, tone: "from-violet-900/60 to-purple-900/30" },
+    { href: "/category?cat=content_streaming", label: "Go Live", icon: Radio, tone: "from-rose-900/60 to-red-900/30" },
+    { href: "/search?q=pes", label: "Search", icon: Search, tone: "from-slate-800/90 to-slate-900/70" },
+  ];
+
+  return (
+    <div className="px-4 pb-4 pt-4">
+      <section className="mx-auto w-full max-w-4xl rounded-3xl border border-purple-500/20 bg-[linear-gradient(180deg,rgba(18,11,32,0.94),rgba(6,10,24,0.96))] px-4 py-5 shadow-[0_0_30px_rgba(124,58,237,0.14)]">
+        <p className="text-[11px] font-black uppercase tracking-[0.26em] text-purple-300">GAMER.PRODUCTIONS</p>
+        <h1 className="mt-2 text-3xl font-black leading-tight text-white">Gaming hub built to load faster on mobile.</h1>
+        <p className="mt-2 text-sm text-slate-300">Browse listings, communities, streams, and categories without the heavier animated homepage stack.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {!isAuthenticated && <a href="/register" className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2 text-sm font-black text-white">Join Now</a>}
+          <a href="/all-listings" className="rounded-xl border border-purple-400/40 bg-purple-500/10 px-4 py-2 text-sm font-black text-purple-100">Browse Listings</a>
+          <a href="/gaming-newsfeed" className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-sm font-black text-cyan-100">Open Newsfeed</a>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-4 grid w-full max-w-4xl grid-cols-2 gap-3">
+        {quickLinks.map((link) => {
+          const Icon = link.icon;
+          return (
+            <a
+              key={link.href}
+              href={link.href}
+              className={`rounded-2xl border border-white/10 bg-gradient-to-br ${link.tone} px-4 py-4 shadow-[0_0_18px_rgba(15,23,42,0.24)]`}
+            >
+              <Icon className="h-5 w-5 text-white" />
+              <p className="mt-3 text-sm font-black text-white">{link.label}</p>
+            </a>
+          );
+        })}
+      </section>
+    </div>
+  );
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -216,6 +258,7 @@ export default function Home() {
     if (showSplash) return;
     // Ad-free users never see ads
     if (adFree) return;
+    if (isMobileViewport) return;
 
     const injectBanner = (slot, style) => {
       const existing = document.querySelector(`[data-zone="${slot}"]`);
@@ -357,13 +400,19 @@ export default function Home() {
             {user && profile && isNewJoiner(profile) && (
               <HeyGamerBanner profile={profile} username={profile?.username || user?.full_name} />
             )}
-            <VideoHeroBanner />
-            <HeroSection />
-            {(!isMobileViewport || (showDeferredSections && !showSplash && !isAuthenticated)) && <InlineFloatingNewsfeed />}
-            <CategoryCards />
-            <MarqueeTicker />
+            {isMobileViewport ? (
+              <MobileHomeLite isAuthenticated={isAuthenticated} />
+            ) : (
+              <>
+                <VideoHeroBanner />
+                <HeroSection />
+                {showDeferredSections && !showSplash && !isAuthenticated && <InlineFloatingNewsfeed />}
+                <CategoryCards />
+                <MarqueeTicker />
+              </>
+            )}
 
-            {showDeferredSections && (
+            {!isMobileViewport && showDeferredSections && (
               <DeferredSectionsBoundary>
                 <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
                   {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}
@@ -455,7 +504,7 @@ export default function Home() {
       )}
 
       {/* Earn Now / Get Started / Log In — floating lower-left dock for guests */}
-      {!showSplash && !isLoadingAuth && !isAuthenticated && <GuestAuthDock />}
+      {!showSplash && !isLoadingAuth && !isAuthenticated && !isMobileViewport && <GuestAuthDock />}
 
       {/* "Sign in to block ads" floating sign — guests only, after 3 min, no close button */}
       {showAdSign && !isAuthenticated && (

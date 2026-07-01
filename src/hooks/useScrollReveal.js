@@ -7,6 +7,12 @@ import { useEffect } from "react";
  */
 export default function useScrollReveal() {
   useEffect(() => {
+    if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
+      if (window.matchMedia("(max-width: 767px)").matches || window.matchMedia("(pointer: coarse)").matches) {
+        return;
+      }
+    }
+
     const elements = document.querySelectorAll("[data-scroll-reveal]");
     if (!elements.length) return;
 
