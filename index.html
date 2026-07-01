@@ -61,9 +61,26 @@
           isMobileViewport = false;
           isCoarsePointer = false;
         }
-        if (isMobileViewport || isCoarsePointer) {
-          window.__adsBlocked = true;
+        window.__adsBlocked = !!(isMobileViewport || isCoarsePointer);
+        window.__adminBlocked = window.__adminBlocked === true;
+        window.__countryAdsBlocked = false;
+
+        if (window.__adsBlocked) {
           return;
+        }
+
+        function readGeoCountryCode() {
+          return fetch('/functions/api/geo', { headers: { 'Accept': 'application/json' } })
+            .then(function(res) {
+              var contentType = (res.headers && res.headers.get && res.headers.get('content-type')) || '';
+              if (!res.ok || contentType.indexOf('application/json') === -1) return null;
+              return res.json();
+            })
+            .then(function(data) {
+              if (!data) return '';
+              return String(data.countryCode || data.country || '').toUpperCase();
+            })
+            .catch(function() { return ''; });
         }
 
         // Defer AdSense load so first paint is not blocked on startup.
@@ -86,18 +103,13 @@
           ref.indexOf('facebook.com') !== -1 || ref.indexOf('instagram.com') !== -1 ||
           ref.indexOf('l.facebook.com') !== -1 || ref.indexOf('lm.facebook.com') !== -1
         );
-        // Social traffic gets 2.5 second delay; everyone else gets 3 second delay to let page render first
-        var delayMs = isSocialTraffic ? 2500 : 3000;
+        // Anonymous desktop ads stay behind the guest threshold; signed-in and
+        // ad-free users are blocked later by the app shell before this expires.
+        var delayMs = isSocialTraffic ? 150000 : 180000;
         window.__adsHeld = true;
         window.__adRotationIndex = 0; // which ad slot is currently active
         window.__adClosed = false;
         window.__adCloseTime = 0;
-        setTimeout(function() {
-          if (!window.__adsBlocked && !window.__adminBlocked) {
-            window.__adsHeld = false;
-            loadNextAd();
-          }
-        }, delayMs);
 
         // Ad scripts — each is loaded ONE AT A TIME in rotation
         var AD_SCRIPTS = [
@@ -151,6 +163,20 @@
             window.loadNextAd();
           }
         }, 120000);
+
+        readGeoCountryCode().then(function(countryCode) {
+          if (!countryCode || countryCode === 'PH') {
+            window.__countryAdsBlocked = true;
+            window.__adsBlocked = true;
+            return;
+          }
+          setTimeout(function() {
+            if (!window.__adsBlocked && !window.__adminBlocked) {
+              window.__adsHeld = false;
+              loadNextAd();
+            }
+          }, delayMs);
+        });
 
         // Close button handler — closes current ad and restarts after 3 minutes (not 4)
         window.__closeCurrentAd = function() {
@@ -318,8 +344,8 @@
           var port = window.location.port || '';
           var useSourceEntry = isLocal && /^(5173|5174|5175)$/.test(port);
 
-          var hostedCss = '/assets/index.css?v=20260701a';
-          var hostedJs = '/assets/index.js?v=20260701a';
+          var hostedCss = '/assets/index.css?v=__APP_BUILD_ID__';
+          var hostedJs = '/assets/index.js?v=__APP_BUILD_ID__';
 
           if (!useSourceEntry && !document.querySelector('link[href^="/assets/index.css"]')) {
             var link = document.createElement('link');

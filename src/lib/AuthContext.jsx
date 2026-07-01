@@ -16,6 +16,15 @@ const DEFAULT_AUTH_CONTEXT = {
 
 const AuthContext = createContext(DEFAULT_AUTH_CONTEXT);
 
+function syncBootAdBlock(shouldBlock) {
+  if (typeof window === "undefined") return;
+  window.__adminBlocked = shouldBlock;
+  if (!shouldBlock || typeof document === "undefined") return;
+  document.querySelectorAll("#\__ad_slot_active, #\__adsense_boot, #\__ad_close_btn, [data-zone], [data-ad-slot]").forEach((el) => {
+    try { el.remove(); } catch {}
+  });
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -63,6 +72,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (_) {}
 
+    syncBootAdBlock(true);
     if (isAdmin(cfUser.email)) blockAdsForAdmin();
   };
 
@@ -116,6 +126,7 @@ export const AuthProvider = ({ children }) => {
     // OAuth redirect back to the app) without needing a manual reload.
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
+        syncBootAdBlock(false);
         setUser(null);
         setIsAuthenticated(false);
         return;
@@ -145,6 +156,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     setIsGhostSession(false);
+    syncBootAdBlock(false);
     // Worker clears the session cookie, then redirects home.
     await base44.auth.logout('/');
   };

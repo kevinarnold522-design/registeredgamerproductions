@@ -3,6 +3,13 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { resolve } from 'node:path'
 
+const buildId =
+  process.env.CF_PAGES_COMMIT_SHA ||
+  process.env.CF_PAGES_DEPLOYMENT_ID ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  process.env.GITHUB_SHA ||
+  `${Date.now()}`;
+
 // https://vite.dev/config/
 export default defineConfig({
   logLevel: 'error', // Suppress warnings, only show errors
@@ -22,6 +29,12 @@ export default defineConfig({
       analyticsTracker: true,
       visualEditAgent: true
     }),
+    {
+      name: 'inject-build-id',
+      transformIndexHtml(html) {
+        return html.replaceAll('__APP_BUILD_ID__', buildId);
+      },
+    },
     react(),
   ],
   // Browser targets that cover the mobile devices users actually have. Older

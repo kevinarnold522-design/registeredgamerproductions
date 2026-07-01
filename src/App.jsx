@@ -271,7 +271,7 @@ function App() {
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <InAppBrowserLinkFix />
-            {bootUiReady && <VisitorCountryTracker />}
+            {bootUiReady && !isMobileViewport && <VisitorCountryTracker />}
             {!isMobileViewport && <ShootingStars />}
             {isMobileViewport && <MobileSpaceBackdrop />}
             <div style={{ position: "relative", zIndex: 0, width: "100%", maxWidth: "100%", overflowX: "hidden", paddingRight: showDesktopNewsfeed ? '17rem' : 0 }}>
@@ -281,7 +281,7 @@ function App() {
             </div>
             {showDesktopNewsfeed && <FloatingNewsfeed />}
             <LanguagePrompt />
-            {bootUiReady && <GlobalHtmlAd />}
+            {bootUiReady && !isMobileViewport && <GlobalHtmlAd />}
           </Router>
           <Toaster />
           <SonnerToaster position="top-center" richColors />
