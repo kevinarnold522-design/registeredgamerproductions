@@ -568,7 +568,7 @@ export default function ListingPage() {
               <div className="rounded-2xl border border-purple-700/30 bg-[linear-gradient(180deg,rgba(32,14,56,0.94),rgba(11,8,25,0.96))] p-3">
                 <div className="mb-2 flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-amber-300" />
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-purple-300 font-black">Leaderboard</p>
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-purple-300 font-black">Performance</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                   {[

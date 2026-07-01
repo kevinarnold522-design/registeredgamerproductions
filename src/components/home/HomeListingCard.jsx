@@ -6,6 +6,7 @@ import { formatListingPrice } from "@/lib/currency";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { useNavigate } from "react-router-dom";
+import { listingScore } from "@/lib/leaderboardScore";
 
 /** @type {Record<string, Array<{ solid: string, soft: string }>>} */
 const glowPalettes = {
@@ -70,6 +71,8 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sellerAvatar, setSellerAvatar] = useState(safeListing.seller_avatar || "");
   const hasMultipleImages = liveListing.images && liveListing.images.length > 1;
+  const points = listingScore(liveListing, 0);
+  const sellerRank = liveListing.sellerRank || null;
 
   const getGlow = () => {
     const selected = String(liveListing.card_glow_color || "").toLowerCase();
@@ -241,12 +244,16 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
       <div className="p-5">
         <p className="text-purple-400 text-xs font-semibold mb-1">{liveListing.subcategory || liveListing.platform || liveListing.game_name || "Game"}</p>
         <h3 className={`text-white text-lg mb-2 truncate ${(!liveListing.is_free && liveListing.price > 0) ? "font-black font-serif tracking-[0.03em]" : "font-bold"}`}>{liveListing.title}</h3>
-        <p className="text-gray-500 text-xs mb-3 line-clamp-2">{liveListing.description}</p>
-        <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <span className="text-purple-400 font-black text-xl">
             {liveListing.is_free || !liveListing.price ? "FREE" : formatListingPrice(liveListing.price, liveListing.currency)}
           </span>
-          {/* Seller profile with avatar */}
+          <div className="text-right">
+            <p className="bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-lg font-black leading-none text-transparent">{points}</p>
+            <p className="text-[9px] uppercase text-gray-400">pts</p>
+          </div>
+        </div>
+        <div className="mb-3 flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={(e) => {
@@ -256,13 +263,17 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
             }}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-6 h-6 rounded-full overflow-hidden bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+            <div className="h-10 w-10 rounded-full overflow-hidden border border-purple-400/45 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0 shadow-[0_0_14px_rgba(217,70,239,0.28)]">
               {sellerAvatar
                 ? <img src={sellerAvatar} className="w-full h-full object-cover" alt="" />
-                : <span className="text-white text-[9px] font-bold">{(liveListing.seller_username || "G")[0].toUpperCase()}</span>}
+                : <span className="text-white text-xs font-bold">{(liveListing.seller_username || "G")[0].toUpperCase()}</span>}
             </div>
-            <span className="text-gray-300 text-xs font-bold truncate">@{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</span>
+            <div className="min-w-0 text-left">
+              <p className="truncate text-sm font-bold text-gray-200">@{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</p>
+              {sellerRank ? <p className="text-[10px] font-black text-amber-300">Seller rank #{sellerRank}</p> : null}
+            </div>
           </button>
+          {liveListing.monthlyRank ? <span className="rounded-full border border-cyan-400/35 bg-cyan-500/10 px-2 py-1 text-[10px] font-black text-cyan-300">#{liveListing.monthlyRank}</span> : null}
         </div>
         {liveListing.download_host && (
           <div className="mb-3">

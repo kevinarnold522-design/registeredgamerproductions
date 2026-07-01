@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import HomeListingCard from "@/components/home/HomeListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { computeMonthlyRanks } from "@/lib/monthlyRank";
+import { getPublisherRankMap } from "@/lib/publisherRank";
 
 // Horizontal auto-scrolling row of standardized listing cards.
 function ScrollRow({ children, speed = 36, reverse = false }) {
@@ -25,10 +26,10 @@ function ScrollRow({ children, speed = 36, reverse = false }) {
   );
 }
 
-function ScrollCard({ item, user, profile, rank }) {
+function ScrollCard({ item, user, profile, rank, sellerRank }) {
   return (
     <div className="w-[86vw] max-w-[320px] flex-shrink-0 sm:w-[320px] sm:max-w-[84vw]">
-      <HomeListingCard listing={{ ...item, monthlyRank: rank }} user={user} profile={profile} className="h-full" />
+      <HomeListingCard listing={{ ...item, monthlyRank: rank, sellerRank }} user={user} profile={profile} className="h-full" />
     </div>
   );
 }
@@ -50,7 +51,12 @@ export default function CategoryMovingDashboard({
 }) {
   const [items, setItems] = useState([]);
   const [rankMap, setRankMap] = useState(new Map());
+  const [sellerRankMap, setSellerRankMap] = useState({});
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getPublisherRankMap().then((map) => setSellerRankMap(map || {})).catch(() => setSellerRankMap({}));
+  }, []);
 
   useEffect(() => {
     getActiveListings().then((listings) => {
@@ -80,7 +86,7 @@ export default function CategoryMovingDashboard({
       </div>
 
       <ScrollRow speed={40} reverse={reverse}>
-        {items.map((item, i) => <ScrollCard key={i} item={item} user={user} profile={profile} rank={rankMap.get(item.id)} />)}
+        {items.map((item, i) => <ScrollCard key={i} item={item} user={user} profile={profile} rank={rankMap.get(item.id)} sellerRank={sellerRankMap[item.seller_email] || null} />)}
       </ScrollRow>
 
       {viewAllHref && (

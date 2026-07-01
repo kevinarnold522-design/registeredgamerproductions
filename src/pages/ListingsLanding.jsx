@@ -112,7 +112,7 @@ export default function ListingsLanding({ mode = "mine" }) {
                       <div className="mt-2 rounded-xl border border-purple-700/30 bg-[linear-gradient(180deg,rgba(32,14,56,0.94),rgba(11,8,25,0.96))] p-2">
                         <div className="mb-1 flex items-center gap-1.5">
                           <Trophy className="w-3.5 h-3.5 text-amber-300" />
-                          <p className="text-[9px] uppercase tracking-[0.2em] text-purple-300 font-black">Leaderboard</p>
+                          <p className="text-[9px] uppercase tracking-[0.2em] text-purple-300 font-black">Performance</p>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
                           {[
