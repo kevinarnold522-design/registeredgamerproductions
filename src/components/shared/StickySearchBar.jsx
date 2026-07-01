@@ -21,13 +21,13 @@ export default function StickySearchBar() {
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
           placeholder="Search listings, games, mods…"
-          className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-9 pr-10 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-900 border border-gray-700 rounded-xl pl-9 pr-16 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500"
         />
         <button
           onClick={submit}
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-purple-600 hover:bg-purple-500 flex items-center justify-center transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-purple-600 hover:bg-purple-500 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white transition-colors"
         >
-          <Search className="w-3.5 h-3.5 text-white" />
+          Go
         </button>
       </div>
     </div>
