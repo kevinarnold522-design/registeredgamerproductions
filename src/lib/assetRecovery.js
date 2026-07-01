@@ -20,6 +20,11 @@ const ASSET_ERROR_PATTERNS = [
   "script error",               // cross-origin chunk script error
   "err_network",
   "err_internet_disconnected",
+  "unsupported mime type",
+  "text/html",
+  "unexpected token '<'",
+  "expected a javascript module script",
+  "disallowed mime type",
 ];
 
 export function isLikelyAssetVersionError(error) {

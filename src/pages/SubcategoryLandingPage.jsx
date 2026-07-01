@@ -357,9 +357,9 @@ export default function SubcategoryLandingPage() {
             </button>
           </div>
         </div>
-        <GamerBrandFooter position="top" className="px-0 pt-0 pb-8" />
+        <GamerBrandFooter position="top" className="px-0 pt-0 pb-3" />
 
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
+        <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
           <div>
             <p className="text-purple-400 text-xs font-semibold uppercase tracking-widest mb-1">{cat} · {sub}</p>
             <h1 className="text-3xl font-black text-white">{decodeURIComponent(sub)}</h1>

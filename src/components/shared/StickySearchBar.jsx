@@ -13,7 +13,7 @@ export default function StickySearchBar() {
   };
 
   return (
-    <div className="sticky top-14 lg:top-0 z-40 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 py-2 px-4">
+    <div className="sticky top-16 lg:top-0 z-40 bg-gray-950/95 backdrop-blur-md border-b border-purple-900/30 py-2 px-4">
       <div className="max-w-3xl mx-auto relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
         <input

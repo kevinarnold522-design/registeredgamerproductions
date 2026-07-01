@@ -475,7 +475,7 @@ export default function ListingPage() {
           </div>
         </div>
       </div>
-      <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-2" />
 
       {/* Download ad gate intentionally disabled — clicking Download now routes
           straight to the listing's download/external link. */}
@@ -485,7 +485,7 @@ export default function ListingPage() {
       {/* Vignette ad — listing landing pages only */}
       <ListingVignetteAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
 
-      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-6 pb-12">
+      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-3 pb-12">
         {/* Back + Edit */}
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
