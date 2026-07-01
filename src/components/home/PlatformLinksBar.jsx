@@ -65,7 +65,7 @@ const platforms = [
 
 export default function PlatformLinksBar() {
   return (
-    <div className="w-full bg-gray-950 border-b border-gray-800/50 overflow-x-visible sm:overflow-x-auto">
+    <div className="w-full bg-gray-950/65 border-b border-gray-800/50 overflow-x-visible sm:overflow-x-auto">
       <div className="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center gap-1 min-w-0 sm:min-w-max">
         <span className="text-gray-500 text-xs font-semibold mr-2 whitespace-nowrap w-full sm:w-auto">🎮 Game Stores:</span>
         {platforms.map(p => (

@@ -18,7 +18,7 @@ export default function FeaturedGames() {
   }, []);
 
   if (loading) return (
-    <section className="py-20 px-4 bg-gray-950">
+    <section className="py-20 px-4 bg-gray-950/45">
       <div className="max-w-7xl mx-auto text-center">
         <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto" />
       </div>
@@ -26,7 +26,7 @@ export default function FeaturedGames() {
   );
 
   if (listings.length === 0) return (
-    <section className="py-16 px-4 bg-gray-950">
+    <section className="py-16 px-4 bg-gray-950/45">
       <div className="max-w-7xl mx-auto text-center">
         <p className="text-purple-400 text-sm font-semibold uppercase tracking-wider mb-2">Best Deals</p>
         <h2 className="text-3xl md:text-4xl font-black text-white mb-4">
@@ -45,7 +45,7 @@ export default function FeaturedGames() {
   );
 
   return (
-    <section id="games" className="py-20 px-4 bg-gray-950">
+    <section id="games" className="py-20 px-4 bg-gray-950/45">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-10">
           <div>

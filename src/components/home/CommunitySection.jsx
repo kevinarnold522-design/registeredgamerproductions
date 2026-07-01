@@ -24,7 +24,7 @@ const steps = [
 
 export default function CommunitySection() {
   return (
-    <section id="community" className="py-20 px-4 bg-gray-950">
+    <section id="community" className="py-20 px-4 bg-gray-950/45">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-14">

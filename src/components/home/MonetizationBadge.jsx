@@ -33,7 +33,7 @@ const steps = [
 
 export default function MonetizationBadge() {
   return (
-    <section className="py-16 px-4 bg-gray-950">
+    <section className="py-16 px-4 bg-gray-950/45">
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}

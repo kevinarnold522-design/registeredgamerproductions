@@ -109,7 +109,7 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
   if (loading) return null;
 
   return (
-    <section className="py-16 overflow-hidden relative" style={{ background: `linear-gradient(180deg, #2a0a26 0%, ${CP.darkBg} 40%, #3a0d36 70%, #2a0a26 100%)` }}>
+    <section className="py-16 overflow-hidden relative" style={{ background: `linear-gradient(180deg, rgba(42,10,38,0.42) 0%, rgba(42,10,38,0.3) 40%, rgba(58,13,54,0.34) 70%, rgba(42,10,38,0.42) 100%)` }}>
       {/* Cyberpunk scanline effect */}
       <div className="absolute inset-0 pointer-events-none" style={{
         backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.012) 2px, rgba(0,212,255,0.012) 4px)",

@@ -133,7 +133,7 @@ export default function ModdingSection({ currentUser, currentProfile }) {
   const hasActiveFilters = filters.isFree || filters.isPremium || filters.priceMin || filters.priceMax || filters.platforms.length > 0 || filters.sortBy !== "newest";
 
   return (
-    <section id="modding" className="py-20 px-4 bg-gray-950">
+    <section id="modding" className="py-20 px-4 bg-gray-950/45">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
           <div>

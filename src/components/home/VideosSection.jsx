@@ -5,7 +5,7 @@ import VideoFeed from "@/components/videos/VideoFeed";
 
 export default function VideosSection() {
   return (
-    <section className="py-16 px-4 bg-gray-950">
+    <section className="py-16 px-4 bg-gray-950/45">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>

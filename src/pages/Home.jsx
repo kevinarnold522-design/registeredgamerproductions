@@ -53,7 +53,7 @@ class DeferredSectionsBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="mx-auto mt-6 max-w-5xl px-4">
-          <div className="rounded-3xl border border-purple-500/30 bg-gray-950/85 px-5 py-6 text-center shadow-[0_0_30px_rgba(168,85,247,0.18)]">
+          <div className="rounded-3xl border border-purple-500/30 bg-gray-950/60 px-5 py-6 text-center shadow-[0_0_30px_rgba(168,85,247,0.18)]">
             <p className="text-sm font-black uppercase tracking-[0.22em] text-purple-300">Refreshing content</p>
             <p className="mt-2 text-sm text-gray-400">
               Some homepage sections did not load on this device. You can keep browsing or reload fresh content.
