@@ -39,8 +39,8 @@ export default function GamerBrandFooter({ showMascots = true, position = "botto
                 </div>
               </div>
               <div className="rounded-2xl border border-purple-500/20 bg-gray-950/55 px-4 py-2 text-center">
-                <p className="text-[9px] font-black uppercase tracking-[0.32em] text-purple-300">Connect With Us</p>
-                <p className="mt-1 text-xs font-semibold text-gray-300">Mascots on the left. Official links on the right.</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.32em] text-purple-300">GAMER.PRODUCTIONS</p>
+                <p className="mt-1 bg-gradient-to-r from-purple-200 via-fuchsia-100 to-pink-200 bg-clip-text text-sm font-black text-transparent">Level Up. Connect. Dominate.</p>
               </div>
               <div className="flex items-center justify-center flex-wrap gap-1.5 lg:justify-end lg:pl-2">
                 {socials.map(item => {

@@ -124,16 +124,16 @@ export default function ListingsLanding({ mode = "mine" }) {
                             <div key={metric.label} className={`flex min-h-[72px] flex-col justify-between rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2.5 py-2 ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
                               <div className="mb-1 flex items-center justify-between gap-2">
                                 {metric.isPoints ? (
-                                  <p className="text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-100/75">Leaderboard score</p>
+                                  <p className="text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-100/75">PTS</p>
                                 ) : (
                                   <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
                                 )}
-                                <p className={`text-[8px] uppercase tracking-[0.16em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.label}</p>
+                                <p className={`text-[8px] uppercase tracking-[0.16em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.isPoints ? "Score" : metric.label}</p>
                               </div>
                               {metric.isPoints ? (
-                                <div className="flex flex-col items-start gap-0.5">
+                                <div className="text-right">
                                   <p className={`text-lg font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
-                                  <p className="text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-200">pts</p>
+                                  <p className="text-[8px] uppercase text-gray-300/60">pts</p>
                                 </div>
                               ) : (
                                 <div className="flex items-end gap-1">

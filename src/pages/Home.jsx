@@ -352,7 +352,6 @@ export default function Home() {
         <>
           <div className="relative z-[1]">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
-            <InlineFloatingNewsfeed />
             {user && <AIAssistBanner user={user} />}
             {/* New-joiner astronaut welcome banner */}
             {user && profile && isNewJoiner(profile) && (
@@ -360,6 +359,7 @@ export default function Home() {
             )}
             <VideoHeroBanner />
             <HeroSection />
+            <InlineFloatingNewsfeed />
             <CategoryCards />
             <MarqueeTicker />
 
