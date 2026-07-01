@@ -183,7 +183,7 @@ export default function Home() {
     }
     const t = setTimeout(() => setShowDeferredSections(true), isMobileViewport ? 720 : 240);
     return () => clearTimeout(t);
-  }, [showSplash]);
+  }, [showSplash, isMobileViewport]);
 
   const dismissSplash = () => {
     try {
@@ -402,19 +402,15 @@ export default function Home() {
             {user && profile && isNewJoiner(profile) && (
               <HeyGamerBanner profile={profile} username={profile?.username || user?.full_name} />
             )}
-            {isMobileViewport ? (
-              <MobileHomeLite isAuthenticated={isAuthenticated} />
-            ) : (
-              <>
-                <VideoHeroBanner />
-                <HeroSection />
-                {showDeferredSections && !showSplash && !isAuthenticated && <InlineFloatingNewsfeed />}
-                <CategoryCards />
-                <MarqueeTicker />
-              </>
-            )}
+            <>
+              {!isMobileViewport && <VideoHeroBanner />}
+              <HeroSection />
+              {showDeferredSections && !showSplash && !isAuthenticated && <InlineFloatingNewsfeed />}
+              <CategoryCards />
+              <MarqueeTicker />
+            </>
 
-            {!isMobileViewport && showDeferredSections && (
+            {showDeferredSections && (
               <DeferredSectionsBoundary>
                 <Suspense fallback={<div className="flex items-center justify-center py-16"><div className="w-7 h-7 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
                   {showTutorial && user && <FirstLoginTutorial onComplete={() => setShowTutorial(false)} />}

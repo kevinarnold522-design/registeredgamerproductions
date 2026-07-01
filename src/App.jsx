@@ -6,7 +6,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { clearAssetRecoveryState } from '@/lib/assetRecovery';
 import lazyWithRetry from '@/lib/lazyWithRetry';
 // Added "Navigate" to standard react-router-dom handling
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, Link, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ShootingStars from '@/components/home/ShootingStars';
@@ -68,11 +68,50 @@ const OrdersLanding = lazyWithRetry(() => import("./pages/OrdersLanding"));
 const GamingNewsfeed = lazyWithRetry(() => import("./pages/GamingNewsfeed"));
 
 // Lightweight spinner while a page chunk is downloading on mobile.
-const RouteFallback = () => (
-  <div data-testid="route-suspense-fallback">
-    <BrandedLoadingScreen label="Loading Your Experience..." minHeight="60vh" />
-  </div>
-);
+const RouteFallback = () => {
+  const [showRecoveryState, setShowRecoveryState] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowRecoveryState(true), 4500);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <div data-testid="route-suspense-fallback">
+      <BrandedLoadingScreen
+        label={showRecoveryState ? "Still loading..." : "Loading Your Experience..."}
+        minHeight="60vh"
+      />
+      {showRecoveryState && (
+        <div className="mx-auto -mt-8 max-w-md px-4 pb-10 text-center">
+          <div className="rounded-3xl border border-purple-500/30 bg-gray-950/88 px-5 py-5 shadow-[0_0_24px_rgba(168,85,247,0.16)]">
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-purple-300">
+              Connection stalled
+            </p>
+            <p className="mt-2 text-sm text-gray-400">
+              The page is taking longer than expected. Reload this route or jump back home without losing the current session.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="rounded-full border border-purple-400/60 bg-purple-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-purple-500"
+              >
+                Reload page
+              </button>
+              <Link
+                to="/"
+                className="rounded-full border border-purple-700/50 bg-gray-900 px-4 py-2 text-sm font-bold text-purple-200 transition hover:text-white hover:border-purple-400/60"
+              >
+                Back to Home
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const AuthenticatedApp = () => {
   // Pulling 'user' mapping from Base44 state engine layout
