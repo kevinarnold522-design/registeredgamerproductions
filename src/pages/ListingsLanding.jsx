@@ -115,14 +115,17 @@ export default function ListingsLanding({ mode = "mine" }) {
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
                           {[
-                            { label: "Listing pts", value: pts, accent: "text-purple-300" },
-                            { label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "--", accent: "text-amber-300" },
-                            { label: "Views", value: l.views || 0, accent: "text-cyan-300" },
-                            { label: "Downloads", value: l.downloads || 0, accent: "text-fuchsia-300" },
+                            { rank: "01", label: "Listing pts", value: pts, tone: "from-purple-500/30 to-fuchsia-500/10", accent: "text-purple-300" },
+                            { rank: "02", label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "--", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300" },
+                            { rank: "03", label: "Views", value: l.views || 0, tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300" },
+                            { rank: "04", label: "Downloads", value: l.downloads || 0, tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300" },
                           ].map((metric) => (
-                            <div key={metric.label} className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5">
-                              <p className="text-[8px] uppercase tracking-[0.16em] text-gray-400 font-black">{metric.label}</p>
-                              <p className={`mt-0.5 text-sm font-black ${metric.accent}`}>{metric.value}</p>
+                            <div key={metric.label} className={`rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2.5 py-2`}>
+                              <div className="mb-1 flex items-center justify-between gap-2">
+                                <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
+                                <p className="text-[8px] uppercase tracking-[0.16em] text-gray-400 font-black">{metric.label}</p>
+                              </div>
+                              <p className="text-base font-black leading-none text-white">{metric.value}</p>
                             </div>
                           ))}
                         </div>
