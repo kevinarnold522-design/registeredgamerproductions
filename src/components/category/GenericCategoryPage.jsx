@@ -96,6 +96,22 @@ const CATEGORY_META = {
     grid: "linear-gradient(rgba(96,165,250,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(96,165,250,0.5) 1px, transparent 1px)",
     accent: "blue",
   },
+  store: {
+    title: "Store",
+    subtitle: "Game accounts, in-game items, skins, gift cards, accessories & top tech.",
+    color: "#fbbf24",
+    bg: "from-amber-950 to-gray-950",
+    grid: "linear-gradient(rgba(251,191,36,0.45) 1px, transparent 1px), linear-gradient(90deg, rgba(251,191,36,0.45) 1px, transparent 1px)",
+    accent: "amber",
+  },
+  cloud_gaming: {
+    title: "Cloud Gaming",
+    subtitle: "GeForce NOW, Xbox Cloud, PS Plus, Boosteroid & more — play anywhere.",
+    color: "#67e8f9",
+    bg: "from-cyan-950 to-gray-950",
+    grid: "linear-gradient(rgba(103,232,249,0.45) 1px, transparent 1px), linear-gradient(90deg, rgba(103,232,249,0.45) 1px, transparent 1px)",
+    accent: "cyan",
+  },
 };
 
 export default function GenericCategoryPage({ user, profile, cat, sub, categoryData }) {

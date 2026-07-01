@@ -115,6 +115,20 @@ const SUBCATEGORY_CONFIG = {
     { id: "Boosting",        emoji: "⚡", title: "Boosting",        desc: "Rank boosting & leveling",         color: "from-orange-950 to-orange-900",border: "border-orange-500/50", glow: "rgba(249,115,22,0.6)", badge: "Fast" },
     { id: "Design Services", emoji: "🎨", title: "Design Services", desc: "Logos, banners & overlays",        color: "from-pink-950 to-pink-900",    border: "border-pink-500/50",   glow: "rgba(236,72,153,0.6)", badge: "Creative" },
   ],
+  paid_tools: [
+    { id: "Premium Software",   emoji: "💻", title: "Premium Software",   desc: "Pro gaming utilities & launchers",   color: "from-pink-950 to-pink-900",    border: "border-pink-500/50",   glow: "rgba(244,114,182,0.6)", badge: "Pro" },
+    { id: "Utilities",          emoji: "🔧", title: "Utilities",          desc: "Performance boosters & tweakers",    color: "from-purple-950 to-purple-900",border: "border-purple-500/50", glow: "rgba(168,85,247,0.6)",  badge: "Tools" },
+    { id: "Automation Tools",   emoji: "⚙️", title: "Automation Tools",   desc: "Scripts, bots & auto-clickers",      color: "from-indigo-950 to-indigo-900",border: "border-indigo-500/50", glow: "rgba(99,102,241,0.6)",  badge: "Auto" },
+    { id: "Pro Utilities",      emoji: "🛠️", title: "Pro Utilities",      desc: "Advanced creator & dev tools",       color: "from-gray-900 to-gray-800",    border: "border-gray-500/50",   glow: "rgba(156,163,175,0.6)", badge: "Advanced" },
+  ],
+  store: [
+    { id: "Game Accounts",        emoji: "🔑", title: "Game Accounts",        desc: "Ranked & smurf accounts",           color: "from-yellow-950 to-yellow-900", border: "border-yellow-500/50", glow: "rgba(234,179,8,0.6)",   badge: "Hot" },
+    { id: "In-Game Items",        emoji: "💎", title: "In-Game Items",        desc: "Rare items, boosters & keys",        color: "from-cyan-950 to-cyan-900",    border: "border-cyan-500/50",   glow: "rgba(6,182,212,0.6)",   badge: "Trade" },
+    { id: "Skins",                emoji: "🎨", title: "Skins",                desc: "Character, weapon & vehicle skins",  color: "from-pink-950 to-pink-900",    border: "border-pink-500/50",   glow: "rgba(236,72,153,0.6)",  badge: "Rare" },
+    { id: "Gift Cards",           emoji: "🎁", title: "Gift Cards",           desc: "Steam, PSN, Xbox & more",            color: "from-green-950 to-green-900",  border: "border-green-500/50",  glow: "rgba(74,222,128,0.6)",  badge: "Digital" },
+    { id: "Accessories",          emoji: "🎮", title: "Accessories",          desc: "Controllers, headsets & more",       color: "from-violet-950 to-violet-900",border: "border-violet-500/50", glow: "rgba(139,92,246,0.6)",  badge: "Gear" },
+    { id: "Top Tech Equipment",   emoji: "🖥️", title: "Top Tech Equipment",   desc: "Monitors, GPUs & top-tier gear",     color: "from-blue-950 to-blue-900",    border: "border-blue-500/50",   glow: "rgba(59,130,246,0.6)",  badge: "Tech" },
+  ],
 };
 
 const CARD_SIZES = ["sm", "md", "lg"];
