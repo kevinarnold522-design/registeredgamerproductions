@@ -47,7 +47,7 @@ const socials = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-950 border-t border-gray-900 pt-0 pb-8 px-0">
+    <footer className="border-t border-gray-900 bg-gray-950/72 pt-0 pb-8 px-0 backdrop-blur-sm">
       <PlatformLinksBar />
       <LinkShortenerBar />
       <div className="pt-16 pb-0 px-4">

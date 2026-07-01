@@ -90,7 +90,7 @@ export default function Navbar() {
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-md lg:bg-gray-950 border-b border-purple-900/40 shadow-lg shadow-purple-900/10">
+        className="fixed top-0 left-0 right-0 z-50 border-b border-purple-900/40 bg-gray-950/72 backdrop-blur-md shadow-lg shadow-purple-900/10 lg:bg-gray-950/72">
         
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -138,7 +138,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {menuOpen &&
-        <div className="bg-gray-950 border-t border-purple-900/30 px-4 py-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto">
+        <div className="border-t border-purple-900/30 bg-gray-950/78 px-4 py-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto backdrop-blur-md">
           {navLinks.map((link) =>
           link.href.startsWith("#") ?
           <a key={link.label} href={link.href} className="text-gray-300 hover:text-purple-400 font-medium py-1" onClick={() => setMenuOpen(false)}>
