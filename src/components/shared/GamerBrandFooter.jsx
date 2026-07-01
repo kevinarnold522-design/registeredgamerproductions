@@ -22,8 +22,8 @@ export default function GamerBrandFooter({ showMascots = true, position = "botto
       <div className={`max-w-7xl mx-auto ${isTop ? "space-y-2" : "space-y-6"}`}>
         <div className={`rounded-3xl border border-purple-500/25 bg-gray-900/70 shadow-[0_0_34px_rgba(124,58,237,0.16)] ${isTop ? "p-2.5" : "p-5 text-center"}`}>
           {isTop ? (
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center">
+              <div className="min-w-0 overflow-hidden">
                 <div className="flex items-center gap-2 overflow-x-auto rounded-2xl px-1 py-1">
                   {showMascots && MASCOTS.map((mascot) => (
                     <div key={mascot.id} className="relative flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-gray-950/55">
@@ -38,7 +38,11 @@ export default function GamerBrandFooter({ showMascots = true, position = "botto
                   ))}
                 </div>
               </div>
-              <div className="flex items-center justify-start flex-wrap gap-1.5 lg:justify-end lg:pl-4">
+              <div className="rounded-2xl border border-purple-500/20 bg-gray-950/55 px-4 py-2 text-center">
+                <p className="text-[9px] font-black uppercase tracking-[0.32em] text-purple-300">Connect With Us</p>
+                <p className="mt-1 text-xs font-semibold text-gray-300">Mascots on the left. Official links on the right.</p>
+              </div>
+              <div className="flex items-center justify-center flex-wrap gap-1.5 lg:justify-end lg:pl-2">
                 {socials.map(item => {
                   const Icon = item.icon;
                   return (
