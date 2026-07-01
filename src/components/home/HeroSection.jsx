@@ -152,6 +152,33 @@ function LiveStats() {
 export default function HeroSection({ isMobile = false }) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showLiveStats, setShowLiveStats] = useState(() => !isMobile);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setShowLiveStats(true);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const reveal = () => {
+      if (!cancelled) setShowLiveStats(true);
+    };
+
+    const handle = typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(reveal, { timeout: 2200 })
+      : window.setTimeout(reveal, 1400);
+
+    return () => {
+      cancelled = true;
+      if (typeof window !== "undefined" && typeof window.cancelIdleCallback === "function" && typeof handle === "number") {
+        window.cancelIdleCallback(handle);
+        return;
+      }
+      window.clearTimeout(handle);
+    };
+  }, [isMobile]);
+
   return (
     <section className="relative flex flex-col items-center justify-center overflow-hidden pt-10 md:pt-16">
       {/* Background */}
@@ -300,7 +327,26 @@ export default function HeroSection({ isMobile = false }) {
         </motion.div>
 
         {/* Live Stats */}
-        <LiveStats />
+        {showLiveStats ? (
+          <LiveStats />
+        ) : (
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mb-8 text-center opacity-90" data-testid="hero-live-stats-placeholder">
+            {["Registered Gamers", "Active Listings", "Platform Status", "Streaming Now"].map((label) => (
+              <div
+                key={label}
+                className="relative px-4 sm:px-6 py-3 rounded-2xl"
+                style={{
+                  background: "linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1))",
+                  border: "1px solid rgba(139,92,246,0.28)",
+                  boxShadow: "0 0 14px rgba(139,92,246,0.16)",
+                }}
+              >
+                <div className="h-8 w-16 mx-auto rounded bg-purple-400/20 animate-pulse" />
+                <div className="mt-2 text-xs text-purple-300 uppercase tracking-wider font-semibold">{label}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>);
 

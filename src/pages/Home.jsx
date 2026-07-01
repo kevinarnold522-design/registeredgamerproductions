@@ -404,8 +404,8 @@ export default function Home() {
             )}
             <>
               {!isMobileViewport && <VideoHeroBanner />}
-              <HeroSection />
-              {showDeferredSections && !showSplash && !isAuthenticated && <InlineFloatingNewsfeed />}
+              <HeroSection isMobile={isMobileViewport} />
+              {showDeferredSections && !showSplash && !isAuthenticated && !isMobileViewport && <InlineFloatingNewsfeed />}
               <CategoryCards />
               <MarqueeTicker />
             </>
