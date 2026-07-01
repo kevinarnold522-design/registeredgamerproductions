@@ -169,6 +169,7 @@ const AuthenticatedApp = () => {
           <Route path="/content" element={<ContentFeedPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/users" element={<AdminRoute element={<UsersLanding />} />} />
+          <Route path="/listings" element={<ListingsLanding mode="all" />} />
           <Route path="/all-listings" element={<ListingsLanding mode="all" />} />
           <Route path="/my-listings" element={<ListingsLanding mode="mine" />} />
           <Route path="/orders" element={<OrdersLanding />} />
@@ -269,7 +270,6 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
-            {bootUiReady && !isMobileViewport && <PageTransition />}
             <InAppBrowserLinkFix />
             {bootUiReady && <VisitorCountryTracker />}
             <ShootingStars />

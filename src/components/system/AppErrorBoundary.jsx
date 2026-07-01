@@ -64,7 +64,7 @@ export default class AppErrorBoundary extends React.Component {
           <div style={{ maxWidth: 380 }}>
             <p style={{ margin: 0, fontWeight: 800, fontSize: "18px" }}>Something hiccuped</p>
             <p style={{ marginTop: "10px", marginBottom: "16px", opacity: 0.85, fontSize: "14px" }}>
-              We had a small glitch loading this page. Reload, or head back to the home feed to keep gaming.
+              We hit a temporary loading glitch. Reload this page, or head back to the home feed and keep gaming.
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <button

@@ -6,6 +6,7 @@ import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
+import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Link, useNavigate } from "react-router-dom";
 import { getPublisherRankMap } from "@/lib/publisherRank";
@@ -65,6 +66,7 @@ export default function ListingsLanding({ mode = "mine" }) {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950/70 text-white">
       <AuthNavbar user={user} profile={profile} />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-5" />
       <main className="mx-auto w-full max-w-7xl px-4 pt-16 pb-12">
         <button onClick={() => navigate(-1)} className="mb-3 flex items-center gap-2 text-gray-400 hover:text-white"><ArrowLeft className="w-4 h-4" /> Back</button>
         <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-purple-700/30 bg-gray-950/78 p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -115,7 +117,7 @@ export default function ListingsLanding({ mode = "mine" }) {
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
                           {[
-                            { rank: "01", label: "Listing pts", value: pts, tone: "from-purple-500/30 to-fuchsia-500/10", accent: "text-purple-300" },
+                            { rank: "PTS", label: "Listing pts", value: pts, tone: "from-purple-600/45 via-fuchsia-500/25 to-pink-500/15", accent: "bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent", valueClassName: "bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(217,70,239,0.35)]" },
                             { rank: "02", label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "--", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300" },
                             { rank: "03", label: "Views", value: l.views || 0, tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300" },
                             { rank: "04", label: "Downloads", value: l.downloads || 0, tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300" },
@@ -125,7 +127,7 @@ export default function ListingsLanding({ mode = "mine" }) {
                                 <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
                                 <p className="text-[8px] uppercase tracking-[0.16em] text-gray-400 font-black">{metric.label}</p>
                               </div>
-                              <p className="text-base font-black leading-none text-white">{metric.value}</p>
+                              <p className={`text-base font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
                             </div>
                           ))}
                         </div>

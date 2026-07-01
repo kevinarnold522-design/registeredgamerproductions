@@ -29,6 +29,7 @@ export default function ShootingStars() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    let isActive = document.visibilityState !== "hidden";
 
     const resize = () => {
       // Canvas is position:fixed covering the viewport — sizing to the full
@@ -38,13 +39,18 @@ export default function ShootingStars() {
     };
     resize();
     window.addEventListener("resize", resize);
+    const onVisibilityChange = () => {
+      isActive = document.visibilityState !== "hidden";
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     // Mobile gets smaller asteroids so they don't crowd the narrow viewport.
     const isMobile = window.innerWidth < 640;
     const astSizeScale = isMobile ? 0.5 : 1;
+    const density = isMobile ? 0.58 : window.innerWidth < 1280 ? 0.78 : 1;
 
     // Static background stars
-    const bgStars = Array.from({ length: 420 }, () => ({
+    const bgStars = Array.from({ length: Math.round(420 * density) }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 2.2 + 0.3,
@@ -54,7 +60,7 @@ export default function ShootingStars() {
     }));
 
     // Nebula blobs (slow drifting color clouds)
-    const nebulas = Array.from({ length: 7 }, () => ({
+    const nebulas = Array.from({ length: Math.max(4, Math.round(7 * density)) }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 360 + 190,
@@ -64,7 +70,7 @@ export default function ShootingStars() {
     }));
 
     // Glowing suns (large radiant orbs drifting slowly)
-    const suns = Array.from({ length: 4 }, () => {
+    const suns = Array.from({ length: Math.max(3, Math.round(4 * density)) }, () => {
       const palettes = [
         ["#fde68a", "#f59e0b", "#b45309"],
         ["#fca5a5", "#ef4444", "#7f1d1d"],
@@ -230,7 +236,7 @@ export default function ShootingStars() {
         if (this.y < -120) this.reset();
       }
     }
-    const rockets = Array.from({ length: 5 }, () => new Rocket());
+    const rockets = Array.from({ length: Math.max(3, Math.round(5 * density)) }, () => new Rocket());
 
     // Mini floating astronauts — slow drift + gentle spin
     class Astronaut {
@@ -360,7 +366,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + 60 || this.x < -60 || this.x > canvas.width + 60) this.reset();
       }
     }
-    const astronauts = Array.from({ length: 12 }, () => new Astronaut());
+    const astronauts = Array.from({ length: Math.max(6, Math.round(12 * density)) }, () => new Astronaut());
 
     // Spark bursts emitted when two asteroids clash
     const sparks = [];
@@ -528,7 +534,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + m) this.y = -m;
       }
     }
-    const asteroids = Array.from({ length: 24 }, () => new Asteroid());
+    const asteroids = Array.from({ length: Math.max(12, Math.round(24 * density)) }, () => new Asteroid());
 
     // Elastic collision resolution between asteroids — makes them clash
     function resolveAsteroidCollisions() {
@@ -742,11 +748,11 @@ export default function ShootingStars() {
         if (this.x < -200 || this.x > canvas.width + 200) this.reset();
       }
     }
-    const spaceships = Array.from({ length: 6 }, () => new Spaceship());
+    const spaceships = Array.from({ length: Math.max(3, Math.round(6 * density)) }, () => new Spaceship());
 
     // Colored small stars — twinkling dots in varied hues
     const starColors = ["#67e8f9", "#fca5a5", "#fde68a", "#86efac", "#f0abfc", "#93c5fd"];
-    const colorStars = Array.from({ length: 180 }, () => ({
+    const colorStars = Array.from({ length: Math.round(180 * density) }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 1.8 + 0.4,
@@ -814,7 +820,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + s) this.y = -s;
       }
     }
-    const moons = Array.from({ length: 7 }, () => new Moon());
+    const moons = Array.from({ length: Math.max(4, Math.round(7 * density)) }, () => new Moon());
 
     // Mini planets — colorful orbs, some ringed
     class Planet {
@@ -873,7 +879,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + s * 2) this.y = -s * 2;
       }
     }
-    const planets = Array.from({ length: 8 }, () => new Planet());
+    const planets = Array.from({ length: Math.max(4, Math.round(8 * density)) }, () => new Planet());
 
     // Shooting stars — varied vivid colors (not just purple)
     const shootingColors = ["#c084fc", "#22d3ee", "#34d399", "#f472b6", "#fde68a", "#60a5fa", "#fb923c", "#f87171", "#a855f7", "#e9d5ff"];
@@ -937,7 +943,7 @@ export default function ShootingStars() {
       }
     }
 
-    const shootingStars = Array.from({ length: 24 }, () => new ShootingStar());
+    const shootingStars = Array.from({ length: Math.max(12, Math.round(24 * density)) }, () => new ShootingStar());
 
     // When a shooting star's head touches an asteroid / rocket / astronaut, it explodes.
     function resolveShootingStarHits() {
@@ -981,6 +987,10 @@ export default function ShootingStars() {
 
     const animate = () => {
       try {
+      if (!isActive) {
+        animId = requestAnimationFrame(animate);
+        return;
+      }
       frame++;
 
       // Deep space background gradient
@@ -1113,6 +1123,7 @@ export default function ShootingStars() {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [enabled]);
 

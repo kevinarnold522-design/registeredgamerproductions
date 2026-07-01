@@ -75,7 +75,7 @@ export default function GamingNewsfeed() {
                   <ListerAvatarBadge listing={item} size="w-5 h-5" className="absolute bottom-1 right-1" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-yellow-500/50 bg-gradient-to-r from-[#3b2a00] to-[#5a3d00] text-yellow-300 text-[9px] font-black uppercase tracking-wide mb-1 shadow-[0_0_12px_rgba(234,179,8,0.25)]"><Star className="w-2.5 h-2.5 fill-yellow-300 text-yellow-300" /> Featured</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-fuchsia-400/40 bg-gradient-to-r from-purple-600/35 via-fuchsia-500/30 to-pink-500/25 text-fuchsia-100 text-[9px] font-black uppercase tracking-wide mb-1 shadow-[0_0_12px_rgba(217,70,239,0.28)]"><Star className="w-2.5 h-2.5 fill-fuchsia-200 text-fuchsia-200" /> Featured</span>
                   <p className="text-white font-bold text-sm truncate">{item.title}</p>
                   <p className="text-gray-500 text-xs line-clamp-2 mt-1">{item.description}</p>
                   {item.download_host && <div className="mt-2"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
