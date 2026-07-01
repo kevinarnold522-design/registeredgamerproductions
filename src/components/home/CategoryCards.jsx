@@ -268,7 +268,7 @@ export default function CategoryCards() {
   ];
 
   return (
-    <section id="categories" className="py-10 px-4 bg-gray-950/90 relative overflow-hidden">
+    <section id="categories" className="py-10 px-4 bg-gray-950/55 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
 
       <div className="max-w-7xl mx-auto">

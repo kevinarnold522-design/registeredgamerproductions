@@ -44,6 +44,12 @@ section.bg-gray-950\/95,
   background-color: rgba(3, 7, 18, 0.66) !important;
 }
 
+.bg-gray-950\/80,
+.bg-gray-950\/75,
+.bg-gray-950\/70 {
+  background-color: rgba(3, 7, 18, 0.5) !important;
+}
+
 /* Page wrappers (min-h-screen) should be transparent */
 .min-h-screen:not([class*="bg-gray"]):not([class*="bg-black"]):not([class*="rounded"]) {
   background: transparent;

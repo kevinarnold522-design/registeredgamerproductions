@@ -346,11 +346,11 @@ export default function Home() {
   }, [isAuthenticated, navigate, user?.email]);
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden text-white relative z-10">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden text-white relative z-0">
       {showSplash && <SplashScreen onDismiss={dismissSplash} />}
       {!showSplash && (
         <>
-          <div className="relative z-10">
+          <div className="relative z-[1]">
             {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
             <InlineFloatingNewsfeed />
             {user && <AIAssistBanner user={user} />}
@@ -425,7 +425,7 @@ export default function Home() {
                 <MonetizationBadge />
 
                 {/* Official socials — right below the Get Monetized section */}
-                <div className="max-w-7xl mx-auto px-4 py-4">
+                <div className="max-w-7xl mx-auto px-4 py-3">
                   <GamerSocialsBar />
                 </div>
 
