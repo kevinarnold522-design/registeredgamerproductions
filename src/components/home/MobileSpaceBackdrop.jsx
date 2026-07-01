@@ -3,10 +3,8 @@ import React from "react";
 const stars = [
   { top: "10%", left: "14%", size: 1.5 },
   { top: "18%", left: "76%", size: 1.5 },
-  { top: "34%", left: "84%", size: 2 },
   { top: "52%", left: "22%", size: 1.5 },
   { top: "76%", left: "72%", size: 1.5 },
-  { top: "88%", left: "44%", size: 2 },
 ];
 
 export default function MobileSpaceBackdrop() {
@@ -23,7 +21,7 @@ export default function MobileSpaceBackdrop() {
         className="absolute inset-x-0 top-0 h-32 opacity-55"
         style={{
           background: "radial-gradient(circle at top, rgba(125,211,252,0.14), transparent 56%)",
-          filter: "blur(18px)",
+          filter: "blur(12px)",
         }}
       />
       {stars.map((star, index) => (
@@ -35,17 +33,13 @@ export default function MobileSpaceBackdrop() {
             left: star.left,
             width: `${star.size}px`,
             height: `${star.size}px`,
-            boxShadow: "0 0 8px rgba(255,255,255,0.38)",
+            boxShadow: "0 0 5px rgba(255,255,255,0.28)",
           }}
         />
       ))}
       <div
-        className="absolute right-[-14%] top-[20%] h-32 w-32 rounded-full opacity-18"
-        style={{ background: "radial-gradient(circle, rgba(34,211,238,0.28), transparent 70%)", filter: "blur(10px)" }}
-      />
-      <div
-        className="absolute left-[-20%] bottom-[12%] h-40 w-40 rounded-full opacity-16"
-        style={{ background: "radial-gradient(circle, rgba(168,85,247,0.3), transparent 72%)", filter: "blur(12px)" }}
+        className="absolute right-[-10%] top-[18%] h-24 w-24 rounded-full opacity-15"
+        style={{ background: "radial-gradient(circle, rgba(34,211,238,0.22), transparent 70%)", filter: "blur(8px)" }}
       />
     </div>
   );

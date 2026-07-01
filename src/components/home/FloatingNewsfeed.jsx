@@ -132,20 +132,37 @@ export default function FloatingNewsfeed() {
 
 export function InlineFloatingNewsfeed() {
   const [listings, setListings] = useState([]);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia("(max-width: 767px)");
+    const onChange = () => setIsMobileViewport(media.matches);
+    onChange();
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       try {
-        const res = await base44.entities.Listing.list("-created_date", 12);
+        const res = await base44.entities.Listing.list("-created_date", isMobileViewport ? 6 : 12);
         const all = Array.isArray(res) ? res : (res?.data || res?.records || []);
         const visibleListings = all.filter((l) => (l.status ? l.status === "active" : true) && l.is_approved !== false);
-        if (active) setListings(visibleListings.slice(0, 5));
+        if (active) setListings(visibleListings.slice(0, isMobileViewport ? 3 : 5));
       } catch {}
     };
     const schedule = typeof window !== "undefined" && typeof window.requestIdleCallback === "function"
-      ? window.requestIdleCallback(load, { timeout: 1200 })
-      : window.setTimeout(load, 180);
+      ? window.requestIdleCallback(load, { timeout: isMobileViewport ? 2200 : 1200 })
+      : window.setTimeout(load, isMobileViewport ? 900 : 180);
     return () => {
       active = false;
       if (typeof window !== "undefined" && typeof window.cancelIdleCallback === "function" && typeof schedule === "number") {
@@ -154,14 +171,14 @@ export function InlineFloatingNewsfeed() {
       }
       clearTimeout(schedule);
     };
-  }, []);
+  }, [isMobileViewport]);
 
   if (listings.length === 0) return null;
 
   return (
     <div className="relative z-20 w-full px-4 sm:px-6 mt-2 mb-4">
       <div
-        className="lg:hidden w-full max-w-3xl mx-auto rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
+        className="lg:hidden w-full max-w-3xl mx-auto rounded-2xl border border-purple-700/40 bg-gray-950/88 backdrop-blur-sm overflow-hidden"
         style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
       >
         <div className="flex items-center gap-2 px-3 py-2 border-b border-fuchsia-500/20 bg-gradient-to-r from-[#1d1234]/95 via-[#241042]/95 to-[#2f0d38]/95">
@@ -172,7 +189,7 @@ export function InlineFloatingNewsfeed() {
           </div>
         </div>
 
-        <div className="grid gap-1.5 p-2">
+        <div className={`grid p-2 ${isMobileViewport ? "gap-1" : "gap-1.5"}`}>
           {listings.map((item) => (
             <FeedRow key={item.id} item={item} />
           ))}
