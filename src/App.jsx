@@ -186,6 +186,10 @@ function App() {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(max-width: 767px)').matches;
   });
+  const [showDesktopNewsfeed, setShowDesktopNewsfeed] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(min-width: 1024px)').matches;
+  });
   const [bootUiReady, setBootUiReady] = useState(false);
 
   useEffect(() => {
@@ -214,6 +218,21 @@ function App() {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
     const media = window.matchMedia('(max-width: 767px)');
     const onChange = () => setIsMobileViewport(media.matches);
+    onChange();
+
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', onChange);
+      return () => media.removeEventListener('change', onChange);
+    }
+
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const media = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setShowDesktopNewsfeed(media.matches);
     onChange();
 
     if (typeof media.addEventListener === 'function') {
@@ -255,12 +274,12 @@ function App() {
             {bootUiReady && <VisitorCountryTracker />}
             <ShootingStars />
             {isMobileViewport && <MobileSpaceBackdrop />}
-            <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+            <div style={{ position: "relative", zIndex: 0, width: "100%", maxWidth: "100%", overflowX: "hidden", paddingRight: showDesktopNewsfeed ? '17rem' : 0 }}>
               <SidebarLayout>
                 <AuthenticatedApp />
               </SidebarLayout>
             </div>
-            {!isMobileViewport && <FloatingNewsfeed />}
+            {showDesktopNewsfeed && <FloatingNewsfeed />}
             <LanguagePrompt />
             {bootUiReady && <GlobalHtmlAd />}
           </Router>

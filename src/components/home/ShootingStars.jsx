@@ -44,7 +44,7 @@ export default function ShootingStars() {
     const astSizeScale = isMobile ? 0.5 : 1;
 
     // Static background stars
-    const bgStars = Array.from({ length: 300 }, () => ({
+    const bgStars = Array.from({ length: 420 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 2.2 + 0.3,
@@ -54,17 +54,17 @@ export default function ShootingStars() {
     }));
 
     // Nebula blobs (slow drifting color clouds)
-    const nebulas = Array.from({ length: 5 }, () => ({
+    const nebulas = Array.from({ length: 7 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 300 + 150,
+      r: Math.random() * 360 + 190,
       color: ["#7c3aed44", "#ec489933", "#06b6d433", "#a855f744", "#6366f133"][Math.floor(Math.random() * 5)],
       dx: (Math.random() - 0.5) * 0.15,
       dy: (Math.random() - 0.5) * 0.15,
     }));
 
     // Glowing suns (large radiant orbs drifting slowly)
-    const suns = Array.from({ length: 3 }, () => {
+    const suns = Array.from({ length: 4 }, () => {
       const palettes = [
         ["#fde68a", "#f59e0b", "#b45309"],
         ["#fca5a5", "#ef4444", "#7f1d1d"],
@@ -74,7 +74,7 @@ export default function ShootingStars() {
       return {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        r: Math.random() * 8 + 6,
+        r: Math.random() * 12 + 10,
         core: p[0], mid: p[1], edge: p[2],
         dx: (Math.random() - 0.5) * 0.12,
         dy: (Math.random() - 0.5) * 0.12,
@@ -89,9 +89,9 @@ export default function ShootingStars() {
         // Rockets now LAUNCH UPWARD from below the screen
         this.x = Math.random() * canvas.width;
         this.y = canvas.height + 100;
-        this.speed = Math.random() * 2.2 + 1.6;
+        this.speed = Math.random() * 2.6 + 1.8;
         this.bob = Math.random() * Math.PI * 2;
-        this.size = Math.random() * 8 + 14;
+        this.size = Math.random() * 10 + 18;
         this.sway = Math.random() * 0.6 + 0.4;
         this.variant = Math.floor(Math.random() * 3);
         this.waitFrames = initial ? Math.random() * 400 : Math.random() * 500 + 150;
@@ -230,7 +230,7 @@ export default function ShootingStars() {
         if (this.y < -120) this.reset();
       }
     }
-    const rockets = Array.from({ length: 3 }, () => new Rocket());
+    const rockets = Array.from({ length: 5 }, () => new Rocket());
 
     // Mini floating astronauts — slow drift + gentle spin
     class Astronaut {
@@ -240,12 +240,12 @@ export default function ShootingStars() {
         this.y = initial ? Math.random() * canvas.height : -40;
         this.dx = (Math.random() - 0.5) * 0.5;
         this.dy = Math.random() * 0.4 + 0.15;
-        this.size = Math.random() * 5 + 9;
+        this.size = Math.random() * 7 + 12;
         this.angle = Math.random() * Math.PI * 2;
         this.spin = (Math.random() - 0.5) * 0.01;
         this.bob = Math.random() * Math.PI * 2;
         // Not every astronaut needs a balloon — some float without one.
-        this.hasBalloon = Math.random() > 0.35;
+        this.hasBalloon = Math.random() > 0.2;
         const balloonColors = ["#f472b6", "#f87171", "#facc15", "#4ade80", "#60a5fa", "#c084fc"];
         this.balloonColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
         // Most astronauts wear a WHITE suit; accent color used for helmet trim + stripes
@@ -360,7 +360,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + 60 || this.x < -60 || this.x > canvas.width + 60) this.reset();
       }
     }
-    const astronauts = Array.from({ length: 7 }, () => new Astronaut());
+    const astronauts = Array.from({ length: 12 }, () => new Astronaut());
 
     // Spark bursts emitted when two asteroids clash
     const sparks = [];
@@ -448,7 +448,7 @@ export default function ShootingStars() {
         this.broken = false;
         this.respawnFrames = 0;
         // Smaller size range — tiny pebbles to small rocks (even smaller on mobile)
-        this.size = (Math.random() * 11 + 3) * astSizeScale;
+        this.size = (Math.random() * 14 + 5) * astSizeScale;
         this.mass = this.size * this.size;
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
@@ -528,7 +528,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + m) this.y = -m;
       }
     }
-    const asteroids = Array.from({ length: 16 }, () => new Asteroid());
+    const asteroids = Array.from({ length: 24 }, () => new Asteroid());
 
     // Elastic collision resolution between asteroids — makes them clash
     function resolveAsteroidCollisions() {
@@ -634,9 +634,9 @@ export default function ShootingStars() {
         this.fromLeft = Math.random() > 0.5;
         this.x = this.fromLeft ? -120 : canvas.width + 120;
         this.y = Math.random() * canvas.height * 0.85;
-        this.speed = (Math.random() * 1 + 0.6) * (this.fromLeft ? 1 : -1);
+        this.speed = (Math.random() * 1.2 + 0.8) * (this.fromLeft ? 1 : -1);
         this.bob = Math.random() * Math.PI * 2;
-        this.size = Math.random() * 10 + 16;
+        this.size = Math.random() * 14 + 22;
         this.waitFrames = initial ? Math.random() * 300 : Math.random() * 500 + 150;
         const glows = ["#22d3ee", "#a855f7", "#34d399", "#f472b6"];
         this.glow = glows[Math.floor(Math.random() * glows.length)];
@@ -742,11 +742,11 @@ export default function ShootingStars() {
         if (this.x < -200 || this.x > canvas.width + 200) this.reset();
       }
     }
-    const spaceships = Array.from({ length: 3 }, () => new Spaceship());
+    const spaceships = Array.from({ length: 6 }, () => new Spaceship());
 
     // Colored small stars — twinkling dots in varied hues
     const starColors = ["#67e8f9", "#fca5a5", "#fde68a", "#86efac", "#f0abfc", "#93c5fd"];
-    const colorStars = Array.from({ length: 120 }, () => ({
+    const colorStars = Array.from({ length: 180 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 1.8 + 0.4,
@@ -764,7 +764,7 @@ export default function ShootingStars() {
         this.y = Math.random() * canvas.height;
         this.dx = (Math.random() - 0.5) * 0.18;
         this.dy = (Math.random() - 0.5) * 0.18;
-        this.size = Math.random() * 7 + 5;
+        this.size = Math.random() * 11 + 9;
         this.shape = ["full", "crescent", "gibbous", "half"][Math.floor(Math.random() * 4)];
         const tones = ["#e2e8f0", "#fcd34d", "#cbd5e1", "#fed7aa", "#d1d5db"];
         this.color = tones[Math.floor(Math.random() * tones.length)];
@@ -814,7 +814,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + s) this.y = -s;
       }
     }
-    const moons = Array.from({ length: 4 }, () => new Moon());
+    const moons = Array.from({ length: 7 }, () => new Moon());
 
     // Mini planets — colorful orbs, some ringed
     class Planet {
@@ -824,7 +824,7 @@ export default function ShootingStars() {
         this.y = Math.random() * canvas.height;
         this.dx = (Math.random() - 0.5) * 0.22;
         this.dy = (Math.random() - 0.5) * 0.22;
-        this.size = Math.random() * 9 + 6;
+        this.size = Math.random() * 15 + 10;
         const palettes = [
           ["#f97316", "#7c2d12"], ["#22d3ee", "#155e75"], ["#a855f7", "#581c87"],
           ["#34d399", "#065f46"], ["#f472b6", "#831843"], ["#facc15", "#854d0e"],
@@ -873,7 +873,7 @@ export default function ShootingStars() {
         if (this.y > canvas.height + s * 2) this.y = -s * 2;
       }
     }
-    const planets = Array.from({ length: 5 }, () => new Planet());
+    const planets = Array.from({ length: 8 }, () => new Planet());
 
     // Shooting stars — varied vivid colors (not just purple)
     const shootingColors = ["#c084fc", "#22d3ee", "#34d399", "#f472b6", "#fde68a", "#60a5fa", "#fb923c", "#f87171", "#a855f7", "#e9d5ff"];
@@ -883,9 +883,9 @@ export default function ShootingStars() {
       reset(initial = false) {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height * 0.5;
-        this.len = Math.random() * 400 + 180;
-        this.speed = Math.random() * 14 + 9;
-        this.size = Math.random() * 3 + 1.2;
+        this.len = Math.random() * 420 + 220;
+        this.speed = Math.random() * 15 + 10;
+        this.size = Math.random() * 4 + 1.8;
         this.color = shootingColors[Math.floor(Math.random() * shootingColors.length)];
         this.angle = (Math.PI / 4) + (Math.random() - 0.5) * 0.25;
         this.opacity = Math.random() * 0.5 + 0.7;
@@ -937,7 +937,7 @@ export default function ShootingStars() {
       }
     }
 
-    const shootingStars = Array.from({ length: 18 }, () => new ShootingStar());
+    const shootingStars = Array.from({ length: 24 }, () => new ShootingStar());
 
     // When a shooting star's head touches an asteroid / rocket / astronaut, it explodes.
     function resolveShootingStarHits() {
@@ -985,10 +985,10 @@ export default function ShootingStars() {
 
       // Deep space background gradient
       const bgGrad = ctx.createLinearGradient(0, 0, canvas.width * 0.3, canvas.height);
-      bgGrad.addColorStop(0, "#1a1340");
-      bgGrad.addColorStop(0.4, "#241a52");
-      bgGrad.addColorStop(0.7, "#1c1342");
-      bgGrad.addColorStop(1, "#150e36");
+      bgGrad.addColorStop(0, "#241659");
+      bgGrad.addColorStop(0.35, "#2d1b63");
+      bgGrad.addColorStop(0.7, "#21124f");
+      bgGrad.addColorStop(1, "#160c39");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1119,6 +1119,7 @@ export default function ShootingStars() {
   return (
     <canvas
       ref={canvasRef}
+      id="space-background"
       aria-hidden="true"
       className="pointer-events-none select-none"
       style={{
@@ -1127,9 +1128,8 @@ export default function ShootingStars() {
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 4,
-        opacity: 0.8,
-        mixBlendMode: "screen",
+        zIndex: -1,
+        opacity: 0.95,
         touchAction: "none",
         userSelect: "none",
         WebkitUserSelect: "none",

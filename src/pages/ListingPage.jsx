@@ -459,11 +459,10 @@ export default function ListingPage() {
   const commentsBlock = <div id="comments"><ListingCommentsBlock comments={comments} commentKey={commentKey} user={user} profile={profile} listing={listing} onRefresh={refreshComments} /></div>;
 
   return (
-    <div className="min-h-screen text-white" style={{ background: seller ? sellerTheme.bg : `linear-gradient(135deg, ${listingTheme}, #2a0a2e 55%, #3a0d36)`, backgroundImage: seller ? sellerTheme.grid : undefined, backgroundSize: "42px 42px" }}>
+    <div className="min-h-screen text-white" style={{ backgroundColor: "rgba(3, 7, 18, 0.52)", backgroundImage: seller ? sellerTheme.grid : undefined, backgroundSize: "42px 42px" }}>
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <StickySearchBar />
-      <GamerBrandFooter position="top" className="px-0 pt-0 pb-3" />
 
       {/* Download ad gate intentionally disabled — clicking Download now routes
           straight to the listing's download/external link. */}
@@ -473,9 +472,9 @@ export default function ListingPage() {
       {/* Vignette ad — listing landing pages only */}
       <ListingVignetteAd adFree={user && (isAdmin(user.email) || profile?.no_ads === true || profile?.moderator_type === "account_moderator")} />
 
-      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-20 pb-16">
+      <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-16 pb-12">
         {/* Back + Edit */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
@@ -505,10 +504,10 @@ export default function ListingPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* LEFT: Media */}
           <div>
-            <div className={`relative rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 aspect-video flex items-center justify-center mb-3 ${glowClass}`} style={glowStyle}>
+            <div className={`relative rounded-2xl overflow-hidden bg-black/90 border border-gray-800 aspect-video flex items-center justify-center mb-2 ${glowClass}`} style={glowStyle}>
               {primaryImage ? (
                 <img src={primaryImage} alt={listing.title} className="w-full h-full object-cover" />
               ) : ytId ? (
@@ -563,26 +562,26 @@ export default function ListingPage() {
               </div>
             )}
 
-            <div className="mt-4 rounded-2xl border border-gray-800 bg-gray-900/70 p-4 space-y-3">
+            <div className="mt-3 rounded-2xl border border-gray-800 bg-gray-900/68 p-3 space-y-3">
               {hasDownload && <GlowDownloadButton isFree={isFree} price={listing.price} currency={listing.currency} onClick={handleDownload} theme={sellerTheme} purchased={purchased} />}
               <div className="rounded-2xl border border-purple-700/30 bg-[linear-gradient(180deg,rgba(32,14,56,0.94),rgba(11,8,25,0.96))] p-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-[10px] uppercase tracking-[0.22em] text-purple-300 font-black">Leaderboard</p>
+                <div className="mb-2 flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-amber-300" />
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-purple-300 font-black">Leaderboard</p>
                 </div>
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                   {[
                     { rank: "01", label: "Listing pts", value: listingPts, tone: "from-purple-500/30 to-fuchsia-500/10", accent: "text-purple-300" },
                     { rank: "02", label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "Unranked", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300" },
                     { rank: "03", label: "Views", value: formatCount(listing.views || 0), tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300" },
                     { rank: "04", label: "Downloads", value: formatCount(listing.downloads || 0), tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300" },
                   ].map((metric) => (
-                    <div key={metric.label} className={`grid grid-cols-[auto,1fr,auto] items-center gap-3 rounded-xl border border-white/8 bg-gradient-to-r ${metric.tone} px-3 py-2.5`}>
-                      <div className={`text-xs font-black ${metric.accent}`}>{metric.rank}</div>
-                      <div>
+                    <div key={metric.label} className={`rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-3 py-2.5`}>
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <p className={`text-[10px] font-black ${metric.accent}`}>{metric.rank}</p>
                         <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400 font-black">{metric.label}</p>
                       </div>
-                      <p className="text-white text-base font-black">{metric.value}</p>
+                      <p className="text-white text-lg font-black leading-none">{metric.value}</p>
                     </div>
                   ))}
                 </div>

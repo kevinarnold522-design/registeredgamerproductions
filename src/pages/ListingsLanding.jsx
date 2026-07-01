@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2, Trophy, Download } from "lucide-react";
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
-import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Link, useNavigate } from "react-router-dom";
+import { getPublisherRankMap } from "@/lib/publisherRank";
+import { listingScore } from "@/lib/leaderboardScore";
 
 export default function ListingsLanding({ mode = "mine" }) {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function ListingsLanding({ mode = "mine" }) {
   const [items, setItems] = useState([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
+  const [rankMap, setRankMap] = useState({});
 
   useEffect(() => {
     const load = async () => {
@@ -44,6 +46,10 @@ export default function ListingsLanding({ mode = "mine" }) {
     load();
   }, [mode]);
 
+  useEffect(() => {
+    getPublisherRankMap().then((map) => setRankMap(map || {})).catch(() => setRankMap({}));
+  }, []);
+
   const adminUser = user && isAdmin(user.email);
   const filtered = items.filter(l => !q || `${l.title || ""} ${l.description || ""} ${l.category || ""}`.toLowerCase().includes(q.toLowerCase()));
 
@@ -57,17 +63,15 @@ export default function ListingsLanding({ mode = "mine" }) {
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950 text-white">
+    <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950/70 text-white">
       <AuthNavbar user={user} profile={profile} />
-      <main className="mx-auto w-full max-w-7xl px-4 pt-20 pb-12">
-        <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
-
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6"><ArrowLeft className="w-4 h-4" /> Back</button>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-16 pb-12">
+        <button onClick={() => navigate(-1)} className="mb-3 flex items-center gap-2 text-gray-400 hover:text-white"><ArrowLeft className="w-4 h-4" /> Back</button>
+        <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-purple-700/30 bg-gray-950/78 p-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-purple-400 text-xs font-bold uppercase tracking-widest">Listings</p>
-            <h1 className="text-3xl font-black">{mode === "all" ? "All Listings" : "My Listings"}</h1>
-            <p className="text-gray-500 text-sm">Manage listing data and files.</p>
+            <h1 className="text-2xl font-black sm:text-3xl">{mode === "all" ? "All Listings" : "My Listings"}</h1>
+            <p className="text-gray-500 text-xs sm:text-sm">Compact landing view with leaderboard stats.</p>
           </div>
           <div className="flex gap-2 flex-wrap">
             <div className="flex w-full items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 sm:w-auto">
@@ -79,14 +83,16 @@ export default function ListingsLanding({ mode = "mine" }) {
         </div>
 
         {loading ? (
-          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="18rem" />
+          <BrandedLoadingScreen label="Loading Listings..." minHeight="18rem" />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
             {filtered.map(l => {
               const isOwner = user && (user.email === l.seller_email || user.email === l.created_by || user.id === l.created_by_id);
               const canManage = adminUser || isOwner;
+              const sellerRank = rankMap?.[l.seller_email] || null;
+              const pts = listingScore(l, 0);
               return (
-                <div key={l.id} className="w-full min-w-0 rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-all">
+                <div key={l.id} className="w-full min-w-0 rounded-2xl bg-gray-900/92 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-all">
                   <Link to={`/listing?id=${l.id}`} className="block">
                     <div className="aspect-square bg-gray-800 relative flex items-center justify-center">
                       {l.images?.[0] ? (
@@ -102,6 +108,25 @@ export default function ListingsLanding({ mode = "mine" }) {
                       <p className="text-gray-500 text-[11px] truncate">by @{l.seller_username || l.seller_email?.split("@")[0] || "gamer"}</p>
                       {l.download_host && <div className="mt-1"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
                       <p className="text-purple-300 text-xs font-black">{!l.price || l.is_free ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
+                      <div className="mt-2 rounded-xl border border-purple-700/30 bg-[linear-gradient(180deg,rgba(32,14,56,0.94),rgba(11,8,25,0.96))] p-2">
+                        <div className="mb-1 flex items-center gap-1.5">
+                          <Trophy className="w-3.5 h-3.5 text-amber-300" />
+                          <p className="text-[9px] uppercase tracking-[0.2em] text-purple-300 font-black">Leaderboard</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {[
+                            { label: "Listing pts", value: pts, accent: "text-purple-300" },
+                            { label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "--", accent: "text-amber-300" },
+                            { label: "Views", value: l.views || 0, accent: "text-cyan-300" },
+                            { label: "Downloads", value: l.downloads || 0, accent: "text-fuchsia-300" },
+                          ].map((metric) => (
+                            <div key={metric.label} className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1.5">
+                              <p className="text-[8px] uppercase tracking-[0.16em] text-gray-400 font-black">{metric.label}</p>
+                              <p className={`mt-0.5 text-sm font-black ${metric.accent}`}>{metric.value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </Link>
                   {canManage && (

@@ -13,12 +13,35 @@ html, body, #root {
   background: transparent !important;
 }
 
+body {
+  position: relative;
+}
+
+#root {
+  position: relative;
+  isolation: isolate;
+}
+
+#space-background {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
 /* Semi-transparent page section backgrounds — lets the starfield show through */
 section.bg-gray-950,
 section.bg-gray-950\/90,
 section.bg-gray-950\/95,
 .page-section-bg {
   background-color: rgba(3, 7, 18, 0.78) !important;
+}
+
+.min-h-screen.bg-gray-950,
+.bg-gray-950\/95,
+.bg-gray-950\/90,
+.bg-gray-950\/85 {
+  background-color: rgba(3, 7, 18, 0.66) !important;
 }
 
 /* Page wrappers (min-h-screen) should be transparent */
@@ -257,7 +280,9 @@ button:not(.no-glow):hover,
   position: relative !important;
   overflow: hidden !important;
   isolation: isolate !important;
-  contain: layout paint !important;
+  contain: layout size !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .uvp-lock iframe,

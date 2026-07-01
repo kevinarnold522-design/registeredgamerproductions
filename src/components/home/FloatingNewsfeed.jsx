@@ -39,15 +39,15 @@ function FeedRow({ item }) {
 // Auto-scrolls vertically (marquee loop) and stays fixed wherever the user goes.
 export default function FloatingNewsfeed() {
   const [listings, setListings] = useState([]);
-  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+  const [isDesktopViewport, setIsDesktopViewport] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
-    return window.matchMedia("(max-width: 767px)").matches;
+    return window.matchMedia("(min-width: 1024px)").matches;
   });
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia("(max-width: 767px)");
-    const onChange = () => setIsMobileViewport(media.matches);
+    const media = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => setIsDesktopViewport(media.matches);
     onChange();
     if (typeof media.addEventListener === "function") {
       media.addEventListener("change", onChange);
@@ -69,7 +69,7 @@ export default function FloatingNewsfeed() {
     load();
   }, []);
 
-  if (isMobileViewport) return null;
+  if (!isDesktopViewport) return null;
 
   // Duplicate the list so the vertical marquee loops seamlessly.
   const hasItems = listings.length > 0;
@@ -80,12 +80,12 @@ export default function FloatingNewsfeed() {
       className="flex fixed z-[130] flex-col items-end pointer-events-none"
       style={{
         top: "5.75rem",
-        right: "max(0.5rem, env(safe-area-inset-right))",
+        right: "max(0.75rem, env(safe-area-inset-right))",
         transform: "translateZ(0)",
       }}
     >
       <div
-        className="pointer-events-auto w-48 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
+        className="pointer-events-auto w-60 xl:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/92 backdrop-blur-md overflow-hidden"
         style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
       >
         <div className="flex items-center gap-2 px-3 py-2.5 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">
