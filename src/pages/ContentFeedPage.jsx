@@ -13,6 +13,7 @@ import Pagination from "@/components/shared/Pagination";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { extractYouTubeId } from "@/lib/youtube";
 
 const PER_PAGE = 10;
@@ -196,36 +197,12 @@ function VideoPlayerModal({ video, user, profile, onClose }) {
           <div className="lg:w-[62%] bg-black flex flex-col">
             <div className="relative bg-black flex-1 min-h-[260px] flex items-center">
               {ytId ? (
-                !embedFailed ? (
-                  <iframe
-                    src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1`}
-                    className="w-full aspect-video"
-                    title="Video player"
-                    frameBorder="0"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    onError={() => {
-                      if (embedHost === "www.youtube.com") {
-                        setEmbedHost("www.youtube-nocookie.com");
-                        return;
-                      }
-                      setEmbedFailed(true);
-                    }}
+                <div className="w-full aspect-video">
+                  <UniversalVideoPreview
+                    url={youtubeWatchUrl}
+                    className="w-full h-full object-cover"
                   />
-                ) : (
-                  <div className="w-full h-60 flex flex-col items-center justify-center text-center px-4 gap-3 text-gray-300">
-                    <p className="text-sm font-semibold">Embed blocked in this browser/network</p>
-                    <a
-                      href={youtubeWatchUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold"
-                    >
-                      Open on YouTube
-                    </a>
-                  </div>
-                )
+                </div>
               ) : video.video_url ? (
                 <video src={video.video_url} controls autoPlay className="w-full max-h-[380px]" />
               ) : (

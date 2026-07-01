@@ -41,12 +41,12 @@ export default function FloatingNewsfeed() {
   const [listings, setListings] = useState([]);
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
-    return window.matchMedia("(max-width: 1023px)").matches;
+    return window.matchMedia("(max-width: 767px)").matches;
   });
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia("(max-width: 1023px)");
+    const media = window.matchMedia("(max-width: 767px)");
     const onChange = () => setIsMobileViewport(media.matches);
     onChange();
     if (typeof media.addEventListener === "function") {
@@ -77,7 +77,7 @@ export default function FloatingNewsfeed() {
 
   return (
     <div
-      className="flex fixed z-30 flex-col items-end pointer-events-none"
+      className="flex fixed z-[120] flex-col items-end pointer-events-none"
       style={{
         top: "5.5rem",
         right: "max(0.75rem, env(safe-area-inset-right))",

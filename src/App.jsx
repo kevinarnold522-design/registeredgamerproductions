@@ -183,7 +183,7 @@ const AuthenticatedApp = () => {
 function App() {
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
-    return window.matchMedia('(max-width: 1023px)').matches;
+    return window.matchMedia('(max-width: 767px)').matches;
   });
   const [bootUiReady, setBootUiReady] = useState(false);
 
@@ -211,7 +211,7 @@ function App() {
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
-    const media = window.matchMedia('(max-width: 1023px)');
+    const media = window.matchMedia('(max-width: 767px)');
     const onChange = () => setIsMobileViewport(media.matches);
     onChange();
 
@@ -252,7 +252,8 @@ function App() {
             {bootUiReady && !isMobileViewport && <PageTransition />}
             <InAppBrowserLinkFix />
             {bootUiReady && <VisitorCountryTracker />}
-            {isMobileViewport ? <MobileSpaceBackdrop /> : <ShootingStars />}
+            <ShootingStars />
+            {isMobileViewport && <MobileSpaceBackdrop />}
             <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
               <SidebarLayout>
                 <AuthenticatedApp />

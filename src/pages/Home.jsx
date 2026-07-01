@@ -114,13 +114,13 @@ export default function Home() {
   const { user, isAuthenticated, isLoadingAuth } = useAuth();
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
-    return window.matchMedia("(max-width: 1023px)").matches;
+    return window.matchMedia("(max-width: 767px)").matches;
   });
   useScrollReveal();
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia("(max-width: 1023px)");
+    const media = window.matchMedia("(max-width: 767px)");
     const onChange = () => setIsMobileViewport(media.matches);
     onChange();
     if (typeof media.addEventListener === "function") {
