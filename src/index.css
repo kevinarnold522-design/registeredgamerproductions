@@ -228,6 +228,33 @@ button:not(.no-glow):hover,
   transform: translateY(0);
 }
 
+/* Hard lock for universal video previews so embeds cannot escape their card. */
+.uvp-lock {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  contain: layout paint !important;
+}
+
+.uvp-lock iframe,
+.uvp-lock video,
+.uvp-lock img,
+.uvp-lock button,
+.uvp-lock > div {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.uvp-lock iframe,
+.uvp-lock video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+  border: 0 !important;
+}
+
 /* ── Hover glow pop on interactive cards ── */
 .hover-glow-pop {
   transition: transform 0.2s ease, box-shadow 0.3s ease;

@@ -60,7 +60,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     .filter(Boolean)
     .filter((token) => !blockedLayoutPrefixes.some((prefix) => token === prefix || token.startsWith(prefix) || token.startsWith(`!${prefix}`)))
     .join(" ");
-  const container = `relative isolate [contain:layout_paint] w-full h-full overflow-hidden ${safeClassName}`;
+  const container = `uvp-lock relative isolate [contain:layout_paint] w-full h-full overflow-hidden ${safeClassName}`;
 
   if (errored) {
     return (
