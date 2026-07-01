@@ -228,7 +228,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       <div className="relative py-14 px-4" style={{ background: `linear-gradient(135deg, #2a0a2e, #3a0d36)` }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: meta.grid, backgroundSize: "50px 50px" }} />
         <div className="max-w-7xl mx-auto relative z-10">
-          <Link to="/" className="mb-4 flex items-center gap-1 text-sm hover:opacity-80" style={{ color: meta.color }}>← Back to Home</Link>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-2">{meta.title}</h1>
           <p className="max-w-xl mb-1 text-base" style={{ color: `${meta.color}99` }}>{meta.subtitle}</p>
         </div>
