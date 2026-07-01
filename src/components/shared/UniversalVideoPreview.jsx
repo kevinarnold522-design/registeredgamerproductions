@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { extractYouTubeId } from "@/lib/youtube";
 
@@ -11,6 +11,14 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
   const [playing, setPlaying] = useState(false);
   const [embedHost, setEmbedHost] = useState("www.youtube.com");
   const [embedFailed, setEmbedFailed] = useState(false);
+
+  useEffect(() => {
+    setErrored(false);
+    setPlaying(false);
+    setEmbedHost("www.youtube-nocookie.com");
+    setEmbedFailed(false);
+  }, [url]);
+
   if (!url) return null;
 
   const ytId = extractYouTubeId(url);
@@ -43,8 +51,8 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
               onError={() => {
-                if (embedHost === "www.youtube.com") {
-                  setEmbedHost("www.youtube-nocookie.com");
+                if (embedHost === "www.youtube-nocookie.com") {
+                  setEmbedHost("www.youtube.com");
                   return;
                 }
                 setEmbedFailed(true);
