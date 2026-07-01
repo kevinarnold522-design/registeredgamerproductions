@@ -33,13 +33,15 @@ import '@/index.css'
 
   try {
     if (typeof window.__safeLocationAssign !== 'function') {
-      const assign = window.location.assign.bind(window.location);
-      window.__safeLocationAssign = (url) => assign(url);
+      window.__safeLocationAssign = (url) => {
+        window.location.assign(url);
+      };
     }
 
     if (typeof window.__safeLocationReplace !== 'function') {
-      const replace = window.location.replace.bind(window.location);
-      window.__safeLocationReplace = (url) => replace(url);
+      window.__safeLocationReplace = (url) => {
+        window.location.replace(url);
+      };
     }
   } catch (_) {}
 })();
@@ -70,7 +72,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 )
 
 if (typeof window !== 'undefined') {
-  queueMicrotask(markBootstrapReady);
   setTimeout(markBootstrapReady, 0);
-  requestAnimationFrame(markBootstrapReady);
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(markBootstrapReady);
+  } else {
+    setTimeout(markBootstrapReady, 16);
+  }
 }

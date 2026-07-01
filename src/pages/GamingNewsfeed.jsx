@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Newspaper, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Newspaper, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -12,14 +11,15 @@ import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const PER_PAGE = 15;
 
   useEffect(() => {
@@ -41,14 +41,39 @@ export default function GamingNewsfeed() {
     load();
   }, [user?.email]);
 
+  const filteredItems = items.filter(({ type, item }) => {
+    if (!search) return true;
+    const haystack = [
+      item?.title,
+      item?.description,
+      item?.content,
+      item?.community_title,
+      item?.game_name,
+      item?.category,
+      type,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(search.toLowerCase());
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PER_PAGE));
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110 mb-5">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
+        <LandingSearchHeader
+          className="mb-5"
+          searchValue={search}
+          onSearchChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          searchPlaceholder="Search posts, listings, games..."
+        />
         <div className="rounded-3xl border border-amber-500/50 bg-gradient-to-br from-black via-gray-950 to-gray-900 p-6 mb-6 shadow-[0_0_32px_rgba(245,158,11,0.18)]">
           <div className="flex items-center gap-3">
             <Newspaper className="w-7 h-7 text-amber-400" />
@@ -61,11 +86,11 @@ export default function GamingNewsfeed() {
         {loading ? <BrandedLoadingScreen label="Loading Your Experience..." minHeight="20rem" /> : (
           <>
           {/* Numbered pagination — on top of the newsfeed */}
-          {Math.ceil(items.length / PER_PAGE) > 1 && (
-            <NewsfeedPagination page={page} totalPages={Math.ceil(items.length / PER_PAGE)} onChange={setPage} />
+          {totalPages > 1 && (
+            <NewsfeedPagination page={page} totalPages={totalPages} onChange={setPage} />
           )}
           <div className="space-y-3">
-            {items.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(({ type, item }) => type === "post" ? (
+            {filteredItems.slice((page - 1) * PER_PAGE, page * PER_PAGE).map(({ type, item }) => type === "post" ? (
               <CommunityPostCard key={`p-${item.id}`} post={item} user={user} profile={profile} isTier1 canManage={false} canDelete={false} accentColor="#a855f7" />
             ) : (
               <a key={`l-${item.id}`} href={`/listing?id=${item.id}`} className="flex gap-3 rounded-2xl border border-gray-800 bg-gray-900/70 p-3 hover:border-purple-600/40 transition-colors">

@@ -248,15 +248,13 @@
       // Expose safe navigation helpers without mutating native location methods.
       // Redefining window.location.assign/replace throws in some browsers and can
       // halt app bootstrap with a blank screen.
-      var _origAssign = window.location.assign.bind(window.location);
-      var _origReplace = window.location.replace.bind(window.location);
       window.__safeLocationAssign = function(url) {
         if (isFraudUrl(url)) return;
-        _origAssign(url);
+        window.location.assign(url);
       };
       window.__safeLocationReplace = function(url) {
         if (isFraudUrl(url)) return;
-        _origReplace(url);
+        window.location.replace(url);
       };
     })();
     </script>
