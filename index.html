@@ -315,11 +315,13 @@
         try {
           var host = window.location.hostname;
           var isLocal = host === 'localhost' || host === '127.0.0.1';
+          var port = window.location.port || '';
+          var useSourceEntry = isLocal && /^(5173|5174|5175)$/.test(port);
 
-          var hostedCss = '/assets/hosted-entry.css?v=20260630t';
-          var hostedJs = '/assets/hosted-entry.js?v=20260630t';
+          var hostedCss = '/assets/index.css?v=20260701a';
+          var hostedJs = '/assets/index.js?v=20260701a';
 
-          if (!isLocal && !document.querySelector('link[href^="/assets/hosted-entry.css"]')) {
+          if (!useSourceEntry && !document.querySelector('link[href^="/assets/index.css"]')) {
             var link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = hostedCss;
@@ -328,7 +330,7 @@
 
           var entry = document.createElement('script');
           entry.type = 'module';
-          entry.src = isLocal ? '/src/main.jsx' : hostedJs;
+          entry.src = useSourceEntry ? '/src/main.jsx' : hostedJs;
           document.body.appendChild(entry);
         } catch (_) {}
       })();
