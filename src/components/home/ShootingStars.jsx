@@ -1116,8 +1116,6 @@ export default function ShootingStars() {
     };
   }, [enabled]);
 
-  if (!enabled) return null;
-
   return (
     <canvas
       ref={canvasRef}
@@ -1129,7 +1127,8 @@ export default function ShootingStars() {
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: 1,
+        zIndex: 9,
+        opacity: 0.92,
         touchAction: "none",
         userSelect: "none",
         WebkitUserSelect: "none",

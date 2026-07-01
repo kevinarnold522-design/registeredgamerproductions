@@ -19,6 +19,7 @@ import InAppBrowserLinkFix from '@/components/layout/InAppBrowserLinkFix';
 import PageTransition from '@/components/layout/PageTransition';
 import VisitorCountryTracker from '@/components/analytics/VisitorCountryTracker';
 import GlobalHtmlAd from '@/components/ads/GlobalHtmlAd';
+import FloatingNewsfeed from '@/components/home/FloatingNewsfeed';
 import RouteErrorBoundary from '@/components/system/RouteErrorBoundary';
 import BrandedLoadingScreen from '@/components/shared/BrandedLoadingScreen';
 
@@ -259,6 +260,7 @@ function App() {
                 <AuthenticatedApp />
               </SidebarLayout>
             </div>
+            {!isMobileViewport && <FloatingNewsfeed />}
             <LanguagePrompt />
             {bootUiReady && <GlobalHtmlAd />}
           </Router>

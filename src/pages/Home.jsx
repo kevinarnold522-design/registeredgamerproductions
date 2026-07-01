@@ -347,7 +347,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden text-white relative z-10">
-      {!showSplash && <FloatingNewsfeed />}
       {showSplash && <SplashScreen onDismiss={dismissSplash} />}
       {!showSplash && (
         <>
