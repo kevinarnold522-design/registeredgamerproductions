@@ -4,7 +4,6 @@ import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { clearAssetRecoveryState } from '@/lib/assetRecovery';
-import { isLikelyMobileWebDevice } from '@/lib/deviceProfile';
 import lazyWithRetry from '@/lib/lazyWithRetry';
 // Added "Navigate" to standard react-router-dom handling
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
@@ -183,7 +182,10 @@ const AuthenticatedApp = () => {
 
 
 function App() {
-  const [useLowOverheadMobileShell, setUseLowOverheadMobileShell] = useState(() => isLikelyMobileWebDevice());
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    return window.matchMedia('(max-width: 1023px)').matches;
+  });
   const [bootUiReady, setBootUiReady] = useState(false);
 
   useEffect(() => {
@@ -209,28 +211,18 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const syncMobileShell = () => setUseLowOverheadMobileShell(isLikelyMobileWebDevice());
-    syncMobileShell();
-
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
-    const viewportMedia = window.matchMedia('(max-width: 1023px)');
-    const pointerMedia = window.matchMedia('(pointer: coarse)');
+    const media = window.matchMedia('(max-width: 1023px)');
+    const onChange = () => setIsMobileViewport(media.matches);
+    onChange();
 
-    if (typeof viewportMedia.addEventListener === 'function') {
-      viewportMedia.addEventListener('change', syncMobileShell);
-      pointerMedia.addEventListener('change', syncMobileShell);
-      return () => {
-        viewportMedia.removeEventListener('change', syncMobileShell);
-        pointerMedia.removeEventListener('change', syncMobileShell);
-      };
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', onChange);
+      return () => media.removeEventListener('change', onChange);
     }
 
-    viewportMedia.addListener(syncMobileShell);
-    pointerMedia.addListener(syncMobileShell);
-    return () => {
-      viewportMedia.removeListener(syncMobileShell);
-      pointerMedia.removeListener(syncMobileShell);
-    };
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
   }, []);
 
   useEffect(() => {
@@ -258,17 +250,17 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
-            {bootUiReady && !useLowOverheadMobileShell && <PageTransition />}
+            {bootUiReady && !isMobileViewport && <PageTransition />}
             <InAppBrowserLinkFix />
             {bootUiReady && <VisitorCountryTracker />}
-            {useLowOverheadMobileShell ? <MobileSpaceBackdrop /> : <ShootingStars />}
+            {isMobileViewport ? <MobileSpaceBackdrop /> : <ShootingStars />}
             <div style={{ position: "relative", zIndex: 10, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
               <SidebarLayout>
                 <AuthenticatedApp />
               </SidebarLayout>
             </div>
             <LanguagePrompt />
-            {bootUiReady && !useLowOverheadMobileShell && <FloatingNewsfeed />}
+            {bootUiReady && !isMobileViewport && <FloatingNewsfeed />}
             {bootUiReady && <GlobalHtmlAd />}
           </Router>
           <Toaster />

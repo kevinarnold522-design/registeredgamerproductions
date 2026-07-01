@@ -11,17 +11,33 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
   const [playing, setPlaying] = useState(false);
   const [embedHost, setEmbedHost] = useState("www.youtube.com");
   const [embedFailed, setEmbedFailed] = useState(false);
+  const [embedLoaded, setEmbedLoaded] = useState(false);
 
   useEffect(() => {
     setErrored(false);
     setPlaying(false);
-    setEmbedHost("www.youtube-nocookie.com");
+    setEmbedHost("www.youtube.com");
     setEmbedFailed(false);
+    setEmbedLoaded(false);
   }, [url]);
 
   if (!url) return null;
 
   const ytId = extractYouTubeId(url);
+
+  useEffect(() => {
+    if (!playing || !ytId || embedLoaded || embedFailed) return;
+    const timeout = setTimeout(() => {
+      if (embedHost === "www.youtube.com") {
+        setEmbedLoaded(false);
+        setEmbedHost("www.youtube-nocookie.com");
+        return;
+      }
+      setEmbedFailed(true);
+    }, 4500);
+
+    return () => clearTimeout(timeout);
+  }, [playing, ytId, embedLoaded, embedFailed, embedHost]);
 
   // Always fill the parent box so the player/thumbnail can't collapse to
   // zero height inside flex/grid containers.
@@ -45,14 +61,17 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
             <iframe
               src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1&modestbranding=1`}
               title="Video player"
+              key={`${ytId}-${embedHost}`}
               className={`${fill} ${className}`}
               frameBorder="0"
               referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              onLoad={() => setEmbedLoaded(true)}
               onError={() => {
-                if (embedHost === "www.youtube-nocookie.com") {
-                  setEmbedHost("www.youtube.com");
+                if (embedHost === "www.youtube.com") {
+                  setEmbedLoaded(false);
+                  setEmbedHost("www.youtube-nocookie.com");
                   return;
                 }
                 setEmbedFailed(true);
@@ -82,6 +101,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
           e.stopPropagation();
           setEmbedHost("www.youtube.com");
           setEmbedFailed(false);
+          setEmbedLoaded(false);
           setPlaying(true);
         }}
         className={`${fill} block group ${className}`}
