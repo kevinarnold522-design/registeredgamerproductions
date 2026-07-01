@@ -59,6 +59,7 @@ export default defineConfig({
           if (id.includes('framer-motion')) return 'vendor-motion';
           if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
           if (id.includes('lucide-react')) return 'vendor-icons';
+          if (id.includes('/scheduler/')) return 'vendor-react';
           if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react';
           return 'vendor';
         },
