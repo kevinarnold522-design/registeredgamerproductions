@@ -255,7 +255,7 @@ function App() {
             {bootUiReady && <VisitorCountryTracker />}
             <ShootingStars />
             {isMobileViewport && <MobileSpaceBackdrop />}
-            <div style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+            <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
               <SidebarLayout>
                 <AuthenticatedApp />
               </SidebarLayout>

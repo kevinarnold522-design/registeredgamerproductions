@@ -75,20 +75,17 @@ export default function SplashScreen({ onDismiss }) {
           }}
           onClick={(e) => { e.stopPropagation(); dismissSmooth(); }}
         />
-        <div className="text-xs tracking-[0.4em] text-purple-400 uppercase mb-3">Welcome to</div>
-        <div className="flex items-baseline justify-center gap-1 mb-2">
-          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight">
-            GAMER
-          </h1>
+        <div className="mx-auto mt-3 w-64 max-w-[78vw] rounded-full border border-purple-500/40 bg-white/5 p-1 shadow-[0_0_30px_rgba(168,85,247,0.18)]">
+          <motion.div
+            className="h-3 rounded-full bg-gradient-to-r from-violet-600 via-purple-400 to-fuchsia-500"
+            initial={{ width: "12%", opacity: 0.75 }}
+            animate={{ width: ["12%", "52%", "84%", "100%"], opacity: [0.75, 1, 1, 0.95] }}
+            transition={{ duration: 0.9, ease: "easeInOut", repeat: Infinity, repeatType: "reverse" }}
+          />
         </div>
-        <h2 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-          Productions
-        </h2>
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {["Streaming", "Mods", "Social Platform", "Gaming Community"].map((t, i) => (
-            <span key={i} className="text-xs text-gray-500 uppercase tracking-widest">{t}{i < 3 ? " ·" : ""}</span>
-          ))}
-        </div>
+        <p className="mt-3 text-[11px] uppercase tracking-[0.35em] text-purple-300">
+          Loading
+        </p>
       </motion.div>
 
       <motion.p

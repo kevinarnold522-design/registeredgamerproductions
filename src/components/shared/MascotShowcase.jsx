@@ -39,13 +39,13 @@ export default function MascotShowcase({ compact = false }) {
   const mascots = selectMascots();
 
   return (
-    <section className={`relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gray-950/80 ${compact ? "px-4 py-4" : "px-5 py-6"} shadow-[0_0_34px_rgba(124,58,237,0.18)]`}>
+    <section className={`relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gray-950/80 ${compact ? "px-3 py-2.5" : "px-5 py-5"} shadow-[0_0_34px_rgba(124,58,237,0.18)]`}>
       <div className="absolute inset-0 bg-gradient-to-r from-purple-900/25 via-cyan-900/10 to-pink-900/25" />
       <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, rgba(34,211,238,.5), transparent 24%), radial-gradient(circle at 80% 40%, rgba(236,72,153,.45), transparent 24%)" }} />
       
       {/* Wrap on mobile so cards are never cut off; keep horizontal rail on larger screens */}
-      <div className="relative overflow-visible pb-2 sm:overflow-x-auto scroll-smooth">
-        <div className="flex flex-wrap items-end justify-center gap-3 px-2 sm:flex-nowrap sm:justify-start sm:gap-4 sm:min-w-min">
+      <div className="relative overflow-visible sm:overflow-x-auto scroll-smooth">
+        <div className="flex flex-wrap items-end justify-center gap-2 px-1 sm:flex-nowrap sm:justify-start sm:gap-3 sm:min-w-min">
           {mascots.map((mascot, index) => (
             <motion.div
               key={mascot.id}
@@ -55,22 +55,14 @@ export default function MascotShowcase({ compact = false }) {
               transition={{ delay: index * 0.08, type: "spring", stiffness: 160 }}
               className="group relative flex flex-col items-center flex-shrink-0"
             >
-              {/* Country label above */}
-              <div className="text-center mb-1 h-6 flex flex-col justify-end">
-                <p className="text-xs font-bold text-white truncate w-20 sm:w-24">{mascot.country}</p>
-              </div>
-
-              <div className="absolute bottom-4 h-12 w-12 rounded-full blur-2xl opacity-70" style={{ background: mascot.glow }} />
+              <div className={`absolute ${compact ? "bottom-2 h-8 w-8" : "bottom-4 h-12 w-12"} rounded-full blur-2xl opacity-70`} style={{ background: mascot.glow }} />
               
               <img
                 src={mascot.image}
                 alt={mascot.name}
-                className={`${compact ? "h-20 sm:h-24" : "h-24 sm:h-32 md:h-40"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110 rounded-lg`}
+                className={`${compact ? "h-14 sm:h-16" : "h-24 sm:h-32 md:h-40"} relative z-10 object-contain drop-shadow-[0_0_22px_rgba(168,85,247,0.5)] transition-transform duration-300 group-hover:scale-110 rounded-lg`}
                 loading="lazy"
               />
-              
-              {/* Animal label below */}
-              <p className="text-[9px] text-gray-400 mt-1 text-center w-20 sm:w-24 truncate">{mascot.animal || mascot.role.split("/")[0]}</p>
             </motion.div>
           ))}
         </div>

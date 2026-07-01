@@ -265,6 +265,7 @@ button:not(.no-glow):hover,
 .uvp-lock img,
 .uvp-lock button,
 .uvp-lock > div {
+  display: block !important;
   max-width: 100% !important;
   max-height: 100% !important;
 }

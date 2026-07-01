@@ -77,14 +77,15 @@ export default function FloatingNewsfeed() {
 
   return (
     <div
-      className="flex fixed z-[120] flex-col items-end pointer-events-none"
+      className="flex fixed z-[130] flex-col items-end pointer-events-none"
       style={{
-        top: "5.5rem",
-        right: "max(0.75rem, env(safe-area-inset-right))",
+        top: "5.75rem",
+        right: "max(0.5rem, env(safe-area-inset-right))",
+        transform: "translateZ(0)",
       }}
     >
       <div
-        className="pointer-events-auto w-44 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
+        className="pointer-events-auto w-48 lg:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/90 backdrop-blur-md overflow-hidden"
         style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
       >
         <div className="flex items-center gap-2 px-3 py-2.5 border-b border-purple-900/40 bg-gradient-to-r from-purple-950/60 to-gray-900">

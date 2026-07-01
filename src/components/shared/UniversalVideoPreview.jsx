@@ -60,7 +60,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     .filter(Boolean)
     .filter((token) => !blockedLayoutPrefixes.some((prefix) => token === prefix || token.startsWith(prefix) || token.startsWith(`!${prefix}`)))
     .join(" ");
-  const container = `uvp-lock relative isolate [contain:layout_paint] w-full h-full overflow-hidden ${safeClassName}`;
+  const container = `uvp-lock relative isolate [contain:layout_paint] block w-full h-full overflow-hidden rounded-[inherit] bg-black ${safeClassName}`;
   const trapEvent = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -89,8 +89,10 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
               key={`${ytId}-${embedHost}`}
               className={fill}
               frameBorder="0"
+              loading="lazy"
               referrerPolicy="strict-origin-when-cross-origin"
               allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
               onLoad={() => setEmbedLoaded(true)}
               onError={() => {
                 if (embedHost === "www.youtube.com") {
