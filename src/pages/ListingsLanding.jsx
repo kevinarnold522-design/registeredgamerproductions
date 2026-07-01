@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { ArrowLeft, Plus, Search, Package, Pencil, Trash2, Trophy, Download } from "lucide-react";
+import Navbar from "@/components/home/Navbar";
+import { ArrowLeft, Eye, Plus, Search, Package, Pencil, Trash2, Trophy, Download } from "lucide-react";
 import { formatListingPrice } from "@/lib/currency";
 import { isAdmin } from "@/lib/constants";
-import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
@@ -23,21 +23,27 @@ export default function ListingsLanding({ mode = "mine" }) {
 
   useEffect(() => {
     const load = async () => {
-      const me = await base44.auth.me();
+      const me = await base44.auth.me().catch(() => null);
       const ghostSession = (() => {
         try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
       })();
       const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
-      const activeUser = ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
-      setUser(activeUser);
-      if (!activeUser?.email) {
+      const activeUser = ghostEmail && me ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
+      setUser(activeUser || null);
+
+      if (activeUser?.email) {
+        const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
+        setProfile(profiles[0] || null);
+      } else {
         setProfile(null);
+      }
+
+      if (mode !== "all" && !activeUser?.email) {
         setItems([]);
         setLoading(false);
         return;
       }
-      const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
-      setProfile(profiles[0] || null);
+
       const rows = mode === "all"
         ? await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200)
         : await base44.entities.Listing.filter({ seller_email: activeUser.email }, "-created_date", 200);
@@ -65,25 +71,27 @@ export default function ListingsLanding({ mode = "mine" }) {
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950/70 text-white">
-      <AuthNavbar user={user} profile={profile} />
+      {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-2" />
       <main className="mx-auto w-full max-w-7xl px-4 pt-10 pb-12">
-        <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-purple-700/30 bg-gray-950/78 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-3 flex flex-col gap-3 rounded-2xl border border-purple-700/30 bg-gray-950/78 p-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-purple-400 text-xs font-bold uppercase tracking-widest">Listings</p>
             <h1 className="text-2xl font-black sm:text-3xl">{mode === "all" ? "All Listings" : "My Listings"}</h1>
             <p className="text-gray-500 text-xs sm:text-sm">Compact landing view with leaderboard stats.</p>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 sm:flex sm:w-auto sm:flex-nowrap">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110 sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110"
             >
               <ArrowLeft className="h-4 w-4" /> Back
             </button>
-            <div className="flex w-full items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 sm:w-auto">
+            <div className="flex min-w-0 items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 sm:w-auto">
               <Search className="w-4 h-4 text-gray-500" />
-              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search listings..." className="w-full bg-transparent outline-none text-sm text-white sm:w-36" />
+              <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search listings..." className="w-full min-w-0 bg-transparent outline-none text-sm text-white sm:w-36" />
+            </div>
             </div>
             <Link to="/create-listing" className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-700 text-white text-sm font-bold sm:w-auto"><Plus className="w-4 h-4" /> Post</Link>
           </div>
@@ -112,28 +120,33 @@ export default function ListingsLanding({ mode = "mine" }) {
                     <div className="p-3">
                       <p className="font-bold text-sm truncate">{l.title}</p>
                       <p className="text-gray-500 text-[11px] truncate">by @{l.seller_username || l.seller_email?.split("@")[0] || "gamer"}</p>
-                      {l.download_host && <div className="mt-1"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
+                      {l.download_host && (
+                        <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-[10px] font-bold text-cyan-300">
+                          <Download className="h-3 w-3" /> Download
+                        </div>
+                      )}
                       <p className="text-purple-300 text-xs font-black">{!l.price || l.is_free ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
                       <div className="mt-2 rounded-xl border border-purple-700/30 bg-[linear-gradient(180deg,rgba(32,14,56,0.94),rgba(11,8,25,0.96))] p-2">
-                        <div className="mb-1 flex items-center gap-1.5">
-                          <Trophy className="w-3.5 h-3.5 text-amber-300" />
-                          <p className="text-[9px] uppercase tracking-[0.2em] text-purple-300 font-black">Performance</p>
-                        </div>
                         <div className="grid grid-cols-2 gap-1.5">
                           {[
                             { rank: "PTS", label: "Listing pts", value: pts, tone: "from-purple-600/45 via-fuchsia-500/25 to-pink-500/15", accent: "bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent", valueClassName: "bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(217,70,239,0.35)]", isPoints: true },
-                            { rank: "02", label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "--", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300" },
-                            { rank: "03", label: "Views", value: l.views || 0, tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300" },
-                            { rank: "04", label: "Downloads", value: l.downloads || 0, tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300" },
+                            { rank: "02", label: "rank", value: sellerRank ? `#${sellerRank}` : "--", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300", icon: "trophy" },
+                            { rank: "03", label: "views", value: l.views || 0, tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300", icon: "eye" },
+                            { rank: "04", label: "downloads", value: l.downloads || 0, tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300", icon: "download" },
                           ].map((metric) => (
                             <div key={metric.label} className={`flex min-h-[72px] flex-col justify-between rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2.5 py-2 ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
                               <div className="mb-1 flex items-center justify-between gap-2">
                                 {metric.isPoints ? (
                                   <p className="text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-100/75">PTS</p>
                                 ) : (
-                                  <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
+                                  <div className="flex items-center gap-1">
+                                    {metric.icon === "trophy" && <Trophy className={`h-3 w-3 ${metric.accent}`} />}
+                                    {metric.icon === "eye" && <Eye className={`h-3 w-3 ${metric.accent}`} />}
+                                    {metric.icon === "download" && <Download className={`h-3 w-3 ${metric.accent}`} />}
+                                    <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
+                                  </div>
                                 )}
-                                <p className={`text-[8px] uppercase tracking-[0.16em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.isPoints ? "Score" : metric.label}</p>
+                                <p className={`text-[8px] uppercase tracking-[0.16em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-500"}`}>{metric.isPoints ? "Score" : metric.label}</p>
                               </div>
                               {metric.isPoints ? (
                                 <div className="text-right">

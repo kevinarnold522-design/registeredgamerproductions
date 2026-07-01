@@ -22,27 +22,27 @@ export default function GamerBrandFooter({ showMascots = true, position = "botto
       <div className={`max-w-7xl mx-auto ${isTop ? "space-y-2" : "space-y-6"}`}>
         <div className={`rounded-3xl border border-purple-500/25 bg-gray-900/70 shadow-[0_0_34px_rgba(124,58,237,0.16)] ${isTop ? "p-2.5" : "p-5 text-center"}`}>
           {isTop ? (
-            <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center">
-              <div className="min-w-0 overflow-hidden">
+            <div className="flex flex-col gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center">
+              <div className="order-2 min-w-0 overflow-hidden lg:order-1">
                 <div className="flex items-center gap-2 overflow-x-auto rounded-2xl px-1 py-1">
                   {showMascots && MASCOTS.map((mascot) => (
-                    <div key={mascot.id} className="relative flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-gray-950/55">
+                    <div key={mascot.id} className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-gray-950/55 lg:h-14 lg:w-14">
                       <div className="absolute inset-2 rounded-full blur-xl opacity-75" style={{ background: mascot.glow }} />
                       <img
                         src={mascot.image}
                         alt={mascot.name}
-                        className="relative z-10 h-10 w-10 object-contain"
+                        className="relative z-10 h-8 w-8 object-contain lg:h-10 lg:w-10"
                         loading="lazy"
                       />
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="rounded-2xl border border-purple-500/20 bg-gray-950/55 px-4 py-2 text-center">
+              <div className="order-1 rounded-2xl border border-purple-500/20 bg-gray-950/55 px-4 py-1.5 text-center lg:order-2 lg:py-2">
                 <p className="text-[9px] font-black uppercase tracking-[0.32em] text-purple-300">GAMER.PRODUCTIONS</p>
                 <p className="mt-1 bg-gradient-to-r from-purple-200 via-fuchsia-100 to-pink-200 bg-clip-text text-sm font-black text-transparent">Level Up. Connect. Dominate.</p>
               </div>
-              <div className="flex items-center justify-center flex-wrap gap-1.5 lg:justify-end lg:pl-2">
+              <div className="order-3 flex items-center justify-center flex-wrap gap-1.5 lg:justify-end lg:pl-2">
                 {socials.map(item => {
                   const Icon = item.icon;
                   return (

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, ChevronLeft, ChevronRight, Crown, Star } from "lucide-react";
+import { Eye, Crown, Star, Trophy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { useNavigate } from "react-router-dom";
 import { listingScore } from "@/lib/leaderboardScore";
 
@@ -68,9 +69,7 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
   const entities = /** @type {any} */ (base44.entities || {});
   const navigate = useNavigate();
   const [liveListing, setLiveListing] = useState(safeListing);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [sellerAvatar, setSellerAvatar] = useState(safeListing.seller_avatar || "");
-  const hasMultipleImages = liveListing.images && liveListing.images.length > 1;
   const points = listingScore(liveListing, 0);
   const sellerRank = liveListing.sellerRank || null;
 
@@ -93,7 +92,6 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
 
   useEffect(() => {
     setLiveListing(listing || {});
-    setCurrentImageIndex(0);
   }, [listing]);
 
   // Resolve seller avatar from their profile when not embedded on the listing
@@ -121,27 +119,6 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
     };
   }, [entities.Listing, listing?.id]);
 
-  // Auto-transition images every 3 seconds if multiple images
-  useEffect(() => {
-    if (!hasMultipleImages) return;
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % liveListing.images.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [hasMultipleImages, liveListing.images?.length]);
-
-  const handlePrevImage = (/** @type {import("react").MouseEvent<HTMLButtonElement>} */ e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + liveListing.images.length) % liveListing.images.length);
-  };
-
-  const handleNextImage = (/** @type {import("react").MouseEvent<HTMLButtonElement>} */ e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % liveListing.images.length);
-  };
-
   return (
     <motion.a
       href={liveListing.id ? `/listing?id=${liveListing.id}` : "/listing"}
@@ -154,47 +131,13 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
       whileHover={{ boxShadow: `0 0 34px ${glow.soft.replace("0.8", "0.45").replace("0.85", "0.5")}` }}
     >
       <div className="relative h-44 overflow-hidden">
-        {/* Image carousel */}
-        {liveListing.images?.[0] ? (
-          <div className="relative w-full h-full">
-            <motion.img
-              key={`image-${currentImageIndex}`}
-              src={liveListing.images[currentImageIndex]}
-              alt={liveListing.title}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="w-full h-full object-cover"
-            />
-            {/* Image navigation arrows - only show if multiple images */}
-            {hasMultipleImages && (
-              <>
-                <button
-                  onClick={handlePrevImage}
-                  className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1 transition-colors z-10"
-                >
-                  <ChevronLeft className="w-4 h-4 text-white" />
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 rounded-full p-1 transition-colors z-10"
-                >
-                  <ChevronRight className="w-4 h-4 text-white" />
-                </button>
-                {/* Image indicators */}
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-                  {liveListing.images.map((/** @type {string} */ imageSrc, /** @type {number} */ i) => (
-                    <div
-                      key={imageSrc || i}
-                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                        i === currentImageIndex ? "bg-white" : "bg-white/40"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+        {liveListing.images?.length > 0 ? (
+          <ListingImageSlider
+            images={liveListing.images}
+            title={liveListing.title}
+            badge={liveListing.is_premium ? "PREMIUM" : null}
+            heightClass="h-44"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl bg-gray-800">🎮</div>
         )}
@@ -270,10 +213,17 @@ export default function HomeListingCard({ listing, index = 0, className = "", us
             </div>
             <div className="min-w-0 text-left">
               <p className="truncate text-sm font-bold text-gray-200">@{liveListing.seller_username || liveListing.seller_email?.split("@")[0] || "gamer"}</p>
-              {sellerRank ? <p className="text-[10px] font-black text-amber-300">Seller rank #{sellerRank}</p> : null}
+              <p className="text-[10px] font-medium text-gray-500">Publisher</p>
             </div>
           </button>
-          {liveListing.monthlyRank ? <span className="rounded-full border border-cyan-400/35 bg-cyan-500/10 px-2 py-1 text-[10px] font-black text-cyan-300">#{liveListing.monthlyRank}</span> : null}
+          <div className="flex flex-col items-end gap-1">
+            {sellerRank ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-gradient-to-r from-amber-500/30 to-yellow-500/30 px-2 py-1 text-[10px] font-black text-amber-300">
+                <Trophy className="h-3 w-3" />#{sellerRank}
+              </span>
+            ) : null}
+            {liveListing.monthlyRank ? <span className="rounded-full border border-cyan-400/35 bg-cyan-500/10 px-2 py-1 text-[10px] font-black text-cyan-300">#{liveListing.monthlyRank}</span> : null}
+          </div>
         </div>
         {liveListing.download_host && (
           <div className="mb-3">
