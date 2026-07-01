@@ -1,6 +1,6 @@
 import React from "react";
 import { Facebook, Instagram, Youtube, MessageCircle } from "lucide-react";
-import MascotShowcase from "@/components/shared/MascotShowcase";
+import MascotShowcase, { MASCOTS } from "@/components/shared/MascotShowcase";
 import BrandLogo from "@/components/shared/BrandLogo";
 import { OFFICIAL_LINKS } from "@/lib/officialLinks";
 
@@ -22,15 +22,29 @@ export default function GamerBrandFooter({ showMascots = true, position = "botto
       <div className={`max-w-7xl mx-auto ${isTop ? "space-y-2" : "space-y-6"}`}>
         <div className={`rounded-3xl border border-purple-500/25 bg-gray-900/70 shadow-[0_0_34px_rgba(124,58,237,0.16)] ${isTop ? "p-2.5" : "p-5 text-center"}`}>
           {isTop ? (
-            <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div className="min-w-0 overflow-hidden">
                 <div className="mb-1 flex items-center gap-2">
                   <p className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-300">Mascots</p>
                   <p className="text-[10px] text-gray-500">Community crew</p>
                 </div>
-                {showMascots && <MascotShowcase compact />}
+                {showMascots && (
+                  <div className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-purple-500/25 bg-gray-950/60 px-2 py-2">
+                    {MASCOTS.map((mascot) => (
+                      <div key={mascot.id} className="relative flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-gray-950/70">
+                        <div className="absolute inset-2 rounded-full blur-xl opacity-70" style={{ background: mascot.glow }} />
+                        <img
+                          src={mascot.image}
+                          alt={mascot.name}
+                          className="relative z-10 h-10 w-10 object-contain"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex w-full flex-col gap-1 lg:w-auto lg:min-w-[240px] lg:max-w-[280px] lg:items-end">
+              <div className="flex w-full flex-col gap-1 lg:min-w-[240px] lg:max-w-[300px] lg:items-end">
                 <div className="min-w-0 lg:text-right">
                   <p className="text-[9px] font-black uppercase tracking-[0.3em] text-purple-300">Connect</p>
                   <p className="text-[11px] text-gray-500">Official links</p>
