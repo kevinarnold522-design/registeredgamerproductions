@@ -117,17 +117,24 @@ export default function ListingsLanding({ mode = "mine" }) {
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
                           {[
-                            { rank: "PTS", label: "Listing pts", value: pts, tone: "from-purple-600/45 via-fuchsia-500/25 to-pink-500/15", accent: "bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent", valueClassName: "bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(217,70,239,0.35)]" },
+                            { rank: "PTS", label: "Listing pts", value: pts, tone: "from-purple-600/45 via-fuchsia-500/25 to-pink-500/15", accent: "bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent", valueClassName: "bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(217,70,239,0.35)]", isPoints: true },
                             { rank: "02", label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "--", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300" },
                             { rank: "03", label: "Views", value: l.views || 0, tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300" },
                             { rank: "04", label: "Downloads", value: l.downloads || 0, tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300" },
                           ].map((metric) => (
-                            <div key={metric.label} className={`rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2.5 py-2`}>
+                            <div key={metric.label} className={`flex min-h-[72px] flex-col justify-between rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2.5 py-2 ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
                               <div className="mb-1 flex items-center justify-between gap-2">
-                                <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
-                                <p className="text-[8px] uppercase tracking-[0.16em] text-gray-400 font-black">{metric.label}</p>
+                                {metric.isPoints ? (
+                                  <span className="rounded-full border border-fuchsia-300/35 bg-black/20 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-100">PTS</span>
+                                ) : (
+                                  <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
+                                )}
+                                <p className={`text-[8px] uppercase tracking-[0.16em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.label}</p>
                               </div>
-                              <p className={`text-base font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                              <div className="flex items-end gap-1">
+                                <p className={`text-base font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                                {metric.isPoints && <p className="pb-0.5 text-[8px] font-black uppercase tracking-[0.2em] text-fuchsia-200">pts</p>}
+                              </div>
                             </div>
                           ))}
                         </div>

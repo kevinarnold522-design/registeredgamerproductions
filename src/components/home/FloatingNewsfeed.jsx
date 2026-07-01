@@ -85,14 +85,14 @@ export default function FloatingNewsfeed() {
       }}
     >
       <div
-        className="pointer-events-auto w-60 xl:w-64 rounded-2xl border border-purple-700/40 bg-gray-950/92 backdrop-blur-md overflow-hidden"
-        style={{ boxShadow: "0 0 24px rgba(124,58,237,0.35)" }}
+        className="pointer-events-auto w-60 xl:w-64 rounded-2xl border border-yellow-700/40 bg-gray-950/92 backdrop-blur-md overflow-hidden"
+        style={{ boxShadow: "0 0 24px rgba(234,179,8,0.22)" }}
       >
-        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-fuchsia-500/20 bg-gradient-to-r from-[#1d1234]/95 via-[#241042]/95 to-[#2f0d38]/95">
-          <Newspaper className="w-4 h-4 text-fuchsia-200" />
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-yellow-500/20 bg-gradient-to-r from-[#080603]/95 via-[#1a1206]/95 to-[#2a1b06]/95">
+          <Newspaper className="w-4 h-4 text-yellow-300" />
           <div className="min-w-0">
-            <h3 className="bg-gradient-to-r from-purple-100 via-fuchsia-100 to-pink-100 bg-clip-text text-xs font-black leading-none text-transparent">Featured Newsfeed</h3>
-            <p className="text-fuchsia-200/65 text-[9px] mt-0.5">Latest listings · live</p>
+            <h3 className="bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-400 bg-clip-text text-xs font-black leading-none text-transparent">Featured Newsfeed</h3>
+            <p className="text-yellow-200/70 text-[9px] mt-0.5">Latest listings · live</p>
           </div>
         </div>
 

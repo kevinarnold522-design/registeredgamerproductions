@@ -272,7 +272,7 @@ function App() {
           <Router>
             <InAppBrowserLinkFix />
             {bootUiReady && <VisitorCountryTracker />}
-            <ShootingStars />
+            {!isMobileViewport && <ShootingStars />}
             {isMobileViewport && <MobileSpaceBackdrop />}
             <div style={{ position: "relative", zIndex: 0, width: "100%", maxWidth: "100%", overflowX: "hidden", paddingRight: showDesktopNewsfeed ? '17rem' : 0 }}>
               <SidebarLayout>

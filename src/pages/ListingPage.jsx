@@ -463,6 +463,7 @@ export default function ListingPage() {
       {authLoaded && user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
 
       <StickySearchBar />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
 
       {/* Download ad gate intentionally disabled — clicking Download now routes
           straight to the listing's download/external link. */}
@@ -571,17 +572,24 @@ export default function ListingPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
                   {[
-                    { rank: "01", label: "Listing pts", value: listingPts, tone: "from-purple-500/30 to-fuchsia-500/10", accent: "text-purple-300" },
+                    { rank: "PTS", label: "Listing pts", value: listingPts, tone: "from-purple-600/45 via-fuchsia-500/25 to-pink-500/15", accent: "bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent", valueClassName: "bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(217,70,239,0.35)]", isPoints: true },
                     { rank: "02", label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "Unranked", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300" },
                     { rank: "03", label: "Views", value: formatCount(listing.views || 0), tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300" },
                     { rank: "04", label: "Downloads", value: formatCount(listing.downloads || 0), tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300" },
                   ].map((metric) => (
-                    <div key={metric.label} className={`rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-3 py-2.5`}>
+                    <div key={metric.label} className={`flex min-h-[84px] flex-col justify-between rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-3 py-2.5 ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
                       <div className="mb-1 flex items-center justify-between gap-2">
-                        <p className={`text-[10px] font-black ${metric.accent}`}>{metric.rank}</p>
-                        <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400 font-black">{metric.label}</p>
+                        {metric.isPoints ? (
+                          <span className="rounded-full border border-fuchsia-300/35 bg-black/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.24em] text-fuchsia-100">PTS</span>
+                        ) : (
+                          <p className={`text-[10px] font-black ${metric.accent}`}>{metric.rank}</p>
+                        )}
+                        <p className={`text-[10px] uppercase tracking-[0.18em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.label}</p>
                       </div>
-                      <p className="text-white text-lg font-black leading-none">{metric.value}</p>
+                      <div className="flex items-end gap-1">
+                        <p className={`text-lg font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                        {metric.isPoints && <p className="pb-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-200">pts</p>}
+                      </div>
                     </div>
                   ))}
                 </div>
