@@ -5,7 +5,7 @@ import AuthNavbar from "@/components/layout/AuthNavbar";
 import VideoHeroBanner from "@/components/home/VideoHeroBanner";
 import HeroSection from "@/components/home/HeroSection";
 import MarqueeTicker from "@/components/home/MarqueeTicker";
-import FloatingNewsfeed, { InlineFloatingNewsfeed } from "@/components/home/FloatingNewsfeed";
+import { InlineFloatingNewsfeed } from "@/components/home/FloatingNewsfeed";
 import CategoryCards from "@/components/home/CategoryCards";
 import AIAssistBanner from "@/components/home/AIAssistBanner";
 import GamerSocialsBar from "@/components/shared/GamerSocialsBar";
@@ -118,6 +118,8 @@ function MobileHomeLite({ isAuthenticated }) {
           <a href="/gaming-newsfeed" className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-sm font-black text-cyan-100">Open Newsfeed</a>
         </div>
       </section>
+
+      <InlineFloatingNewsfeed />
 
       <section className="mx-auto mt-4 grid w-full max-w-4xl grid-cols-2 gap-3">
         {quickLinks.map((link) => {

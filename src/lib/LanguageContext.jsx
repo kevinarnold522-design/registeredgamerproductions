@@ -18,11 +18,15 @@ export function LanguageProvider({ children }) {
     const dismissed = localStorage.getItem("gp_lang_prompt_dismissed");
     if (savedLang || dismissed) return; // Already chosen or dismissed
 
-    // Detect country via ipapi (free, no key needed)
-    fetch("https://ipapi.co/json/")
-      .then(r => r.json())
+    // Use the same-origin geo endpoint so Cloudflare/Vercel deploys behave the same
+    // and mobile web is not blocked by third-party CORS failures.
+    fetch("/functions/api/geo")
+      .then((r) => {
+        if (!r.ok) throw new Error(`Geo request failed: ${r.status}`);
+        return r.json();
+      })
       .then(data => {
-        const country = data.country_code;
+        const country = data.countryCode || data.country || data.country_code;
         setDetectedCountry(country);
         const mappedLang = COUNTRY_TO_LANG[country];
         if (mappedLang && mappedLang !== "en") {
