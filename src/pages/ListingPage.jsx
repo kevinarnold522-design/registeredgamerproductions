@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, Play, Pencil, Star, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock, Trophy } from "lucide-react";
+import { Download, Heart, Share2, Eye, Play, Pencil, Star, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock, Trophy, ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -475,7 +475,13 @@ export default function ListingPage() {
 
       <div className="mx-auto w-full max-w-7xl overflow-x-clip px-4 pt-2 pb-12">
         {/* Back + Edit */}
-        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110 w-full sm:w-auto"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </button>
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
             {canEdit && (
               <a href={`/create-listing?edit=${listing.id}`}

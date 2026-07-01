@@ -11,6 +11,7 @@ import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Link, useNavigate } from "react-router-dom";
 import { getPublisherRankMap } from "@/lib/publisherRank";
 import { listingScore } from "@/lib/leaderboardScore";
+import MascotShowcase from "@/components/shared/MascotShowcase";
 
 export default function ListingsLanding({ mode = "mine" }) {
   const navigate = useNavigate();
@@ -73,18 +74,21 @@ export default function ListingsLanding({ mode = "mine" }) {
     <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950/70 text-white">
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-2" />
-      <main className="mx-auto w-full max-w-7xl px-4 pt-10 pb-12">
-        <div className="mb-3 flex flex-col gap-3 rounded-2xl border border-purple-700/30 bg-gray-950/78 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <main className="mx-auto w-full max-w-7xl px-4 pt-6 pb-12">
+        <div className="mb-4">
+          <MascotShowcase compact={false} />
+        </div>
+        <div className="mb-3 flex flex-col gap-3 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-black via-gray-950 to-gray-900 p-3 shadow-[0_0_32px_rgba(245,158,11,0.10)] sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-purple-400 text-xs font-bold uppercase tracking-widest">Listings</p>
-            <h1 className="text-2xl font-black sm:text-3xl">{mode === "all" ? "All Listings" : "My Listings"}</h1>
+            <p className="text-amber-400 text-xs font-bold uppercase tracking-widest">Listings</p>
+            <h1 className="text-2xl font-black text-white sm:text-3xl">{mode === "all" ? "All Listings" : "My Listings"}</h1>
             <p className="text-gray-500 text-xs sm:text-sm">Compact landing view with leaderboard stats.</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 sm:flex sm:w-auto sm:flex-nowrap">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110"
             >
               <ArrowLeft className="h-4 w-4" /> Back
             </button>
@@ -93,7 +97,7 @@ export default function ListingsLanding({ mode = "mine" }) {
               <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search listings..." className="w-full min-w-0 bg-transparent outline-none text-sm text-white sm:w-36" />
             </div>
             </div>
-            <Link to="/create-listing" className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-700 text-white text-sm font-bold sm:w-auto"><Plus className="w-4 h-4" /> Post</Link>
+            <Link to="/create-listing" className="flex w-full items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-sm font-black sm:w-auto"><Plus className="w-4 h-4" /> Post</Link>
           </div>
         </div>
 
@@ -107,7 +111,7 @@ export default function ListingsLanding({ mode = "mine" }) {
               const sellerRank = rankMap?.[l.seller_email] || null;
               const pts = listingScore(l, 0);
               return (
-                <div key={l.id} className="w-full min-w-0 rounded-2xl bg-gray-900/92 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-all">
+                <div key={l.id} className="w-full min-w-0 rounded-2xl bg-gray-900/92 border border-gray-800 overflow-hidden hover:border-amber-500/40 transition-all">
                   <Link to={`/listing?id=${l.id}`} className="block">
                     <div className="aspect-square bg-gray-800 relative flex items-center justify-center">
                       {l.images?.[0] ? (

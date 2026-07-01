@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, Newspaper, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import AuthNavbar from "@/components/layout/AuthNavbar";
@@ -14,6 +15,7 @@ import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,12 +46,14 @@ export default function GamingNewsfeed() {
       {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
       <GamerBrandFooter position="top" className="px-0 pt-0 pb-6" />
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <a href="/gaming-community" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-5"><ArrowLeft className="w-4 h-4" /> Back to communities</a>
-        <div className="rounded-3xl border border-purple-700/40 bg-gradient-to-br from-purple-950/40 to-gray-900 p-6 mb-6">
+        <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110 mb-5">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <div className="rounded-3xl border border-amber-500/50 bg-gradient-to-br from-black via-gray-950 to-gray-900 p-6 mb-6 shadow-[0_0_32px_rgba(245,158,11,0.18)]">
           <div className="flex items-center gap-3">
-            <Newspaper className="w-7 h-7 text-purple-300" />
+            <Newspaper className="w-7 h-7 text-amber-400" />
             <div>
-              <h1 className="text-3xl font-black">Gaming Community Newsfeed</h1>
+              <h1 className="text-3xl font-black text-amber-400">Gaming Community Newsfeed</h1>
               <p className="text-gray-500 text-sm">Overall posts and listings from all gaming community subcategories.</p>
             </div>
           </div>
