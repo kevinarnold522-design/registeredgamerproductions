@@ -61,6 +61,10 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     .filter((token) => !blockedLayoutPrefixes.some((prefix) => token === prefix || token.startsWith(prefix) || token.startsWith(`!${prefix}`)))
     .join(" ");
   const container = `uvp-lock relative isolate [contain:layout_paint] w-full h-full overflow-hidden ${safeClassName}`;
+  const trapEvent = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   if (errored) {
     return (
@@ -77,7 +81,7 @@ export default function UniversalVideoPreview({ url, poster, className = "" }) {
     const youtubeWatchUrl = `https://www.youtube.com/watch?v=${ytId}`;
     if (playing) {
       return (
-        <div className={container}>
+        <div className={container} onClick={trapEvent} onMouseDown={trapEvent} onTouchStart={trapEvent}>
           {!embedFailed ? (
             <iframe
               src={`https://${embedHost}/embed/${ytId}?autoplay=1&rel=0&playsinline=1&modestbranding=1&fs=0`}
