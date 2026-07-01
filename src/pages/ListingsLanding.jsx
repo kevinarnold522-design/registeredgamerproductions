@@ -66,9 +66,8 @@ export default function ListingsLanding({ mode = "mine" }) {
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-clip bg-gray-950/70 text-white">
       <AuthNavbar user={user} profile={profile} />
-      <GamerBrandFooter position="top" className="px-0 pt-0 pb-5" />
-      <main className="mx-auto w-full max-w-7xl px-4 pt-16 pb-12">
-        <button onClick={() => navigate(-1)} className="mb-3 flex items-center gap-2 text-gray-400 hover:text-white"><ArrowLeft className="w-4 h-4" /> Back</button>
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-2" />
+      <main className="mx-auto w-full max-w-7xl px-4 pt-10 pb-12">
         <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-purple-700/30 bg-gray-950/78 p-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-purple-400 text-xs font-bold uppercase tracking-widest">Listings</p>
@@ -76,6 +75,12 @@ export default function ListingsLanding({ mode = "mine" }) {
             <p className="text-gray-500 text-xs sm:text-sm">Compact landing view with leaderboard stats.</p>
           </div>
           <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-400/45 bg-gradient-to-r from-purple-600/80 via-fuchsia-600/80 to-pink-500/80 px-4 py-2 text-sm font-black text-white shadow-[0_0_18px_rgba(217,70,239,0.34)] transition-all hover:brightness-110 sm:w-auto"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </button>
             <div className="flex w-full items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 sm:w-auto">
               <Search className="w-4 h-4 text-gray-500" />
               <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search listings..." className="w-full bg-transparent outline-none text-sm text-white sm:w-36" />
