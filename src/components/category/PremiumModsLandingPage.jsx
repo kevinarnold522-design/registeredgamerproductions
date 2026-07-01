@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Tag, Layers, Gamepad2, DollarSign, Search, Filter } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Tag, Layers, Gamepad2, DollarSign, Search, Filter, ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
@@ -20,6 +20,7 @@ const PREMIUM_MOD_GAME_CARDS = [
 ];
 
 export default function PremiumModsLandingPage({ user }) {
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -61,7 +62,12 @@ export default function PremiumModsLandingPage({ user }) {
       {/* Hero */}
       <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #2a1a00, #030712)" }}>
         <div className="max-w-7xl mx-auto relative z-10">
-          <Link to="/" className="text-amber-400 text-sm hover:text-amber-300 mb-4 flex items-center gap-1">← Back to Home</Link>
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-4 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </button>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
             <span className="bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Premium Mods</span> & Paid Content
           </h1>
@@ -69,7 +75,7 @@ export default function PremiumModsLandingPage({ user }) {
         </div>
       </div>
 
-      <GamerBrandFooter position="top" />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-3" />
 
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Sell a Premium Mod — homepage game cards */}

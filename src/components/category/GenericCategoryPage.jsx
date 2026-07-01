@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send, Eye, EyeOff, LayoutGrid } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Search, Plus, Radio, SlidersHorizontal, X, Play, Send, Eye, EyeOff, LayoutGrid, ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import ShareButton from "@/components/shared/ShareButton";
@@ -98,6 +98,7 @@ const CATEGORY_META = {
 };
 
 export default function GenericCategoryPage({ user, profile, cat, sub, categoryData }) {
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -205,7 +206,12 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       <div className="min-h-screen">
         <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #3a0d1f, #2a0a2e)" }}>
           <div className="max-w-7xl mx-auto relative z-10">
-            <a href="/" className="text-red-400 text-sm hover:text-red-300 mb-4 flex items-center gap-1">← Back to Home</a>
+            <button
+              onClick={() => navigate(-1)}
+              className="mb-4 inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-red-300 shadow-[0_0_16px_rgba(239,68,68,0.2)] transition-all hover:brightness-110"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </button>
             <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
               Live <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">Streams</span>
             </h1>
@@ -232,12 +238,18 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       <div className="relative py-14 px-4" style={{ background: `linear-gradient(135deg, #2a0a2e, #3a0d36)` }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: meta.grid, backgroundSize: "50px 50px" }} />
         <div className="max-w-7xl mx-auto relative z-10">
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-4 inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-white shadow-[0_0_16px_rgba(168,85,247,0.18)] transition-all hover:brightness-110"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </button>
           <h1 className="text-4xl md:text-5xl font-black text-white mb-2">{meta.title}</h1>
           <p className="max-w-xl mb-1 text-base" style={{ color: `${meta.color}99` }}>{meta.subtitle}</p>
         </div>
       </div>
 
-      <GamerBrandFooter position="top" />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-3" />
 
       {cat === "premium_mods" && (
         <div className="max-w-7xl mx-auto px-4 pt-8">
@@ -278,14 +290,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
       )}
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-3 mb-3 items-center justify-between flex-wrap">
-          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 min-w-[200px] max-w-md">
+        <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex w-full items-center gap-2 rounded-xl bg-gray-900 border border-gray-800 px-4 py-2.5 lg:max-w-md">
             <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder={`Search ${meta.title}...`}
               className="bg-transparent text-white text-sm placeholder-gray-600 outline-none flex-1" />
             {search && <button onClick={() => setSearch("")} className="text-gray-600 hover:text-white"><X className="w-3.5 h-3.5" /></button>}
           </div>
-          <div className="flex gap-2 items-center flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setShowAdvanced(v => !v)}
               className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition-all ${showAdvanced ? "border-purple-500/60 bg-purple-900/20 text-purple-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
               <SlidersHorizontal className="w-4 h-4" /> Filters {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-purple-400" />}

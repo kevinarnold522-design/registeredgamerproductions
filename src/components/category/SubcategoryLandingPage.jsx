@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Eye, Plus, Tag, Search, Send } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Eye, Plus, Tag, Search, Send, ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
@@ -15,6 +15,7 @@ import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/cat
 const PER_PAGE = 10;
 
 export default function SubcategoryLandingPage({ user, profile: _profile, cat, sub, parentCategoryName }) {
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -47,6 +48,13 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
 
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 py-8 max-w-6xl mx-auto relative z-10">
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-5 inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-white shadow-[0_0_16px_rgba(168,85,247,0.18)] transition-all hover:brightness-110"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back
+      </button>
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <Link to="/" className="hover:text-white transition-colors">Home</Link>

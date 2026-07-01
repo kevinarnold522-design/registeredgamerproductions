@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import SubcategoryCards from "./SubcategoryCards";
 import { motion } from "framer-motion";
-import { Search, ShoppingCart, Send, CalendarDays } from "lucide-react";
+import { Search, ShoppingCart, Send, CalendarDays, ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { CATEGORIES } from "@/lib/constants";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
@@ -43,6 +43,7 @@ function ListingCard({ listing, index }) {
 }
 
 export default function BuySellLandingPage({ user, profile, sub }) {
+  const navigate = useNavigate();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -89,7 +90,12 @@ export default function BuySellLandingPage({ user, profile, sub }) {
       <div className="relative py-14 px-4" style={{ background: "linear-gradient(135deg, #12100a 0%, #0a0800 50%, #030712 100%)" }}>
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(rgba(234,179,8,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(234,179,8,0.6) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
         <div className="max-w-7xl mx-auto relative z-10">
-          <Link to="/" className="text-yellow-400 text-sm hover:text-yellow-300 mb-4 flex items-center gap-1">← Back to Home</Link>
+          <button
+            onClick={() => navigate(-1)}
+            className="mb-4 inline-flex items-center justify-center gap-2 rounded-xl border border-amber-500/50 bg-gradient-to-r from-black via-gray-900 to-black px-4 py-2 text-sm font-black text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.25)] transition-all hover:brightness-110"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </button>
           <div className="flex items-center gap-3 mb-3">
             <span className="px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 text-xs font-black uppercase">Marketplace</span>
             <span className="px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-black uppercase">Buy · Sell · Trade</span>
@@ -101,7 +107,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
         </div>
       </div>
 
-      <GamerBrandFooter position="top" />
+      <GamerBrandFooter position="top" className="px-0 pt-0 pb-3" />
 
       <SubcategoryCards cat="buy_sell" categoryName="Buy & Sell" user={user} userEmail={user?.email} userProfile={profile} />
 
@@ -124,14 +130,14 @@ export default function BuySellLandingPage({ user, profile, sub }) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-3 mb-6 items-center justify-between">
-          <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 border border-gray-800 max-w-md">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full items-center gap-2 rounded-xl bg-gray-900 border border-gray-800 px-4 py-2.5 sm:max-w-md">
             <Search className="w-4 h-4 text-gray-500" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search listings..."
               className="bg-transparent text-white text-sm placeholder-gray-600 outline-none flex-1" />
           </div>
           {canPost && (
-            <Link to="/create-listing?cat=buy_sell" className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap">
+            <Link to="/create-listing?cat=buy_sell" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-bold text-sm hover:opacity-90 whitespace-nowrap sm:self-auto">
               <Send className="w-4 h-4" /> Post
             </Link>
           )}
