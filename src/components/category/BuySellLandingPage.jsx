@@ -11,6 +11,7 @@ import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import Pagination from "@/components/shared/Pagination";
 import { formatListingPrice } from "@/lib/currency";
+import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/categoryMatching";
 
 const PER_PAGE = 15;
 
@@ -45,7 +46,9 @@ export default function BuySellLandingPage({ user, profile, sub }) {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [activeSub, setActiveSub] = useState(sub || "all");
+  const [activeSub, setActiveSub] = useState(() =>
+    findCanonicalCategoryValue(sub, buySellCat?.subcategories || []) || sub || "all"
+  );
   const [page, setPage] = useState(1);
 
   const canPost = user;
@@ -64,10 +67,14 @@ export default function BuySellLandingPage({ user, profile, sub }) {
     });
   }, []);
 
+  useEffect(() => {
+    setActiveSub(findCanonicalCategoryValue(sub, buySellCat?.subcategories || []) || sub || "all");
+  }, [sub]);
+
   useEffect(() => { setPage(1); }, [activeSub, search]);
 
   const filtered = listings.filter(l => {
-    const matchSub = activeSub === "all" || l.subcategory === activeSub;
+    const matchSub = listingMatchesSubcategory(l, activeSub);
     const matchSearch = !search || l.title?.toLowerCase().includes(search.toLowerCase());
     return matchSub && matchSearch;
   });

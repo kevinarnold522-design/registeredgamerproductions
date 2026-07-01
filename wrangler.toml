@@ -1,0 +1,6 @@
+name = "gamer-productions"
+compatibility_date = "2026-06-16"
+pages_build_output_dir = "dist"
+
+[vars]
+BASE44_APP_ID = "${BASE44_APP_ID}"

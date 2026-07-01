@@ -10,6 +10,7 @@ import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
+import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/categoryMatching";
 
 const PER_PAGE = 10;
 
@@ -18,13 +19,14 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const normalizedSub = findCanonicalCategoryValue(sub, []) || sub;
 
   useEffect(() => {
     const load = async () => {
       try {
         const results = await base44.entities.Listing.filter({ category: cat, status: "active" }, "-created_date", 200);
         setListings(results.filter(l => {
-          const matchSub = l.subcategory === sub || (l.subcategories || []).includes(sub) || (cat === "premium_mods" && (l.tool_target_game === sub || l.game_name === sub));
+          const matchSub = listingMatchesSubcategory(l, normalizedSub, { allowPrefixMatch: cat === "premium_mods" });
           const matchPremium = cat !== "premium_mods" || (l.product_type === "digital" && (l.is_premium || Number(l.price || 0) > 0));
           return l.is_approved !== false && matchSub && matchPremium && !isServiceListing(l);
         }));
@@ -32,7 +34,7 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
       setLoading(false);
     };
     load();
-  }, [cat, sub]);
+  }, [cat, normalizedSub]);
 
   const filtered = listings.filter(l =>
     !search || l.title?.toLowerCase().includes(search.toLowerCase())

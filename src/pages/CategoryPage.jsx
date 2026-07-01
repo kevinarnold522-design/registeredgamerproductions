@@ -43,7 +43,7 @@ export default function CategoryPage() {
           />
         ) : cat === "buy_sell" ? (
           <BuySellLandingPage user={user} profile={profile} sub={sub} />
-        ) : cat === "content" ? (
+        ) : cat === "content" || cat === "content_streaming" ? (
           <ContentLandingPage user={user} profile={profile} sub={sub} />
         ) : (
           <GenericCategoryPage user={user} profile={profile} cat={cat} sub={sub} categoryData={categoryData} />

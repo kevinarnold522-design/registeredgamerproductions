@@ -85,6 +85,14 @@ const SUBCATEGORY_CONFIG = {
     { id: "Highlights",    emoji: "✂️", title: "Highlights",    desc: "Best clips & epic moments",     color: "from-orange-950 to-orange-900",border: "border-orange-500/50", glow: "rgba(249,115,22,0.6)", badge: "Clips" },
     { id: "Clips",         emoji: "🎬", title: "Clips",         desc: "Short-form gaming clips",       color: "from-pink-950 to-pink-900",    border: "border-pink-500/50",   glow: "rgba(236,72,153,0.6)", badge: "Short" },
   ],
+  content_streaming: [
+    { id: "Gaming Videos", emoji: "🎮", title: "Gaming Videos", desc: "Gameplay & full playthroughs",  color: "from-blue-950 to-blue-900",    border: "border-blue-500/50",   glow: "rgba(59,130,246,0.6)", badge: "Watch" },
+    { id: "Streaming",     emoji: "📡", title: "Streaming",     desc: "Live stream replays & VODs",    color: "from-red-950 to-red-900",      border: "border-red-500/50",    glow: "rgba(239,68,68,0.6)",  badge: "Live" },
+    { id: "Tutorials",     emoji: "📚", title: "Tutorials",     desc: "Guides, tips & how-to videos",  color: "from-yellow-950 to-yellow-900",border: "border-yellow-500/50", glow: "rgba(234,179,8,0.6)",  badge: "Learn" },
+    { id: "Reviews",       emoji: "⭐", title: "Reviews",       desc: "Honest game & gear reviews",    color: "from-purple-950 to-purple-900",border: "border-purple-500/50", glow: "rgba(168,85,247,0.6)", badge: "Rate" },
+    { id: "Highlights",    emoji: "✂️", title: "Highlights",    desc: "Best clips & epic moments",     color: "from-orange-950 to-orange-900",border: "border-orange-500/50", glow: "rgba(249,115,22,0.6)", badge: "Clips" },
+    { id: "Clips",         emoji: "🎬", title: "Clips",         desc: "Short-form gaming clips",       color: "from-pink-950 to-pink-900",    border: "border-pink-500/50",   glow: "rgba(236,72,153,0.6)", badge: "Short" },
+  ],
   jobs: [
     { id: "QA Testing",        emoji: "🔍", title: "QA Testing",        desc: "Game testing & bug hunting",      color: "from-blue-950 to-blue-900",    border: "border-blue-500/50",   glow: "rgba(59,130,246,0.6)", badge: "Remote" },
     { id: "Game Dev",          emoji: "💻", title: "Game Dev",          desc: "Unity, Unreal, indie dev roles",  color: "from-purple-950 to-purple-900",border: "border-purple-500/50", glow: "rgba(168,85,247,0.6)", badge: "Dev" },

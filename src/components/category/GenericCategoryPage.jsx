@@ -18,6 +18,7 @@ import StandardListingCard from "@/components/listings/StandardListingCard";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
+import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/categoryMatching";
 
 const PER_PAGE = 12;
 
@@ -100,7 +101,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [activeSub, setActiveSub] = useState(sub || "all");
+  const [activeSub, setActiveSub] = useState(
+    () => findCanonicalCategoryValue(sub, categoryData?.subcategories || []) || sub || "all"
+  );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [sortBy, setSortBy] = useState("newest");
   const [priceMin, setPriceMin] = useState("");
@@ -114,7 +117,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const canPost = user;
 
   // Keep the active subcategory in sync with the URL when it changes
-  useEffect(() => { setActiveSub(sub || "all"); }, [sub]);
+  useEffect(() => {
+    setActiveSub(findCanonicalCategoryValue(sub, categoryData?.subcategories || []) || sub || "all");
+  }, [sub, categoryData?.subcategories]);
 
   useEffect(() => {
     setLoading(true);
@@ -175,8 +180,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
     : [];
 
   const filtered = listings.filter(l => {
-    const listingSubs = l.subcategories || (l.subcategory ? [l.subcategory] : []);
-    const matchSub = activeSub === "all" || listingSubs.includes(activeSub);
+    const matchSub = listingMatchesSubcategory(l, activeSub, { allowPrefixMatch: cat === "premium_mods" });
     const matchSearch = !search || l.title?.toLowerCase().includes(search.toLowerCase()) || l.description?.toLowerCase().includes(search.toLowerCase()) || l.seller_username?.toLowerCase().includes(search.toLowerCase());
     const matchFree = !isFree || l.price === 0 || l.is_free;
     const matchMin = priceMin === "" || (l.price || 0) >= parseFloat(priceMin);

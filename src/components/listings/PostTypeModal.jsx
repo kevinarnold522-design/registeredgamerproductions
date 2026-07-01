@@ -8,9 +8,9 @@ import { X, Puzzle, Gamepad2, Wrench, Briefcase, Crown, Users, Sparkles } from "
 const POST_TYPES = [
   { id: "mods", label: "Mods", desc: "Free or community mods", icon: Puzzle, color: "from-orange-600 to-red-600", to: "/create-listing?cat=modding" },
   { id: "premium_mods", label: "Premium Mod", desc: "Paid / premium mods", icon: Sparkles, color: "from-amber-600 to-yellow-600", to: "/create-listing?cat=premium_mods" },
-  { id: "game", label: "Game", desc: "Add a full game", icon: Gamepad2, color: "from-emerald-600 to-green-600", to: "/create-listing?cat=games&sub=Games" },
+  { id: "game", label: "Game", desc: "Add a full game", icon: Gamepad2, color: "from-emerald-600 to-green-600", to: "/create-listing?cat=games" },
   { id: "tools", label: "Tools", desc: "Paid tools & utilities", icon: Wrench, color: "from-blue-600 to-cyan-600", to: "/create-listing?cat=paid_tools" },
-  { id: "service", label: "Service", desc: "Offer a gaming service", icon: Briefcase, color: "from-purple-600 to-indigo-600", to: "/create-listing?cat=buy_sell&sub=service" },
+  { id: "service", label: "Service", desc: "Offer a gaming service", icon: Briefcase, color: "from-purple-600 to-indigo-600", to: "/create-listing?cat=buy_sell&sub=Services" },
   { id: "membership", label: "Membership", desc: "Sell exclusive membership", icon: Crown, color: "from-pink-600 to-rose-600", to: "/create-listing?cat=premium_mods&sub=VIP%20Content" },
   { id: "community", label: "Post in Community", desc: "Share with a community", icon: Users, color: "from-cyan-600 to-teal-600", to: "/gaming-community" },
 ];
