@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Heart, Share2, Eye, Play, Pencil, Star, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock, Trophy, ArrowLeft } from "lucide-react";
+import { Download, Heart, Share2, Play, Pencil, Star, X, Lightbulb, Wrench, Gamepad2, Trash2, Sparkles, Clock, Trophy, ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import { isAdmin } from "@/lib/constants";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
-import DownloadAdUnlock from "@/components/ads/DownloadAdUnlock";
 import ScheduledAdOverlay from "@/components/ads/ScheduledAdOverlay";
 import ListingPageAd from "@/components/ads/ListingPageAd";
 import ListingVignetteAd from "@/components/ads/ListingVignetteAd";
@@ -35,6 +34,34 @@ import { getListingYouTubeId } from "@/lib/youtube";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getPublisherRankMap } from "@/lib/publisherRank";
 import { listingScore } from "@/lib/leaderboardScore";
+import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
+import { normalizeListingRecord } from "@/lib/categoryMatching";
+
+function uniqueValues(values = []) {
+  return [...new Set(values.filter(Boolean).map((value) => String(value).trim()).filter(Boolean))];
+}
+
+function resolveListingRecord(...records) {
+  const normalizedRecords = records.map((record) => normalizeListingRecord(record)).filter(Boolean);
+  if (!normalizedRecords.length) return null;
+
+  const merged = normalizedRecords.slice().reverse().reduce((acc, item) => ({ ...acc, ...item }), {});
+  const images = uniqueValues(normalizedRecords.flatMap((item) => item?.images || []));
+
+  const pickFirst = (field) => normalizedRecords.find((item) => item?.[field])?.[field];
+  merged.images = images;
+  merged.image_urls = images;
+  merged.gallery_images = images;
+  merged.image_url = pickFirst("image_url") || images[0] || "";
+  merged.cover_image = pickFirst("cover_image") || images[0] || "";
+  merged.thumbnail_url = pickFirst("thumbnail_url") || images[0] || "";
+  merged.banner_image = pickFirst("banner_image") || images[0] || "";
+  merged.poster_url = pickFirst("poster_url") || images[0] || "";
+  merged.video_url = pickFirst("video_url") || "";
+  merged.preview_video_url = pickFirst("preview_video_url") || "";
+
+  return normalizeListingRecord(merged);
+}
 
 // Average stay (seconds) -> "1m 20s" / "45s"
 function formatStay(listing) {
@@ -159,6 +186,13 @@ export default function ListingPage() {
     if (!id) { setLoading(false); return; }
     const load = async () => {
       try {
+        const cachedMatch = peekActiveListings().find((item) => item?.id === id);
+        if (cachedMatch) {
+          setListing(resolveListingRecord(cachedMatch));
+          setLikeCount(cachedMatch.likes || 0);
+          setLoading(false);
+        }
+
         // Primary lookup; fall back to a filter query if get() returns null
         // (prevents a false "Listing not found" 404 when the direct id route misses).
         let l = await base44.entities.Listing.get(id).catch(() => null);
@@ -166,16 +200,23 @@ export default function ListingPage() {
           const rows = await base44.entities.Listing.filter({ id }).catch(() => []);
           l = rows?.[0] || null;
         }
+        if (!l) {
+          const freshCached = await getActiveListings().catch(() => []);
+          l = freshCached.find((item) => item?.id === id) || null;
+        }
         if (l) {
+          const freshCached = await getActiveListings().catch(() => []);
+          const cachedListing = freshCached.find((item) => item?.id === l.id) || cachedMatch;
+          const resolved = resolveListingRecord(l, cachedListing);
           // Increment view count and update local state with the new value
-          const newViews = (l.views || 0) + 1;
+          const newViews = (resolved?.views || l.views || 0) + 1;
           base44.entities.Listing.update(l.id, { views: newViews })
             .then(() => setListing(prev => prev ? { ...prev, views: newViews } : prev))
             .catch(() => {});
-          setListing({ ...l, views: newViews });
-          setLikeCount(l.likes || 0);
-          if (l.seller_email) {
-            base44.entities.UserProfile.filter({ user_email: l.seller_email }).then(p => { if (p[0]) setSeller(p[0]); });
+          setListing({ ...resolved, views: newViews });
+          setLikeCount(resolved?.likes || l.likes || 0);
+          if (resolved?.seller_email || l.seller_email) {
+            base44.entities.UserProfile.filter({ user_email: resolved?.seller_email || l.seller_email }).then(p => { if (p[0]) setSeller(p[0]); });
           }
           base44.entities.PostComment.filter({ post_id: l.id }).then(c => {
             setComments(c.filter(x => x.status !== "removed").sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
@@ -210,6 +251,21 @@ export default function ListingPage() {
   }, [listing?.id, user?.email]);
 
   useEffect(() => {
+    setImgIdx(0);
+  }, [listing?.id]);
+
+  useEffect(() => {
+    const imageCount = listing?.images?.length || 0;
+    if (!imageCount) {
+      if (imgIdx !== 0) setImgIdx(0);
+      return;
+    }
+    if (imgIdx >= imageCount) {
+      setImgIdx(0);
+    }
+  }, [imgIdx, listing?.images]);
+
+  useEffect(() => {
     if (!listing?.seller_email) return;
     getPublisherRankMap()
       .then((map) => setSellerRank(map?.[listing.seller_email] || null))
@@ -223,7 +279,7 @@ export default function ListingPage() {
       unsubscribe = base44.entities.Listing.subscribe((event) => {
         if (event?.data?.id !== listing.id) return;
         if (event.type === "update") {
-          setListing((prev) => prev ? { ...prev, ...event.data } : prev);
+          setListing((prev) => resolveListingRecord(event.data, prev));
           if (typeof event.data.likes === "number") setLikeCount(event.data.likes);
         }
       });
