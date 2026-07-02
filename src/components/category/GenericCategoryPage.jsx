@@ -19,6 +19,7 @@ import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 import { formatListingPrice } from "@/lib/currency";
 import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import { shouldHideFromGeneralFeeds } from "@/lib/communityFeedFilters";
 
 const PER_PAGE = 12;
 const NEWSFEED_PER_PAGE = 10;
@@ -95,6 +96,7 @@ function buildCategoryNewsfeedItems({ posts, listings, franchiseIds, search, cat
   const modSignalRegex = /\bmod|mods|modding|cyberface|face ?mod|facepack|patch|roster|trainer|script|texture|addon|option file|stadium|kit|boots?\b/i;
   const visiblePosts = (Array.isArray(posts) ? posts : [])
     .filter((post) => post?.status === "active")
+    .filter((post) => !shouldHideFromGeneralFeeds(post))
     .filter((post) => !franchiseIds.size || franchiseIds.has(post?.franchise_id))
     .filter((post) => {
       const text = [
@@ -626,13 +628,15 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             </div>
           </div>
         )}
-        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Browse Listings</p>
-            <h2 className="text-white text-2xl font-black">{meta.title} Listings</h2>
+        {!showCategoryNewsfeed && (
+          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Browse Listings</p>
+              <h2 className="text-white text-2xl font-black">{meta.title} Listings</h2>
+            </div>
+            <p className="text-gray-400 text-sm">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
           </div>
-          <p className="text-gray-400 text-sm">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
-        </div>
+        )}
         {!hasLoaded && loading && listings.length === 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -644,7 +648,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             <p className="text-xl font-bold mb-2 text-gray-400">No listings yet</p>
             <p className="text-sm">Be the first to add one!</p>
           </div>
-        ) : (
+        ) : showCategoryNewsfeed ? null : (
           <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {paged.map((l) => (

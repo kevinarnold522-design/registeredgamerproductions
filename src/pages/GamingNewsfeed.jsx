@@ -15,6 +15,7 @@ import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings } from "@/lib/homeDataCache";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import { shouldHideFromGeneralFeeds } from "@/lib/communityFeedFilters";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
@@ -32,7 +33,7 @@ export default function GamingNewsfeed() {
         base44.entities.CommunityPost.list("-created_date", 120),
         getActiveListings(),
       ]);
-      const activePosts = posts.filter(p => p.status === "active");
+      const activePosts = posts.filter((p) => p.status === "active" && !shouldHideFromGeneralFeeds(p));
       const communityListings = listings.filter((listing) =>
         listing.is_approved !== false &&
         (listing.community_franchise_id ||
