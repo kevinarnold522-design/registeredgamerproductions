@@ -58,7 +58,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
   useEffect(() => {
     getActiveListings().then((all) => {
       const merged = (Array.isArray(all) ? all : [])
-        .filter((listing) => listingMatchesCategory(listing, "buy_sell"))
+        .filter((listing) => listingMatchesCategory(listing, "buy_sell", { includeNewsfeed: false }))
         .filter((listing) => listing.is_approved !== false);
       setListings(merged);
       setLoading(false);

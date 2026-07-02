@@ -536,7 +536,7 @@ function CategoryFeed({ cat, user, userProfile }) {
           getActiveListings(),
           base44.entities.CommunityPost.filter({ community_id: cat }, "-created_date", 20),
         ]);
-        setListings((Array.isArray(l) ? l : []).filter((listing) => listingMatchesCategory(listing, normalizeCategoryId(cat)) && listing.is_approved !== false));
+        setListings((Array.isArray(l) ? l : []).filter((listing) => listingMatchesCategory(listing, normalizeCategoryId(cat), { includeNewsfeed: false }) && listing.is_approved !== false));
         setPosts(p.filter((post) => post.status === "active" && post.is_approved !== false));
       } catch {}
       setLoading(false);

@@ -30,7 +30,7 @@ function getInitialActiveSub(sub, categoryData) {
 function buildCategoryListings(rows, cat, activeSub) {
   const normalizedCat = normalizeCategoryId(cat);
   let cleaned = (Array.isArray(rows) ? rows : [])
-    .filter((listing) => listingMatchesCategory(listing, normalizedCat))
+    .filter((listing) => listingMatchesCategory(listing, normalizedCat, { includeNewsfeed: false }))
     .filter((listing) => listing.is_approved !== false);
 
   if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
@@ -43,7 +43,8 @@ function buildCategoryListings(rows, cat, activeSub) {
     cleaned = cleaned.filter((listing) =>
       !isServiceListing(listing) &&
       listing.product_type === "digital" &&
-      (listing.is_premium || Number(listing.price || 0) > 0)
+      Number(listing.price || 0) > 0 &&
+      !listing.is_free
     );
   }
   if (cat === "premium_mods" && activeSub !== "all") {

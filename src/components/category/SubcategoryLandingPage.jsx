@@ -19,9 +19,9 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
   const normalizedSub = findCanonicalCategoryValue(sub, []) || sub;
   const filterSubcategoryListings = (rows) =>
     (Array.isArray(rows) ? rows : []).filter((listing) => {
-      const matchCategory = listingMatchesCategory(listing, normalizeCategoryId(cat));
+      const matchCategory = listingMatchesCategory(listing, normalizeCategoryId(cat), { includeNewsfeed: false });
       const matchSub = listingMatchesSubcategory(listing, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });
-      const matchPremium = cat !== "premium_mods" || (listing.product_type === "digital" && (listing.is_premium || Number(listing.price || 0) > 0));
+      const matchPremium = cat !== "premium_mods" || (listing.product_type === "digital" && Number(listing.price || 0) > 0 && !listing.is_free);
       return matchCategory && listing.is_approved !== false && matchSub && matchPremium && !isServiceListing(listing);
     });
   const [listings, setListings] = useState(() => filterSubcategoryListings(peekActiveListings()));

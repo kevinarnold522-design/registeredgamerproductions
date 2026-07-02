@@ -96,6 +96,31 @@ function findFranchiseIdFromSelections(values = []) {
   return "";
 }
 
+function deriveGamesCategorySubcategories({ platforms = [], storePlatforms = [], gamePlatform = "", digitalSubcategory = "" } = {}) {
+  const values = [
+    ...platforms,
+    ...storePlatforms,
+    ...String(gamePlatform || "").split(/[,\-/|]+/g),
+    digitalSubcategory,
+  ].map((value) => String(value || "").trim()).filter(Boolean);
+
+  const subcategories = new Set();
+  const addIfMatch = (pattern, label) => {
+    if (values.some((value) => pattern.test(value.toLowerCase()))) {
+      subcategories.add(label);
+    }
+  };
+
+  addIfMatch(/\b(pc|windows|steam|epic|gog|ubisoft|nexusgames|steamripped)\b/, "PC");
+  addIfMatch(/\b(playstation|ps|ps3|ps4|ps5)\b/, "PlayStation");
+  addIfMatch(/\b(xbox|series x|series s|xboxone)\b/, "Xbox");
+  addIfMatch(/\b(nintendo|switch)\b/, "Nintendo Switch");
+  addIfMatch(/\b(mobile|android|ios|appstore|playstore)\b/, "Mobile");
+  addIfMatch(/\b(guide|guides|tutorial|tutorials|how to)\b/, "How To / Guides");
+
+  return Array.from(subcategories);
+}
+
 async function purgeListingsSnapshotCache() {
   try {
     await fetch(`${cf.API_BASE}/cache/listings-active/purge`, {
@@ -663,8 +688,10 @@ export default function CreateListing() {
 
     const ytId = extractYouTubeId(form.youtube_url) || extractYouTubeId(form.preview_video_url);
     const priceVal = parseFloat(form.price) || 0;
-    const isPaidMod = priceVal > 0 && (form.category === "modding" || form.category === "premium_mods");
-    const effectiveCategory = isPaidMod ? "premium_mods" : form.category;
+    if (form.category === "premium_mods" && priceVal <= 0) {
+      throw new Error("Premium Mods listings must have a price above 0.");
+    }
+    const effectiveCategory = form.category;
     const primarySubcategory = Array.isArray(form.subcategories) ? form.subcategories[0] || "" : "";
     const normalizedPrimarySubcategory = stripPremiumModsPrefix(primarySubcategory);
     const normalizedModdingSubcategory = form.modding_subcategory || (["modding", "premium_mods"].includes(effectiveCategory) ? normalizedPrimarySubcategory : "");
@@ -676,7 +703,15 @@ export default function CreateListing() {
     const normalizedPhysicalSubcategory = form.physical_subcategory;
     const normalizedSubcategories = uniqueTruthy([
       ...(Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : [])),
-      normalizedDigitalSubcategory,
+      ...(effectiveCategory === "games"
+        ? deriveGamesCategorySubcategories({
+            platforms: form.platforms || [],
+            storePlatforms: form.store_platforms || [],
+            gamePlatform: form.game_platform,
+            digitalSubcategory: normalizedDigitalSubcategory,
+          })
+        : []),
+      ...(effectiveCategory !== "games" ? [normalizedDigitalSubcategory] : []),
       normalizedPhysicalSubcategory,
       ...((["modding", "premium_mods"].includes(effectiveCategory) && normalizedModdingSubcategory && !primarySubcategory)
         ? [normalizedModdingSubcategory]
@@ -695,7 +730,6 @@ export default function CreateListing() {
     const normalizedNewsfeedCategories = uniqueTruthy([
       effectiveCategory,
       ...(form.newsfeed_categories || []),
-      ...(effectiveCategory === "premium_mods" ? ["modding", "store", "buy_sell"] : []),
     ]).map(normalizeCategoryId);
     const autoMeta = buildTitleMetadata(form.title);
     const mergedTags = Array.from(new Set([...autoMeta, ...parseCommaList(form.tags)]));
@@ -712,8 +746,7 @@ export default function CreateListing() {
       price: priceVal,
       currency: form.currency === "PHP" ? "USD" : (form.currency || "USD"),
       is_free: priceVal === 0,
-      // All paid mods are automatically Premium
-      is_premium: form.is_premium || isPaidMod,
+      is_premium: effectiveCategory === "premium_mods" ? true : Boolean(form.is_premium && priceVal > 0),
       // Every listing is treated as digital content
       product_type: form.product_type || "digital",
       // Donation links only apply to paid listings — clear them on free ones

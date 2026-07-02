@@ -24,10 +24,11 @@ const PREMIUM_MOD_GAME_CARDS = [
 export default function PremiumModsLandingPage({ user }) {
   const [listings, setListings] = useState(() =>
     peekActiveListings().filter(l =>
-      listingMatchesCategory(l, "premium_mods") &&
+      listingMatchesCategory(l, "premium_mods", { includeNewsfeed: false }) &&
       l.is_approved !== false &&
       l.product_type === "digital" &&
-      (l.is_premium || Number(l.price || 0) > 0) &&
+      Number(l.price || 0) > 0 &&
+      !l.is_free &&
       !isServiceListing(l)
     )
   );
@@ -41,19 +42,21 @@ export default function PremiumModsLandingPage({ user }) {
     const load = async () => {
       try {
         setListings(peekActiveListings().filter(l =>
-          listingMatchesCategory(l, "premium_mods") &&
+          listingMatchesCategory(l, "premium_mods", { includeNewsfeed: false }) &&
           l.is_approved !== false &&
           l.product_type === "digital" &&
-          (l.is_premium || Number(l.price || 0) > 0) &&
+          Number(l.price || 0) > 0 &&
+          !l.is_free &&
           !isServiceListing(l)
         ));
         setLoading(true);
         const all = await getActiveListings();
         const cleaned = all.filter(l =>
-          listingMatchesCategory(l, "premium_mods") &&
+          listingMatchesCategory(l, "premium_mods", { includeNewsfeed: false }) &&
           l.is_approved !== false &&
           l.product_type === "digital" &&
-          (l.is_premium || Number(l.price || 0) > 0) &&
+          Number(l.price || 0) > 0 &&
+          !l.is_free &&
           !isServiceListing(l)
         );
         setListings(cleaned);

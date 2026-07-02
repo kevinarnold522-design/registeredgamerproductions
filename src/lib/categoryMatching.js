@@ -53,6 +53,10 @@ function looksLikeGameCategoryValue(value) {
 
 function inferListingCategory(record = {}, normalized = {}) {
   const explicit = normalizeCategoryId(record.category);
+  const hasPaidPrice = Number(record?.price || 0) > 0;
+  if (explicit === "premium_mods") {
+    return hasPaidPrice ? "premium_mods" : "modding";
+  }
   if (explicit) return explicit;
 
   const newsfeedCategories = toValueArray(normalized.newsfeed_categories).map(normalizeCategoryId).filter(Boolean);
@@ -77,7 +81,7 @@ function inferListingCategory(record = {}, normalized = {}) {
   );
 
   if (inferredModding) {
-    return normalized.is_premium || Number(normalized.price || 0) > 0 ? "premium_mods" : "modding";
+    return hasPaidPrice ? "premium_mods" : "modding";
   }
 
   const inferredTools = /\btool|tools|utility|utilities|automation|software|launcher\b/.test(textSignals);
@@ -117,38 +121,11 @@ export function getListingCategoryBuckets(listing, options = {}) {
   const rawCategory = normalizeCategoryId(listing?.category);
   addCategory(rawCategory);
 
-  const inferredModding = Boolean(
-    listing?.modding_subcategory ||
-    listing?.community_franchise_id ||
-    /\bmod|mods|modding|cyberface|facepack|roster|patch|trainer|script|textures?\b/i.test(
-      [
-        listing?.digital_subcategory,
-        listing?.physical_subcategory,
-        listing?.card_category_label,
-        ...toValueArray(listing?.subcategories),
-        ...toValueArray(listing?.tags),
-      ].join(" ")
-    )
-  );
-
-  if (!rawCategory && inferredModding) {
-    buckets.add("modding");
-  }
-
-  const isPaidOrPremiumMod =
-    rawCategory === "premium_mods" ||
-    ((rawCategory === "modding" || !rawCategory || inferredModding) &&
-      (listing?.is_premium || Number(listing?.price || 0) > 0));
-
-  if (rawCategory === "premium_mods") {
-    buckets.add("modding");
-  }
-  if (isPaidOrPremiumMod) {
-    buckets.add("premium_mods");
-  }
-
-  if (options.includeNewsfeed !== false) {
-    toValueArray(listing?.newsfeed_categories).forEach(addCategory);
+  if (!rawCategory) {
+    addCategory(inferListingCategory(listing, listing));
+    if (options.includeNewsfeed !== false) {
+      toValueArray(listing?.newsfeed_categories).forEach(addCategory);
+    }
   }
 
   return buckets;
