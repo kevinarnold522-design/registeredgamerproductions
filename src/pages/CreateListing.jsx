@@ -181,6 +181,21 @@ function buildFormFromListing(listing = {}, defaultCat = "", defaultSub = "", de
   };
 }
 
+function buildListingImageFields(imageUrls = []) {
+  const normalizedImages = [...new Set((Array.isArray(imageUrls) ? imageUrls : []).filter(Boolean))];
+  const primaryImage = normalizedImages[0] || "";
+  return {
+    images: normalizedImages,
+    image_urls: normalizedImages,
+    gallery_images: normalizedImages,
+    image_url: primaryImage,
+    cover_image: primaryImage,
+    thumbnail_url: primaryImage,
+    banner_image: primaryImage,
+    poster_url: primaryImage,
+  };
+}
+
 export default function CreateListing() {
   const { user: authUser, isLoadingAuth } = useAuth();
   const location = useLocation();
@@ -593,6 +608,7 @@ export default function CreateListing() {
     setModerationResult(null);
 
     try {
+    if (uploadingImages) throw new Error("Please wait for all uploads to finish before saving.");
     if (!form.category) throw new Error("Please select a main category.");
     // Run AI content moderation first (don't block posting if it fails/times out)
     let mod = null;
@@ -612,6 +628,7 @@ export default function CreateListing() {
     const autoMeta = buildTitleMetadata(form.title);
     const mergedTags = Array.from(new Set([...autoMeta, ...parseCommaList(form.tags)]));
     const mergedKeywords = Array.from(new Set([...autoMeta, ...parseCommaList(form.keywords)]));
+    const listingImageFields = buildListingImageFields(images);
     const existingListing = editId ? await base44.entities.Listing.get(editId) : null;
     const sellerEmail = existingListing?.seller_email || user.email;
     const sellerName = existingListing?.seller_username || profile?.username || profile?.display_name || sellerEmail?.split("@")[0] || "Gamer";
@@ -635,7 +652,7 @@ export default function CreateListing() {
       quantity: parseInt(form.quantity) || 1,
       tags: mergedTags,
       keywords: mergedKeywords,
-      images,
+      ...listingImageFields,
       youtube_video_id: ytId || undefined,
       seller_email: sellerEmail,
       seller_username: sellerName,
@@ -1558,9 +1575,9 @@ export default function CreateListing() {
           )}
 
           {!moderationResult && (
-            <button type="submit" disabled={saving}
+            <button type="submit" disabled={saving || uploadingImages}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg hover:opacity-90 transition-opacity disabled:opacity-50">
-              {saving ? "Checking content & saving..." : editId ? "Update Listing" : form.category === "games" ? "Add a Game" : form.category === "premium_mods" ? "Sell a Premium Mod" : "Post"}
+              {saving ? "Checking content & saving..." : uploadingImages ? "Finishing uploads..." : editId ? "Update Listing" : form.category === "games" ? "Add a Game" : form.category === "premium_mods" ? "Sell a Premium Mod" : "Post"}
             </button>
           )}
         </form>
