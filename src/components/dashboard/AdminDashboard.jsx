@@ -7,7 +7,7 @@ import {
   MessageSquare, Play, Mail, Trophy, Trash2
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { listingMatchesCategory } from "@/lib/categoryMatching";
+import { listingMatchesCategory, normalizeCategoryId, normalizeListingRecord } from "@/lib/categoryMatching";
 import ReviewsTab from "./ReviewsTab";
 import VideoManagementTab from "./VideoManagementTab";
 import EmailHeaderEditor from "./EmailHeaderEditor";
@@ -28,6 +28,48 @@ import AdminAdManager from "@/components/admin/AdminAdManager";
 import { invokeAdminFn } from "@/lib/invokeAdminFn";
 import { Gamepad2, Megaphone } from "lucide-react";
 
+const ADMIN_CATEGORY_OPTIONS = [
+  { value: "games", label: "Games" },
+  { value: "modding", label: "Modding" },
+  { value: "premium_mods", label: "Premium Mods" },
+  { value: "buy_sell", label: "Buy & Sell" },
+  { value: "content", label: "Content" },
+  { value: "services", label: "Services" },
+  { value: "jobs", label: "Jobs" },
+  { value: "store", label: "Store" },
+  { value: "paid_tools", label: "Paid Tools" },
+  { value: "tournaments", label: "Tournaments" },
+  { value: "livestream", label: "Livestream" },
+];
+
+const ADMIN_SUBCATEGORY_OPTIONS = {
+  games: ["PC", "PlayStation", "Xbox", "Nintendo Switch", "Mobile"],
+  modding: ["Football Life", "NBA2K", "WWE2K", "GTA 5", "GTA 4", "GTA SA", "FIFA", "PES", "Android", "PPSSPP/PSP", "PS2", "PC"],
+  premium_mods: ["Football Life", "NBA 2K", "WWE 2K", "GTA", "Assetto Corsa", "Minecraft"],
+  buy_sell: ["Game Accounts", "In-Game Items", "Skins", "Gift Cards"],
+  content: ["Gaming Videos", "Streaming", "Tutorials", "Reviews", "Highlights", "Clips"],
+  services: ["PC Repair", "Custom Builds", "Coaching", "Boosting", "Design Services"],
+  jobs: ["QA Testing", "Game Dev", "Community Manager", "Esports Coach", "Content Creator"],
+  store: ["Game Accounts", "In-Game Items", "Skins", "Gift Cards", "Accessories", "Top Tech Equipment"],
+  paid_tools: ["Premium Software", "Utilities", "Automation Tools", "Pro Utilities"],
+  tournaments: ["FPS", "Battle Royale", "MOBA", "Sports", "Fighting", "Mobile Gaming"],
+  livestream: ["Gameplay Streams", "Tournaments", "Esports Events", "Mod Reviews", "Q&A Sessions", "Unboxing"],
+};
+
+function getPlacementCategory(listing) {
+  return normalizeCategoryId(listing?.category) || normalizeListingRecord(listing)?.category || "";
+}
+
+function getPlacementSubcategory(listing, category) {
+  if (category === "games") {
+    return listing?.game_platform || listing?.store_platforms?.[0] || listing?.platforms?.[0] || "";
+  }
+  if (category === "modding" || category === "premium_mods") {
+    return listing?.modding_subcategory || listing?.card_category_label || "";
+  }
+  return listing?.digital_subcategory || listing?.physical_subcategory || listing?.subcategories?.[0] || "";
+}
+
 export default function AdminDashboard({ user, profile }) {
   const [tab, setTab] = useState("overview");
   const [stats, setStats] = useState({ users: 0, listings: 0, orders: 0, revenue: 0, commission: 0 });
@@ -37,6 +79,7 @@ export default function AdminDashboard({ user, profile }) {
   const [pendingVerifications, setPendingVerifications] = useState([]);
   const [feedbacks_count, setFeedbacksCount] = useState(0);
   const [transferTargets, setTransferTargets] = useState({});
+  const [placementDrafts, setPlacementDrafts] = useState({});
   const [loading, setLoading] = useState(true);
 
   // Recompute stats whenever the user/listing/order lists change so the
@@ -104,9 +147,9 @@ export default function AdminDashboard({ user, profile }) {
     let unsub = () => {};
     try {
       unsub = base44.entities.UserProfile.subscribe(applyUserEvent);
-    } catch (_) {}
+    } catch {}
 
-    return () => { mounted = false; try { unsub(); } catch (_) {} };
+    return () => { mounted = false; try { unsub(); } catch {} };
   }, [recomputeStats]);
 
   const approveVerification = async (profileId) => {
@@ -136,6 +179,44 @@ export default function AdminDashboard({ user, profile }) {
     });
     setAllListings(prev => prev.map(item => item.id === listing.id ? { ...item, seller_email: targetUser.user_email, seller_username: sellerUsername } : item));
     setTransferTargets(prev => ({ ...prev, [listing.id]: "" }));
+  };
+
+  const getPlacementDraft = (listing) => {
+    const category = getPlacementCategory(listing);
+    const current = placementDrafts[listing.id];
+    if (current) return current;
+    return {
+      category,
+      subcategory: getPlacementSubcategory(listing, category),
+    };
+  };
+
+  const saveListingPlacement = async (listing) => {
+    const draft = getPlacementDraft(listing);
+    const category = normalizeCategoryId(draft.category);
+    const subcategory = String(draft.subcategory || "").trim();
+    const patch = {
+      category,
+      newsfeed_categories: category ? [category] : [],
+      subcategories: subcategory ? [subcategory] : [],
+    };
+
+    if (category === "games") {
+      patch.game_platform = subcategory;
+      patch.digital_subcategory = "games";
+      patch.modding_subcategory = "";
+    } else if (category === "modding" || category === "premium_mods") {
+      patch.modding_subcategory = subcategory;
+      patch.digital_subcategory = "mods";
+      patch.game_platform = "";
+    } else {
+      patch.digital_subcategory = subcategory;
+      patch.game_platform = "";
+    }
+
+    await base44.entities.Listing.update(listing.id, patch);
+    setAllListings((prev) => prev.map((item) => (item.id === listing.id ? { ...item, ...patch } : item)));
+    setPlacementDrafts((prev) => ({ ...prev, [listing.id]: { category, subcategory } }));
   };
 
   const toggleVerifiedBadge = async (profileId, currentValue) => {
@@ -433,17 +514,54 @@ export default function AdminDashboard({ user, profile }) {
             <table className="w-full text-sm">
               <thead className="bg-gray-800/50">
                 <tr>
-                  {["Title", "Seller", "Category", "Price", "Status", "Transfer Owner", "Actions"].map(h => (
+                  {["Title", "Seller", "Category", "Placement", "Price", "Status", "Transfer Owner", "Actions"].map(h => (
                     <th key={h} className="px-4 py-3 text-left text-gray-400 font-semibold text-xs">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {allListings.map((l) => (
+                  (() => {
+                    const draft = getPlacementDraft(l);
+                    const subcategoryOptions = ADMIN_SUBCATEGORY_OPTIONS[draft.category] || [];
+                    return (
                   <tr key={l.id} className="border-t border-gray-800 hover:bg-gray-800/30">
                     <td className="px-4 py-3 text-white font-semibold text-xs max-w-[160px] truncate">{l.title}</td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{l.seller_username || l.seller_email}</td>
-                    <td className="px-4 py-3 text-purple-400 text-xs">{l.category}</td>
+                    <td className="px-4 py-3 text-purple-400 text-xs">{getPlacementCategory(l) || "—"}</td>
+                    <td className="px-4 py-3">
+                      <div className="min-w-[230px] space-y-2">
+                        <select
+                          value={draft.category}
+                          onChange={(e) => setPlacementDrafts((prev) => ({ ...prev, [l.id]: { category: e.target.value, subcategory: "" } }))}
+                          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-yellow-500"
+                        >
+                          <option value="">Choose category…</option>
+                          {ADMIN_CATEGORY_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                          ))}
+                        </select>
+                        <div className="flex gap-2">
+                          <select
+                            value={draft.subcategory}
+                            onChange={(e) => setPlacementDrafts((prev) => ({ ...prev, [l.id]: { ...draft, subcategory: e.target.value } }))}
+                            className="min-w-0 flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500"
+                          >
+                            <option value="">Choose subcategory…</option>
+                            {subcategoryOptions.map((option) => (
+                              <option key={option} value={option}>{option}</option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => saveListingPlacement(l)}
+                            disabled={!draft.category}
+                            className="px-2 py-1.5 rounded-lg bg-yellow-900/40 border border-yellow-700/50 text-yellow-300 text-xs font-bold hover:bg-yellow-900/60 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-green-400 font-bold">${l.price?.toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${l.status === "active" ? "bg-green-900/50 text-green-400" : l.status === "sold" ? "bg-blue-900/50 text-blue-400" : "bg-red-900/50 text-red-400"}`}>
@@ -478,6 +596,8 @@ export default function AdminDashboard({ user, profile }) {
                       )}
                     </td>
                   </tr>
+                    );
+                  })()
                 ))}
               </tbody>
             </table>

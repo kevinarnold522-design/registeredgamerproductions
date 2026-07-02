@@ -84,18 +84,29 @@ function getCategoryFeedFranchiseIds(listings, cat, activeSub, categoryData) {
   return franchiseIds;
 }
 
-function buildCategoryNewsfeedItems({ posts, listings, franchiseIds, search }) {
+function buildCategoryNewsfeedItems({ posts, listings, franchiseIds, search, category }) {
   const normalizedSearch = String(search || "").trim().toLowerCase();
+  const isModdingFeed = category === "modding" || category === "premium_mods";
+  const modSignalRegex = /\bmod|mods|modding|cyberface|face ?mod|facepack|patch|roster|trainer|script|texture|addon|option file|stadium|kit|boots?\b/i;
   const visiblePosts = (Array.isArray(posts) ? posts : [])
     .filter((post) => post?.status === "active")
     .filter((post) => !franchiseIds.size || franchiseIds.has(post?.franchise_id))
     .filter((post) => {
-      if (!normalizedSearch) return true;
-      return [post?.content, post?.description, post?.author_username, post?.franchise_id]
+      const text = [
+        post?.content,
+        post?.description,
+        post?.author_username,
+        post?.franchise_id,
+        post?.section_id,
+        ...(Array.isArray(post?.community_tags) ? post.community_tags : []),
+      ]
         .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedSearch);
+        .join(" ");
+      if (isModdingFeed && !modSignalRegex.test(text)) {
+        return false;
+      }
+      if (!normalizedSearch) return true;
+      return text.toLowerCase().includes(normalizedSearch);
     })
     .map((item) => ({ type: "post", item, date: item?.created_date }));
 
@@ -324,8 +335,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         listings: filtered,
         franchiseIds: categoryFeedFranchiseIds,
         search,
+        category: cat,
       }),
-    [categoryPosts, filtered, categoryFeedFranchiseIds, search]
+    [categoryPosts, filtered, categoryFeedFranchiseIds, search, cat]
   );
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
@@ -415,7 +427,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 pt-6 pb-8">
         <LandingSearchHeader
           className="mb-3"
           searchValue={search}
@@ -509,15 +521,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           )}
         </AnimatePresence>
 
-        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Listings Feed</p>
-            <h2 className="text-white text-2xl font-black">{meta.title} Listings</h2>
-          </div>
-          <p className="text-gray-400 text-sm">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
-        </div>
         {showCategoryNewsfeed && (
-          <div className="mb-8 rounded-3xl border border-purple-700/30 bg-gradient-to-br from-gray-950 via-gray-900 to-purple-950/40 overflow-hidden">
+          <div className="mb-5 rounded-3xl border border-purple-700/30 bg-gradient-to-br from-gray-950 via-gray-900 to-purple-950/40 overflow-hidden">
             <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-purple-900/30">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
@@ -609,6 +614,13 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
             </div>
           </div>
         )}
+        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Listings Feed</p>
+            <h2 className="text-white text-2xl font-black">{meta.title} Listings</h2>
+          </div>
+          <p className="text-gray-400 text-sm">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
+        </div>
         {!hasLoaded && loading && listings.length === 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
