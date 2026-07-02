@@ -77,53 +77,8 @@ const MAX_UPLOAD_LABEL = "25MB";
 const LISTING_ORPHAN_CLEANUP_KEY = "listing-orphan-cleanup-at";
 const LISTING_ORPHAN_CLEANUP_INTERVAL = 12 * 60 * 60 * 1000;
 
-export default function CreateListing() {
-  const { user: authUser, isLoadingAuth } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [images, setImages] = useState([]);
-  const [uploadingImages, setUploadingImages] = useState(false);
-  const fileInputRef = useRef(null);
-  const downloadFileRef = useRef(null);
-  const pendingUploadsRef = useRef([]);
-  const listingSavedRef = useRef(false);
-  const cleanupQueuedRef = useRef(false);
-  const accessTokenRef = useRef("");
-
-  const params = new URLSearchParams(location.search);
-  const editId = params.get("edit");
-  const defaultCat = normalizeCategoryId(params.get("cat") || "");
-  const defaultSub = params.get("sub") || "";
-  const defaultGame = params.get("game") || defaultSub;
-
-  const [gamingCommunities, setGamingCommunities] = useState([]);
-  const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
-  const [gameSearch, setGameSearch] = useState("");
-  const [showGameDropdown, setShowGameDropdown] = useState(false);
-  const gameDropdownRef = useRef(null);
-
-  // Each platform maps to a brand logo slug (BrandLogo) when one exists.
-  const PLATFORMS = [
-    { id: "PC", brand: null },
-    { id: "Nintendo Switch", brand: "nintendo" },
-    { id: "PlayStation 5", brand: "playstation" },
-    { id: "PlayStation 4", brand: "playstation" },
-    { id: "PlayStation 3", brand: "playstation" },
-    { id: "PlayStation 2", brand: "playstation" },
-    { id: "PSP", brand: "playstation" },
-    { id: "Android", brand: "googleplay" },
-    { id: "PPSSPP", brand: null },
-    { id: "Xbox", brand: "xbox" },
-  ];
-  const COMBINED_AVAILABLE_OPTIONS = [
-    ...PLATFORMS.map(p => ({ id: p.id, label: p.id, type: "platform", brand: p.brand })),
-    ...GAMES_STORES.map(s => ({ id: s.id, label: s.label, type: "store", color: s.color, iconText: s.iconText, brand: s.id })),
-  ].filter((option, index, arr) => arr.findIndex((item) => item.label.toLowerCase() === option.label.toLowerCase()) === index);
-  const [form, setForm] = useState({
+function buildInitialForm(defaultCat = "", defaultSub = "", defaultGame = "") {
+  return {
     title: "",
     description: "",
     price: "0",
@@ -170,7 +125,109 @@ export default function CreateListing() {
     store_platforms: [],
     tool_target_game: defaultCat === "premium_mods" ? defaultGame : "",
     preview_video_url: "",
-  });
+  };
+}
+
+function buildFormFromListing(listing = {}, defaultCat = "", defaultSub = "", defaultGame = "") {
+  const base = buildInitialForm(defaultCat, defaultSub, defaultGame);
+  return {
+    ...base,
+    title: listing.title ?? base.title,
+    description: listing.description ?? base.description,
+    price: listing.price !== undefined && listing.price !== null ? String(listing.price) : base.price,
+    currency: listing.currency === "PHP" ? "USD" : (listing.currency ?? base.currency),
+    product_type: listing.product_type ?? base.product_type,
+    category: listing.category ?? base.category,
+    subcategories: Array.isArray(listing.subcategories) ? listing.subcategories : base.subcategories,
+    newsfeed_categories: Array.isArray(listing.newsfeed_categories) ? listing.newsfeed_categories : base.newsfeed_categories,
+    digital_subcategory: listing.digital_subcategory ?? base.digital_subcategory,
+    digital_subcategory_custom: listing.digital_subcategory_custom ?? base.digital_subcategory_custom,
+    physical_subcategory: listing.physical_subcategory ?? base.physical_subcategory,
+    condition: listing.condition ?? base.condition,
+    is_premium: listing.is_premium ?? base.is_premium,
+    platforms: Array.isArray(listing.platforms) ? listing.platforms : base.platforms,
+    quantity: listing.quantity ?? base.quantity,
+    location: listing.location ?? base.location,
+    tags: Array.isArray(listing.tags) ? listing.tags.join(", ") : (listing.tags ?? base.tags),
+    keywords: Array.isArray(listing.keywords) ? listing.keywords.join(", ") : (listing.keywords ?? base.keywords),
+    youtube_url: listing.youtube_url ?? base.youtube_url,
+    video_url: listing.video_url ?? base.video_url,
+    game_name: listing.game_name ?? base.game_name,
+    game_platform: listing.game_platform ?? base.game_platform,
+    paypal_email: listing.paypal_email ?? base.paypal_email,
+    external_link: listing.external_link ?? base.external_link,
+    download_url: listing.download_url ?? base.download_url,
+    download_host: listing.download_host ?? base.download_host,
+    card_animation: listing.card_animation ?? base.card_animation,
+    card_glow_style: listing.card_glow_style ?? base.card_glow_style,
+    card_glow_color: listing.card_glow_color ?? base.card_glow_color,
+    card_glow_hex: listing.card_glow_hex ?? base.card_glow_hex,
+    card_glow_speed: listing.card_glow_speed ?? base.card_glow_speed,
+    listing_theme_color: listing.listing_theme_color ?? base.listing_theme_color,
+    card_font_family: listing.card_font_family ?? base.card_font_family,
+    card_font_color: listing.card_font_color ?? base.card_font_color,
+    kofi_url: listing.kofi_url ?? base.kofi_url,
+    buymeacoffee_url: listing.buymeacoffee_url ?? base.buymeacoffee_url,
+    patreon_url: listing.patreon_url ?? base.patreon_url,
+    community_franchise_id: listing.community_franchise_id ?? base.community_franchise_id,
+    modding_subcategory: listing.modding_subcategory ?? base.modding_subcategory,
+    cross_post_gaming: listing.cross_post_gaming ?? base.cross_post_gaming,
+    cross_post_modding: listing.cross_post_modding ?? base.cross_post_modding,
+    bulk_cross_post_ids: Array.isArray(listing.bulk_cross_post_ids) ? listing.bulk_cross_post_ids : base.bulk_cross_post_ids,
+    ign_rating: listing.ign_rating != null ? String(listing.ign_rating) : base.ign_rating,
+    store_platforms: Array.isArray(listing.store_platforms) ? listing.store_platforms : base.store_platforms,
+    tool_target_game: listing.tool_target_game ?? base.tool_target_game,
+    preview_video_url: listing.preview_video_url ?? base.preview_video_url,
+  };
+}
+
+export default function CreateListing() {
+  const { user: authUser, isLoadingAuth } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [images, setImages] = useState([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const fileInputRef = useRef(null);
+  const downloadFileRef = useRef(null);
+  const pendingUploadsRef = useRef([]);
+  const listingSavedRef = useRef(false);
+  const cleanupQueuedRef = useRef(false);
+  const accessTokenRef = useRef("");
+
+  const params = new URLSearchParams(location.search);
+  const editId = params.get("edit");
+  const defaultCat = normalizeCategoryId(params.get("cat") || "");
+  const defaultSub = params.get("sub") || "";
+  const defaultGame = params.get("game") || defaultSub;
+
+  const [gamingCommunities, setGamingCommunities] = useState([]);
+  const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
+  const [gameSearch, setGameSearch] = useState("");
+  const [showGameDropdown, setShowGameDropdown] = useState(false);
+  const gameDropdownRef = useRef(null);
+
+  // Each platform maps to a brand logo slug (BrandLogo) when one exists.
+  const PLATFORMS = [
+    { id: "PC", brand: null },
+    { id: "Nintendo Switch", brand: "nintendo" },
+    { id: "PlayStation 5", brand: "playstation" },
+    { id: "PlayStation 4", brand: "playstation" },
+    { id: "PlayStation 3", brand: "playstation" },
+    { id: "PlayStation 2", brand: "playstation" },
+    { id: "PSP", brand: "playstation" },
+    { id: "Android", brand: "googleplay" },
+    { id: "PPSSPP", brand: null },
+    { id: "Xbox", brand: "xbox" },
+  ];
+  const COMBINED_AVAILABLE_OPTIONS = [
+    ...PLATFORMS.map(p => ({ id: p.id, label: p.id, type: "platform", brand: p.brand })),
+    ...GAMES_STORES.map(s => ({ id: s.id, label: s.label, type: "store", color: s.color, iconText: s.iconText, brand: s.id })),
+  ].filter((option, index, arr) => arr.findIndex((item) => item.label.toLowerCase() === option.label.toLowerCase()) === index);
+  const [form, setForm] = useState(() => buildInitialForm(defaultCat, defaultSub, defaultGame));
   const autoMetaRef = useRef({ tags: "", keywords: "" });
 
   useEffect(() => {
@@ -246,50 +303,7 @@ export default function CreateListing() {
       if (editId) {
         const l = await base44.entities.Listing.get(editId);
         if (l) {
-          setForm({
-            title: l.title || "",
-            description: l.description || "",
-            price: l.price !== undefined ? String(l.price) : "0",
-            currency: l.currency === "PHP" ? "USD" : (l.currency || "USD"),
-            product_type: l.product_type || "digital",
-            category: l.category || defaultCat,
-            subcategories: l.subcategories || [],
-            newsfeed_categories: l.newsfeed_categories || [],
-            digital_subcategory: l.digital_subcategory || "",
-            digital_subcategory_custom: "",
-            physical_subcategory: l.physical_subcategory || "",
-            condition: l.condition || "digital",
-            is_premium: l.is_premium || false,
-            platforms: l.platforms || [],
-            quantity: l.quantity || 1,
-            location: l.location || "",
-            tags: (l.tags || []).join(", "),
-            keywords: (l.keywords || []).join(", "),
-            youtube_url: l.youtube_url || "",
-            video_url: l.video_url || "",
-            game_name: l.game_name || "",
-            game_platform: l.game_platform || "",
-            external_link: l.external_link || "",
-            download_url: l.download_url || "",
-            download_host: l.download_host || "",
-            kofi_url: l.kofi_url || "",
-            buymeacoffee_url: l.buymeacoffee_url || "",
-            patreon_url: l.patreon_url || "",
-            community_franchise_id: l.community_franchise_id || "",
-            modding_subcategory: l.modding_subcategory || "",
-            ign_rating: l.ign_rating != null ? String(l.ign_rating) : "",
-            store_platforms: l.store_platforms || [],
-            tool_target_game: l.tool_target_game || "",
-            preview_video_url: l.preview_video_url || "",
-            card_glow_style: l.card_glow_style || "radiant",
-            card_glow_color: l.card_glow_color || "purple",
-            card_glow_hex: l.card_glow_hex || "#a855f7",
-            card_glow_speed: l.card_glow_speed || "slow",
-            listing_theme_color: l.listing_theme_color || "#030712",
-            card_font_family: l.card_font_family || "default",
-            card_font_color: l.card_font_color || "#ffffff",
-            bulk_cross_post_ids: [],
-          });
+          setForm(buildFormFromListing(l, defaultCat, defaultSub, defaultGame));
           setImages(l.images || []);
           if (l.game_name) setGameSearch(l.game_name);
         }
