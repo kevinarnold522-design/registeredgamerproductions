@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Newspaper, Star } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 import { useAuth } from "@/lib/AuthContext";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
@@ -30,7 +31,13 @@ export default function GamingNewsfeed() {
         base44.entities.Listing.filter({ status: "active" }, "-created_date"),
       ]);
       const activePosts = posts.filter(p => p.status === "active");
-      const communityListings = listings.filter(l => l.is_approved !== false && (l.community_franchise_id || l.category === "games" || l.category === "modding" || l.category === "premium_mods" || l.modding_subcategory));
+      const communityListings = listings.filter((listing) =>
+        listing.is_approved !== false &&
+        (listing.community_franchise_id ||
+          listingMatchesCategory(listing, "games") ||
+          listingMatchesCategory(listing, "modding") ||
+          listing.modding_subcategory)
+      );
       const merged = [
         ...activePosts.map(item => ({ type: "post", item, date: item.created_date })),
         ...communityListings.map(item => ({ type: "listing", item, date: item.created_date })),

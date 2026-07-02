@@ -7,6 +7,7 @@ import {
   MessageSquare, Play, Mail, Trophy, Trash2
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 import ReviewsTab from "./ReviewsTab";
 import VideoManagementTab from "./VideoManagementTab";
 import EmailHeaderEditor from "./EmailHeaderEditor";
@@ -164,7 +165,7 @@ export default function AdminDashboard({ user, profile }) {
   };
 
   const totalModDownloads = allListings
-    .filter(l => l.category === "modding" || l.category === "premium_mods")
+    .filter((listing) => listingMatchesCategory(listing, "modding"))
     .reduce((s, l) => s + (Number(l.downloads) || 0), 0);
 
   const tabs = [

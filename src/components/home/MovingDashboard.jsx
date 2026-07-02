@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Package, TrendingUp, Zap, Monitor, Smartphone, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import HomeListingCard from "@/components/home/HomeListingCard";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { computeMonthlyRanks } from "@/lib/monthlyRank";
 import { getPublisherRankMap } from "@/lib/publisherRank";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 
 // Cyberpunk 2077-inspired color palette combined with site theme
 const CP = {
@@ -49,11 +50,6 @@ function ScrollCard({ item, user, profile, rank, sellerRank }) {
   );
 }
 
-// Static PC/Mobile game deals
-const PC_DEALS = [];
-
-const MOBILE_DEALS = [];
-
 // Section label component
 function SectionLabel({ icon: Icon, label, color, pulse }) {
   return (
@@ -73,7 +69,6 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [sellerProfiles, setSellerProfiles] = useState({});
   const [sellerRankMap, setSellerRankMap] = useState({});
 
   const [freeMods, setFreeMods] = useState([]);
@@ -93,20 +88,19 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
     const load = async () => {
       const [listings, profilesRes] = await Promise.all([getActiveListings(), base44.entities.UserProfile.list()]);
       const profiles = Array.isArray(profilesRes) ? profilesRes : (profilesRes?.data || profilesRes?.records || []);
-      setSellerProfiles(Object.fromEntries(profiles.map(p => [p.user_email, p])));
       // Deduplicate by id
       const seen = new Set();
       const unique = listings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
       const realActive = unique.filter(l => l.is_approved !== false);
       setRankMap(computeMonthlyRanks(realActive));
-      const allMods = realActive.filter(l => l.category === "modding" || l.category === "premium_mods");
-      const allGames = realActive.filter(l => l.category === "games");
+      const allMods = realActive.filter((listing) => listingMatchesCategory(listing, "modding"));
+      const allGames = realActive.filter((listing) => listingMatchesCategory(listing, "games"));
       setPcGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("pc") || String(p).toLowerCase().includes("steam"))).slice(0, 16));
       setMobileGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("android") || String(p).toLowerCase().includes("mobile") || String(p).toLowerCase().includes("ios"))).slice(0, 16));
       setFreeMods(allMods.filter(m => !m.price || m.price === 0 || m.is_free).slice(0, 16));
       setPaidMods(allMods.filter(m => m.price > 0 && !m.is_free).slice(0, 16));
       setMods(allMods.slice(0, 16));
-      setProducts(realActive.filter(l => l.category !== "modding" && l.category !== "content").slice(0, 16));
+      setProducts(realActive.filter((listing) => !listingMatchesCategory(listing, "modding") && !listingMatchesCategory(listing, "content_streaming")).slice(0, 16));
       setLoading(false);
     };
     load();

@@ -11,6 +11,7 @@
 // working with no changes. All reads and writes go straight to Supabase.
 // =====================================================================
 import { supabase } from "@/lib/supabaseClient";
+import { normalizeListingRecord } from "@/lib/categoryMatching";
 
 // Columns that live as real table columns (everything else goes in `data`).
 const HEADER = new Set(["id", "created_date", "updated_date", "created_by_id", "created_by"]);
@@ -20,14 +21,20 @@ const HEADER = new Set(["id", "created_date", "updated_date", "created_by_id", "
 function flatten(row) {
   if (!row) return row;
   const { data, ...header } = row;
-  return { ...(data || {}), ...header };
+  const flat = { ...(data || {}), ...header };
+  return row?.__tableName === "Listing" ? normalizeListingRecord(flat) : flat;
 }
 
 // Split a flat record into { header, data } for storage.
-function split(record = {}) {
+function split(record = {}, entityName) {
+  const source = entityName === "Listing" || record?.__tableName === "Listing"
+    ? normalizeListingRecord(record)
+    : record;
   const header = {};
   const data = {};
-  for (const [k, v] of Object.entries(record)) {
+  for (const [k, v] of Object.entries(source)) {
+    if (k === "__tableName") continue;
+    if (v === undefined) continue;
     if (HEADER.has(k)) header[k] = v;
     else data[k] = v;
   }
@@ -66,7 +73,7 @@ function makeEntity(name) {
       if (limit) q = q.limit(limit);
       const { data, error } = await q;
       if (error) throw new Error(error.message);
-      return (data || []).map(flatten);
+      return (data || []).map((row) => flatten({ ...row, __tableName: name }));
     },
 
     async filter(query = {}, sort, limit) {
@@ -77,44 +84,44 @@ function makeEntity(name) {
       if (limit) q = q.limit(limit);
       const { data, error } = await q;
       if (error) throw new Error(error.message);
-      return (data || []).map(flatten);
+      return (data || []).map((row) => flatten({ ...row, __tableName: name }));
     },
 
     async get(id) {
       if (!id) return null;
       const { data, error } = await supabase.from(name).select("*").eq("id", id).maybeSingle();
       if (error) throw new Error(error.message);
-      return data ? flatten(data) : null;
+      return data ? flatten({ ...data, __tableName: name }) : null;
     },
 
     async create(record = {}) {
-      const { header, data } = split(record);
+      const { header, data } = split(record, name);
       const row = { ...header, data };
       const { data: inserted, error } = await supabase.from(name).insert(row).select("*").single();
       if (error) throw new Error(error.message);
-      return flatten(inserted);
+      return flatten({ ...inserted, __tableName: name });
     },
 
     async bulkCreate(items = []) {
       const rows = items.map((it) => {
-        const { header, data } = split(it);
+        const { header, data } = split(it, name);
         return { ...header, data };
       });
       const { data: inserted, error } = await supabase.from(name).insert(rows).select("*");
       if (error) throw new Error(error.message);
-      return (inserted || []).map(flatten);
+      return (inserted || []).map((row) => flatten({ ...row, __tableName: name }));
     },
 
     async update(id, patch = {}) {
       // Merge patch into existing data so partial updates don't wipe fields.
       const { data: current, error: readErr } = await supabase.from(name).select("data").eq("id", id).maybeSingle();
       if (readErr) throw new Error(readErr.message);
-      const { header, data } = split(patch);
+      const { header, data } = split(patch, name);
       const mergedData = { ...((current && current.data) || {}), ...data };
       const row = { ...header, data: mergedData };
       const { data: updated, error } = await supabase.from(name).update(row).eq("id", id).select("*").single();
       if (error) throw new Error(error.message);
-      return flatten(updated);
+      return flatten({ ...updated, __tableName: name });
     },
 
     async delete(id) {
@@ -138,7 +145,7 @@ function makeEntity(name) {
             handler({
               id: row?.id,
               type: typeMap[payload.eventType] || payload.eventType,
-              data: flatten(row),
+              data: flatten({ ...row, __tableName: name }),
             });
           }
         )

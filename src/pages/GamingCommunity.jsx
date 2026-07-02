@@ -23,6 +23,7 @@ import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { useNavigate } from "react-router-dom";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
@@ -42,13 +43,10 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
     const load = async () => {
       try {
         const allPosts = asArray(await base44.entities.CommunityPost.filter({ franchise_id: franchise.id }));
-        let allListings = asArray(await base44.entities.Listing.filter({ community_franchise_id: franchise.id }, "-created_date", 120));
-        if (allListings.length === 0) {
-          allListings = await base44.entities.Listing.list("-created_date", 120);
-        }
-        const safeListings = asArray(allListings);
+        const allListings = asArray(await getActiveListings());
+        const safeListings = allListings.filter((listing) => listing.community_franchise_id === franchise.id);
         setPosts(allPosts.filter(p => p?.status === "active").sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0)).slice(0, 50));
-        setListings(safeListings.filter(l => l?.status === "active"));
+        setListings(safeListings.filter((listing) => listing?.status === "active"));
       } catch { setPosts([]); setListings([]); }
       setLoading(false);
     };

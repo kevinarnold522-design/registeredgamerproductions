@@ -21,6 +21,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import useScrollReveal from "@/hooks/useScrollReveal";
 import { useNavigate } from "react-router-dom";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 
 class DeferredSectionsBoundary extends React.Component {
   constructor(props) {
@@ -430,7 +431,7 @@ export default function Home() {
                   subtitle="Fresh game listings across PC, console & mobile."
                   accent="#a855f7"
                   icon={Gamepad2}
-                  filterFn={(l) => l.category === "games"}
+                  filterFn={(l) => listingMatchesCategory(l, "games")}
                   viewAllHref="/category?cat=games"
                   user={user}
                   profile={profile}
@@ -442,7 +443,7 @@ export default function Home() {
                   subtitle="Stream and play instantly — GeForce NOW, Xbox Cloud, PS Plus & more."
                   accent="#38bdf8"
                   icon={Cloud}
-                  filterFn={(l) => l.category === "cloud_gaming"}
+                  filterFn={(l) => listingMatchesCategory(l, "cloud_gaming")}
                   viewAllHref="/category?cat=cloud_gaming"
                   user={user}
                   profile={profile}
@@ -454,7 +455,7 @@ export default function Home() {
                   subtitle="Premium utilities, launchers, automation & creator software."
                   accent="#f472b6"
                   icon={Wrench}
-                  filterFn={(l) => l.category === "paid_tools"}
+                  filterFn={(l) => listingMatchesCategory(l, "paid_tools")}
                   viewAllHref="/category?cat=paid_tools"
                   user={user}
                   profile={profile}

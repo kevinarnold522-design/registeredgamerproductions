@@ -12,11 +12,35 @@ function normalizeCategoryToken(value) {
 }
 
 const CATEGORY_ALIAS_GROUPS = {
-  content: ["content", "content_streaming"],
-  content_streaming: ["content_streaming", "content"],
+  content: ["content", "content_streaming", "exclusive_content"],
+  content_streaming: ["content_streaming", "content", "exclusive_content"],
+  exclusive_content: ["exclusive_content", "content_streaming", "content"],
   tools: ["tools", "paid_tools"],
   paid_tools: ["paid_tools", "tools"],
+  buy_sell: ["buy_sell", "store"],
+  store: ["store", "buy_sell"],
 };
+
+function toValueArray(value) {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => toValueArray(item))
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (value === undefined || value === null || value === false) {
+    return [];
+  }
+
+  return [value];
+}
 
 export function normalizeCategoryId(value) {
   const normalized = String(value || "").trim().toLowerCase();
@@ -53,7 +77,7 @@ export function getListingCategoryBuckets(listing, options = {}) {
   }
 
   if (options.includeNewsfeed !== false) {
-    (Array.isArray(listing?.newsfeed_categories) ? listing.newsfeed_categories : []).forEach(addCategory);
+    toValueArray(listing?.newsfeed_categories).forEach(addCategory);
   }
 
   return buckets;
@@ -138,7 +162,7 @@ export function findCanonicalCategoryValue(selectedValue, candidates = []) {
 
 export function collectListingCategoryValues(listing) {
   return [
-    ...(Array.isArray(listing?.subcategories) ? listing.subcategories : []),
+    ...toValueArray(listing?.subcategories),
     listing?.subcategory,
     listing?.digital_subcategory,
     listing?.physical_subcategory,
@@ -146,10 +170,38 @@ export function collectListingCategoryValues(listing) {
     listing?.tool_target_game,
     listing?.game_name,
     listing?.game_platform,
-    ...(Array.isArray(listing?.platforms) ? listing.platforms : []),
-    ...(Array.isArray(listing?.store_platforms) ? listing.store_platforms : []),
-    ...(Array.isArray(listing?.tags) ? listing.tags : []),
+    listing?.community_franchise_id,
+    listing?.card_category_label,
+    ...toValueArray(listing?.newsfeed_categories),
+    ...toValueArray(listing?.platforms),
+    ...toValueArray(listing?.store_platforms),
+    ...toValueArray(listing?.tags),
   ].filter(Boolean);
+}
+
+export function normalizeListingRecord(record) {
+  if (!record || typeof record !== "object") return record;
+
+  const normalized = { ...record };
+  normalized.category = normalizeCategoryId(record.category);
+
+  normalized.subcategories = toValueArray(record.subcategories);
+  if (!normalized.subcategories.length && record.subcategory) {
+    normalized.subcategories = toValueArray(record.subcategory);
+  }
+
+  normalized.newsfeed_categories = toValueArray(record.newsfeed_categories).map(normalizeCategoryId);
+  normalized.platforms = toValueArray(record.platforms);
+  normalized.store_platforms = toValueArray(record.store_platforms);
+  normalized.tags = toValueArray(record.tags);
+  normalized.keywords = toValueArray(record.keywords);
+  normalized.images = toValueArray(record.images);
+
+  if (!normalized.digital_subcategory && normalized.subcategories.length) {
+    normalized.digital_subcategory = normalized.subcategories[0];
+  }
+
+  return normalized;
 }
 
 export function listingMatchesSubcategory(listing, selectedValue, options = {}) {

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, Gamepad2, DollarSign, Tag, Layers } from "lucide-react";
+import { Search, Filter, Gamepad2, Tag, Layers } from "lucide-react";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
 import StandardListingCard from "@/components/listings/StandardListingCard";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 
 const PAID_MOD_CATEGORIES = [
   { id: "premium_mods", label: "Premium Mods", color: "from-purple-600 to-pink-600" },
@@ -40,10 +41,12 @@ export default function PaidModsSection() {
       try {
         const allListings = await getActiveListings();
         // Filter for paid/premium listings in paid mod categories
-        const paidMods = allListings.filter(l => 
-          (l.is_premium || l.price > 0) && 
-          (l.category === "premium_mods" || l.category === "paid_tools" || l.category === "exclusive_content") &&
-          !isServiceListing(l)
+        const paidMods = allListings.filter((listing) =>
+          (listing.is_premium || listing.price > 0) &&
+          (listingMatchesCategory(listing, "premium_mods") ||
+            listingMatchesCategory(listing, "paid_tools") ||
+            listingMatchesCategory(listing, "content_streaming")) &&
+          !isServiceListing(listing)
         );
         setListings(paidMods.slice(0, 50));
       } catch (error) {
@@ -59,7 +62,7 @@ export default function PaidModsSection() {
       listing.title.toLowerCase().includes(filters.search.toLowerCase()) ||
       listing.description?.toLowerCase().includes(filters.search.toLowerCase());
     
-    const matchCategory = !filters.category || listing.category === filters.category;
+    const matchCategory = !filters.category || listingMatchesCategory(listing, filters.category);
     const normalizedGame = filters.game.toLowerCase().replace(/\s+/g, "");
     const listingGames = [listing.game_name, listing.tool_target_game, listing.subcategory, ...(listing.subcategories || [])].filter(Boolean).map(v => String(v).toLowerCase().replace(/\s+/g, ""));
     const matchGame = !filters.game || listingGames.some(v => v === normalizedGame || (normalizedGame === "gta" && v.startsWith("gta")));

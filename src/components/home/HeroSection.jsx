@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Gamepad2, Zap, Radio, ShieldCheck, Lock, Globe2, CircleDollarSign, Clapperboard, Headphones, Wrench, ShoppingCart, Trophy } from "lucide-react";
+import { Gamepad2, Zap, Radio, ShieldCheck, Lock, Globe2, CircleDollarSign } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { supabase } from "@/lib/supabaseClient";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 import { useAuth } from "@/lib/AuthContext";
 
 function CreateListingHeroButton() {
@@ -75,7 +76,7 @@ function LiveStats() {
             const activeListings = await getActiveListings();
             nextStats.listings = Array.isArray(activeListings) ? activeListings.length : 0;
             nextStats.liveStreams = Array.isArray(activeListings)
-              ? activeListings.filter((item) => item.category === "livestream").length
+              ? activeListings.filter((item) => listingMatchesCategory(item, "livestream")).length
               : 0;
           } catch {}
         }
@@ -99,7 +100,7 @@ function LiveStats() {
           setStats({
             listings: activeRows.length,
             registeredGamers: Array.isArray(profiles) ? profiles.length : 0,
-            liveStreams: activeRows.filter((item) => item.category === "livestream").length,
+            liveStreams: activeRows.filter((item) => listingMatchesCategory(item, "livestream")).length,
             platformUptime: "24/7",
           });
         } catch {}

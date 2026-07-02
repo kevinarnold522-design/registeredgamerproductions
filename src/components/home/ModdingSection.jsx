@@ -5,6 +5,7 @@ import { Download, Wrench, SlidersHorizontal, X, FolderOpen, CheckSquare, Square
 import { getActiveListings } from "@/lib/homeDataCache";
 import ModReviewModal from "@/components/shared/ModReviewModal";
 import StandardListingCard from "@/components/listings/StandardListingCard";
+import { listingMatchesCategory, listingMatchesSubcategory } from "@/lib/categoryMatching";
 
 const MODDING_SUBCATEGORIES = [
   "WWE2K", "Football Life", "GTA 4", "GTA 5", "GTA SA",
@@ -91,7 +92,7 @@ export default function ModdingSection({ currentUser, currentProfile }) {
     const load = async () => {
       try {
         const allListings = await getActiveListings();
-        const data = allListings.filter(item => item.category === "modding" || item.category === "premium_mods").slice(0, 40);
+        const data = allListings.filter((item) => listingMatchesCategory(item, "modding")).slice(0, 40);
         setMods(data);
         const total = data.reduce((sum, m) => sum + (m.views || 0), 0);
         setTotalDownloads(total);
@@ -122,12 +123,8 @@ export default function ModdingSection({ currentUser, currentProfile }) {
   };
 
   // Apply subcategory filter: when a subcategory is active, HIDE mods not matching
-  const subcatFiltered = activeFilter === "All" ? mods : mods.filter(m =>
-    m.digital_subcategory === activeFilter ||
-    m.modding_subcategory === activeFilter ||
-    m.game_name === activeFilter ||
-    m.game_platform === activeFilter ||
-    (m.tags || []).includes(activeFilter)
+  const subcatFiltered = activeFilter === "All" ? mods : mods.filter((listing) =>
+    listingMatchesSubcategory(listing, activeFilter, { allowPrefixMatch: true })
   );
 
   // Advanced filters

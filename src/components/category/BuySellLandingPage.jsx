@@ -11,7 +11,7 @@ import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import Pagination from "@/components/shared/Pagination";
 import { formatListingPrice } from "@/lib/currency";
-import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/categoryMatching";
+import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 
 const PER_PAGE = 15;
@@ -55,17 +55,13 @@ export default function BuySellLandingPage({ user, profile, sub }) {
   const canPost = user;
 
   useEffect(() => {
-    const basePromise = base44.entities.Listing.filter({ status: "active", category: "buy_sell" }, "-created_date", 80);
-    const extraPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date")
-      .then((all) => all.filter((x) => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes("buy_sell") && x.category !== "games"))
-      .catch(() => []);
-
-    Promise.all([basePromise, extraPromise]).then(([base, extra]) => {
-      const seen = new Set((base || []).map((x) => x.id));
-      const merged = [...(base || []), ...(extra || []).filter((x) => !seen.has(x.id))].filter((x) => x.is_approved !== false);
+    base44.entities.Listing.filter({ status: "active" }, "-created_date").then((all) => {
+      const merged = (Array.isArray(all) ? all : [])
+        .filter((listing) => listingMatchesCategory(listing, "buy_sell"))
+        .filter((listing) => listing.is_approved !== false);
       setListings(merged);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {

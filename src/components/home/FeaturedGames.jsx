@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getActiveListings } from "@/lib/homeDataCache";
 import HomeListingCard from "@/components/home/HomeListingCard";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 
 export default function FeaturedGames() {
   const [listings, setListings] = useState([]);
@@ -10,7 +11,7 @@ export default function FeaturedGames() {
     const load = async () => {
       try {
         const data = await getActiveListings();
-        setListings(data.filter(item => item.category === "games").slice(0, 6));
+        setListings(data.filter((item) => listingMatchesCategory(item, "games")).slice(0, 6));
       } catch {}
       setLoading(false);
     };
