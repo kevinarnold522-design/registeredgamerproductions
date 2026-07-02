@@ -24,14 +24,14 @@ export default function GamerBrandFooter({ showMascots = true, position = "botto
           {isTop ? (
             <div className="flex flex-col gap-2 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center">
               <div className="order-2 min-w-0 overflow-hidden lg:order-1">
-                <div className="flex items-center gap-2 overflow-x-auto rounded-2xl px-1 py-1">
+                <div className="flex items-center gap-2.5 overflow-x-auto rounded-2xl px-1 py-1">
                   {showMascots && MASCOTS.map((mascot) => (
-                    <div key={mascot.id} className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-purple-500/20 bg-gray-950/55 lg:h-14 lg:w-14">
-                      <div className="absolute inset-2 rounded-full blur-xl opacity-75" style={{ background: mascot.glow }} />
+                    <div key={mascot.id} className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl border border-purple-500/20 bg-gray-950/55 lg:h-20 lg:w-20">
+                      <div className="absolute inset-1.5 rounded-full blur-2xl opacity-80" style={{ background: mascot.glow }} />
                       <img
                         src={mascot.image}
                         alt={mascot.name}
-                        className="relative z-10 h-8 w-8 object-contain lg:h-10 lg:w-10"
+                        className="relative z-10 h-12 w-12 object-contain lg:h-14 lg:w-14"
                         loading="lazy"
                       />
                     </div>

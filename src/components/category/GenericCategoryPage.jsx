@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Radio, SlidersHorizontal, X, Send, Newspaper, Star } from "lucide-react";
+import { Plus, Radio, SlidersHorizontal, X, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
@@ -9,20 +9,8 @@ import { isServiceListing } from "@/lib/constants";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
-import { base44 } from "@/api/base44Client";
-import { TOP_FRANCHISES } from "@/lib/franchises";
-import CommunityPostCard from "@/components/community/CommunityPostCard";
-import NewsfeedPagination from "@/components/community/NewsfeedPagination";
-import ListingEngagementBar from "@/components/community/ListingEngagementBar";
-import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
-import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
-import { formatListingPrice } from "@/lib/currency";
-import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
-import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 const PER_PAGE = 12;
-const NEWSFEED_PER_PAGE = 10;
-const CATEGORY_NEWSFEED_CATEGORIES = new Set(["modding", "premium_mods"]);
 
 function getInitialActiveSub(sub, categoryData) {
   return findCanonicalCategoryValue(sub, categoryData?.subcategories || []) || sub || "all";
@@ -55,68 +43,6 @@ function buildCategoryListings(rows, cat, activeSub) {
   }
 
   return cleaned;
-}
-
-function getCategoryFeedFranchiseIds(listings, cat, activeSub, categoryData) {
-  const franchiseIds = new Set(
-    (Array.isArray(listings) ? listings : [])
-      .map((listing) => listing?.community_franchise_id)
-      .filter(Boolean)
-  );
-
-  const referenceValues =
-    activeSub && activeSub !== "all"
-      ? [activeSub]
-      : Array.isArray(categoryData?.subcategories)
-        ? categoryData.subcategories
-        : [];
-
-  TOP_FRANCHISES.forEach((franchise) => {
-    const franchiseValues = [franchise.id, franchise.name, ...(Array.isArray(franchise.subgames) ? franchise.subgames : [])];
-    if (
-      referenceValues.some((value) => findCanonicalCategoryValue(value, franchiseValues)) ||
-      (cat === "modding" && findCanonicalCategoryValue("modding", franchiseValues))
-    ) {
-      franchiseIds.add(franchise.id);
-    }
-  });
-
-  return franchiseIds;
-}
-
-function buildCategoryNewsfeedItems({ posts, listings, franchiseIds, search }) {
-  const normalizedSearch = String(search || "").trim().toLowerCase();
-  const visiblePosts = (Array.isArray(posts) ? posts : [])
-    .filter((post) => post?.status === "active")
-    .filter((post) => !franchiseIds.size || franchiseIds.has(post?.franchise_id))
-    .filter((post) => {
-      if (!normalizedSearch) return true;
-      return [post?.content, post?.description, post?.author_username, post?.franchise_id]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedSearch);
-    })
-    .map((item) => ({ type: "post", item, date: item?.created_date }));
-
-  const visibleListings = (Array.isArray(listings) ? listings : [])
-    .filter((listing) => {
-      if (!normalizedSearch) return true;
-      return [
-        listing?.title,
-        listing?.description,
-        listing?.seller_username,
-        listing?.game_name,
-        listing?.community_franchise_id,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedSearch);
-    })
-    .map((item) => ({ type: "listing", item, date: item?.created_date }));
-
-  return [...visiblePosts, ...visibleListings].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
 
 const CATEGORY_META = {
@@ -215,8 +141,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const [listings, setListings] = useState(() => buildCategoryListings(peekActiveListings(), cat, initialActiveSub));
   const [loading, setLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(listings.length > 0);
-  const [categoryPosts, setCategoryPosts] = useState([]);
-  const [isTier1, setIsTier1] = useState(false);
   const [search, setSearch] = useState("");
   const [activeSub, setActiveSub] = useState(
     () => initialActiveSub
@@ -229,10 +153,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const [productType, setProductType] = useState("all");
   const [moddingGame, setModdingGame] = useState("all");
   const [page, setPage] = useState(1);
-  const [feedPage, setFeedPage] = useState(1);
   const meta = CATEGORY_META[cat] || CATEGORY_META.services;
   const canPost = user;
-  const showCategoryNewsfeed = CATEGORY_NEWSFEED_CATEGORIES.has(cat);
 
   // Keep the active subcategory in sync with the URL when it changes
   useEffect(() => {
@@ -252,42 +174,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
     });
   }, [cat, activeSub]);
 
-  useEffect(() => {
-    if (!showCategoryNewsfeed) {
-      setCategoryPosts([]);
-      return;
-    }
-
-    let cancelled = false;
-    base44.entities.CommunityPost.list("-created_date", 250)
-      .then((rows) => {
-        if (!cancelled) {
-          setCategoryPosts(Array.isArray(rows) ? rows : []);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setCategoryPosts([]);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [showCategoryNewsfeed]);
-
-  useEffect(() => {
-    if (!user?.email) {
-      setIsTier1(false);
-      return;
-    }
-
-    base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" })
-      .then((subs) => setIsTier1(Array.isArray(subs) && subs.length > 0))
-      .catch(() => setIsTier1(false));
-  }, [user?.email]);
-
   // Reset to page 1 whenever filters change
   useEffect(() => { setPage(1); }, [activeSub, search, sortBy, priceMin, priceMax, isFree, productType, moddingGame]);
-  useEffect(() => { setFeedPage(1); }, [activeSub, search, sortBy, priceMin, priceMax, isFree, productType, moddingGame, cat]);
 
   const resetFilters = () => { setSortBy("newest"); setPriceMin(""); setPriceMax(""); setIsFree(false); setProductType("all"); setModdingGame("all"); setSearch(""); };
   const hasActiveFilters = sortBy !== "newest" || priceMin || priceMax || isFree || productType !== "all" || moddingGame !== "all" || search;
@@ -314,31 +202,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
     return new Date(b.created_date) - new Date(a.created_date);
   });
 
-  const categoryFeedFranchiseIds = useMemo(
-    () => getCategoryFeedFranchiseIds(filtered, cat, activeSub, categoryData),
-    [filtered, cat, activeSub, categoryData]
-  );
-
-  const categoryNewsfeedItems = useMemo(
-    () =>
-      buildCategoryNewsfeedItems({
-        posts: categoryPosts,
-        listings: filtered,
-        franchiseIds: categoryFeedFranchiseIds,
-        search,
-      }),
-    [categoryPosts, filtered, categoryFeedFranchiseIds, search]
-  );
-
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paged = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const goToPage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
-  const feedTotalPages = Math.max(1, Math.ceil(categoryNewsfeedItems.length / NEWSFEED_PER_PAGE));
-  const pagedFeed = categoryNewsfeedItems.slice((feedPage - 1) * NEWSFEED_PER_PAGE, feedPage * NEWSFEED_PER_PAGE);
-
-  const handlePostUpdate = (postId, patch) => {
-    setCategoryPosts((prev) => prev.map((post) => (post.id === postId ? { ...post, ...patch } : post)));
-  };
 
   if (cat === "livestream") {
     return (
@@ -393,22 +259,26 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         </div>
       )}
 
-      {/* Subcategory tabs */}
+      {/* Subcategory cards */}
       {categoryData?.subcategories?.length > 0 && !sub && (
-        <div className="bg-gray-950/95 backdrop-blur-sm border-b border-gray-800 sticky top-16 z-30">
-          <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
-            <div className="flex gap-2 min-w-max">
-              <Link to={`/category?cat=${cat}`}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${!activeSub || activeSub === "all" ? "bg-gray-700 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
-                All
+        <div className="max-w-7xl mx-auto px-4 pt-6">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+            <Link to={`/category?cat=${cat}`}
+              className={`group rounded-2xl border px-4 py-4 transition-all ${!activeSub || activeSub === "all" ? "border-purple-500/60 bg-gradient-to-br from-purple-900/35 to-gray-900 shadow-[0_0_22px_rgba(168,85,247,0.18)]" : "border-gray-800 bg-gray-900/75 hover:border-purple-500/35 hover:bg-gray-900"}`}>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-purple-300">Browse</p>
+              <p className="mt-1 text-white font-black text-sm">All {meta.title}</p>
+              <p className="mt-1 text-xs text-gray-500">See every listing in this category.</p>
+            </Link>
+            {categoryData.subcategories.map((s, index) => (
+              <Link key={s} to={`/category?cat=${cat}&sub=${encodeURIComponent(s)}`}
+                className={`group rounded-2xl border px-4 py-4 transition-all ${activeSub === s ? "border-purple-500/60 bg-gradient-to-br from-purple-900/35 to-gray-900 shadow-[0_0_22px_rgba(168,85,247,0.18)]" : "border-gray-800 bg-gray-900/75 hover:border-purple-500/35 hover:bg-gray-900"}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-white font-black text-sm leading-tight">{s}</p>
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[11px] font-black text-purple-200">{String(index + 1).padStart(2, "0")}</span>
+                </div>
+                <p className="mt-2 text-xs text-gray-500">Open the {s} subcategory feed and listings.</p>
               </Link>
-              {categoryData.subcategories.map(s => (
-                <Link key={s} to={`/category?cat=${cat}&sub=${encodeURIComponent(s)}`}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${activeSub === s ? "bg-gray-700 text-white" : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"}`}>
-                  {s}
-                </Link>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       )}
@@ -507,101 +377,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           )}
         </AnimatePresence>
 
-        <div className="mb-3" />
-        {showCategoryNewsfeed && (
-          <div className="mb-8 rounded-3xl border border-purple-700/30 bg-gradient-to-br from-gray-950 via-gray-900 to-purple-950/40 overflow-hidden">
-            <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-purple-900/30">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
-                  <Newspaper className="w-5 h-5 text-purple-300" />
-                </div>
-                <div>
-                  <p className="text-purple-300 text-[11px] font-black uppercase tracking-[0.22em]">Community Newsfeed</p>
-                  <h2 className="text-white text-2xl font-black">{meta.title} Newsfeed</h2>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Latest community posts and listings for {activeSub !== "all" ? activeSub : meta.title.toLowerCase()}.
-                  </p>
-                </div>
-              </div>
-              <Link
-                to="/gaming-newsfeed"
-                className="px-4 py-2 rounded-xl border border-purple-500/40 bg-purple-500/15 text-purple-200 text-sm font-bold hover:bg-purple-500/25 transition-colors whitespace-nowrap"
-              >
-                View global newsfeed
-              </Link>
-            </div>
-
-            <div className="p-4">
-              {categoryNewsfeedItems.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-gray-700 bg-gray-950/60 px-4 py-12 text-center">
-                  <p className="text-white text-lg font-bold">No newsfeed activity yet</p>
-                  <p className="text-gray-500 text-sm mt-1">Posts and listings from matching communities will appear here automatically.</p>
-                </div>
-              ) : (
-                <>
-                  {feedTotalPages > 1 && (
-                    <NewsfeedPagination page={feedPage} totalPages={feedTotalPages} onChange={setFeedPage} />
-                  )}
-                  <div className="space-y-3">
-                    {pagedFeed.map(({ type, item }) => type === "post" ? (
-                      <CommunityPostCard
-                        key={`post-${item.id}`}
-                        post={item}
-                        user={user}
-                        profile={profile}
-                        isTier1={isTier1}
-                        canManage={false}
-                        canDelete={false}
-                        onUpdate={handlePostUpdate}
-                        accentColor={meta.color}
-                      />
-                    ) : (
-                      <a
-                        key={`listing-${item.id}`}
-                        href={getPublicSiteUrl(`/listing?id=${item.id}`)}
-                        className="flex gap-3 rounded-2xl border border-gray-800 bg-gray-900/70 p-3 hover:border-purple-600/40 transition-colors"
-                      >
-                        <div className="relative w-20 h-20 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
-                          {item.images?.[0] ? (
-                            <ListingImageFrame
-                              src={item.images[0]}
-                              alt={item.title || "Listing"}
-                              fallbackCategory={item.category || meta.title}
-                              className="w-full h-full"
-                              foregroundClassName="w-full h-full object-contain p-1.5"
-                              backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>
-                          )}
-                          <ListerAvatarBadge listing={item} size="w-5 h-5" className="absolute bottom-1 right-1" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-fuchsia-400/40 bg-gradient-to-r from-purple-600/35 via-fuchsia-500/30 to-pink-500/25 text-fuchsia-100 text-[9px] font-black uppercase tracking-wide mb-1 shadow-[0_0_12px_rgba(217,70,239,0.28)]">
-                            <Star className="w-2.5 h-2.5 fill-fuchsia-200 text-fuchsia-200" /> Featured
-                          </span>
-                          <p className="text-white font-bold text-sm truncate">{item.title}</p>
-                          <p className="text-gray-500 text-xs line-clamp-2 mt-1">{item.description}</p>
-                          {item.download_host && <div className="mt-2"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
-                          <p className="text-purple-300 text-sm font-black mt-1">
-                            {item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}
-                          </p>
-                          <div className="mt-2"><ListingEngagementBar listing={item} user={user} profile={profile} compact /></div>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                  {feedTotalPages > 1 && (
-                    <div className="mt-4">
-                      <NewsfeedPagination page={feedPage} totalPages={feedTotalPages} onChange={setFeedPage} />
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
         <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
           <div>
             <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Listings Feed</p>
@@ -622,7 +397,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           </div>
         ) : (
           <>
-          <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {paged.map((l) => (
               <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />

@@ -41,7 +41,7 @@ import ImageSortableList from "@/components/ImageSortableList";
 import SearchableSelect from "@/components/listings/SearchableSelect";
 import BrandLogo from "@/components/shared/BrandLogo";
 import DownloadHostBadge, { DOWNLOAD_HOST_OPTIONS } from "@/components/shared/DownloadHostBadge";
-import { uploadFileWithFallback } from "@/lib/uploadToR2";
+import { deleteUploadedFile, uploadFileWithFallback } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { upsertActiveListingsCache } from "@/lib/homeDataCache";
 import { supabase } from "@/lib/supabaseClient";
@@ -550,6 +550,7 @@ export default function CreateListing() {
     const removedUrl = images[idx];
     setImages((prev) => prev.filter((_, i) => i !== idx));
     const pendingUpload = findPendingUploadByUrl(removedUrl);
+    await deleteUploadedFile(removedUrl, pendingUpload?.bucket).catch(() => {});
     await cleanupListingUploads([pendingUpload || { file_url: removedUrl }]).catch(() => {});
   };
 
@@ -557,6 +558,7 @@ export default function CreateListing() {
     const url = form[field];
     setForm((prev) => ({ ...prev, [field]: "" }));
     const pendingUpload = findPendingUploadByUrl(url);
+    await deleteUploadedFile(url, pendingUpload?.bucket).catch(() => {});
     await cleanupListingUploads([pendingUpload || { file_url: url }]).catch(() => {});
   };
 
@@ -860,8 +862,6 @@ export default function CreateListing() {
 
   const selectedCat = dynamicCategories.find(c => c.id === form.category) || CATEGORIES.find(c => c.id === form.category);
   const ytId = extractYouTubeId(form.youtube_url);
-  const isDigital = form.product_type === "digital";
-  const isPhysical = form.product_type === "physical";
   const primarySubcategory = form.subcategories?.[0] || "";
   const additionalSubcategories = form.subcategories?.slice(1) || [];
   const availableAdditionalSubcategories = (selectedCat?.subcategories || []).filter((item) => item !== primarySubcategory);
@@ -1117,6 +1117,7 @@ export default function CreateListing() {
             </h3>
             <p className="text-gray-500 text-xs mb-3">Maximum upload size: {MAX_UPLOAD_LABEL} per file.</p>
             <p className="text-gray-400 text-xs mb-3">Hold and drag an image to rearrange it. The first image becomes the cover.</p>
+            <p className="text-red-300 text-[11px] mb-3">Use the `X` on any image tile to delete it from the listing and from Supabase storage.</p>
             <div className="mb-3">
               <ImageSortableList images={images} onReorder={setImages} onRemove={removeImage} />
             </div>

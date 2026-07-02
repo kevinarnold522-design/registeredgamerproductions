@@ -22,8 +22,8 @@ function FeedRow({ item }) {
         <ListerAvatarBadge listing={item} size="w-4 h-4" className="absolute bottom-0.5 right-0.5" />
       </div>
       <div className="min-w-0 flex-1">
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-fuchsia-400/40 bg-gradient-to-r from-purple-600/35 via-fuchsia-500/30 to-pink-500/25 text-fuchsia-100 text-[8px] font-black uppercase tracking-wide shadow-[0_0_12px_rgba(217,70,239,0.28)]">
-          <Star className="w-2.5 h-2.5 fill-fuchsia-200 text-fuchsia-200" /> Featured
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border border-amber-400/60 bg-gradient-to-r from-black via-zinc-950 to-amber-950/80 text-amber-200 text-[8px] font-black uppercase tracking-wide shadow-[0_0_12px_rgba(234,179,8,0.25)]">
+          <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" /> Featured
         </span>
         <p className="text-white font-bold text-[11px] truncate mt-0.5">{item.title}</p>
         {item.download_host && <div className="mt-1"><DownloadHostBadge host={item.download_host} size="sm" /></div>}

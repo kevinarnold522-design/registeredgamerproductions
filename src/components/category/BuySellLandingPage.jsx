@@ -145,7 +145,6 @@ export default function BuySellLandingPage({ user, profile, sub }) {
           </div>
         ) : (
           <>
-            <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {paged.map((l, i) => <ListingCard key={l.id} listing={l} index={i} />)}
             </div>

@@ -18,6 +18,7 @@ export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
 export const MAX_UPLOAD_LABEL = "25MB";
 
 const SUPABASE_BUCKET = "gamerproductionsmedia";
+const SUPABASE_PUBLIC_PREFIX = `/storage/v1/object/public/${SUPABASE_BUCKET}/`;
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
 
 export function validateUploadSize(file) {
@@ -114,6 +115,39 @@ export async function uploadFileWithFallback(file, folder = "uploads") {
     // bucket missing, network) surfacing as-is.
     if (!err?.isPermissionError) throw err;
     return uploadViaSignedUrl(toUpload, folder);
+  }
+}
+
+function getPathFromPublicUrl(fileUrl = "") {
+  const value = String(fileUrl || "").trim();
+  if (!value) return "";
+  const markerIndex = value.indexOf(SUPABASE_PUBLIC_PREFIX);
+  if (markerIndex === -1) return "";
+  return decodeURIComponent(value.slice(markerIndex + SUPABASE_PUBLIC_PREFIX.length));
+}
+
+export async function deleteUploadedFile(fileUrl, bucket = SUPABASE_BUCKET) {
+  const path = getPathFromPublicUrl(fileUrl);
+  if (!path) return { skipped: true };
+
+  const removeDirectly = async () => {
+    const { error } = await supabase.storage.from(bucket).remove([path]);
+    if (error) {
+      const err = new Error(friendlyStorageError(error));
+      err.isPermissionError = /row-level security|not authorized|unauthorized|permission|jwt|token|401|403/i.test(error.message || "");
+      throw err;
+    }
+  };
+
+  try {
+    await removeDirectly();
+    return { deleted: true, path, bucket };
+  } catch (err) {
+    if (!err?.isPermissionError) throw err;
+    await cf.functions.invoke("cleanupListingDraftMedia", {
+      uploads: [{ path, file_url: fileUrl, bucket }],
+    });
+    return { deleted: true, path, bucket, fallback: "worker" };
   }
 }
 
