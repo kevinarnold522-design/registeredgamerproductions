@@ -13,6 +13,7 @@ import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 const PER_PAGE = 15;
 
@@ -21,7 +22,7 @@ const buySellCat = CATEGORIES.find(c => c.id === "buy_sell");
 function ListingCard({ listing, index }) {
   return (
     <motion.a
-      href={`/listing?id=${listing.id}`}
+      href={getPublicSiteUrl(`/listing?id=${listing.id}`)}
       initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.04 }}
       whileHover={{ y: -3, boxShadow: "0 0 25px rgba(234,179,8,0.2)" }}
       className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden group cursor-pointer hover:border-yellow-500/30 transition-colors block"

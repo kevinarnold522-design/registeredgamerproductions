@@ -8,6 +8,7 @@ import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import { formatListingPrice } from "@/lib/currency";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 import { listingMatchesCategory } from "@/lib/categoryMatching";
 
 // Homepage-style premium mod game cards
@@ -183,7 +184,7 @@ export default function PremiumModsLandingPage({ user }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((l, i) => (
               <motion.div key={l.id} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="group">
-                <Link to={`/listing?id=${l.id}`}>
+                <a href={getPublicSiteUrl(`/listing?id=${l.id}`)}>
                   <div className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 group-hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
                     <div className="relative overflow-hidden">
                       {l.images?.length > 0 ? (
@@ -203,7 +204,7 @@ export default function PremiumModsLandingPage({ user }) {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </a>
               </motion.div>
             ))}
           </div>

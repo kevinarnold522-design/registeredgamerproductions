@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { Pencil, Check, Upload, X, Plus, Trash2, Send, Search, Eye, Filter, CheckSquare, Square, Gamepad2, Package } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -11,6 +10,7 @@ import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { listingMatchesCategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
@@ -492,7 +492,7 @@ function VisibleListingRow({ item, userProfile }) {
   }, [item?.id]);
 
   return (
-    <Link ref={rowRef} key={item.id} to={`/listing?id=${item.id}`}
+    <a ref={rowRef} key={item.id} href={getPublicSiteUrl(`/listing?id=${item.id}`)}
       className="flex gap-3 px-3 py-3 border-b border-gray-800/60 hover:bg-gray-800/30 transition-colors group">
       <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
         {item.images?.[0]
@@ -508,7 +508,7 @@ function VisibleListingRow({ item, userProfile }) {
           <span className="flex items-center gap-1 text-[10px] text-cyan-300 font-bold"><Eye className="w-3 h-3" />{(item.views || 0).toLocaleString()}</span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
 

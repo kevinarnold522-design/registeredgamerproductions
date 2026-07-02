@@ -7,6 +7,7 @@ import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import CardEditPencil from "@/components/listings/CardEditPencil";
 import { formatListingPrice } from "@/lib/currency";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 // Wide, sharp-edged game card — cover art on top, info panel, and a separate
 // YouTube/video preview pinned below the card.
@@ -42,7 +43,7 @@ export default function GameCoverCard({ l: initialL, i, user, profile }) {
     >
       <div className="relative bg-gray-950">
         <CardEditPencil listing={l} user={user} onSaved={setL} />
-        <a href={`/listing?id=${l.id}`} className="block cursor-pointer">
+        <a href={getPublicSiteUrl(`/listing?id=${l.id}`)} className="block cursor-pointer">
           {/* Cover art (wide landscape) */}
           <div className="relative w-full overflow-hidden bg-gray-900" style={{ aspectRatio: "16 / 9" }}>
             {coverUrl ? (

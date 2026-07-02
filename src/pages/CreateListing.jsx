@@ -256,6 +256,7 @@ export default function CreateListing() {
   const [dynamicCategories, setDynamicCategories] = useState(CATEGORIES);
   const [gameSearch, setGameSearch] = useState("");
   const [showGameDropdown, setShowGameDropdown] = useState(false);
+  const [showBulkCrossPosting, setShowBulkCrossPosting] = useState(false);
   const gameDropdownRef = useRef(null);
 
   // Each platform maps to a brand logo slug (BrandLogo) when one exists.
@@ -298,6 +299,12 @@ export default function CreateListing() {
     });
     autoMetaRef.current = { tags: autoMeta, keywords: autoMeta };
   }, [form.title]);
+
+  useEffect(() => {
+    if ((form.bulk_cross_post_ids || []).length > 0) {
+      setShowBulkCrossPosting(true);
+    }
+  }, [form.bulk_cross_post_ids]);
 
   // Build the category/subcategory option list from all existing listings, so
   // newly-added categories & subcategories appear in the pickers in real time.
@@ -665,8 +672,12 @@ export default function CreateListing() {
       (effectiveCategory === "paid_tools" || effectiveCategory === "premium_mods")
         ? (form.tool_target_game || form.game_name || normalizedPrimarySubcategory || "")
         : "";
+    const normalizedDigitalSubcategory = form.digital_subcategory_custom?.trim() || form.digital_subcategory;
+    const normalizedPhysicalSubcategory = form.physical_subcategory;
     const normalizedSubcategories = uniqueTruthy([
       ...(Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : [])),
+      normalizedDigitalSubcategory,
+      normalizedPhysicalSubcategory,
       ...((["modding", "premium_mods"].includes(effectiveCategory) && normalizedModdingSubcategory && !primarySubcategory)
         ? [normalizedModdingSubcategory]
         : []),
@@ -696,7 +707,7 @@ export default function CreateListing() {
     const data = {
       ...form,
       category: effectiveCategory,
-      digital_subcategory: form.digital_subcategory_custom?.trim() || form.digital_subcategory,
+      digital_subcategory: normalizedDigitalSubcategory,
       digital_subcategory_custom: undefined,
       price: priceVal,
       currency: form.currency === "PHP" ? "USD" : (form.currency || "USD"),
@@ -1382,27 +1393,42 @@ export default function CreateListing() {
                     </div>
 
                     <div className="bg-purple-900/20 border border-purple-500/60 rounded-xl p-4 md:col-span-2">
-                      <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-2 block flex items-center gap-1">
-                        <Megaphone className="w-3 h-3 text-purple-300" /> Bulk Cross-Posting
-                      </label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {TOP_FRANCHISES.filter(f => f.id !== form.community_franchise_id).map(franchise => {
-                          const selected = form.bulk_cross_post_ids.includes(franchise.id);
-                          return (
-                            <button
-                              key={franchise.id}
-                              type="button"
-                              onClick={() => setForm(f => ({
-                                ...f,
-                                bulk_cross_post_ids: selected ? f.bulk_cross_post_ids.filter(id => id !== franchise.id) : [...f.bulk_cross_post_ids, franchise.id]
-                              }))}
-                              className={`px-2.5 py-2 rounded-lg text-[11px] font-semibold transition-all text-left ${selected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}
-                            >
-                              {franchise.name}
-                            </button>
-                          );
-                        })}
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <label className="text-purple-300 text-xs font-semibold uppercase tracking-wider block flex items-center gap-1">
+                          <Megaphone className="w-3 h-3 text-purple-300" /> Bulk Cross-Posting
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowBulkCrossPosting((prev) => !prev)}
+                          className="px-3 py-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 text-purple-200 text-[11px] font-bold hover:bg-purple-500/20 transition-colors"
+                        >
+                          {showBulkCrossPosting ? "Hide bulk options" : "Show bulk options"}
+                        </button>
                       </div>
+                      {!showBulkCrossPosting ? (
+                        <p className="text-gray-400 text-xs">
+                          Bulk cross-posting is hidden by default. Use “Show bulk options” only when you want this listing copied into extra communities.
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {TOP_FRANCHISES.filter(f => f.id !== form.community_franchise_id).map(franchise => {
+                            const selected = form.bulk_cross_post_ids.includes(franchise.id);
+                            return (
+                              <button
+                                key={franchise.id}
+                                type="button"
+                                onClick={() => setForm(f => ({
+                                  ...f,
+                                  bulk_cross_post_ids: selected ? f.bulk_cross_post_ids.filter(id => id !== franchise.id) : [...f.bulk_cross_post_ids, franchise.id]
+                                }))}
+                                className={`px-2.5 py-2 rounded-lg text-[11px] font-semibold transition-all text-left ${selected ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-purple-900/30"}`}
+                              >
+                                {franchise.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {!["modding", "premium_mods"].includes(form.category) && (

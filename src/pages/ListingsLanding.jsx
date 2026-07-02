@@ -13,6 +13,7 @@ import { getPublisherRankMap } from "@/lib/publisherRank";
 import { listingScore } from "@/lib/leaderboardScore";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 export default function ListingsLanding({ mode = "mine" }) {
   const [user, setUser] = useState(null);
@@ -105,7 +106,7 @@ export default function ListingsLanding({ mode = "mine" }) {
               const pts = listingScore(l, 0);
               return (
                 <div key={l.id} className="w-full min-w-0 rounded-2xl bg-gray-900/92 border border-gray-800 overflow-hidden hover:border-amber-500/40 transition-all">
-                  <Link to={`/listing?id=${l.id}`} className="block">
+                  <a href={getPublicSiteUrl(`/listing?id=${l.id}`)} className="block">
                     <div className="aspect-square bg-gray-800 relative flex items-center justify-center">
                       {l.images?.[0] ? (
                         <>
@@ -123,36 +124,31 @@ export default function ListingsLanding({ mode = "mine" }) {
                         </div>
                       )}
                       <p className="text-purple-300 text-xs font-black">{!l.price || l.is_free ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
-                      <div className="mt-2 rounded-xl border border-purple-700/30 bg-[linear-gradient(180deg,rgba(32,14,56,0.94),rgba(11,8,25,0.96))] p-2">
+                      <div className="mt-2 rounded-xl border border-purple-700/30 bg-[linear-gradient(180deg,rgba(32,14,56,0.94),rgba(11,8,25,0.96))] p-1.5">
                         <div className="grid grid-cols-2 gap-1.5">
                           {[
-                            { rank: "PTS", label: "Listing pts", value: pts, tone: "from-purple-600/45 via-fuchsia-500/25 to-pink-500/15", accent: "bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent", valueClassName: "bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(217,70,239,0.35)]", isPoints: true },
-                            { rank: "02", label: "rank", value: sellerRank ? `#${sellerRank}` : "--", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300", icon: "trophy" },
-                            { rank: "03", label: "views", value: l.views || 0, tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300", icon: "eye" },
-                            { rank: "04", label: "downloads", value: l.downloads || 0, tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300", icon: "download" },
+                            { rank: "01", label: "Score", value: pts, tone: "from-purple-600/45 via-fuchsia-500/25 to-pink-500/15", accent: "bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent", valueClassName: "bg-gradient-to-r from-purple-300 via-fuchsia-300 to-pink-300 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(217,70,239,0.35)]", isPoints: true },
+                            { rank: "02", label: "Seller rank", value: sellerRank ? `#${sellerRank}` : "--", tone: "from-amber-500/30 to-orange-500/10", accent: "text-amber-300", icon: "trophy" },
+                            { rank: "03", label: "Views", value: l.views || 0, tone: "from-cyan-500/30 to-sky-500/10", accent: "text-cyan-300", icon: "eye" },
+                            { rank: "04", label: "Downloads", value: l.downloads || 0, tone: "from-pink-500/30 to-fuchsia-500/10", accent: "text-fuchsia-300", icon: "download" },
                           ].map((metric) => (
-                            <div key={metric.label} className={`flex min-h-[72px] flex-col justify-between rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2.5 py-2 ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
-                              <div className="mb-1 flex items-center justify-between gap-2">
-                                {metric.isPoints ? (
-                                  <p className="text-[8px] font-black uppercase tracking-[0.24em] text-fuchsia-100/75">PTS</p>
-                                ) : (
-                                  <div className="flex items-center gap-1">
-                                    {metric.icon === "trophy" && <Trophy className={`h-3 w-3 ${metric.accent}`} />}
-                                    {metric.icon === "eye" && <Eye className={`h-3 w-3 ${metric.accent}`} />}
-                                    {metric.icon === "download" && <Download className={`h-3 w-3 ${metric.accent}`} />}
-                                    <p className={`text-[9px] font-black ${metric.accent}`}>{metric.rank}</p>
-                                  </div>
-                                )}
-                                <p className={`text-[8px] uppercase tracking-[0.16em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-500"}`}>{metric.isPoints ? "Score" : metric.label}</p>
+                            <div key={metric.label} className={`flex min-h-[66px] flex-col items-center justify-center rounded-xl border border-white/10 bg-gradient-to-r ${metric.tone} px-2 py-1.5 text-center ${metric.isPoints ? "shadow-[0_0_18px_rgba(217,70,239,0.14)]" : ""}`}>
+                              <div className="mb-1 flex items-center justify-center gap-1">
+                                {metric.icon === "trophy" && <Trophy className={`h-2.5 w-2.5 ${metric.accent}`} />}
+                                {metric.icon === "eye" && <Eye className={`h-2.5 w-2.5 ${metric.accent}`} />}
+                                {metric.icon === "download" && <Download className={`h-2.5 w-2.5 ${metric.accent}`} />}
+                                <p className={`text-[8px] font-black ${metric.isPoints ? "text-fuchsia-100/75" : metric.accent}`}>{metric.rank}</p>
                               </div>
+                              <p className={`text-[8px] uppercase tracking-[0.14em] font-black ${metric.isPoints ? "text-fuchsia-100/75" : "text-gray-400"}`}>{metric.isPoints ? "PTS" : metric.label}</p>
                               {metric.isPoints ? (
-                                <div className="text-right">
-                                  <p className={`text-lg font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                                <div className="text-center">
+                                  <p className={`text-base font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                                  <p className="text-[8px] uppercase text-fuchsia-100/75 mt-0.5">Score</p>
                                   <p className="text-[8px] uppercase text-gray-300/60">pts</p>
                                 </div>
                               ) : (
-                                <div className="flex items-end gap-1">
-                                  <p className={`text-base font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
+                                <div className="flex items-center justify-center">
+                                  <p className={`text-sm font-black leading-none ${metric.valueClassName || "text-white"}`}>{metric.value}</p>
                                 </div>
                               )}
                             </div>
@@ -160,7 +156,7 @@ export default function ListingsLanding({ mode = "mine" }) {
                         </div>
                       </div>
                     </div>
-                  </Link>
+                  </a>
                   {canManage && (
                     <div className="grid grid-cols-2 gap-2 px-3 pb-3">
                       <Link to={`/create-listing?edit=${l.id}`} className="inline-flex items-center justify-center gap-1 py-2 rounded-lg bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs font-bold hover:bg-purple-900/50">

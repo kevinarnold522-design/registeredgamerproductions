@@ -11,6 +11,7 @@ import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 const PER_PAGE = 10;
 
@@ -143,7 +144,7 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
             const glowClass = `listing-glow-frame ${listing.card_glow_style === "radiant" ? "listing-glow-radiant" : listing.card_glow_style === "solid" ? "listing-glow-solid" : "listing-glow-lines"} ${listing.card_glow_speed === "fast" ? "listing-glow-fast" : listing.card_glow_speed === "cycle" ? "listing-glow-cycle" : ""}`;
             return (
             <motion.a
-              href={`/listing?id=${listing.id}`}
+              href={getPublicSiteUrl(`/listing?id=${listing.id}`)}
               key={listing.id}
               initial={initMap[anim] || { opacity: 0, y: 20 }}
               animate={animMap[anim] || { opacity: 1, y: 0 }}

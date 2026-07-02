@@ -17,6 +17,7 @@ import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 import { formatListingPrice } from "@/lib/currency";
+import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 const PER_PAGE = 12;
 const NEWSFEED_PER_PAGE = 10;
@@ -555,7 +556,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                     ) : (
                       <a
                         key={`listing-${item.id}`}
-                        href={`/listing?id=${item.id}`}
+                        href={getPublicSiteUrl(`/listing?id=${item.id}`)}
                         className="flex gap-3 rounded-2xl border border-gray-800 bg-gray-900/70 p-3 hover:border-purple-600/40 transition-colors"
                       >
                         <div className="relative w-20 h-20 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
