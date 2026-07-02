@@ -4,7 +4,7 @@ import { Plus, Radio, SlidersHorizontal, X, Send, Newspaper, Star } from "lucide
 import { Link } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import StandardListingCard from "@/components/listings/StandardListingCard";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import { isServiceListing } from "@/lib/constants";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
@@ -650,9 +650,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
           </div>
         ) : showCategoryNewsfeed ? null : (
           <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {paged.map((l) => (
-              <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {paged.map((l, idx) => (
+              <HomeListingCard key={l.id} listing={l} user={user} profile={profile} index={idx} />
             ))}
           </div>
           <div className="mt-8"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>

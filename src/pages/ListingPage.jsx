@@ -354,8 +354,10 @@ export default function ListingPage() {
     // instead of the attached download file. The attached file is never served
     // for paid mods unless the viewer is the owner/admin.
     if (isPaidMod && !isOwnerOrAdmin) {
-      if (!donationUrl) {
-        alert("This paid mod has no purchase link set yet. Please contact the seller.");
+      // Use donation URL if available, otherwise fallback to direct download link
+      const linkToUse = donationUrl || url;
+      if (!linkToUse) {
+        alert("This paid mod has no purchase link or download URL set yet. Please contact the seller.");
         return;
       }
       if (user) {
@@ -368,7 +370,7 @@ export default function ListingPage() {
         base44.entities.Listing.update(listing.id, { downloads: newDownloads });
         setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
       }).catch(() => {});
-      window.open(donationUrl, "_blank", "noopener,noreferrer");
+      window.open(linkToUse, "_blank", "noopener,noreferrer");
       return;
     }
 

@@ -48,6 +48,10 @@ const socials = [
 export default function Footer() {
   return (
     <footer className="border-t border-gray-900 bg-gray-950/72 pt-0 pb-8 px-0 backdrop-blur-sm">
+      {/* RGP Logo above game bar */}
+      <div className="w-full bg-gray-950/50 border-b border-gray-800/50 py-3 px-4 flex items-center justify-center">
+        <img src="/logo.png" alt="Registered Gamer Productions" className="h-10 w-10 object-contain" />
+      </div>
       <PlatformLinksBar />
       <LinkShortenerBar />
       <div className="pt-16 pb-0 px-4">
