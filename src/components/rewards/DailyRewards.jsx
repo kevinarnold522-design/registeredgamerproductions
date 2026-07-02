@@ -20,7 +20,7 @@ const SHARE_REWARDS = [
   { platform: "WhatsApp", icon: "💬", reward: "🔓 Unlock Premium Theme", done: false },
 ];
 
-const SHARE_URL = "https://gamerproductions.vercel.app";
+const SHARE_URL = "https://gamer.productions";
 
 export default function DailyRewards({ user, profile }) {
   const [open, setOpen] = useState(false);
