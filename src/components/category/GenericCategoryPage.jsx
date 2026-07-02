@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Radio, SlidersHorizontal, X, Send, EyeOff, LayoutGrid } from "lucide-react";
+import { Plus, Radio, SlidersHorizontal, X, Send } from "lucide-react";
 import { Link } from "react-router-dom";
-import SubcategoryCards from "./SubcategoryCards";
 import Pagination from "@/components/shared/Pagination";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import StandardListingCard from "@/components/listings/StandardListingCard";
@@ -152,7 +151,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
   const [isFree, setIsFree] = useState(false);
   const [productType, setProductType] = useState("all");
   const [moddingGame, setModdingGame] = useState("all");
-  const [hideCategory, setHideCategory] = useState(false);
   const [page, setPage] = useState(1);
   const meta = CATEGORY_META[cat] || CATEGORY_META.services;
   const canPost = user;
@@ -260,11 +258,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         </div>
       )}
 
-      {/* Subcategory cards grid */}
-      {!sub && !hideCategory && <SubcategoryCards cat={cat} categoryName={meta.title} userEmail={user?.email} user={user} userProfile={profile} />}
-
       {/* Subcategory tabs */}
-      {categoryData?.subcategories?.length > 0 && !sub && !hideCategory && (
+      {categoryData?.subcategories?.length > 0 && !sub && (
         <div className="bg-gray-950/95 backdrop-blur-sm border-b border-gray-800 sticky top-16 z-30">
           <div className="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
             <div className="flex gap-2 min-w-max">
@@ -294,10 +289,6 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
               <button onClick={() => setShowAdvanced(v => !v)}
               className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition-all ${showAdvanced ? "border-purple-500/60 bg-purple-900/20 text-purple-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
               <SlidersHorizontal className="w-4 h-4" /> Filters {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-purple-400" />}
-              </button>
-              <button onClick={() => setHideCategory(v => !v)}
-              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold border transition-all ${hideCategory ? "border-pink-500/60 bg-pink-900/20 text-pink-300" : "border-gray-700 bg-gray-900 text-gray-400 hover:text-white"}`}>
-              {hideCategory ? <LayoutGrid className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />} {hideCategory ? "Show Category" : "Hide Category"}
               </button>
               {canPost && cat !== "tournaments" && (
                 <Link to={`/create-listing?cat=${cat}`} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 text-sm font-semibold hover:bg-purple-600/30 whitespace-nowrap">
@@ -382,6 +373,13 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         </AnimatePresence>
 
         <div className="mb-3" />
+        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Listings Feed</p>
+            <h2 className="text-white text-2xl font-black">{meta.title} Listings</h2>
+          </div>
+          <p className="text-gray-400 text-sm">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
+        </div>
         {!hasLoaded && loading && listings.length === 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (

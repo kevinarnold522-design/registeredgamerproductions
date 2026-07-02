@@ -383,26 +383,6 @@ export default function SubcategoryLandingPage() {
           </div>
         </div>
 
-        {cards.length === 0 && !admin && (
-          <div className="text-center py-24">
-            <Gamepad2 className="w-10 h-10 mx-auto mb-3 text-purple-400" />
-            <p className="text-gray-400 font-semibold">No cards yet</p>
-            <p className="text-gray-600 text-sm mt-1">Admin will add cards here soon</p>
-          </div>
-        )}
-
-        {cards.length === 0 && admin && (
-          <div className="text-center py-24 border-2 border-dashed border-purple-700/30 rounded-3xl">
-            <Plus className="w-10 h-10 mx-auto mb-3 text-purple-400" />
-            <p className="text-gray-400 font-semibold">No cards yet — add the first one</p>
-            <button onClick={() => setShowAdd(true)}
-              className="mt-4 px-6 py-2.5 rounded-xl text-sm font-black text-white"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
-              <Plus className="w-4 h-4 inline mr-1" /> Add Card
-            </button>
-          </div>
-        )}
-
         {/* Newsfeed Section - shows listings only for this subcategory */}
         <div className="mb-12">
           <h2 className="text-xl font-black text-white mb-4 flex items-center gap-2">
@@ -468,6 +448,26 @@ export default function SubcategoryLandingPage() {
             </div>
           )}
         </div>
+
+        {cards.length === 0 && !admin && (
+          <div className="text-center py-24">
+            <Gamepad2 className="w-10 h-10 mx-auto mb-3 text-purple-400" />
+            <p className="text-gray-400 font-semibold">No cards yet</p>
+            <p className="text-gray-600 text-sm mt-1">Admin will add cards here soon</p>
+          </div>
+        )}
+
+        {cards.length === 0 && admin && (
+          <div className="text-center py-24 border-2 border-dashed border-purple-700/30 rounded-3xl">
+            <Plus className="w-10 h-10 mx-auto mb-3 text-purple-400" />
+            <p className="text-gray-400 font-semibold">No cards yet — add the first one</p>
+            <button onClick={() => setShowAdd(true)}
+              className="mt-4 px-6 py-2.5 rounded-xl text-sm font-black text-white"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}>
+              <Plus className="w-4 h-4 inline mr-1" /> Add Card
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {cards.map(card => (
