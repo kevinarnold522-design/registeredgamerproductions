@@ -61,6 +61,10 @@ export async function getActiveListings() {
   return activeListingsPromise;
 }
 
+export function peekActiveListings() {
+  return activeListingsCache?.data || [];
+}
+
 export async function getCachedUserProfile(email) {
   if (!email) return null;
   if (profileCache.has(email)) return profileCache.get(email);

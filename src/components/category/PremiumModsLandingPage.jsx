@@ -5,10 +5,9 @@ import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
-import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { formatListingPrice } from "@/lib/currency";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
-import { getActiveListings } from "@/lib/homeDataCache";
+import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
 import { listingMatchesCategory } from "@/lib/categoryMatching";
 
 // Homepage-style premium mod game cards
@@ -22,8 +21,17 @@ const PREMIUM_MOD_GAME_CARDS = [
 ];
 
 export default function PremiumModsLandingPage({ user }) {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState(() =>
+    peekActiveListings().filter(l =>
+      listingMatchesCategory(l, "premium_mods") &&
+      l.is_approved !== false &&
+      l.product_type === "digital" &&
+      (l.is_premium || Number(l.price || 0) > 0) &&
+      !isServiceListing(l)
+    )
+  );
+  const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(listings.length > 0);
   const [search, setSearch] = useState("");
   const [game, setGame] = useState("");
   const [priceRange, setPriceRange] = useState("");
@@ -31,6 +39,14 @@ export default function PremiumModsLandingPage({ user }) {
   useEffect(() => {
     const load = async () => {
       try {
+        setListings(peekActiveListings().filter(l =>
+          listingMatchesCategory(l, "premium_mods") &&
+          l.is_approved !== false &&
+          l.product_type === "digital" &&
+          (l.is_premium || Number(l.price || 0) > 0) &&
+          !isServiceListing(l)
+        ));
+        setLoading(true);
         const all = await getActiveListings();
         const cleaned = all.filter(l =>
           listingMatchesCategory(l, "premium_mods") &&
@@ -40,7 +56,10 @@ export default function PremiumModsLandingPage({ user }) {
           !isServiceListing(l)
         );
         setListings(cleaned);
-      } catch {}
+        setHasLoaded(true);
+      } catch {
+        setHasLoaded(true);
+      }
       setLoading(false);
     };
     load();
@@ -148,8 +167,12 @@ export default function PremiumModsLandingPage({ user }) {
           <p className="text-gray-400 text-sm">{filtered.length} listing{filtered.length !== 1 ? "s" : ""} found</p>
         </div>
 
-        {loading ? (
-          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="20rem" />
+        {!hasLoaded && loading && listings.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-72 rounded-2xl border border-gray-800 bg-gray-900/60 animate-pulse" />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 bg-gray-900/50 rounded-2xl border border-gray-800">
             <Gamepad2 className="w-12 h-12 mx-auto mb-4 text-gray-700" />

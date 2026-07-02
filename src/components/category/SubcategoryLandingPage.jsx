@@ -6,33 +6,40 @@ import Pagination from "@/components/shared/Pagination";
 import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
-import { getActiveListings } from "@/lib/homeDataCache";
+import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
 
 const PER_PAGE = 10;
 
 export default function SubcategoryLandingPage({ user, profile: _profile, cat, sub, parentCategoryName }) {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const normalizedSub = findCanonicalCategoryValue(sub, []) || sub;
+  const filterSubcategoryListings = (rows) =>
+    (Array.isArray(rows) ? rows : []).filter((listing) => {
+      const matchCategory = listingMatchesCategory(listing, normalizeCategoryId(cat));
+      const matchSub = listingMatchesSubcategory(listing, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });
+      const matchPremium = cat !== "premium_mods" || (listing.product_type === "digital" && (listing.is_premium || Number(listing.price || 0) > 0));
+      return matchCategory && listing.is_approved !== false && matchSub && matchPremium && !isServiceListing(listing);
+    });
+  const [listings, setListings] = useState(() => filterSubcategoryListings(peekActiveListings()));
+  const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(listings.length > 0);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const normalizedSub = findCanonicalCategoryValue(sub, []) || sub;
 
   useEffect(() => {
     const load = async () => {
       try {
+        setListings(filterSubcategoryListings(peekActiveListings()));
+        setLoading(true);
         const results = await getActiveListings();
-        setListings((Array.isArray(results) ? results : []).filter((listing) => {
-          const matchCategory = listingMatchesCategory(listing, normalizeCategoryId(cat));
-          const matchSub = listingMatchesSubcategory(listing, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });
-          const matchPremium = cat !== "premium_mods" || (listing.product_type === "digital" && (listing.is_premium || Number(listing.price || 0) > 0));
-          return matchCategory && listing.is_approved !== false && matchSub && matchPremium && !isServiceListing(listing);
-        }));
-      } catch {}
+        setListings(filterSubcategoryListings(results));
+        setHasLoaded(true);
+      } catch {
+        setHasLoaded(true);
+      }
       setLoading(false);
     };
     load();
@@ -83,8 +90,12 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
       </div>
 
       {/* Listings */}
-      {loading ? (
-        <BrandedLoadingScreen label="Loading Your Experience..." minHeight="22rem" />
+      {!hasLoaded && loading && listings.length === 0 ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-64 rounded-2xl border border-gray-800 bg-gray-900/60 animate-pulse" />
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 bg-gray-900 rounded-2xl border border-gray-800">
           <Tag className="w-12 h-12 text-gray-700 mx-auto mb-3" />

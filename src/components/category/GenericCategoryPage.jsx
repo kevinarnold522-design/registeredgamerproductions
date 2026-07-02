@@ -6,13 +6,44 @@ import SubcategoryCards from "./SubcategoryCards";
 import Pagination from "@/components/shared/Pagination";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import StandardListingCard from "@/components/listings/StandardListingCard";
-import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
-import { getActiveListings } from "@/lib/homeDataCache";
+import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
 
 const PER_PAGE = 12;
+
+function getInitialActiveSub(sub, categoryData) {
+  return findCanonicalCategoryValue(sub, categoryData?.subcategories || []) || sub || "all";
+}
+
+function buildCategoryListings(rows, cat, activeSub) {
+  const normalizedCat = normalizeCategoryId(cat);
+  let cleaned = (Array.isArray(rows) ? rows : [])
+    .filter((listing) => listingMatchesCategory(listing, normalizedCat))
+    .filter((listing) => listing.is_approved !== false);
+
+  if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
+    cleaned = cleaned.filter((listing) => !isServiceListing(listing));
+  }
+  if (cat === "games") {
+    cleaned = cleaned.filter((listing) => normalizeCategoryId(listing.category) === "games" && !isServiceListing(listing));
+  }
+  if (cat === "premium_mods") {
+    cleaned = cleaned.filter((listing) =>
+      !isServiceListing(listing) &&
+      listing.product_type === "digital" &&
+      (listing.is_premium || Number(listing.price || 0) > 0)
+    );
+  }
+  if (cat === "premium_mods" && activeSub !== "all") {
+    cleaned = cleaned.filter((listing) =>
+      listingMatchesSubcategory(listing, activeSub, { allowPrefixMatch: true })
+    );
+  }
+
+  return cleaned;
+}
 
 const CATEGORY_META = {
   modding: {
@@ -106,11 +137,13 @@ const CATEGORY_META = {
 };
 
 export default function GenericCategoryPage({ user, profile, cat, sub, categoryData }) {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const initialActiveSub = getInitialActiveSub(sub, categoryData);
+  const [listings, setListings] = useState(() => buildCategoryListings(peekActiveListings(), cat, initialActiveSub));
+  const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(listings.length > 0);
   const [search, setSearch] = useState("");
   const [activeSub, setActiveSub] = useState(
-    () => findCanonicalCategoryValue(sub, categoryData?.subcategories || []) || sub || "all"
+    () => initialActiveSub
   );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [sortBy, setSortBy] = useState("newest");
@@ -126,42 +159,18 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
   // Keep the active subcategory in sync with the URL when it changes
   useEffect(() => {
-    setActiveSub(findCanonicalCategoryValue(sub, categoryData?.subcategories || []) || sub || "all");
+    setActiveSub(getInitialActiveSub(sub, categoryData));
   }, [sub, categoryData?.subcategories]);
 
   useEffect(() => {
+    setListings(buildCategoryListings(peekActiveListings(), cat, activeSub));
     setLoading(true);
     getActiveListings().then((rows) => {
-      const normalizedCat = normalizeCategoryId(cat);
-      let cleaned = (Array.isArray(rows) ? rows : [])
-        .filter((listing) => listingMatchesCategory(listing, normalizedCat));
-
-      cleaned = cleaned.filter((listing) => listing.is_approved !== false);
-      // Marketplace discovery categories must never show service-type listings
-      if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
-        cleaned = cleaned.filter((listing) => !isServiceListing(listing));
-      }
-      // Games: only actual game listings in the games category (exclude obvious service entries)
-      if (cat === "games") {
-        cleaned = cleaned.filter((listing) => normalizeCategoryId(listing.category) === "games" && !isServiceListing(listing));
-      }
-      // Premium Mods: only paid/premium digital mod products
-      if (cat === "premium_mods") {
-        cleaned = cleaned.filter((listing) =>
-          !isServiceListing(listing) &&
-          listing.product_type === "digital" &&
-          (listing.is_premium || Number(listing.price || 0) > 0)
-        );
-      }
-      if (cat === "premium_mods" && activeSub !== "all") {
-        cleaned = cleaned.filter((listing) =>
-          listingMatchesSubcategory(listing, activeSub, { allowPrefixMatch: true })
-        );
-      }
-      setListings(cleaned);
+      setListings(buildCategoryListings(rows, cat, activeSub));
+      setHasLoaded(true);
       setLoading(false);
     }).catch(() => {
-      setListings([]);
+      setHasLoaded(true);
       setLoading(false);
     });
   }, [cat, activeSub]);
@@ -373,8 +382,12 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         </AnimatePresence>
 
         <div className="mb-3" />
-        {loading ? (
-          <BrandedLoadingScreen label="Loading Your Experience..." minHeight="22rem" />
+        {!hasLoaded && loading && listings.length === 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-64 rounded-3xl border border-gray-800 bg-gray-900/60 animate-pulse" />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-gray-600">
             <p className="text-xl font-bold mb-2 text-gray-400">No listings yet</p>
