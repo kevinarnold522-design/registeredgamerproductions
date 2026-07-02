@@ -123,6 +123,14 @@ export default {
         return withCors(request, response, { "X-GP-Cache": "MISS" });
       }
 
+      // ---- Purge cached listing snapshot: POST /cache/listings-active/purge ----
+      if (parts[0] === "cache" && parts[1] === "listings-active" && parts[2] === "purge" && request.method === "POST") {
+        const cache = caches.default;
+        const cacheKey = new Request(`${url.origin}/cache/listings-active`, { method: "GET" });
+        await cache.delete(cacheKey);
+        return json(request, { ok: true, purged: true });
+      }
+
       // ---- Generic entity REST:  /entities/<Entity>[/<id>] ----
       if (parts[0] === "entities" && parts[1]) {
         const entity = parts[1];

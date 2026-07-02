@@ -43,6 +43,7 @@ import BrandLogo from "@/components/shared/BrandLogo";
 import DownloadHostBadge, { DOWNLOAD_HOST_OPTIONS } from "@/components/shared/DownloadHostBadge";
 import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
+import { upsertActiveListingsCache } from "@/lib/homeDataCache";
 import { supabase } from "@/lib/supabaseClient";
 import { useLocation, useNavigate } from "react-router-dom";
 import { findCanonicalCategoryValue, normalizeCategoryId } from "@/lib/categoryMatching";
@@ -93,6 +94,15 @@ function findFranchiseIdFromSelections(values = []) {
     }
   }
   return "";
+}
+
+async function purgeListingsSnapshotCache() {
+  try {
+    await fetch(`${cf.API_BASE}/cache/listings-active/purge`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {}
 }
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
@@ -747,6 +757,8 @@ export default function CreateListing() {
     } else {
       savedListing = await base44.entities.Listing.create(data);
     }
+    upsertActiveListingsCache(savedListing);
+    await purgeListingsSnapshotCache();
 
     const removedExistingMedia = existingListing
       ? collectListingMediaUrls(existingListing).filter((url) => !collectListingMediaUrls(data).includes(url))
