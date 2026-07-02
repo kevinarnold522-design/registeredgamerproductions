@@ -1,15 +1,31 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "website-connected-gamerproductions",
+  "name": "gamer-productions",
+  "type": "javascript",
   "compatibility_date": "2026-06-27",
+  "main": "dist/index.html",
   "observability": {
     "enabled": true
   },
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS",
+    "include": ["**/*"],
+    "exclude": [".git", ".gitignore", ".DS_Store", "node_modules", "*.map"]
   },
   "compatibility_flags": [
     "nodejs_compat"
-  ]
+  ],
+  "env": {
+    "production": {
+      "name": "gamer-productions-production",
+      "routes": [
+        {
+          "pattern": "gamer.productions",
+          "zone_name": "gamer.productions"
+        }
+      ]
+    }
+  }
 }

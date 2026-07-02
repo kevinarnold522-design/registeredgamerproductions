@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Redeploy every 6 hours to ensure latest version is always live
+    - cron: '0 */6 * * *'
 
 concurrency:
   group: cloudflare-production
@@ -20,38 +23,49 @@ jobs:
       CF_PAGES_PROJECT_NAME: gamer-productions
       NODE_ENV: production
     steps:
-      - name: Checkout
+      - name: Checkout latest from main
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
-      - name: Setup Node
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build site
+      - name: Build site for production
         run: npm run build
 
-      - name: Verify Cloudflare secrets
+      - name: Verify Cloudflare API credentials
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID GitHub secret."
+            echo "❌ Missing required Cloudflare secrets in GitHub"
+            echo "   Please configure CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in repository settings"
             exit 1
           fi
+          echo "✅ Cloudflare API credentials verified"
 
-      - name: Deploy latest build to Cloudflare Pages
-        run: npx wrangler pages deploy dist --project-name "$CF_PAGES_PROJECT_NAME" --branch main
+      - name: Deploy to Cloudflare Pages (gamer-productions)
+        run: |
+          npx wrangler pages deploy dist \
+            --project-name "$CF_PAGES_PROJECT_NAME" \
+            --branch main \
+            --commit-dirty
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deployment status
+        if: success()
+        run: echo "✅ Cloudflare Pages deployment successful"
 
   deploy-worker:
     runs-on: ubuntu-latest
@@ -60,28 +74,36 @@ jobs:
       run:
         working-directory: src/cloudflare
     steps:
-      - name: Checkout
+      - name: Checkout latest from main
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
-      - name: Setup Node
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: npm
 
-      - name: Verify Cloudflare secrets
+      - name: Verify Cloudflare API credentials
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID GitHub secret."
+            echo "❌ Missing required Cloudflare secrets in GitHub"
+            echo "   Please configure CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in repository settings"
             exit 1
           fi
+          echo "✅ Cloudflare API credentials verified"
 
-      - name: Deploy latest Worker build to Cloudflare
-        run: npx wrangler deploy
+      - name: Deploy Worker (gamer-productions-api) to Cloudflare
+        run: npx wrangler deploy --compatibility-date 2024-11-01
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deployment status
+        if: success()
+        run: echo "✅ Cloudflare Worker deployment successful"
