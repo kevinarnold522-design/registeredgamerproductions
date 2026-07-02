@@ -297,7 +297,10 @@ export default function SubcategoryLandingPage() {
             })
           : cat === "modding"
             ? allListings.filter(l => listingMatchesSubcategory(l, sub, { allowPrefixMatch: true }))
-            : allListings.filter(l => listingMatchesCategory(l, normalizeCategoryId(cat)) && l.community_franchise_id === sub);
+            : allListings.filter(l =>
+                listingMatchesCategory(l, normalizeCategoryId(cat)) &&
+                listingMatchesSubcategory(l, sub, { allowPrefixMatch: true })
+              );
         setListings(listingsData);
       } catch (err) {
         console.error("Error loading subcategory data:", err);

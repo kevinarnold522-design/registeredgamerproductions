@@ -45,7 +45,7 @@ import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { supabase } from "@/lib/supabaseClient";
 import { useLocation, useNavigate } from "react-router-dom";
-import { normalizeCategoryId } from "@/lib/categoryMatching";
+import { findCanonicalCategoryValue, normalizeCategoryId } from "@/lib/categoryMatching";
 
 function extractYouTubeId(url) {
   if (!url) return null;
@@ -70,6 +70,29 @@ function buildTitleMetadata(title = "") {
     .map((item) => item.trim())
     .filter((item) => item.length >= 3);
   return Array.from(new Set([cleanTitle, ...parts])).slice(0, 8);
+}
+
+function uniqueTruthy(values = []) {
+  return Array.from(new Set(values.map((value) => String(value || "").trim()).filter(Boolean)));
+}
+
+function stripPremiumModsPrefix(value = "") {
+  return String(value || "").replace(/^premium\s*mods\s*-\s*/i, "").trim();
+}
+
+function findFranchiseIdFromSelections(values = []) {
+  for (const value of values) {
+    if (!value) continue;
+    for (const franchise of TOP_FRANCHISES) {
+      const match = findCanonicalCategoryValue(value, [
+        franchise.id,
+        franchise.name,
+        ...(Array.isArray(franchise.subgames) ? franchise.subgames : []),
+      ]);
+      if (match) return franchise.id;
+    }
+  }
+  return "";
 }
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
@@ -625,6 +648,34 @@ export default function CreateListing() {
     const priceVal = parseFloat(form.price) || 0;
     const isPaidMod = priceVal > 0 && (form.category === "modding" || form.category === "premium_mods");
     const effectiveCategory = isPaidMod ? "premium_mods" : form.category;
+    const primarySubcategory = Array.isArray(form.subcategories) ? form.subcategories[0] || "" : "";
+    const normalizedPrimarySubcategory = stripPremiumModsPrefix(primarySubcategory);
+    const normalizedModdingSubcategory = form.modding_subcategory || (["modding", "premium_mods"].includes(effectiveCategory) ? normalizedPrimarySubcategory : "");
+    const normalizedToolTargetGame =
+      (effectiveCategory === "paid_tools" || effectiveCategory === "premium_mods")
+        ? (form.tool_target_game || form.game_name || normalizedPrimarySubcategory || "")
+        : "";
+    const normalizedSubcategories = uniqueTruthy([
+      ...(Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : [])),
+      ...((["modding", "premium_mods"].includes(effectiveCategory) && normalizedModdingSubcategory && !primarySubcategory)
+        ? [normalizedModdingSubcategory]
+        : []),
+    ]);
+    const derivedCommunityFranchiseId =
+      effectiveCategory === "games"
+        ? ""
+        : (form.community_franchise_id || findFranchiseIdFromSelections([
+            form.game_name,
+            normalizedToolTargetGame,
+            normalizedModdingSubcategory,
+            normalizedPrimarySubcategory,
+            ...normalizedSubcategories,
+          ]));
+    const normalizedNewsfeedCategories = uniqueTruthy([
+      effectiveCategory,
+      ...(form.newsfeed_categories || []),
+      ...(effectiveCategory === "premium_mods" ? ["modding", "store", "buy_sell"] : []),
+    ]).map(normalizeCategoryId);
     const autoMeta = buildTitleMetadata(form.title);
     const mergedTags = Array.from(new Set([...autoMeta, ...parseCommaList(form.tags)]));
     const mergedKeywords = Array.from(new Set([...autoMeta, ...parseCommaList(form.keywords)]));
@@ -665,17 +716,15 @@ export default function CreateListing() {
       listing_theme_color: form.listing_theme_color,
       card_font_family: form.card_font_family,
       card_font_color: form.card_font_color,
-      subcategories: Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : []),
-      newsfeed_categories: Array.from(new Set([
-        ...(form.newsfeed_categories || []),
-        ...(isPaidMod ? ["premium_mods", "store", "buy_sell"] : []),
-      ])),
-      modding_subcategory: form.modding_subcategory || undefined,
+      subcategories: normalizedSubcategories,
+      newsfeed_categories: normalizedNewsfeedCategories,
+      modding_subcategory: normalizedModdingSubcategory || undefined,
       subcategory: undefined,
       platform: undefined,
       ign_rating: form.ign_rating !== "" ? parseFloat(form.ign_rating) : undefined,
       store_platforms: form.store_platforms || [],
-      tool_target_game: (effectiveCategory === "paid_tools" || effectiveCategory === "premium_mods") ? (form.tool_target_game || form.game_name || undefined) : undefined,
+      community_franchise_id: derivedCommunityFranchiseId || undefined,
+      tool_target_game: normalizedToolTargetGame || undefined,
       preview_video_url: form.preview_video_url || undefined,
       is_approved: mod?.is_approved !== false,
       status: mod?.requiresReview ? "pending" : "active",
