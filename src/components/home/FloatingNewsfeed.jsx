@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Newspaper, Star } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
+import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
 
 // A small "Featured" listing row with the Gamer.Productions logo badge.
 function FeedRow({ item }) {
@@ -38,7 +38,7 @@ function FeedRow({ item }) {
 // Globally-mounted newsfeed pinned to the right edge on every page.
 // Auto-scrolls vertically (marquee loop) and stays fixed wherever the user goes.
 export default function FloatingNewsfeed() {
-  const [listings, setListings] = useState([]);
+  const [listings, setListings] = useState(() => peekActiveListings().slice(0, 24));
   const [isDesktopViewport, setIsDesktopViewport] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
     return window.matchMedia("(min-width: 1024px)").matches;
@@ -60,10 +60,9 @@ export default function FloatingNewsfeed() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await base44.entities.Listing.list("-created_date", 60);
-        const all = Array.isArray(res) ? res : (res?.data || res?.records || []);
-        const active = all.filter(l => (l.status ? l.status === "active" : true) && l.is_approved !== false);
-        setListings(active.slice(0, 24));
+        setListings(peekActiveListings().slice(0, 24));
+        const active = await getActiveListings();
+        setListings((Array.isArray(active) ? active : []).slice(0, 24));
       } catch {}
     };
     load();
@@ -131,7 +130,7 @@ export default function FloatingNewsfeed() {
 }
 
 export function InlineFloatingNewsfeed() {
-  const [listings, setListings] = useState([]);
+  const [listings, setListings] = useState(() => peekActiveListings().slice(0, 5));
   const [isMobileViewport, setIsMobileViewport] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
     return window.matchMedia("(max-width: 767px)").matches;
@@ -154,10 +153,10 @@ export function InlineFloatingNewsfeed() {
     let active = true;
     const load = async () => {
       try {
-        const res = await base44.entities.Listing.list("-created_date", isMobileViewport ? 3 : 12);
-        const all = Array.isArray(res) ? res : (res?.data || res?.records || []);
-        const visibleListings = all.filter((l) => (l.status ? l.status === "active" : true) && l.is_approved !== false);
-        if (active) setListings(visibleListings.slice(0, isMobileViewport ? 1 : 5));
+        const cached = peekActiveListings();
+        if (active && cached.length) setListings(cached.slice(0, isMobileViewport ? 1 : 5));
+        const visibleListings = await getActiveListings();
+        if (active) setListings((Array.isArray(visibleListings) ? visibleListings : []).slice(0, isMobileViewport ? 1 : 5));
       } catch {}
     };
     const schedule = typeof window !== "undefined" && typeof window.requestIdleCallback === "function"

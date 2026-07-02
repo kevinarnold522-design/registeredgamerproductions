@@ -1351,7 +1351,16 @@ async function getReferencedListingMediaPaths(env) {
   const paths = new Set();
   for (const row of rows) {
     collectSupabaseStoragePaths({
-      images: row?.data?.images,
+      images: [
+        ...(Array.isArray(row?.data?.images) ? row.data.images : []),
+        ...(Array.isArray(row?.data?.image_urls) ? row.data.image_urls : []),
+        ...(Array.isArray(row?.data?.gallery_images) ? row.data.gallery_images : []),
+        row?.data?.image_url,
+        row?.data?.cover_image,
+        row?.data?.thumbnail_url,
+        row?.data?.banner_image,
+        row?.data?.poster_url,
+      ].filter(Boolean),
       video_url: row?.data?.video_url,
       download_url: row?.data?.download_url,
       preview_video_url: row?.data?.preview_video_url,

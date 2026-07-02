@@ -5,6 +5,7 @@
 // =====================================================================
 import { createRecord, updateRecord, deleteRecord, listRecords } from "./db.js";
 import { handleFunction } from "./functions.js";
+import { normalizeListingRecord } from "../lib/categoryMatching.js";
 
 const SUPABASE_FALLBACK_URL = "https://smymannqqogtshvsiqyp.supabase.co";
 const SUPABASE_FALLBACK_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteW1hbm5xcW9ndHNodnNpcXlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjMyOTYsImV4cCI6MjA5Njk5OTI5Nn0.mY40GwnnOoUXf111fgAhWgfzc8sapyBNcLISzbMWocg";
@@ -60,12 +61,14 @@ async function fetchAllActiveListings(env) {
 
   while (true) {
     const rows = await fetchSupabaseListingPage(env, from, pageSize);
-    out.push(...rows.map((row) => ({
-      ...(row?.data || {}),
-      id: row?.id,
-      created_date: row?.created_date,
-      updated_date: row?.updated_date,
-    })));
+    out.push(...rows.map((row) =>
+      normalizeListingRecord({
+        ...(row?.data || {}),
+        id: row?.id,
+        created_date: row?.created_date,
+        updated_date: row?.updated_date,
+      })
+    ));
     if (rows.length < pageSize) break;
     from += pageSize;
   }

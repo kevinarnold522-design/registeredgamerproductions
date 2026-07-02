@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { Newspaper } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
+import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
 
 const PER_PAGE = 8;
 
 // Single newsfeed for ALL categories — pulls every previous listing from the
 // Cloudflare database, newest first, paginated 1..10.
 export default function AllCategoriesNewsfeed({ user, profile }) {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState(() => peekActiveListings());
+  const [loading, setLoading] = useState(() => peekActiveListings().length === 0);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     const load = async () => {
-      const res = await base44.entities.Listing.list("-created_date", 1000);
-      const all = Array.isArray(res) ? res : (res?.data || res?.records || []);
-      const active = all.filter(l => (l.status ? l.status === "active" : true) && l.is_approved !== false);
-      setListings(active);
-      setLoading(false);
+      try {
+        setListings(peekActiveListings());
+        const active = await getActiveListings();
+        setListings(Array.isArray(active) ? active : []);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);

@@ -42,6 +42,59 @@ function toValueArray(value) {
   return [value];
 }
 
+function uniqueValues(values = []) {
+  return [...new Set(values.filter(Boolean).map((value) => String(value).trim()).filter(Boolean))];
+}
+
+function looksLikeGameCategoryValue(value) {
+  const normalized = normalizeCategoryTokens(value).join("");
+  return ["pc", "playstation", "ps4", "ps5", "xbox", "nintendoswitch", "switch", "mobile", "ios", "android"].includes(normalized);
+}
+
+function inferListingCategory(record = {}, normalized = {}) {
+  const explicit = normalizeCategoryId(record.category);
+  if (explicit) return explicit;
+
+  const newsfeedCategories = toValueArray(normalized.newsfeed_categories).map(normalizeCategoryId).filter(Boolean);
+  if (newsfeedCategories.includes("premium_mods")) return "premium_mods";
+  if (newsfeedCategories.includes("modding")) return "modding";
+  if (newsfeedCategories.includes("games")) return "games";
+  if (newsfeedCategories.includes("paid_tools")) return "paid_tools";
+  if (newsfeedCategories.includes("content_streaming")) return "content_streaming";
+
+  const textSignals = [
+    normalized.digital_subcategory,
+    normalized.physical_subcategory,
+    normalized.card_category_label,
+    ...toValueArray(normalized.subcategories),
+    ...toValueArray(normalized.tags),
+  ].join(" ").toLowerCase();
+
+  const inferredModding = Boolean(
+    normalized.modding_subcategory ||
+    normalized.community_franchise_id ||
+    /\bmod|mods|modding|cyberface|facepack|roster|patch|trainer|script|textures?\b/.test(textSignals)
+  );
+
+  if (inferredModding) {
+    return normalized.is_premium || Number(normalized.price || 0) > 0 ? "premium_mods" : "modding";
+  }
+
+  const inferredTools = /\btool|tools|utility|utilities|automation|software|launcher\b/.test(textSignals);
+  if (inferredTools) return "paid_tools";
+
+  const inferredGames = [
+    normalized.game_platform,
+    normalized.game_name,
+    ...toValueArray(normalized.subcategories),
+    ...toValueArray(normalized.store_platforms),
+    ...toValueArray(normalized.platforms),
+  ].some(looksLikeGameCategoryValue);
+  if (inferredGames) return "games";
+
+  return "";
+}
+
 export function normalizeCategoryId(value) {
   const normalized = String(value || "").trim().toLowerCase();
   if (!normalized) return "";
@@ -64,9 +117,27 @@ export function getListingCategoryBuckets(listing, options = {}) {
   const rawCategory = normalizeCategoryId(listing?.category);
   addCategory(rawCategory);
 
+  const inferredModding = Boolean(
+    listing?.modding_subcategory ||
+    listing?.community_franchise_id ||
+    /\bmod|mods|modding|cyberface|facepack|roster|patch|trainer|script|textures?\b/i.test(
+      [
+        listing?.digital_subcategory,
+        listing?.physical_subcategory,
+        listing?.card_category_label,
+        ...toValueArray(listing?.subcategories),
+        ...toValueArray(listing?.tags),
+      ].join(" ")
+    )
+  );
+
+  if (!rawCategory && inferredModding) {
+    buckets.add("modding");
+  }
+
   const isPaidOrPremiumMod =
     rawCategory === "premium_mods" ||
-    ((rawCategory === "modding" || !rawCategory) &&
+    ((rawCategory === "modding" || !rawCategory || inferredModding) &&
       (listing?.is_premium || Number(listing?.price || 0) > 0));
 
   if (rawCategory === "premium_mods") {
@@ -183,8 +254,6 @@ export function normalizeListingRecord(record) {
   if (!record || typeof record !== "object") return record;
 
   const normalized = { ...record };
-  normalized.category = normalizeCategoryId(record.category);
-
   normalized.subcategories = toValueArray(record.subcategories);
   if (!normalized.subcategories.length && record.subcategory) {
     normalized.subcategories = toValueArray(record.subcategory);
@@ -195,11 +264,22 @@ export function normalizeListingRecord(record) {
   normalized.store_platforms = toValueArray(record.store_platforms);
   normalized.tags = toValueArray(record.tags);
   normalized.keywords = toValueArray(record.keywords);
-  normalized.images = toValueArray(record.images);
+  normalized.images = uniqueValues([
+    ...toValueArray(record.images),
+    ...toValueArray(record.image_urls),
+    ...toValueArray(record.gallery_images),
+    record.image_url,
+    record.cover_image,
+    record.thumbnail_url,
+    record.banner_image,
+    record.poster_url,
+  ]);
 
   if (!normalized.digital_subcategory && normalized.subcategories.length) {
     normalized.digital_subcategory = normalized.subcategories[0];
   }
+
+  normalized.category = inferListingCategory(record, normalized);
 
   return normalized;
 }
