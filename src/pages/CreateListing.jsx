@@ -471,12 +471,19 @@ export default function CreateListing() {
   };
 
   const [moderationResult, setModerationResult] = useState(null);
+  // Saved listing templates/filters should be scoped per account so switching
+  // users on the same device doesn't leak templates between accounts.
+  const savedFiltersKey = `listing_saved_filters:${(user?.email || "anonymous").toLowerCase()}`;
   const [savedFilters, setSavedFilters] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("listing_saved_filters") || "[]"); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(savedFiltersKey) || "[]"); } catch { return []; }
   });
   const [filterName, setFilterName] = useState("");
   const [showSaveFilter, setShowSaveFilter] = useState(false);
   const [showLoadFilter, setShowLoadFilter] = useState(false);
+
+  useEffect(() => {
+    try { setSavedFilters(JSON.parse(localStorage.getItem(savedFiltersKey) || "[]")); } catch { setSavedFilters([]); }
+  }, [savedFiltersKey]);
 
   const persistTemplate = (name) => {
     if (!name.trim()) return;
@@ -520,7 +527,7 @@ export default function CreateListing() {
     };
     const updated = [...savedFilters.filter(f => f.name !== name.trim()), filterData];
     setSavedFilters(updated);
-    localStorage.setItem("listing_saved_filters", JSON.stringify(updated));
+    localStorage.setItem(savedFiltersKey, JSON.stringify(updated));
   };
 
   const handleSaveFilter = () => {
@@ -548,7 +555,7 @@ export default function CreateListing() {
   const handleDeleteFilter = (name) => {
     const updated = savedFilters.filter(f => f.name !== name);
     setSavedFilters(updated);
-    localStorage.setItem("listing_saved_filters", JSON.stringify(updated));
+    localStorage.setItem(savedFiltersKey, JSON.stringify(updated));
   };
 
   const handleCategoryChange = (val) => {

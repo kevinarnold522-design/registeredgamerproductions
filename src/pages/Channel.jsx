@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { uploadFileToR2, uploadFileWithFallback } from "@/lib/uploadToR2";
 import { updateProfileMedia } from "@/lib/updateProfileMedia";
 import AuthNavbar from "@/components/layout/AuthNavbar";
+import Navbar from "@/components/home/Navbar";
 import PostCard from "@/components/channel/PostCard";
 import ChannelThemePicker, { buildProfileTheme } from "@/components/channel/ChannelThemePicker";
 import GamerCheckmark from "@/components/shared/GamerCheckmark";
@@ -100,7 +101,7 @@ export default function Channel() {
       })();
       const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
       const email = viewEmail || ghostEmail || me?.email;
-      setUser(ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me);
+      setUser(ghostEmail ? { ...(me || {}), email: ghostEmail, isGhostAccount: true } : me);
       setTargetEmail(email);
       if (email) {
         try {
@@ -136,7 +137,7 @@ export default function Channel() {
       setLoading(false);
     };
     init();
-  }, []);
+  }, [location.search]);
 
   const ghostSession = (() => {
     try { return JSON.parse(localStorage.getItem("impersonation_session") || "{}"); } catch { return {}; }
@@ -204,7 +205,7 @@ export default function Channel() {
 
   return (
     <div className="min-h-screen text-white" style={{ background: currentThemeObj.bg, backgroundImage: currentThemeObj.grid, backgroundSize: "42px 42px", minHeight: "100vh", "--channel-bg": currentThemeObj.background || "#050510" }}>
-      <AuthNavbar user={user} profile={profile} />
+      {user ? <AuthNavbar user={user} profile={profile} /> : <Navbar />}
       <div className="pt-16">
 
         {/* New Account Banner */}

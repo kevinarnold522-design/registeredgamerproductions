@@ -174,8 +174,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         cleaned = cleaned.filter(x => !isServiceListing(x) && x.product_type === "digital" && (x.is_premium || Number(x.price || 0) > 0));
       }
       if (cat === "premium_mods" && activeSub !== "all") {
-        const normalizedSub = activeSub.toLowerCase().replace(/\s+/g, "");
-        cleaned = cleaned.filter(x => [x.tool_target_game, x.game_name, x.subcategory, ...(x.subcategories || [])].filter(Boolean).map(v => String(v).toLowerCase().replace(/\s+/g, "")).some(v => v === normalizedSub || (normalizedSub === "gta" && v.startsWith("gta"))));
+        cleaned = cleaned.filter((x) =>
+          listingMatchesSubcategory(x, activeSub, { allowPrefixMatch: true })
+        );
       }
       setListings(cleaned);
       setLoading(false);
@@ -197,7 +198,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
     : [];
 
   const filtered = listings.filter(l => {
-    const matchSub = listingMatchesSubcategory(l, activeSub, { allowPrefixMatch: cat === "premium_mods" });
+    const matchSub = listingMatchesSubcategory(l, activeSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });
     const matchSearch = !search || l.title?.toLowerCase().includes(search.toLowerCase()) || l.description?.toLowerCase().includes(search.toLowerCase()) || l.seller_username?.toLowerCase().includes(search.toLowerCase());
     const matchFree = !isFree || l.price === 0 || l.is_free;
     const matchMin = priceMin === "" || (l.price || 0) >= parseFloat(priceMin);

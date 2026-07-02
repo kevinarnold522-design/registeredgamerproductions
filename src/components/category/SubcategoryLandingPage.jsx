@@ -27,7 +27,7 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
       try {
         const results = await base44.entities.Listing.filter({ category: cat, status: "active" }, "-created_date", 200);
         setListings(results.filter(l => {
-          const matchSub = listingMatchesSubcategory(l, normalizedSub, { allowPrefixMatch: cat === "premium_mods" });
+          const matchSub = listingMatchesSubcategory(l, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });
           const matchPremium = cat !== "premium_mods" || (l.product_type === "digital" && (l.is_premium || Number(l.price || 0) > 0));
           return l.is_approved !== false && matchSub && matchPremium && !isServiceListing(l);
         }));
