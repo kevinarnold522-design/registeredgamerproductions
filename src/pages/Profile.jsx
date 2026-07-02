@@ -17,7 +17,7 @@ import MultiAvatarDisplay from "@/components/shared/MultiAvatarDisplay";
 import GamingAccountsPanel from "@/components/profile/GamingAccountsPanel";
 import SocialLinksPanel from "@/components/profile/SocialLinksPanel";
 import ListingSortControl, { sortListings } from "@/components/profile/ListingSortControl";
-import StandardListingCard from "@/components/listings/StandardListingCard";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import UserPointsBadge from "@/components/profile/UserPointsBadge";
 import LoginHistoryPanel from "@/components/profile/LoginHistoryPanel";
 import FollowButton from "@/components/social/FollowButton";
@@ -602,9 +602,9 @@ export default function Profile() {
                 <p>No listings yet</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {sortListings(listings, sortOrder).map((l) => (
-                  <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {sortListings(listings, sortOrder).map((l, idx) => (
+                  <HomeListingCard key={l.id} listing={l} user={user} profile={profile} index={idx} />
                 ))}
               </div>
             )}
