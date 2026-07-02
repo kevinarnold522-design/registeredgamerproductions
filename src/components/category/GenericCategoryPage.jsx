@@ -1,24 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Radio, SlidersHorizontal, X, Play, Send, Eye, EyeOff, LayoutGrid } from "lucide-react";
+import { Plus, Radio, SlidersHorizontal, X, Send, EyeOff, LayoutGrid } from "lucide-react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
-import ShareButton from "@/components/shared/ShareButton";
-import ListingSellerBadge from "@/components/listings/ListingSellerBadge";
 import Pagination from "@/components/shared/Pagination";
-import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
-import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
-import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
-import ListingImageSlider from "@/components/listings/ListingImageSlider";
-import ListingEngagementBar from "@/components/community/ListingEngagementBar";
-import ListingReportButton from "@/components/shared/ListingReportButton";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import StandardListingCard from "@/components/listings/StandardListingCard";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
-import { formatListingPrice } from "@/lib/currency";
-import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/categoryMatching";
+import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 
 const PER_PAGE = 12;
@@ -140,42 +131,32 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
   useEffect(() => {
     setLoading(true);
-    const safeFilter = (query, sort, limit) =>
-      base44.entities.Listing.filter(query, sort, limit).catch(() => []);
+    base44.entities.Listing.filter({ status: "active" }, "-created_date", 200).then((rows) => {
+      const normalizedCat = normalizeCategoryId(cat);
+      let cleaned = (Array.isArray(rows) ? rows : [])
+        .filter((listing) => listing?.status === "active")
+        .filter((listing) => listingMatchesCategory(listing, normalizedCat));
 
-    const listingsPromise = cat === "modding"
-      ? Promise.all([
-          safeFilter({ status: "active", category: "modding" }, "-created_date", 80),
-          safeFilter({ status: "active", category: "premium_mods" }, "-created_date", 80),
-        ]).then(([mods, premiumMods]) => [...mods, ...premiumMods])
-      : safeFilter({ status: "active", category: cat }, "-created_date", 80);
-
-    // Also pull listings the seller/admin manually targeted to this category's newsfeed
-    const newsfeedPromise = safeFilter({ status: "active" }, "-created_date", 120)
-      .then(all => (Array.isArray(all) ? all : []).filter(x => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes(cat) && x.category !== "games"))
-      .catch(() => []);
-
-    Promise.all([listingsPromise, newsfeedPromise]).then(([base, extra]) => {
-      const safeBase = Array.isArray(base) ? base : [];
-      const safeExtra = Array.isArray(extra) ? extra : [];
-      const seen = new Set(safeBase.map(x => x.id));
-      const l = [...safeBase, ...safeExtra.filter(x => !seen.has(x.id))];
-      let cleaned = l.filter(x => x.is_approved !== false);
+      cleaned = cleaned.filter((listing) => listing.is_approved !== false);
       // Marketplace discovery categories must never show service-type listings
       if (["premium_mods", "games", "paid_tools", "content_streaming"].includes(cat)) {
-        cleaned = cleaned.filter(x => !isServiceListing(x));
+        cleaned = cleaned.filter((listing) => !isServiceListing(listing));
       }
       // Games: only actual game listings in the games category (exclude obvious service entries)
       if (cat === "games") {
-        cleaned = cleaned.filter(x => x.category === "games" && !isServiceListing(x));
+        cleaned = cleaned.filter((listing) => normalizeCategoryId(listing.category) === "games" && !isServiceListing(listing));
       }
       // Premium Mods: only paid/premium digital mod products
       if (cat === "premium_mods") {
-        cleaned = cleaned.filter(x => !isServiceListing(x) && x.product_type === "digital" && (x.is_premium || Number(x.price || 0) > 0));
+        cleaned = cleaned.filter((listing) =>
+          !isServiceListing(listing) &&
+          listing.product_type === "digital" &&
+          (listing.is_premium || Number(listing.price || 0) > 0)
+        );
       }
       if (cat === "premium_mods" && activeSub !== "all") {
-        cleaned = cleaned.filter((x) =>
-          listingMatchesSubcategory(x, activeSub, { allowPrefixMatch: true })
+        cleaned = cleaned.filter((listing) =>
+          listingMatchesSubcategory(listing, activeSub, { allowPrefixMatch: true })
         );
       }
       setListings(cleaned);

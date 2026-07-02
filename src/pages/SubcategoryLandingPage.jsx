@@ -11,7 +11,7 @@ import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/uploadToR2";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { listingMatchesSubcategory } from "@/lib/categoryMatching";
+import { listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 
 // Storage key for cards in a subcategory landing page
 const getCardsKey = (parentCat, subId) => `subcat_landing_cards_${parentCat}_${subId}`;
@@ -292,11 +292,11 @@ export default function SubcategoryLandingPage() {
         const listingsData = cat === "premium_mods"
           ? allListings.filter(l => {
               const matchGame = listingMatchesSubcategory(l, sub, { allowPrefixMatch: true });
-              return l.category === "premium_mods" && l.is_approved !== false && !isServiceListing(l) && l.product_type === "digital" && (l.is_premium || Number(l.price || 0) > 0) && matchGame;
+              return listingMatchesCategory(l, "premium_mods") && l.is_approved !== false && !isServiceListing(l) && l.product_type === "digital" && (l.is_premium || Number(l.price || 0) > 0) && matchGame;
             })
           : cat === "modding"
             ? allListings.filter(l => listingMatchesSubcategory(l, sub, { allowPrefixMatch: true }))
-            : allListings.filter(l => l.community_franchise_id === sub);
+            : allListings.filter(l => listingMatchesCategory(l, normalizeCategoryId(cat)) && l.community_franchise_id === sub);
         setListings(listingsData);
       } catch (err) {
         console.error("Error loading subcategory data:", err);

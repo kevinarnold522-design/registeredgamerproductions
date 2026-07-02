@@ -9,6 +9,7 @@ import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
 import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import { listingMatchesCategory, normalizeCategoryId } from "@/lib/categoryMatching";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
@@ -531,11 +532,11 @@ function CategoryFeed({ cat, user, userProfile }) {
     const load = async () => {
       try {
         const [l, p] = await Promise.all([
-          base44.entities.Listing.filter({ category: cat, status: "active" }, "-created_date", 20),
+          base44.entities.Listing.filter({ status: "active" }, "-created_date", 80),
           base44.entities.CommunityPost.filter({ community_id: cat }, "-created_date", 20),
         ]);
-        setListings(l);
-        setPosts(p.filter(x => x.status === "active"));
+        setListings((Array.isArray(l) ? l : []).filter((listing) => listingMatchesCategory(listing, normalizeCategoryId(cat)) && listing.is_approved !== false));
+        setPosts(p.filter((post) => post.status === "active" && post.is_approved !== false));
       } catch {}
       setLoading(false);
     };
@@ -617,6 +618,7 @@ function CategoryFeed({ cat, user, userProfile }) {
 }
 
 export default function SubcategoryCards({ cat, categoryName, userEmail, userProfile, user, franchiseId }) {
+  const visibilityKey = `subcat_visible_${cat}:${(userEmail || "guest").toLowerCase()}`;
   const [items, setItems] = useState(() => {
     const base = SUBCATEGORY_CONFIG[cat] || [];
     const loaded = base.map(item => {
@@ -636,7 +638,7 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
   const [groupFilterSearch, setGroupFilterSearch] = useState("");
   const [visibleSubcats, setVisibleSubcats] = useState(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(`subcat_visible_${cat}`) || "null");
+      const saved = JSON.parse(localStorage.getItem(`subcat_visible_${cat}:guest`) || "null");
       return saved ? new Set(saved) : null;
     } catch { return null; }
   });
@@ -679,6 +681,15 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
   const isAccountMod = userProfile?.moderator_type === "account_moderator";
   const canDelete = canAdmin || isAccountMod;
 
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(visibilityKey) || "null");
+      setVisibleSubcats(saved ? new Set(saved) : null);
+    } catch {
+      setVisibleSubcats(null);
+    }
+  }, [visibilityKey]);
+
   const handleItemUpdate = (updated) => setItems(prev => prev.map(it => it.id === updated.id ? updated : it));
   const handleDelete = (itemId) => {
     const key = `extra_subcat_${cat}`;
@@ -696,14 +707,14 @@ export default function SubcategoryCards({ cat, categoryName, userEmail, userPro
       const base = prev || new Set(items.map(item => item.id));
       const next = new Set(base);
       if (next.has(id)) next.delete(id); else next.add(id);
-      localStorage.setItem(`subcat_visible_${cat}`, JSON.stringify([...next]));
+      localStorage.setItem(visibilityKey, JSON.stringify([...next]));
       return next;
     });
   };
-  const selectAllSubcats = () => { setVisibleSubcats(null); localStorage.removeItem(`subcat_visible_${cat}`); };
+  const selectAllSubcats = () => { setVisibleSubcats(null); localStorage.removeItem(visibilityKey); };
   const unselectAllSubcats = () => {
     setVisibleSubcats(new Set());
-    localStorage.setItem(`subcat_visible_${cat}`, JSON.stringify([]));
+    localStorage.setItem(visibilityKey, JSON.stringify([]));
   };
 
   const filteredItems = items.filter(item =>

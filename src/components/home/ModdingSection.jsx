@@ -22,6 +22,9 @@ const DEFAULT_FILTERS = {
 };
 
 export default function ModdingSection({ currentUser, currentProfile }) {
+  const filterScope = (currentUser?.email || currentProfile?.user_email || "guest").toLowerCase();
+  const visibleGroupsKey = `modding_visible_groups:${filterScope}`;
+  const hiddenIdsKey = `modding_hidden_ids:${filterScope}`;
   const [mods, setMods] = useState([]);
   const [totalDownloads, setTotalDownloads] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
@@ -34,14 +37,28 @@ export default function ModdingSection({ currentUser, currentProfile }) {
   const [showGroupFilter, setShowGroupFilter] = useState(true);
   const [visibleGroups, setVisibleGroups] = useState(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("modding_visible_groups") || "null");
+      const saved = JSON.parse(localStorage.getItem("modding_visible_groups:guest") || "null");
       return saved ? new Set(saved) : null;
     } catch { return null; }
   });
   const [hiddenIds, setHiddenIds] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem("modding_hidden_ids") || "[]")); } catch { return new Set(); }
+    try { return new Set(JSON.parse(localStorage.getItem("modding_hidden_ids:guest") || "[]")); } catch { return new Set(); }
   });
   const [showHiddenPanel, setShowHiddenPanel] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(visibleGroupsKey) || "null");
+      setVisibleGroups(saved ? new Set(saved) : null);
+    } catch {
+      setVisibleGroups(null);
+    }
+    try {
+      setHiddenIds(new Set(JSON.parse(localStorage.getItem(hiddenIdsKey) || "[]")));
+    } catch {
+      setHiddenIds(new Set());
+    }
+  }, [visibleGroupsKey, hiddenIdsKey]);
 
   const toggleGroup = (g) => {
     setVisibleGroups(prev => {
@@ -49,17 +66,17 @@ export default function ModdingSection({ currentUser, currentProfile }) {
       const base = prev || allIds;
       const n = new Set(base);
       if (n.has(g)) n.delete(g); else n.add(g);
-      localStorage.setItem("modding_visible_groups", JSON.stringify([...n]));
+      localStorage.setItem(visibleGroupsKey, JSON.stringify([...n]));
       return n;
     });
   };
-  const selectAll = () => { setVisibleGroups(null); localStorage.removeItem("modding_visible_groups"); };
-  const clearAll = () => { setVisibleGroups(new Set()); localStorage.setItem("modding_visible_groups", JSON.stringify([])); };
+  const selectAll = () => { setVisibleGroups(null); localStorage.removeItem(visibleGroupsKey); };
+  const clearAll = () => { setVisibleGroups(new Set()); localStorage.setItem(visibleGroupsKey, JSON.stringify([])); };
   const toggleHide = (id) => {
     setHiddenIds(prev => {
       const n = new Set(prev);
       if (n.has(id)) n.delete(id); else n.add(id);
-      localStorage.setItem("modding_hidden_ids", JSON.stringify([...n]));
+      localStorage.setItem(hiddenIdsKey, JSON.stringify([...n]));
       return n;
     });
   };

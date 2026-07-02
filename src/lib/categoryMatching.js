@@ -11,6 +11,61 @@ function normalizeCategoryToken(value) {
   return normalizeCategoryTokens(value).join("");
 }
 
+const CATEGORY_ALIAS_GROUPS = {
+  content: ["content", "content_streaming"],
+  content_streaming: ["content_streaming", "content"],
+  tools: ["tools", "paid_tools"],
+  paid_tools: ["paid_tools", "tools"],
+};
+
+export function normalizeCategoryId(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return "";
+  if (normalized === "content") return "content_streaming";
+  if (normalized === "tools") return "paid_tools";
+  return normalized;
+}
+
+export function getCategoryAliases(value) {
+  const normalized = normalizeCategoryId(value);
+  return CATEGORY_ALIAS_GROUPS[normalized] || (normalized ? [normalized] : []);
+}
+
+export function getListingCategoryBuckets(listing, options = {}) {
+  const buckets = new Set();
+  const addCategory = (value) => {
+    getCategoryAliases(value).forEach((alias) => buckets.add(alias));
+  };
+
+  const rawCategory = normalizeCategoryId(listing?.category);
+  addCategory(rawCategory);
+
+  const isPaidOrPremiumMod =
+    rawCategory === "premium_mods" ||
+    ((rawCategory === "modding" || !rawCategory) &&
+      (listing?.is_premium || Number(listing?.price || 0) > 0));
+
+  if (rawCategory === "premium_mods") {
+    buckets.add("modding");
+  }
+  if (isPaidOrPremiumMod) {
+    buckets.add("premium_mods");
+  }
+
+  if (options.includeNewsfeed !== false) {
+    (Array.isArray(listing?.newsfeed_categories) ? listing.newsfeed_categories : []).forEach(addCategory);
+  }
+
+  return buckets;
+}
+
+export function listingMatchesCategory(listing, selectedCategory, options = {}) {
+  const selectedAliases = getCategoryAliases(selectedCategory);
+  if (!selectedAliases.length) return false;
+  const buckets = getListingCategoryBuckets(listing, options);
+  return selectedAliases.some((alias) => buckets.has(alias));
+}
+
 function addVariants(variants, token) {
   const normalized = String(token || "").trim();
   if (!normalized) return;

@@ -5,8 +5,8 @@ import { isAdmin } from "@/lib/constants";
 import { useAuth } from "@/lib/AuthContext";
 import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import AuthNavbar from "@/components/layout/AuthNavbar";
-import { Eye, Grid, Upload, Radio, Film, Sparkles, Store, LogOut, Shield, Users, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Star, Zap, Gem, Crown, Camera } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Grid, Upload, Radio, Film, Sparkles, LogOut, X, Gamepad2, UserRound, Building2, Palette, MapPin, Trophy, Zap, Camera } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import FollowerRankBadge from "@/components/shared/FollowerRankBadge";
 import VerifiedCheckmark from "@/components/shared/VerifiedCheckmark";
@@ -30,7 +30,7 @@ import AccountTypeTransitionModal from "@/components/account/AccountTypeTransiti
 import EditProfileModal from "@/components/profile/EditProfileModal";
 import { updateProfileMedia } from "@/lib/updateProfileMedia";
 import { getProfileByEmail } from "@/lib/getProfileByEmail";
-import { getListingGlowClass, getListingGlowStyle } from "@/lib/listingGlow";
+import PostCard from "@/components/channel/PostCard";
 
 const COUNTRIES = [
   { name: "Afghanistan", flag: "🇦🇫" }, { name: "Albania", flag: "🇦🇱" }, { name: "Algeria", flag: "🇩🇿" },
@@ -101,6 +101,19 @@ const COUNTRIES = [
   { name: "Zimbabwe", flag: "🇿🇼" }
 ];
 
+function getVisibleProfileListings(rows = [], isOwner = false) {
+  return rows
+    .filter((listing) => isOwner ? listing?.status !== "removed" : listing?.status === "active")
+    .filter((listing) => isOwner || listing?.is_approved !== false);
+}
+
+function getVisibleProfilePosts(rows = [], isOwner = false) {
+  return rows
+    .filter((post) => isOwner ? post?.status !== "removed" : post?.status === "active")
+    .filter((post) => isOwner || post?.is_approved !== false)
+    .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
+}
+
 export default function Profile() {
   const { user: authUser } = useAuth();
   const [user, setUser] = useState(null);
@@ -109,6 +122,7 @@ export default function Profile() {
   // reflects you, even while viewing someone else's profile.
   const [ownProfile, setOwnProfile] = useState(null);
   const [listings, setListings] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [showStudio, setShowStudio] = useState(false);
@@ -139,9 +153,10 @@ export default function Profile() {
         const ghostEmail = impersonationData.targetEmail;
         
         // Fetch ghost account's profile and listings
-        const [ghostProfile, listingsData] = await Promise.all([
+        const [ghostProfile, listingsData, postsData] = await Promise.all([
           getProfileByEmail(ghostEmail),
           base44.entities.Listing.filter({ seller_email: ghostEmail }),
+          base44.entities.ChannelPost.filter({ creator_email: ghostEmail }),
         ]);
         
         if (ghostProfile) {
@@ -154,7 +169,8 @@ export default function Profile() {
             ghostData: impersonationData,
           });
         }
-        setListings(listingsData);
+        setListings(getVisibleProfileListings(listingsData, true));
+        setPosts(getVisibleProfilePosts(postsData, true));
         setIsOwnProfile(true); // Ghost account can edit their own profile
         setLoading(false);
         return;
@@ -187,14 +203,16 @@ export default function Profile() {
       
       setIsOwnProfile(isOwnProfileValue);
       
-      const [loadedProfile, listingsData] = await Promise.all([
+      const [loadedProfile, listingsData, postsData] = await Promise.all([
         getProfileByEmail(emailToLoad),
         base44.entities.Listing.filter({ seller_email: emailToLoad }),
+        base44.entities.ChannelPost.filter({ creator_email: emailToLoad }),
       ]);
       if (loadedProfile) setProfile(loadedProfile);
       // When this IS your own profile, the loaded profile is also your nav profile.
       if (isOwnProfileValue && loadedProfile) setOwnProfile(loadedProfile);
-      setListings(listingsData.filter(l => l.status === "active"));
+      setListings(getVisibleProfileListings(listingsData, isOwnProfileValue));
+      setPosts(getVisibleProfilePosts(postsData, isOwnProfileValue));
       setLoading(false);
     };
     init();
@@ -277,6 +295,7 @@ export default function Profile() {
   
   const admin = !isGhostLogin && isAdmin(user?.email);
   const followers = profile?.followers_count || 0;
+  const viewerProfile = isOwnProfile ? profile : ownProfile;
   
   return (
     <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${profile?.profile_theme_color || "#030712"}, #030712 55%, #050510)` }}>
@@ -570,7 +589,7 @@ export default function Profile() {
             <div className="flex items-center justify-between gap-2 mb-4">
               <div className="flex items-center gap-2">
                 <Grid className="w-4 h-4 text-gray-400" />
-                <h2 className="text-white font-bold">Listings & Posts</h2>
+                <h2 className="text-white font-bold">Listings</h2>
               </div>
               {listings.length > 0 && (
                 <ListingSortControl value={sortOrder} onChange={setSortOrder} />
@@ -585,6 +604,62 @@ export default function Profile() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {sortListings(listings, sortOrder).map((l) => (
                   <StandardListingCard key={l.id} listing={l} user={user} profile={profile} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-10">
+            <div className="flex items-center gap-2 mb-4">
+              <Film className="w-4 h-4 text-gray-400" />
+              <h2 className="text-white font-bold">Posts</h2>
+            </div>
+            {posts.length === 0 ? (
+              <div className="text-center py-16 text-gray-600">
+                <Film className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p>No posts yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    user={user}
+                    profile={viewerProfile}
+                    onLike={async () => {
+                      if (!user?.email) return;
+                      const existingLike = await base44.entities.PostLike.filter({ post_id: post.id, user_email: user.email });
+                      if (existingLike.length > 0) {
+                        await base44.entities.PostLike.delete(existingLike[0].id);
+                        await base44.entities.ChannelPost.update(post.id, { likes: Math.max(0, (post.likes || 0) - 1) });
+                      } else {
+                        await base44.entities.PostLike.create({ post_id: post.id, user_email: user.email });
+                        await base44.entities.ChannelPost.update(post.id, { likes: (post.likes || 0) + 1 });
+                      }
+                      const updated = await base44.entities.ChannelPost.filter({ creator_email: profile?.user_email || targetEmail || user?.email });
+                      setPosts(getVisibleProfilePosts(updated, isOwnProfile));
+                    }}
+                    onComment={async (content) => {
+                      if (!user?.email) return;
+                      await base44.entities.ChannelPostComment.create({
+                        post_id: post.id,
+                        author_email: user.email,
+                        author_username: viewerProfile?.username || user.full_name,
+                        author_avatar: viewerProfile?.avatar_url || "",
+                        content,
+                      });
+                      await base44.entities.ChannelPost.update(post.id, { comments_count: (post.comments_count || 0) + 1 });
+                      const updated = await base44.entities.ChannelPost.filter({ creator_email: profile?.user_email || targetEmail || user?.email });
+                      setPosts(getVisibleProfilePosts(updated, isOwnProfile));
+                    }}
+                    onShare={async () => {
+                      await base44.entities.ChannelPost.update(post.id, { shares_count: (post.shares_count || 0) + 1 });
+                      navigator.clipboard.writeText(window.location.href);
+                      const updated = await base44.entities.ChannelPost.filter({ creator_email: profile?.user_email || targetEmail || user?.email });
+                      setPosts(getVisibleProfilePosts(updated, isOwnProfile));
+                    }}
+                  />
                 ))}
               </div>
             )}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Upload, Plus, ArrowLeft, Play, Youtube, ExternalLink, Package, Monitor, Gamepad2, CheckCircle, Store, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag, LayoutGrid } from "lucide-react";
+import { Upload, Plus, ArrowLeft, Play, Youtube, ExternalLink, Monitor, Gamepad2, CheckCircle, Info, Laptop, Boxes, Megaphone, Wrench, Coffee, Sparkles, AlertTriangle, DollarSign, Save, FolderOpen, Tag, LayoutGrid } from "lucide-react";
 
 const NEWSFEED_TARGETS = [
   { id: "games", label: "Games" },
@@ -46,6 +45,7 @@ import { uploadFileWithFallback } from "@/lib/uploadToR2";
 import { TOP_FRANCHISES } from "@/lib/franchises";
 import { supabase } from "@/lib/supabaseClient";
 import { useLocation, useNavigate } from "react-router-dom";
+import { normalizeCategoryId } from "@/lib/categoryMatching";
 
 function extractYouTubeId(url) {
   if (!url) return null;
@@ -96,7 +96,7 @@ export default function CreateListing() {
 
   const params = new URLSearchParams(location.search);
   const editId = params.get("edit");
-  const defaultCat = params.get("cat") || "";
+  const defaultCat = normalizeCategoryId(params.get("cat") || "");
   const defaultSub = params.get("sub") || "";
   const defaultGame = params.get("game") || defaultSub;
 

@@ -510,7 +510,7 @@ export default function GamingCommunity() {
   const [activeFranchise, setActiveFranchise] = useState(null);
   const [showRecommend, setShowRecommend] = useState(false);
   const [hiddenIds, setHiddenIds] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem("gc_hidden_ids") || "[]")); } catch { return new Set(); }
+    try { return new Set(JSON.parse(localStorage.getItem("gc_hidden_ids:guest") || "[]")); } catch { return new Set(); }
   });
   const [showHiddenPanel, setShowHiddenPanel] = useState(false);
   const [showGroupFilter, setShowGroupFilter] = useState(false);
@@ -519,6 +519,9 @@ export default function GamingCommunity() {
   const startX = useRef(0);
   const startW = useRef(0);
   const admin = isAdmin(user?.email);
+  const filterScope = (user?.email || "guest").toLowerCase();
+  const hiddenIdsKey = `gc_hidden_ids:${filterScope}`;
+  const visibleIdsKey = `gc_visible_ids:${filterScope}`;
 
   const onDragStart = useCallback((e) => {
     if (isMobile) return;
@@ -630,9 +633,23 @@ export default function GamingCommunity() {
   const allFranchises = [...TOP_FRANCHISES, ...extraFranchises];
   const allGenres = ["All", ...Array.from(new Set(allFranchises.map(f => f.genre)))];
 
+  useEffect(() => {
+    try {
+      setHiddenIds(new Set(JSON.parse(localStorage.getItem(hiddenIdsKey) || "[]")));
+    } catch {
+      setHiddenIds(new Set());
+    }
+    try {
+      const saved = JSON.parse(localStorage.getItem(visibleIdsKey) || "null");
+      setVisibleCommunities(saved ? new Set(saved) : null);
+    } catch {
+      setVisibleCommunities(null);
+    }
+  }, [hiddenIdsKey, visibleIdsKey]);
+
   const [visibleCommunities, setVisibleCommunities] = React.useState(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("gc_visible_ids") || "null");
+      const saved = JSON.parse(localStorage.getItem("gc_visible_ids:guest") || "null");
       return saved ? new Set(saved) : null;
     } catch { return null; }
   });
@@ -642,11 +659,11 @@ export default function GamingCommunity() {
       const base = prev || allIds;
       const n = new Set(base);
       if (n.has(id)) n.delete(id); else n.add(id);
-      localStorage.setItem("gc_visible_ids", JSON.stringify([...n]));
+      localStorage.setItem(visibleIdsKey, JSON.stringify([...n]));
       return n;
     });
   };
-  const selectAllCommunities = () => { setVisibleCommunities(null); localStorage.removeItem("gc_visible_ids"); };
+  const selectAllCommunities = () => { setVisibleCommunities(null); localStorage.removeItem(visibleIdsKey); };
   const isVisible = (id) => !visibleCommunities || visibleCommunities.has(id);
 
   const filtered = allFranchises.filter(f => {
@@ -741,7 +758,7 @@ export default function GamingCommunity() {
     setHiddenIds(prev => {
       const n = new Set(prev);
       if (n.has(id)) n.delete(id); else n.add(id);
-      localStorage.setItem("gc_hidden_ids", JSON.stringify([...n]));
+      localStorage.setItem(hiddenIdsKey, JSON.stringify([...n]));
       return n;
     });
   };
@@ -898,7 +915,7 @@ export default function GamingCommunity() {
                     </button>
                     <button onClick={() => {
                       setVisibleCommunities(new Set());
-                      localStorage.setItem("gc_visible_ids", JSON.stringify([]));
+                      localStorage.setItem(visibleIdsKey, JSON.stringify([]));
                     }} className="text-xs text-gray-500 hover:text-red-400 font-semibold transition-colors flex items-center gap-1">
                       <Square className="w-3 h-3" /> Unselect All
                     </button>

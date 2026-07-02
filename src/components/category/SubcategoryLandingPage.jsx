@@ -10,7 +10,7 @@ import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
-import { findCanonicalCategoryValue, listingMatchesSubcategory } from "@/lib/categoryMatching";
+import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 
 const PER_PAGE = 10;
@@ -25,11 +25,12 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
   useEffect(() => {
     const load = async () => {
       try {
-        const results = await base44.entities.Listing.filter({ category: cat, status: "active" }, "-created_date", 200);
-        setListings(results.filter(l => {
-          const matchSub = listingMatchesSubcategory(l, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });
-          const matchPremium = cat !== "premium_mods" || (l.product_type === "digital" && (l.is_premium || Number(l.price || 0) > 0));
-          return l.is_approved !== false && matchSub && matchPremium && !isServiceListing(l);
+        const results = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200);
+        setListings((Array.isArray(results) ? results : []).filter((listing) => {
+          const matchCategory = listingMatchesCategory(listing, normalizeCategoryId(cat));
+          const matchSub = listingMatchesSubcategory(listing, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });
+          const matchPremium = cat !== "premium_mods" || (listing.product_type === "digital" && (listing.is_premium || Number(listing.price || 0) > 0));
+          return matchCategory && listing.is_approved !== false && matchSub && matchPremium && !isServiceListing(listing);
         }));
       } catch {}
       setLoading(false);

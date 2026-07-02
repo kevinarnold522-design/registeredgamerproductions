@@ -43,6 +43,20 @@ const SOCIAL_PLATFORMS = [
   { key: "website", label: "Website", icon: <Globe className="w-4 h-4" />, color: "text-green-400 border-green-700/40 bg-green-900/10", placeholder: "https://yourwebsite.com" },
 ];
 
+function getVisibleListings(rows = [], isOwner = false) {
+  return rows
+    .filter((listing) => isOwner ? listing?.status !== "removed" : listing?.status === "active")
+    .filter((listing) => isOwner || listing?.is_approved !== false)
+    .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
+}
+
+function getVisiblePosts(rows = [], isOwner = false) {
+  return rows
+    .filter((post) => isOwner ? post?.status !== "removed" : post?.status === "active")
+    .filter((post) => isOwner || post?.is_approved !== false)
+    .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
+}
+
 export default function Channel() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -101,6 +115,7 @@ export default function Channel() {
       })();
       const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
       const email = viewEmail || ghostEmail || me?.email;
+      const viewingOwnChannel = !viewEmail || email === me?.email || ghostEmail === email;
       setUser(ghostEmail ? { ...(me || {}), email: ghostEmail, isGhostAccount: true } : me);
       setTargetEmail(email);
       if (email) {
@@ -130,8 +145,8 @@ export default function Channel() {
           setChannelTheme(p?.profile_theme_style || "default");
           setSocialLinks(p?.social_links || {});
           setVideos(myVideos.filter(v => v.status === "active"));
-          setListings(myListings.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
-          setPosts(myPosts.filter(post => post.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+          setListings(getVisibleListings(myListings, viewingOwnChannel));
+          setPosts(getVisiblePosts(myPosts, viewingOwnChannel));
         } catch (_) { /* keep page usable even if a fetch fails */ }
       }
       setLoading(false);
@@ -508,7 +523,7 @@ export default function Channel() {
                       }
                       // Refresh posts
                       const updated = await base44.entities.ChannelPost.filter({ creator_email: targetEmail });
-                      setPosts(updated.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+                      setPosts(getVisiblePosts(updated, isOwner));
                     }}
                     onComment={async (content) => {
                       await base44.entities.ChannelPostComment.create({
@@ -521,14 +536,14 @@ export default function Channel() {
                       await base44.entities.ChannelPost.update(post.id, { comments_count: (post.comments_count || 0) + 1 });
                       // Refresh
                       const updated = await base44.entities.ChannelPost.filter({ creator_email: targetEmail });
-                      setPosts(updated.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+                      setPosts(getVisiblePosts(updated, isOwner));
                     }}
                     onShare={async () => {
                       await base44.entities.ChannelPost.update(post.id, { shares_count: (post.shares_count || 0) + 1 });
                       // Copy link
                       navigator.clipboard.writeText(window.location.href);
                       const updated = await base44.entities.ChannelPost.filter({ creator_email: targetEmail });
-                      setPosts(updated.filter(p => p.status === "active").sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+                      setPosts(getVisiblePosts(updated, isOwner));
                     }}
                   />
                 ))}

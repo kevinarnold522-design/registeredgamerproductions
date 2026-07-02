@@ -10,6 +10,7 @@ import { CATEGORIES } from "@/lib/constants";
 import StickySearchBar from "@/components/shared/StickySearchBar";
 import { useAuth } from "@/lib/AuthContext";
 import { useLocation } from "react-router-dom";
+import { normalizeCategoryId } from "@/lib/categoryMatching";
 
 export default function CategoryPage() {
   const { user, isLoadingAuth } = useAuth();
@@ -18,7 +19,7 @@ export default function CategoryPage() {
   // Read from the live location so query-string changes (cat / sub) re-render
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const cat = params.get("cat") || "games";
+  const cat = normalizeCategoryId(params.get("cat") || "games");
   const sub = params.get("sub") || "";
 
   const categoryData = CATEGORIES.find(c => c.id === cat);
