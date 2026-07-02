@@ -380,20 +380,29 @@ export default function CreateListing() {
       const ghostEmail = ghostSession.isImpersonating && ghostSession.targetEmail ? ghostSession.targetEmail : null;
       const activeUser = ghostEmail ? { ...me, email: ghostEmail, isGhostAccount: true } : me;
       setUser(activeUser);
-      const profiles = await base44.entities.UserProfile.filter({ user_email: activeUser.email });
-      if (profiles.length > 0) setProfile(profiles[0]);
+      
+      // Set minimal state immediately instead of waiting for all async operations
+      setLoading(false);
       setGamingCommunities(TOP_FRANCHISES.map(f => ({ id: f.id, name: f.name })));
       refreshDynamicCategories();
       if (!editId && defaultGame) setGameSearch(defaultGame);
+      
+      // Load profile and listing data in the background without blocking UI
+      base44.entities.UserProfile.filter({ user_email: activeUser.email })
+        .then(profiles => { if (profiles.length > 0) setProfile(profiles[0]); })
+        .catch(() => {});
+      
       if (editId) {
-        const l = await base44.entities.Listing.get(editId);
-        if (l) {
-          setForm(buildFormFromListing(l, defaultCat, defaultSub, defaultGame));
-          setImages(l.images || []);
-          if (l.game_name) setGameSearch(l.game_name);
-        }
+        base44.entities.Listing.get(editId)
+          .then(l => {
+            if (l) {
+              setForm(buildFormFromListing(l, defaultCat, defaultSub, defaultGame));
+              setImages(l.images || []);
+              if (l.game_name) setGameSearch(l.game_name);
+            }
+          })
+          .catch(() => {});
       }
-      setLoading(false);
     };
     init();
   }, [authUser, isLoadingAuth]);

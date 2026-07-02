@@ -374,7 +374,12 @@ export default function ListingPage() {
       return;
     }
 
-    if (!url) return;
+    // If no direct download URL, fallback to Ko-fi link for any listing type
+    const finalUrl = url || donationUrl;
+    if (!finalUrl) {
+      alert("This listing has no download link or purchase URL set yet. Please contact the seller.");
+      return;
+    }
 
     // Paid (non-mod) listings still gate on purchase before unlocking the file.
     if (isPaid && !purchased && !isOwnerOrAdmin) {
@@ -390,13 +395,13 @@ export default function ListingPage() {
       autoFollowSeller();
     }
 
-    // Direct route to the download/external link — no ad gate, no "Continue" step.
+    // Direct route to the download/external link or Ko-fi fallback — no ad gate, no "Continue" step.
     base44.entities.Listing.get(listing.id).then(fresh => {
       const newDownloads = (fresh.downloads || 0) + 1;
       base44.entities.Listing.update(listing.id, { downloads: newDownloads });
       setListing(prev => prev ? { ...prev, downloads: newDownloads } : prev);
     }).catch(() => {});
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(finalUrl, "_blank", "noopener,noreferrer");
   };
 
   // Legacy ad-gate completion handler — kept for backwards compatibility with any

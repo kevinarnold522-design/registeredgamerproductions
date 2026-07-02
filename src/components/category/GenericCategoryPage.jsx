@@ -15,10 +15,8 @@ import CommunityPostCard from "@/components/community/CommunityPostCard";
 import NewsfeedPagination from "@/components/community/NewsfeedPagination";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
-import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 import { formatListingPrice } from "@/lib/currency";
 import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
-import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import { shouldHideFromGeneralFeeds } from "@/lib/communityFeedFilters";
 
 const PER_PAGE = 12;
@@ -569,8 +567,8 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                   {feedTotalPages > 1 && (
                     <NewsfeedPagination page={feedPage} totalPages={feedTotalPages} onChange={setFeedPage} />
                   )}
-                  <div className="space-y-3">
-                    {pagedFeed.map(({ type, item }) => type === "post" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {pagedFeed.map(({ type, item }, idx) => type === "post" ? (
                       <CommunityPostCard
                         key={`post-${item.id}`}
                         post={item}
@@ -583,39 +581,13 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                         accentColor={meta.color}
                       />
                     ) : (
-                      <a
+                      <HomeListingCard
                         key={`listing-${item.id}`}
-                        href={getPublicSiteUrl(`/listing?id=${item.id}`)}
-                        className="flex gap-3 rounded-2xl border border-gray-800 bg-gray-900/70 p-3 hover:border-purple-600/40 transition-colors"
-                      >
-                        <div className="relative w-20 h-20 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
-                          {item.images?.[0] ? (
-                            <ListingImageFrame
-                              src={item.images[0]}
-                              alt={item.title || "Listing"}
-                              fallbackCategory={item.category || meta.title}
-                              className="w-full h-full"
-                              foregroundClassName="w-full h-full object-contain p-1.5"
-                              backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>
-                          )}
-                          <ListerAvatarBadge listing={item} size="w-5 h-5" className="absolute bottom-1 right-1" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-amber-400/60 bg-gradient-to-r from-black via-zinc-950 to-amber-950/80 text-amber-200 text-[9px] font-black uppercase tracking-wide mb-1 shadow-[0_0_14px_rgba(234,179,8,0.25)]">
-                            <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" /> Featured
-                          </span>
-                          <p className="text-white font-bold text-sm truncate">{item.title}</p>
-                          <p className="text-gray-500 text-xs line-clamp-2 mt-1">{item.description}</p>
-                          {item.download_host && <div className="mt-2"><DownloadHostBadge host={item.download_host} size="sm" /></div>}
-                          <p className="text-purple-300 text-sm font-black mt-1">
-                            {item.is_free || !item.price ? "FREE" : formatListingPrice(item.price, item.currency)}
-                          </p>
-                          <div className="mt-2"><ListingEngagementBar listing={item} user={user} profile={profile} compact /></div>
-                        </div>
-                      </a>
+                        listing={item}
+                        user={user}
+                        profile={profile}
+                        index={idx}
+                      />
                     ))}
                   </div>
                   {feedTotalPages > 1 && (
