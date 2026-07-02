@@ -77,6 +77,11 @@ function uniqueTruthy(values = []) {
   return Array.from(new Set(values.map((value) => String(value || "").trim()).filter(Boolean)));
 }
 
+function sanitizeSubcategoryValue(value = "") {
+  const text = String(value || "").trim();
+  return /^(https?:)?\/\//i.test(text) ? "" : text;
+}
+
 function stripPremiumModsPrefix(value = "") {
   return String(value || "").replace(/^premium\s*mods\s*-\s*/i, "").trim();
 }
@@ -694,13 +699,15 @@ export default function CreateListing() {
     const effectiveCategory = form.category;
     const primarySubcategory = Array.isArray(form.subcategories) ? form.subcategories[0] || "" : "";
     const normalizedPrimarySubcategory = stripPremiumModsPrefix(primarySubcategory);
-    const normalizedModdingSubcategory = form.modding_subcategory || (["modding", "premium_mods"].includes(effectiveCategory) ? normalizedPrimarySubcategory : "");
+    const normalizedModdingSubcategory = sanitizeSubcategoryValue(
+      form.modding_subcategory || (["modding", "premium_mods"].includes(effectiveCategory) ? normalizedPrimarySubcategory : "")
+    );
     const normalizedToolTargetGame =
       (effectiveCategory === "paid_tools" || effectiveCategory === "premium_mods")
         ? (form.tool_target_game || form.game_name || normalizedPrimarySubcategory || "")
         : "";
-    const normalizedDigitalSubcategory = form.digital_subcategory_custom?.trim() || form.digital_subcategory;
-    const normalizedPhysicalSubcategory = form.physical_subcategory;
+    const normalizedDigitalSubcategory = sanitizeSubcategoryValue(form.digital_subcategory_custom?.trim() || form.digital_subcategory);
+    const normalizedPhysicalSubcategory = sanitizeSubcategoryValue(form.physical_subcategory);
     const normalizedSubcategories = uniqueTruthy([
       ...(Array.isArray(form.subcategories) ? form.subcategories : (form.subcategory ? [form.subcategory] : [])),
       ...(effectiveCategory === "games"
@@ -727,6 +734,13 @@ export default function CreateListing() {
             normalizedPrimarySubcategory,
             ...normalizedSubcategories,
           ]));
+    const normalizedExternalLink = (() => {
+      const value = String(form.external_link || "").trim();
+      const donationLinks = [form.kofi_url, form.buymeacoffee_url, form.patreon_url].map((item) => String(item || "").trim()).filter(Boolean);
+      if (["premium_mods", "modding"].includes(effectiveCategory) && donationLinks.includes(value)) return "";
+      return value;
+    })();
+
     const normalizedNewsfeedCategories = uniqueTruthy([
       effectiveCategory,
       ...(form.newsfeed_categories || []),
@@ -762,7 +776,7 @@ export default function CreateListing() {
       seller_email: sellerEmail,
       seller_username: sellerName,
       seller_paypal_email: form.paypal_email || undefined,
-      external_link: form.external_link || undefined,
+      external_link: normalizedExternalLink || undefined,
       card_glow_style: form.card_glow_style,
       card_glow_color: form.card_glow_color,
       card_glow_hex: form.card_glow_hex,

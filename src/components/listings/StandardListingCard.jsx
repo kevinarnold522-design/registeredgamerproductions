@@ -12,6 +12,7 @@ import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { formatListingPrice } from "@/lib/currency";
 import { getListingYouTubeId } from "@/lib/youtube";
 import { getPublisherRankMap } from "@/lib/publisherRank";
+import { getListingDisplayCategoryLabel } from "@/lib/listingDisplay";
 
 // Vertical card: image on top, details below.
 // All listing cards share ONE consistent media height so grids line up evenly.
@@ -154,6 +155,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
   const anim = animationProps(listing.card_animation);
   const titleFont = FONT_FAMILIES[listing.card_font_family];
   const titleColor = listing.card_font_color && listing.card_font_color !== "#ffffff" ? listing.card_font_color : undefined;
+  const displayCategoryLabel = getListingDisplayCategoryLabel(listing, subcategory);
 
   return (
     <motion.div
@@ -237,7 +239,7 @@ export default function StandardListingCard({ listing: initialListing, user, pro
         </a>
 
         <a href={`/listing?id=${listing.id}`} className="block">
-          <p className="text-purple-400 text-[10px] font-semibold capitalize truncate">{listing.card_category_label || subcategory || listing.modding_subcategory || listing.digital_subcategory || listing.game_name || "Listing"}</p>
+          <p className="text-purple-400 text-[10px] font-semibold capitalize truncate">{displayCategoryLabel}</p>
           <h3 style={{ fontFamily: titleFont, color: titleColor }} className={`text-white text-sm line-clamp-2 leading-tight group-hover:text-purple-300 transition-colors ${isPaidMod ? "font-bold font-serif tracking-[0.03em]" : "font-bold"}`}>{listing.title}</h3>
           <p className="theme-glow-action inline-flex items-center gap-1 text-gray-500 text-[10px] mt-1">
             <CalendarDays className="w-3 h-3 icon-glow-hover" /> {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "Recently"}
