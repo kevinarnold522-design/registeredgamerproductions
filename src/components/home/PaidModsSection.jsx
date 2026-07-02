@@ -4,8 +4,9 @@ import { Search, Filter, Gamepad2, Tag, Layers } from "lucide-react";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { Link } from "react-router-dom";
 import { isServiceListing } from "@/lib/constants";
-import StandardListingCard from "@/components/listings/StandardListingCard";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import { listingMatchesCategory } from "@/lib/categoryMatching";
+import { useAuth } from "@/lib/AuthContext";
 
 const PAID_MOD_CATEGORIES = [
   { id: "premium_mods", label: "Premium Mods", color: "from-purple-600 to-pink-600" },
@@ -27,14 +28,26 @@ const PREMIUM_MOD_GAME_CARDS = [
 ];
 
 export default function PaidModsSection() {
+  const { user: authUser } = useAuth();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
   const [filters, setFilters] = useState({
     search: "",
     category: "",
     game: "",
     priceRange: "",
   });
+
+  useEffect(() => {
+    if (authUser?.email) {
+      import("@/api/base44Client").then(({ base44 }) => {
+        base44.entities.UserProfile.filter({ user_email: authUser.email })
+          .then(profiles => { if (Array.isArray(profiles) && profiles.length > 0) setProfile(profiles[0]); })
+          .catch(() => {});
+      });
+    }
+  }, [authUser?.email]);
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -246,8 +259,8 @@ export default function PaidModsSection() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredListings.map((listing) => (
-                <StandardListingCard key={listing.id} listing={listing} />
+              {filteredListings.map((listing, idx) => (
+                <HomeListingCard key={listing.id} listing={listing} user={authUser} profile={profile} index={idx} />
               ))}
             </div>
           )}

@@ -95,10 +95,11 @@ export default function MovingDashboard({ currentUser, currentProfile }) {
       setRankMap(computeMonthlyRanks(realActive));
       const allMods = realActive.filter((listing) => listingMatchesCategory(listing, "modding"));
       const allGames = realActive.filter((listing) => listingMatchesCategory(listing, "games"));
+      const allPremiumMods = realActive.filter((listing) => listingMatchesCategory(listing, "premium_mods"));
       setPcGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("pc") || String(p).toLowerCase().includes("steam"))).slice(0, 16));
       setMobileGames(allGames.filter(g => (g.platforms || []).some(p => String(p).toLowerCase().includes("android") || String(p).toLowerCase().includes("mobile") || String(p).toLowerCase().includes("ios"))).slice(0, 16));
       setFreeMods(allMods.filter(m => !m.price || m.price === 0 || m.is_free).slice(0, 16));
-      setPaidMods(allMods.filter(m => m.price > 0 && !m.is_free).slice(0, 16));
+      setPaidMods(allPremiumMods.length > 0 ? allPremiumMods : allMods.filter(m => m.price > 0 && !m.is_free).slice(0, 16));
       setMods(allMods.slice(0, 16));
       setProducts(realActive.filter((listing) => !listingMatchesCategory(listing, "modding") && !listingMatchesCategory(listing, "content_streaming")).slice(0, 16));
       setLoading(false);

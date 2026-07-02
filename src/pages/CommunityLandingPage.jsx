@@ -5,7 +5,7 @@ import PostComposer from "@/components/community/PostComposer";
 import MemberLeaderboard from "@/components/community/MemberLeaderboard";
 import PostNotifications from "@/components/community/PostNotifications";
 import ListingEngagementBar from "@/components/community/ListingEngagementBar";
-import ListingImageFrame from "@/components/listings/ListingImageFrame";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import TieredMembershipModal from "@/components/community/TieredMembershipModal";
@@ -778,34 +778,9 @@ export default function CommunityLandingPage() {
                 <p className="mt-1 text-xs text-gray-600">Adjust the price or premium filters to show more listings.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {pagedL.map(l => (
-                  <div key={l.id} className="flex flex-col rounded-xl border border-gray-800 bg-gray-900/60 overflow-hidden hover:border-purple-600/40 transition-colors group">
-                    <Link to={`/listing?id=${l.id}`}
-                      onClick={async () => {
-                        try {
-                          const fresh = await base44.entities.Listing.get(l.id);
-                          await base44.entities.Listing.update(l.id, { views: (fresh.views || 0) + 1 });
-                        } catch {}
-                      }}>
-                      <div className="aspect-square overflow-hidden bg-gray-800">
-                        {l.images?.[0] ? <ListingImageFrame src={l.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
-                      </div>
-                      <div className="p-2.5">
-                        <p className="text-white text-xs font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{l.title}</p>
-                        {l.download_host && <div className="mt-1.5"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
-                        <div className="flex items-center justify-between mt-1">
-                          <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `$${l.price}`}</p>
-                          <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
-                            <Eye className="w-2.5 h-2.5 theme-glow-icon" />{(l.views || 0).toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                    <div className="px-2.5 pb-2">
-                      <ListingEngagementBar listing={l} user={user} profile={profile} compact />
-                    </div>
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {pagedL.map((l, idx) => (
+                  <HomeListingCard key={l.id} listing={l} user={user} profile={profile} index={idx} />
                 ))}
               </div>
             )}
