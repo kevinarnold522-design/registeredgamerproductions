@@ -117,6 +117,11 @@ function buildCategoryNewsfeedItems({ posts, listings, franchiseIds, search, cat
 
   const visibleListings = (Array.isArray(listings) ? listings : [])
     .filter((listing) => {
+      // For premium_mods category, only show paid listings in the newsfeed
+      if (category === "premium_mods") {
+        const isPaid = !listing?.is_free && Number(listing?.price) > 0;
+        if (!isPaid) return false;
+      }
       if (!normalizedSearch) return true;
       return [
         listing?.title,
