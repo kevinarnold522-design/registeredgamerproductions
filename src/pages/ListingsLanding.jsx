@@ -14,6 +14,7 @@ import { listingScore } from "@/lib/leaderboardScore";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings } from "@/lib/homeDataCache";
 import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 export default function ListingsLanding({ mode = "mine" }) {
   const [user, setUser] = useState(null);
@@ -109,10 +110,14 @@ export default function ListingsLanding({ mode = "mine" }) {
                   <a href={getPublicSiteUrl(`/listing?id=${l.id}`)} className="block">
                     <div className="aspect-square bg-gray-800 relative flex items-center justify-center">
                       {l.images?.[0] ? (
-                        <>
-                          <img src={l.images[0]} className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-30" alt="" aria-hidden="true" />
-                          <img src={l.images[0]} className="relative w-full h-full object-contain p-2" alt={l.title || "Listing"} />
-                        </>
+                        <ListingImageFrame
+                          src={l.images[0]}
+                          alt={l.title || "Listing"}
+                          fallbackCategory={l.category || "Listing"}
+                          className="w-full h-full"
+                          foregroundClassName="w-full h-full object-contain p-2"
+                          backgroundClassName="w-full h-full object-cover scale-110 blur-xl opacity-30"
+                        />
                       ) : <Package className="w-10 h-10 text-gray-600" />}
                     </div>
                     <div className="p-3">

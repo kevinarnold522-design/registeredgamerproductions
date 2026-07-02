@@ -18,6 +18,7 @@ import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 import { formatListingPrice } from "@/lib/currency";
 import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 const PER_PAGE = 12;
 const NEWSFEED_PER_PAGE = 10;
@@ -562,10 +563,14 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
                       >
                         <div className="relative w-20 h-20 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
                           {item.images?.[0] ? (
-                            <>
-                              <img src={item.images[0]} className="absolute inset-0 w-full h-full object-cover scale-110 blur-lg opacity-35" alt="" aria-hidden="true" />
-                              <img src={item.images[0]} className="relative w-full h-full object-contain p-1.5" alt="" />
-                            </>
+                            <ListingImageFrame
+                              src={item.images[0]}
+                              alt={item.title || "Listing"}
+                              fallbackCategory={item.category || meta.title}
+                              className="w-full h-full"
+                              foregroundClassName="w-full h-full object-contain p-1.5"
+                              backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35"
+                            />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>
                           )}

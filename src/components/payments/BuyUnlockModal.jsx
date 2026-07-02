@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { X, Lock, ShieldCheck } from "lucide-react";
 import PayPalCheckout from "@/components/payments/PayPalCheckout";
 import { formatListingPrice } from "@/lib/currency";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 // Buy-to-unlock modal for paid listings/mods.
 // Runs the PayPal checkout for a single listing; on success calls onPaid().
@@ -35,7 +36,14 @@ export default function BuyUnlockModal({ listing, user, onClose, onPaid }) {
         <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-900 border border-gray-800 mb-4">
           <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0">
             {listing.images?.[0]
-              ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+              ? <ListingImageFrame
+                  src={listing.images[0]}
+                  alt={listing.title || "Listing"}
+                  fallbackCategory={listing.category || "Listing"}
+                  className="w-full h-full"
+                  foregroundClassName="w-full h-full object-cover"
+                  backgroundClassName="w-full h-full object-cover opacity-35"
+                />
               : <div className="w-full h-full" />}
           </div>
           <div className="flex-1 min-w-0">

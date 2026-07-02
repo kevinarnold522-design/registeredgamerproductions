@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, X, Tag, Gamepad2 } from "lucide-react";
+import { Search, X, Gamepad2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 export default function GlobalSearchBar({ compact = false }) {
   const [query, setQuery] = useState("");
@@ -104,7 +105,14 @@ export default function GlobalSearchBar({ compact = false }) {
                   className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-800 transition-colors text-left"
                 >
                   {listing.images?.[0] ? (
-                    <img src={listing.images[0]} alt="" className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                    <ListingImageFrame
+                      src={listing.images[0]}
+                      alt={listing.title || "Listing"}
+                      fallbackCategory={listing.category || "Listing"}
+                      className="w-9 h-9 rounded-lg flex-shrink-0"
+                      foregroundClassName="w-full h-full object-cover"
+                      backgroundClassName="w-full h-full object-cover opacity-35"
+                    />
                   ) : (
                     <div className="w-9 h-9 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center flex-shrink-0">
                       <Gamepad2 className="w-4 h-4 text-gray-600" />

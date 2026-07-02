@@ -171,7 +171,13 @@ export default function StandardListingCard({ listing: initialListing, user, pro
       {/* TOP: Image */}
       <a href={`/listing?id=${listing.id}`} className="relative block w-full">
         {listing.images?.length > 0 ? (
-          <ListingImageSlider images={listing.images} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} heightClass={heightClass} />
+          <ListingImageSlider
+            images={listing.images}
+            title={listing.title}
+            badge={listing.is_premium ? "PREMIUM" : null}
+            heightClass={heightClass}
+            fallbackCategory={listing.card_category_label || subcategory || listing.category || "Listing"}
+          />
         ) : ytId ? (
           <div className={`${heightClass} w-full relative bg-black`}>
             <img

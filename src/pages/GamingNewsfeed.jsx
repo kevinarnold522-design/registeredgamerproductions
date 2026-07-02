@@ -14,6 +14,7 @@ import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings } from "@/lib/homeDataCache";
+import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
@@ -104,10 +105,14 @@ export default function GamingNewsfeed() {
               <a key={`l-${item.id}`} href={`/listing?id=${item.id}`} className="flex gap-3 rounded-2xl border border-gray-800 bg-gray-900/70 p-3 hover:border-purple-600/40 transition-colors">
                 <div className="relative w-20 h-20 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0">
                   {item.images?.[0] ? (
-                    <>
-                      <img src={item.images[0]} className="absolute inset-0 w-full h-full object-cover scale-110 blur-lg opacity-35" alt="" aria-hidden="true" />
-                      <img src={item.images[0]} className="relative w-full h-full object-contain p-1.5" alt="" />
-                    </>
+                    <ListingImageFrame
+                      src={item.images[0]}
+                      alt={item.title || "Listing"}
+                      fallbackCategory={item.category || "Listing"}
+                      className="w-full h-full"
+                      foregroundClassName="w-full h-full object-contain p-1.5"
+                      backgroundClassName="w-full h-full object-cover scale-110 blur-lg opacity-35"
+                    />
                   ) : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
                   <ListerAvatarBadge listing={item} size="w-5 h-5" className="absolute bottom-1 right-1" />
                 </div>
