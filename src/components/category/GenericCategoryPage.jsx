@@ -628,7 +628,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         )}
         <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Listings Feed</p>
+            <p className="text-gray-500 text-xs font-black uppercase tracking-[0.22em]">Browse Listings</p>
             <h2 className="text-white text-2xl font-black">{meta.title} Listings</h2>
           </div>
           <p className="text-gray-400 text-sm">{filtered.length} listing{filtered.length !== 1 ? "s" : ""}</p>
