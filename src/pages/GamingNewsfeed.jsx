@@ -13,6 +13,7 @@ import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import ListerAvatarBadge from "@/components/shared/ListerAvatarBadge";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 export default function GamingNewsfeed() {
   const { user } = useAuth();
@@ -28,7 +29,7 @@ export default function GamingNewsfeed() {
     const load = async () => {
       const [posts, listings] = await Promise.all([
         base44.entities.CommunityPost.list("-created_date", 120),
-        base44.entities.Listing.filter({ status: "active" }, "-created_date"),
+        getActiveListings(),
       ]);
       const activePosts = posts.filter(p => p.status === "active");
       const communityListings = listings.filter((listing) =>

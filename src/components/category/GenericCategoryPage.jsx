@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Radio, SlidersHorizontal, X, Send, EyeOff, LayoutGrid } from "lucide-react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
 import SubcategoryCards from "./SubcategoryCards";
 import Pagination from "@/components/shared/Pagination";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
@@ -11,6 +10,7 @@ import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { isServiceListing } from "@/lib/constants";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 const PER_PAGE = 12;
 
@@ -131,10 +131,9 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
   useEffect(() => {
     setLoading(true);
-    base44.entities.Listing.filter({ status: "active" }, "-created_date").then((rows) => {
+    getActiveListings().then((rows) => {
       const normalizedCat = normalizeCategoryId(cat);
       let cleaned = (Array.isArray(rows) ? rows : [])
-        .filter((listing) => listing?.status === "active")
         .filter((listing) => listingMatchesCategory(listing, normalizedCat));
 
       cleaned = cleaned.filter((listing) => listing.is_approved !== false);

@@ -6,6 +6,10 @@
 import { createRecord, updateRecord, deleteRecord, listRecords } from "./db.js";
 import { handleFunction } from "./functions.js";
 
+const SUPABASE_FALLBACK_URL = "https://smymannqqogtshvsiqyp.supabase.co";
+const SUPABASE_FALLBACK_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteW1hbm5xcW9ndHNodnNpcXlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MjMyOTYsImV4cCI6MjA5Njk5OTI5Nn0.mY40GwnnOoUXf111fgAhWgfzc8sapyBNcLISzbMWocg";
+const ACTIVE_LISTINGS_CACHE_TTL_SECONDS = 120;
+
 function corsHeaders(request, methods = "GET, POST, PUT, DELETE, OPTIONS") {
   const origin = request.headers.get("Origin");
   return {
@@ -23,6 +27,60 @@ const json = (request, data, status = 200) =>
     headers: { "Content-Type": "application/json", ...corsHeaders(request) },
   });
 
+async function fetchSupabaseListingPage(env, from = 0, pageSize = 1000) {
+  const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || SUPABASE_FALLBACK_URL;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_KEY || env.VITE_SUPABASE_ANON_KEY || SUPABASE_FALLBACK_ANON_KEY;
+
+  const url = new URL(`${supabaseUrl}/rest/v1/Listing`);
+  url.searchParams.set("select", "id,created_date,updated_date,data");
+  url.searchParams.set("data->>status", "eq.active");
+  url.searchParams.set("order", "created_date.desc");
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      Range: `${from}-${from + pageSize - 1}`,
+      Prefer: "count=exact",
+    },
+  });
+  const text = await res.text();
+  let data = [];
+  try { data = text ? JSON.parse(text) : []; } catch { data = []; }
+  if (!res.ok) {
+    throw new Error(data?.message || `Supabase listings request failed (${res.status})`);
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+async function fetchAllActiveListings(env) {
+  const out = [];
+  let from = 0;
+  const pageSize = 1000;
+
+  while (true) {
+    const rows = await fetchSupabaseListingPage(env, from, pageSize);
+    out.push(...rows.map((row) => ({
+      ...(row?.data || {}),
+      id: row?.id,
+      created_date: row?.created_date,
+      updated_date: row?.updated_date,
+    })));
+    if (rows.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return out;
+}
+
+function withCors(request, response, extraHeaders = {}) {
+  const headers = new Headers(response.headers);
+  const cors = corsHeaders(request);
+  Object.entries(cors).forEach(([key, value]) => headers.set(key, value));
+  Object.entries(extraHeaders).forEach(([key, value]) => headers.set(key, value));
+  return new Response(response.body, { status: response.status, headers });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders(request) });
@@ -39,6 +97,27 @@ export default {
         const body = request.method === "POST" ? await request.json().catch(() => ({})) : {};
         const result = await handleFunction(parts[1], body, env, request);
         return json(request, result.body, result.status || 200);
+      }
+
+      // ---- Cached listing snapshot: GET /cache/listings-active ----
+      if (parts[0] === "cache" && parts[1] === "listings-active" && request.method === "GET") {
+        const cache = caches.default;
+        const cacheKey = new Request(`${url.origin}/cache/listings-active`, { method: "GET" });
+        const cached = await cache.match(cacheKey);
+        if (cached) {
+          return withCors(request, cached, { "X-GP-Cache": "HIT" });
+        }
+
+        const rows = await fetchAllActiveListings(env);
+        const response = new Response(JSON.stringify(rows), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": `public, max-age=${ACTIVE_LISTINGS_CACHE_TTL_SECONDS}, s-maxage=${ACTIVE_LISTINGS_CACHE_TTL_SECONDS}`,
+          },
+        });
+        await cache.put(cacheKey, response.clone());
+        return withCors(request, response, { "X-GP-Cache": "MISS" });
       }
 
       // ---- Generic entity REST:  /entities/<Entity>[/<id>] ----

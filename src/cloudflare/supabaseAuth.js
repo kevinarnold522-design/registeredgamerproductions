@@ -5,7 +5,7 @@
 // token with Supabase and upserts the matching user row into D1 so the
 // rest of the Worker can keep working with a local user record.
 // =====================================================================
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 
 let _client = null;
 function getSupabase(env) {

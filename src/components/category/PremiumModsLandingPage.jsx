@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tag, Layers, Gamepad2, DollarSign, Filter, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
 import { isServiceListing } from "@/lib/constants";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { formatListingPrice } from "@/lib/currency";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
+import { getActiveListings } from "@/lib/homeDataCache";
+import { listingMatchesCategory } from "@/lib/categoryMatching";
 
 // Homepage-style premium mod game cards
 const PREMIUM_MOD_GAME_CARDS = [
@@ -30,8 +31,9 @@ export default function PremiumModsLandingPage({ user }) {
   useEffect(() => {
     const load = async () => {
       try {
-        const all = await base44.entities.Listing.filter({ status: "active", category: "premium_mods" }, "-created_date", 80);
+        const all = await getActiveListings();
         const cleaned = all.filter(l =>
+          listingMatchesCategory(l, "premium_mods") &&
           l.is_approved !== false &&
           l.product_type === "digital" &&
           (l.is_premium || Number(l.price || 0) > 0) &&

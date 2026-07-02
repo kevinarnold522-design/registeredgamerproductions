@@ -12,6 +12,7 @@ import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, uploadFileToR2 } from "@/lib/upload
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 // Storage key for cards in a subcategory landing page
 const getCardsKey = (parentCat, subId) => `subcat_landing_cards_${parentCat}_${subId}`;
@@ -288,7 +289,7 @@ export default function SubcategoryLandingPage() {
         setPosts(postsData);
         
         // Load ALL active listings first, then filter client-side for modding
-        const allListings = await base44.entities.Listing.filter({ status: "active" }, "-created_date");
+        const allListings = await getActiveListings();
         const listingsData = cat === "premium_mods"
           ? allListings.filter(l => {
               const matchGame = listingMatchesSubcategory(l, sub, { allowPrefixMatch: true });

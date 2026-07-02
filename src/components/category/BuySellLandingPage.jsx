@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import SubcategoryCards from "./SubcategoryCards";
 import { motion } from "framer-motion";
 import { ShoppingCart, Send, CalendarDays } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { CATEGORIES } from "@/lib/constants";
 import { Link } from "react-router-dom";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
@@ -13,6 +12,7 @@ import Pagination from "@/components/shared/Pagination";
 import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 const PER_PAGE = 15;
 
@@ -55,7 +55,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
   const canPost = user;
 
   useEffect(() => {
-    base44.entities.Listing.filter({ status: "active" }, "-created_date").then((all) => {
+    getActiveListings().then((all) => {
       const merged = (Array.isArray(all) ? all : [])
         .filter((listing) => listingMatchesCategory(listing, "buy_sell"))
         .filter((listing) => listing.is_approved !== false);

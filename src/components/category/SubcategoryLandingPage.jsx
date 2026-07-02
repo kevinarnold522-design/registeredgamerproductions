@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
 import { Eye, Plus, Tag, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
@@ -12,6 +11,7 @@ import { isServiceListing } from "@/lib/constants";
 import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 const PER_PAGE = 10;
 
@@ -25,7 +25,7 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
   useEffect(() => {
     const load = async () => {
       try {
-        const results = await base44.entities.Listing.filter({ status: "active" }, "-created_date");
+        const results = await getActiveListings();
         setListings((Array.isArray(results) ? results : []).filter((listing) => {
           const matchCategory = listingMatchesCategory(listing, normalizeCategoryId(cat));
           const matchSub = listingMatchesSubcategory(listing, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });

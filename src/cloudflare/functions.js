@@ -8,6 +8,7 @@
 // =====================================================================
 import { createRecord, updateRecord, deleteRecord, listRecords } from "./db.js";
 import { getSupabaseUser } from "./supabaseAuth.js";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 const MASTER_EMAIL = "kevinarnold522@gmail.com";
 const ADMIN_EMAILS = ["kevinjersey2019@gmail.com", "arnoldk137@gmail.com", "kevinarnold522@gmail.com"];
@@ -884,8 +885,7 @@ async function deleteSupabaseRows(env, entityName, query = {}) {
   if (!url || !key) return;
 
   try {
-    const { createClient } = await import("npm:@supabase/supabase-js@2");
-    const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+    const supabase = createSupabaseClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
     const { error } = await supabase.from(entityName).delete().match(query);
     if (error) {
       console.error("Supabase cleanup failed", entityName, error.message);
@@ -1015,8 +1015,7 @@ async function createManagedAccount(body, env, request) {
     const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !serviceKey) return { created: false, userId: null };
 
-    const { createClient } = await import("npm:@supabase/supabase-js@2");
-    const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const supabase = createSupabaseClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const password = `Ghost-${crypto.randomUUID()}!aA1`;
 
     try {
@@ -1105,8 +1104,7 @@ async function createManagedAccount(body, env, request) {
           const url = env.VITE_SUPABASE_URL || env.SUPABASE_URL;
           const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
           if (url && serviceKey) {
-            const { createClient } = await import("npm:@supabase/supabase-js@2");
-            const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+            const supabase = createSupabaseClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
             await supabase.auth.admin.deleteUser(authUser.userId);
           }
         } catch (cleanupError) {
@@ -1251,8 +1249,7 @@ async function createSupabaseServiceClient(env) {
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
   const supabaseUrl = env.VITE_SUPABASE_URL || env.SUPABASE_URL || "https://smymannqqogtshvsiqyp.supabase.co";
   if (!serviceKey) throw new Error("Supabase service role key is not configured.");
-  const { createClient } = await import("npm:@supabase/supabase-js@2");
-  return createClient(supabaseUrl, serviceKey, {
+  return createSupabaseClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

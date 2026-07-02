@@ -10,6 +10,7 @@ import { formatListingPrice } from "@/lib/currency";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import { listingMatchesCategory, normalizeCategoryId } from "@/lib/categoryMatching";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 // Per-category subcategory card configs
 const SUBCATEGORY_CONFIG = {
@@ -532,7 +533,7 @@ function CategoryFeed({ cat, user, userProfile }) {
     const load = async () => {
       try {
         const [l, p] = await Promise.all([
-          base44.entities.Listing.filter({ status: "active" }, "-created_date"),
+          getActiveListings(),
           base44.entities.CommunityPost.filter({ community_id: cat }, "-created_date", 20),
         ]);
         setListings((Array.isArray(l) ? l : []).filter((listing) => listingMatchesCategory(listing, normalizeCategoryId(cat)) && listing.is_approved !== false));
