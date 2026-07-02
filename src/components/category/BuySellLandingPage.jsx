@@ -1,48 +1,19 @@
 import React, { useState, useEffect } from "react";
 import SubcategoryCards from "./SubcategoryCards";
-import { motion } from "framer-motion";
-import { ShoppingCart, Send, CalendarDays } from "lucide-react";
+import { ShoppingCart, Send } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants";
 import { Link } from "react-router-dom";
-import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import Pagination from "@/components/shared/Pagination";
-import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings } from "@/lib/homeDataCache";
-import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 const PER_PAGE = 15;
 
 const buySellCat = CATEGORIES.find(c => c.id === "buy_sell");
-
-function ListingCard({ listing, index }) {
-  return (
-    <motion.a
-      href={getPublicSiteUrl(`/listing?id=${listing.id}`)}
-      initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.04 }}
-      whileHover={{ y: -3, boxShadow: "0 0 25px rgba(234,179,8,0.2)" }}
-      className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden group cursor-pointer hover:border-yellow-500/30 transition-colors block"
-    >
-      <ListingImageSlider images={listing.images || []} title={listing.title} badge={listing.is_premium ? "PREMIUM" : null} />
-      <div className="p-4">
-        <p className="text-white font-bold text-sm truncate mb-1">{listing.title}</p>
-        <p className="text-gray-500 text-xs line-clamp-2 mb-2">{listing.description || "No description."}</p>
-        {listing.download_host && <div className="mb-2"><DownloadHostBadge host={listing.download_host} size="sm" /></div>}
-        <div className="flex items-center justify-between">
-          <span className="text-yellow-400 font-black text-sm">{!listing.price || listing.is_free ? "FREE" : formatListingPrice(listing.price, listing.currency)}</span>
-          {listing.subcategory && (
-            <span className="px-2 py-0.5 rounded-lg bg-gray-800 text-gray-400 text-[10px]">{listing.subcategory}</span>
-          )}
-        </div>
-        <p className="theme-glow-action inline-flex items-center gap-1.5 text-gray-400 text-[10px] mt-1 rounded-lg px-1.5 py-0.5"><CalendarDays className="w-3 h-3 theme-glow-icon" /> Posted Date: {listing.created_date ? new Date(listing.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>
-      </div>
-    </motion.a>
-  );
-}
 
 export default function BuySellLandingPage({ user, profile, sub }) {
   const [listings, setListings] = useState([]);
@@ -145,8 +116,8 @@ export default function BuySellLandingPage({ user, profile, sub }) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {paged.map((l, i) => <ListingCard key={l.id} listing={l} index={i} />)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paged.map((l, idx) => <HomeListingCard key={l.id} listing={l} user={user} profile={profile} index={idx} />)}
             </div>
             <div className="mt-8"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
           </>
