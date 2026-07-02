@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Eye, Plus, Tag, Send } from "lucide-react";
+import { Plus, Tag, Send } from "lucide-react";
 import { Link } from "react-router-dom";
 import Pagination from "@/components/shared/Pagination";
-import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
-import ListingImageSlider from "@/components/listings/ListingImageSlider";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import { isServiceListing } from "@/lib/constants";
-import { formatListingPrice } from "@/lib/currency";
 import { findCanonicalCategoryValue, listingMatchesCategory, listingMatchesSubcategory, normalizeCategoryId } from "@/lib/categoryMatching";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
 import { getActiveListings, peekActiveListings } from "@/lib/homeDataCache";
-import { getPublicSiteUrl } from "@/lib/publicSiteUrl";
 
 const PER_PAGE = 10;
 
@@ -92,7 +88,7 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
 
       {/* Listings */}
       {!hasLoaded && loading && listings.length === 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-64 rounded-2xl border border-gray-800 bg-gray-900/60 animate-pulse" />
           ))}
@@ -114,67 +110,10 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
       ) : (
         <>
         <div className="mb-6"><Pagination page={page} totalPages={totalPages} onChange={goToPage} /></div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paged.map((listing, i) => {
-            const anim = listing.card_animation || "fade";
-            const initMap = {
-              fade: { opacity: 0 },
-              slide_up: { opacity: 0, y: 40 },
-              slide_left: { opacity: 0, x: -40 },
-              zoom: { opacity: 0, scale: 0.8 },
-              flip: { opacity: 0, rotateY: 90 },
-              bounce: { opacity: 0, y: -30 },
-              glow: { opacity: 0 },
-              rotate: { opacity: 0, rotate: -15 },
-              none: {},
-            };
-            const animMap = {
-              fade: { opacity: 1 },
-              slide_up: { opacity: 1, y: 0 },
-              slide_left: { opacity: 1, x: 0 },
-              zoom: { opacity: 1, scale: 1 },
-              flip: { opacity: 1, rotateY: 0 },
-              bounce: { opacity: 1, y: 0 },
-              glow: { opacity: 1 },
-              rotate: { opacity: 1, rotate: 0 },
-              none: {},
-            };
-            const glowColors = { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" };
-            const glowStyle = { ...(anim === "glow" ? { boxShadow: "0 0 24px 4px rgba(139,92,246,0.5)" } : {}), "--listing-glow-color": listing.card_glow_color === "custom" ? (listing.card_glow_hex || "#a855f7") : glowColors[listing.card_glow_color || "purple"] };
-            const glowClass = `listing-glow-frame ${listing.card_glow_style === "radiant" ? "listing-glow-radiant" : listing.card_glow_style === "solid" ? "listing-glow-solid" : "listing-glow-lines"} ${listing.card_glow_speed === "fast" ? "listing-glow-fast" : listing.card_glow_speed === "cycle" ? "listing-glow-cycle" : ""}`;
-            return (
-            <motion.a
-              href={getPublicSiteUrl(`/listing?id=${listing.id}`)}
-              key={listing.id}
-              initial={initMap[anim] || { opacity: 0, y: 20 }}
-              animate={animMap[anim] || { opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, type: anim === "bounce" ? "spring" : "tween", stiffness: 200, bounce: 0.5 }}
-              style={glowStyle}
-              className={`bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-colors block cursor-pointer ${glowClass}`}
-            >
-              {(listing.preview_video_url || listing.video_url || listing.youtube_url) ? (
-                <UniversalVideoPreview url={listing.preview_video_url || listing.video_url || listing.youtube_url} poster={listing.images?.[0]} className="w-full h-40 object-cover" />
-              ) : (
-                <ListingImageSlider images={listing.images || []} title={listing.title} />
-              )}
-              <div className="p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-white font-bold truncate">{listing.title}</p>
-                  <span className="flex items-center gap-1 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(listing.views || 0).toLocaleString()}</span>
-                </div>
-                <p className="text-gray-500 text-xs mt-1 truncate">{listing.seller_username || listing.seller_email}</p>
-                <div className="flex items-center justify-between mt-3">
-                  <p className="text-purple-400 font-black">
-                    {!listing.price || listing.is_free ? "FREE" : formatListingPrice(listing.price, listing.currency)}
-                  </p>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${listing.condition === "new" ? "bg-green-900/50 text-green-400" : "bg-gray-800 text-gray-400"}`}>
-                    {listing.condition || "digital"}
-                  </span>
-                </div>
-              </div>
-            </motion.a>
-            );
-          })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {paged.map((listing, idx) => (
+            <HomeListingCard key={listing.id} listing={listing} user={user} profile={_profile} index={idx} />
+          ))}
         </div>
         </>
       )}
