@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Hash, Users, Package, MessageSquare, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -14,6 +13,8 @@ import GroupChat from "@/components/community/GroupChat";
 import ListingImageFrame from "@/components/listings/ListingImageFrame";
 import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
+import { getActiveListings } from "@/lib/homeDataCache";
+import { listingMatchesCommunity } from "@/lib/categoryMatching";
 
 export default function CommunitySectionPage() {
   const { user } = useAuth();
@@ -43,10 +44,10 @@ export default function CommunitySectionPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const [comms, postsData, listingsData] = await Promise.all([
+    const [comms, postsData, allListings] = await Promise.all([
       base44.entities.GamingCommunity.filter({ franchise_id: franchiseId }),
       base44.entities.CommunityPost.filter({ franchise_id: franchiseId }),
-      base44.entities.Listing.filter({ community_franchise_id: franchiseId, status: "active" }),
+      getActiveListings(),
     ]);
     const comm = comms[0] || null;
     setCommunity(comm);
@@ -55,7 +56,11 @@ export default function CommunitySectionPage() {
       .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
       .slice(0, 30);
     setPosts(filteredPosts);
-    setListings(listingsData.slice(0, 12));
+    const visibleListings = (Array.isArray(allListings) ? allListings : [])
+      .filter((listing) => listingMatchesCommunity(listing, franchiseId))
+      .sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0))
+      .slice(0, 12);
+    setListings(visibleListings);
     setLoading(false);
   };
 

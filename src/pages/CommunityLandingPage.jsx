@@ -23,6 +23,8 @@ import GroupChat from "@/components/community/GroupChat";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
 import CommunityTagAd from "@/components/ads/CommunityTagAd";
 import { useLocation } from "react-router-dom";
+import { getActiveListings } from "@/lib/homeDataCache";
+import { listingMatchesCommunity } from "@/lib/categoryMatching";
 
 export default function CommunityLandingPage() {
   const asArray = (value) => Array.isArray(value) ? value : [];
@@ -98,16 +100,18 @@ export default function CommunityLandingPage() {
 
     setLoading(true);
     try {
-      const [comms, membersData, postsData, listingsData] = await Promise.all([
+      const [comms, membersData, postsData, allListings] = await Promise.all([
         base44.entities.GamingCommunity.filter({ franchise_id: franchiseId }),
         base44.entities.CommunityMember.filter({ franchise_id: franchiseId }),
         base44.entities.CommunityPost.filter({ franchise_id: franchiseId }),
-        base44.entities.Listing.filter({ community_franchise_id: franchiseId, status: "active" }),
+        getActiveListings(),
       ]);
       const safeCommunities = asArray(comms);
       const safeMembers = asArray(membersData);
       const safePosts = asArray(postsData);
-      const safeListings = asArray(listingsData);
+      const safeListings = asArray(allListings)
+        .filter((item) => listingMatchesCommunity(item, franchiseId))
+        .sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0));
       const comm = safeCommunities[0] || null;
       setCommunity(comm);
       setEditLogoUrl(comm?.logo_url || "");
@@ -291,6 +295,20 @@ export default function CommunityLandingPage() {
       if (sortOrder === "popular") return (b.likes || 0) - (a.likes || 0);
       return 0;
     });
+
+  const filteredListings = listings
+    .filter((listing) => {
+      if (listingFilter.isFree && !(listing.price === 0 || listing.is_free)) return false;
+      if (listingFilter.isPremium && !listing.is_premium) return false;
+      if (listingFilter.priceMin !== "" && Number(listing.price || 0) < parseFloat(listingFilter.priceMin)) return false;
+      if (listingFilter.priceMax !== "" && Number(listing.price || 0) > parseFloat(listingFilter.priceMax)) return false;
+      return true;
+    })
+    .sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0));
+
+  useEffect(() => {
+    setListingsPage(1);
+  }, [listingFilter.priceMin, listingFilter.priceMax, listingFilter.isFree, listingFilter.isPremium, franchiseId]);
 
   // Cover images for hero crossfade
   const coverImages = community?.cover_urls?.length > 0 ? community.cover_urls : (community?.cover_url ? [community.cover_url] : []);
@@ -748,43 +766,50 @@ export default function CommunityLandingPage() {
         </div>
 
         {/* Community Listings — full width, 4 across, 12 per page */}
-        {listings.length > 0 && (() => {
-          const totalListPages = Math.ceil(listings.length / LISTINGS_PER_PAGE) || 1;
-          const pagedL = listings.slice((listingsPage - 1) * LISTINGS_PER_PAGE, listingsPage * LISTINGS_PER_PAGE);
+        {(listings.length > 0 || (listingFilter.isFree || listingFilter.isPremium || listingFilter.priceMin || listingFilter.priceMax)) && (() => {
+          const totalListPages = Math.ceil(filteredListings.length / LISTINGS_PER_PAGE) || 1;
+          const pagedL = filteredListings.slice((listingsPage - 1) * LISTINGS_PER_PAGE, listingsPage * LISTINGS_PER_PAGE);
           return (
           <div className="bg-gray-900 rounded-2xl border border-gray-800 p-4 mt-6">
             <h3 className="text-white font-black text-sm mb-3">📦 Community Listings</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {pagedL.map(l => (
-                <div key={l.id} className="flex flex-col rounded-xl border border-gray-800 bg-gray-900/60 overflow-hidden hover:border-purple-600/40 transition-colors group">
-                  <Link to={`/listing?id=${l.id}`}
-                    onClick={async () => {
-                      try {
-                        const fresh = await base44.entities.Listing.get(l.id);
-                        await base44.entities.Listing.update(l.id, { views: (fresh.views || 0) + 1 });
-                      } catch {}
-                    }}>
-                    <div className="aspect-square overflow-hidden bg-gray-800">
-                      {l.images?.[0] ? <ListingImageFrame src={l.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
-                    </div>
-                    <div className="p-2.5">
-                      <p className="text-white text-xs font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{l.title}</p>
-                      {l.download_host && <div className="mt-1.5"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `$${l.price}`}</p>
-                        <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
-                          <Eye className="w-2.5 h-2.5 theme-glow-icon" />{(l.views || 0).toLocaleString()}
-                        </span>
+            {pagedL.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-gray-700 bg-gray-950/50 px-4 py-10 text-center">
+                <p className="text-sm font-semibold text-gray-400">No community listings match the active filters.</p>
+                <p className="mt-1 text-xs text-gray-600">Adjust the price or premium filters to show more listings.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {pagedL.map(l => (
+                  <div key={l.id} className="flex flex-col rounded-xl border border-gray-800 bg-gray-900/60 overflow-hidden hover:border-purple-600/40 transition-colors group">
+                    <Link to={`/listing?id=${l.id}`}
+                      onClick={async () => {
+                        try {
+                          const fresh = await base44.entities.Listing.get(l.id);
+                          await base44.entities.Listing.update(l.id, { views: (fresh.views || 0) + 1 });
+                        } catch {}
+                      }}>
+                      <div className="aspect-square overflow-hidden bg-gray-800">
+                        {l.images?.[0] ? <ListingImageFrame src={l.images[0]} alt="" className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" /> : <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>}
                       </div>
+                      <div className="p-2.5">
+                        <p className="text-white text-xs font-bold line-clamp-2 group-hover:text-purple-300 transition-colors leading-tight">{l.title}</p>
+                        {l.download_host && <div className="mt-1.5"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="font-black text-xs" style={{ color: franchise.accent }}>{l.is_free || !l.price ? "FREE" : `$${l.price}`}</p>
+                          <span className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                            <Eye className="w-2.5 h-2.5 theme-glow-icon" />{(l.views || 0).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                    <div className="px-2.5 pb-2">
+                      <ListingEngagementBar listing={l} user={user} profile={profile} compact />
                     </div>
-                  </Link>
-                  <div className="px-2.5 pb-2">
-                    <ListingEngagementBar listing={l} user={user} profile={profile} compact />
                   </div>
-                </div>
-              ))}
-            </div>
-            {totalListPages > 1 && (
+                ))}
+              </div>
+            )}
+            {pagedL.length > 0 && totalListPages > 1 && (
               <div className="flex items-center justify-center gap-2 mt-4">
                 <button disabled={listingsPage === 1} onClick={() => setListingsPage(p => Math.max(1, p - 1))}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300 disabled:opacity-40 hover:bg-gray-700 transition-colors">Prev</button>

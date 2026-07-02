@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { getPublisherRankMap } from "@/lib/publisherRank";
 import { listingScore } from "@/lib/leaderboardScore";
 import LandingSearchHeader from "@/components/shared/LandingSearchHeader";
+import { getActiveListings } from "@/lib/homeDataCache";
 
 export default function ListingsLanding({ mode = "mine" }) {
   const [user, setUser] = useState(null);
@@ -45,7 +46,7 @@ export default function ListingsLanding({ mode = "mine" }) {
       }
 
       const rows = mode === "all"
-        ? await base44.entities.Listing.filter({ status: "active" }, "-created_date")
+        ? await getActiveListings()
         : await base44.entities.Listing.filter({ seller_email: activeUser.email }, "-created_date");
       setItems(mode === "all" ? rows.filter(x => x.is_approved !== false) : rows);
       setLoading(false);

@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Users, Shield, Plus, Camera, Check, Lock, Upload } from "lucide-react";
+import { X, Send, Users, Shield, Plus, Camera, Check, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { uploadFileToR2 } from "@/lib/uploadToR2";
-import { isAdmin, MODERATOR_TYPES } from "@/lib/constants";
-import DeleteConfirmModal from "@/components/shared/DeleteConfirmModal";
+import { isAdmin } from "@/lib/constants";
 import CommunityPostCard from "./CommunityPostCard";
 import TieredMembershipModal from "./TieredMembershipModal";
 import ModeratorRequestModal from "./ModeratorRequestModal";
 import { formatListingPrice } from "@/lib/currency";
+import { getActiveListings } from "@/lib/homeDataCache";
+import { listingMatchesCommunity } from "@/lib/categoryMatching";
 
 function CaptainBadge() {
   return (
@@ -43,7 +44,6 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
   const [showTier1Modal, setShowTier1Modal] = useState(false);
   const [showModRequest, setShowModRequest] = useState(false);
   const [communityListings, setCommunityListings] = useState([]);
-  const [modGroupCount, setModGroupCount] = useState(0);
   const logoFileRef = useRef(null);
   const coverFileRef = useRef(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -83,20 +83,19 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
         const myMember = membersData.find(m => m.user_email === user.email);
         setIsJoined(!!myMember);
         setIsModerator(myMember?.is_moderator || (comm?.moderator_emails || []).includes(user.email));
-        // Check Tier 1 + count how many groups this user moderates
-        const [subs, allModGroups] = await Promise.all([
-          base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" }),
-          base44.entities.CommunityMember.filter({ user_email: user.email, is_moderator: true }),
-        ]);
+        const subs = await base44.entities.Tier1Subscription.filter({ user_email: user.email, status: "active" });
         setIsTier1(admin || subs.length > 0);
-        setModGroupCount(allModGroups.length);
       }
       // Load listings for this community
       try {
-      const listings = await base44.entities.Listing.filter({ community_franchise_id: franchise.id, status: "active" });
-      setCommunityListings(listings.slice(0, 10));
-      } catch (e) {}
-    } catch (e) {}
+        const listings = await getActiveListings();
+        const visibleListings = (Array.isArray(listings) ? listings : [])
+          .filter((listing) => listingMatchesCommunity(listing, franchise.id))
+          .sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0))
+          .slice(0, 10);
+        setCommunityListings(visibleListings);
+      } catch {}
+    } catch {}
     setLoading(false);
   };
 
@@ -450,7 +449,7 @@ export default function CommunityModal({ franchise, user, profile, onClose }) {
               <p className="text-gray-500 text-xs font-semibold uppercase mb-2">📦 Community Listings</p>
               <div className="flex gap-3 overflow-x-auto pb-1">
                 {communityListings.map(l => (
-                  <a key={l.id} href={`/category?id=${l.id}`}
+                  <a key={l.id} href={`/listing?id=${l.id}`}
                     className="flex-shrink-0 w-36 rounded-xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-600/50 transition-all">
                     {l.images?.[0]
                       ? <img src={l.images[0]} className="w-full h-20 object-cover" alt="" />

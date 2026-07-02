@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getActiveListings } from "@/lib/homeDataCache";
+import { listingMatchesCommunity } from "@/lib/categoryMatching";
 
 const DEFAULT_FEED_FILTERS = { priceMin: "", priceMax: "", isFree: false, isPremium: false, sortBy: "newest", contentType: "all", search: "" };
 
@@ -44,9 +45,11 @@ function CommunityNewsfeed({ franchise, community, user, profile }) {
       try {
         const allPosts = asArray(await base44.entities.CommunityPost.filter({ franchise_id: franchise.id }));
         const allListings = asArray(await getActiveListings());
-        const safeListings = allListings.filter((listing) => listing.community_franchise_id === franchise.id);
+        const safeListings = allListings
+          .filter((listing) => listingMatchesCommunity(listing, franchise.id))
+          .sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0));
         setPosts(allPosts.filter(p => p?.status === "active").sort((a, b) => new Date(b?.created_date || 0) - new Date(a?.created_date || 0)).slice(0, 50));
-        setListings(safeListings.filter((listing) => listing?.status === "active"));
+        setListings(safeListings);
       } catch { setPosts([]); setListings([]); }
       setLoading(false);
     };
@@ -333,7 +336,6 @@ function CommunityCard({ franchise, memberCount, isJoined, isModerator, canAdmin
     setEditMode(false);
   };
 
-  const logoSrc = community?.logo_url || editLogo || null;
   const coverImages = community?.cover_urls?.length > 0 ? community.cover_urls : (community?.cover_url ? [community.cover_url] : []);
 
   return (

@@ -250,6 +250,20 @@ export function collectListingCategoryValues(listing) {
   ].filter(Boolean);
 }
 
+export function collectListingCommunityValues(listing) {
+  return uniqueValues([
+    listing?.community_franchise_id,
+    listing?.game_name,
+    listing?.modding_subcategory,
+    listing?.digital_subcategory,
+    listing?.tool_target_game,
+    listing?.card_category_label,
+    ...toValueArray(listing?.subcategories),
+    ...toValueArray(listing?.tags),
+    ...toValueArray(listing?.keywords),
+  ]);
+}
+
 export function normalizeListingRecord(record) {
   if (!record || typeof record !== "object") return record;
 
@@ -282,6 +296,34 @@ export function normalizeListingRecord(record) {
   normalized.category = inferListingCategory(record, normalized);
 
   return normalized;
+}
+
+export function listingMatchesCommunity(listing, selectedCommunity, options = {}) {
+  if (!selectedCommunity) return false;
+
+  const communityValues = collectListingCommunityValues(listing);
+  if (!communityValues.length) {
+    return false;
+  }
+
+  if (findCanonicalCategoryValue(selectedCommunity, communityValues)) {
+    return true;
+  }
+
+  if (options.allowPrefixMatch === false) {
+    return false;
+  }
+
+  const selectedVariants = buildCategoryVariants(selectedCommunity);
+  return communityValues.some((value) => {
+    const listingVariants = buildCategoryVariants(value);
+    return [...selectedVariants].some((variant) =>
+      [...listingVariants].some(
+        (listingVariant) =>
+          listingVariant.startsWith(variant) || variant.startsWith(listingVariant)
+      )
+    );
+  });
 }
 
 export function listingMatchesSubcategory(listing, selectedValue, options = {}) {
