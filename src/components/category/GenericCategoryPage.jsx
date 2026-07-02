@@ -22,7 +22,12 @@ import ListingImageFrame from "@/components/listings/ListingImageFrame";
 
 const PER_PAGE = 12;
 const NEWSFEED_PER_PAGE = 10;
-const CATEGORY_NEWSFEED_CATEGORIES = new Set(["modding", "premium_mods"]);
+const CATEGORY_NEWSFEED_CATEGORIES = new Set(["games", "modding", "premium_mods"]);
+const CATEGORY_CARD_DECOR = {
+  games: { label: "Games", icon: "🎮" },
+  modding: { label: "Modding", icon: "🧩" },
+  premium_mods: { label: "Premium", icon: "👑" },
+};
 
 function getInitialActiveSub(sub, categoryData) {
   return findCanonicalCategoryValue(sub, categoryData?.subcategories || []) || sub || "all";
@@ -408,19 +413,26 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
         <div className="max-w-7xl mx-auto px-4 pt-6">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
             <Link to={`/category?cat=${cat}`}
-              className={`group rounded-2xl border px-4 py-4 transition-all ${!activeSub || activeSub === "all" ? "border-purple-500/60 bg-gradient-to-br from-purple-900/35 to-gray-900 shadow-[0_0_22px_rgba(168,85,247,0.18)]" : "border-gray-800 bg-gray-900/75 hover:border-purple-500/35 hover:bg-gray-900"}`}>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-purple-300">Browse</p>
-              <p className="mt-1 text-white font-black text-sm">All {meta.title}</p>
-              <p className="mt-1 text-xs text-gray-500">See every listing in this category.</p>
+              className={`group min-h-[136px] rounded-2xl border px-4 py-4 transition-all ${!activeSub || activeSub === "all" ? "border-purple-500/60 bg-gradient-to-br from-purple-900/35 to-gray-900 shadow-[0_0_22px_rgba(168,85,247,0.18)]" : "border-gray-800 bg-gray-900/75 hover:border-purple-500/35 hover:bg-gray-900"}`}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="inline-flex items-center rounded-full border border-purple-500/25 bg-purple-500/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-purple-300">Browse</p>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm">📂</span>
+              </div>
+              <p className="mt-3 text-white font-black text-sm leading-tight">All {meta.title}</p>
+              <p className="mt-2 text-xs text-gray-500">See every listing in this category and its newsfeed items.</p>
             </Link>
             {categoryData.subcategories.map((s, index) => (
               <Link key={s} to={`/category?cat=${cat}&sub=${encodeURIComponent(s)}`}
-                className={`group rounded-2xl border px-4 py-4 transition-all ${activeSub === s ? "border-purple-500/60 bg-gradient-to-br from-purple-900/35 to-gray-900 shadow-[0_0_22px_rgba(168,85,247,0.18)]" : "border-gray-800 bg-gray-900/75 hover:border-purple-500/35 hover:bg-gray-900"}`}>
+                className={`group min-h-[136px] rounded-2xl border px-4 py-4 transition-all ${activeSub === s ? "border-purple-500/60 bg-gradient-to-br from-purple-900/35 to-gray-900 shadow-[0_0_22px_rgba(168,85,247,0.18)]" : "border-gray-800 bg-gray-900/75 hover:border-purple-500/35 hover:bg-gray-900"}`}>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-white font-black text-sm leading-tight">{s}</p>
+                  <p className="inline-flex items-center rounded-full border border-purple-500/25 bg-purple-500/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-purple-300">{CATEGORY_CARD_DECOR[cat]?.label || "Category"}</p>
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm">{CATEGORY_CARD_DECOR[cat]?.icon || "🎮"}</span>
+                </div>
+                <p className="mt-3 text-white font-black text-sm leading-tight">{s}</p>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <p className="text-xs text-gray-500">Open the {s} subcategory feed and listings.</p>
                   <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[11px] font-black text-purple-200">{String(index + 1).padStart(2, "0")}</span>
                 </div>
-                <p className="mt-2 text-xs text-gray-500">Open the {s} subcategory feed and listings.</p>
               </Link>
             ))}
           </div>
