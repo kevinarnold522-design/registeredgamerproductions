@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Search, Play, Eye, CalendarDays } from "lucide-react";
+import { Search } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import GamerBrandFooter from "@/components/shared/GamerBrandFooter";
-import ListingImageFrame from "@/components/listings/ListingImageFrame";
-import DownloadHostBadge from "@/components/shared/DownloadHostBadge";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import AuthNavbar from "@/components/layout/AuthNavbar";
 import Navbar from "@/components/home/Navbar";
 import StickySearchBar from "@/components/shared/StickySearchBar";
 import Pagination from "@/components/shared/Pagination";
-import IgnRatingBadge from "@/components/shared/IgnRatingBadge";
-import StorePlatformBadges from "@/components/shared/StorePlatformBadges";
-import UniversalVideoPreview from "@/components/shared/UniversalVideoPreview";
 import { CATEGORIES, isServiceListing } from "@/lib/constants";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import BrandedLoadingScreen from "@/components/shared/BrandedLoadingScreen";
 
 const PER_PAGE = 10;
@@ -80,36 +76,10 @@ export default function SearchPage() {
           <div className="text-center py-20 bg-gray-900 border border-gray-800 rounded-3xl text-gray-500">No matching listings found.</div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {paged.map(l => {
-                const cat = CATEGORIES.find(c => c.id === l.category);
-                return (
-                  <Link key={l.id} to={`/listing?id=${l.id}`} style={{ "--listing-glow-color": { red: "rgba(239,68,68,.85)", purple: "rgba(168,85,247,.85)", blue: "rgba(59,130,246,.85)", green: "rgba(34,197,94,.85)", gold: "rgba(250,204,21,.9)", multi: "rgba(236,72,153,.9)" }[l.card_glow_color || "purple"] }} className={`rounded-2xl bg-gray-900 border border-gray-800 overflow-hidden hover:border-purple-500/50 transition-colors listing-glow-frame ${l.card_glow_style === "radiant" ? "listing-glow-radiant" : "listing-glow-lines"} ${l.card_glow_speed === "fast" ? "listing-glow-fast" : ""}`}>
-                    <div className="h-36 bg-gray-800 relative overflow-hidden">
-                      {(l.preview_video_url || l.video_url || l.youtube_url) ? (
-                        <UniversalVideoPreview url={l.preview_video_url || l.video_url || l.youtube_url} poster={l.images?.[0]} className="w-full h-full object-cover" />
-                      ) : l.images?.[0] ? (
-                        <ListingImageFrame src={l.images[0]} alt={l.title} className="w-full h-full" foregroundClassName="w-full h-full object-contain p-2" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><Play className="w-10 h-10 text-gray-700" /></div>
-                      )}
-                      {l.ign_rating != null && <div className="absolute top-2 right-2"><IgnRatingBadge rating={l.ign_rating} size="sm" /></div>}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-white text-sm font-bold truncate">{l.title}</p>
-                      <p className="text-gray-500 text-xs mt-1 capitalize">{cat?.label || l.category}</p>
-                      {l.download_host && <div className="mt-2"><DownloadHostBadge host={l.download_host} size="sm" /></div>}
-                      {l.store_platforms?.length > 0 && <div className="mt-2"><StorePlatformBadges platforms={l.store_platforms} links={l.store_platform_links} size="sm" /></div>}
-                      {l.tool_target_game && <p className="text-blue-300 text-xs mt-2">For: {l.tool_target_game}</p>}
-                      <div className="flex items-center justify-between mt-2">
-                        <p className="text-purple-400 font-black text-sm">{!l.price || l.is_free ? "FREE" : `$${Number(l.price).toLocaleString()}`}</p>
-                        <span className="theme-glow-action inline-flex items-center gap-1 text-cyan-300 text-[10px] font-bold rounded-lg px-1 py-0.5"><Eye className="w-3 h-3 theme-glow-icon" />{(l.views || 0).toLocaleString()}</span>
-                      </div>
-                      <p className="theme-glow-action inline-flex items-center gap-1 text-gray-400 text-[10px] mt-1 rounded-lg px-1 py-0.5"><CalendarDays className="w-2.5 h-2.5 theme-glow-icon" /> Posted Date: {l.created_date ? new Date(l.created_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recently"}</p>
-                    </div>
-                  </Link>
-                );
-              })}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paged.map((l, idx) => (
+                <HomeListingCard key={l.id} listing={l} user={user} profile={profile} index={idx} />
+              ))}
             </div>
             <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
           </>

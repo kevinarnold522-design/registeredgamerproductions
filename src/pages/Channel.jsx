@@ -21,6 +21,7 @@ import BrandLogo from "@/components/shared/BrandLogo";
 import { formatListingPrice } from "@/lib/currency";
 import GlowStat from "@/components/shared/GlowStat";
 import ListingImageSlider from "@/components/listings/ListingImageSlider";
+import HomeListingCard from "@/components/home/HomeListingCard";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const CONTENT_SUBCATEGORIES = [
@@ -567,26 +568,9 @@ export default function Channel() {
                 <p className="text-gray-400 font-semibold">No listings yet</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {listings.map((l, i) => (
-                  <motion.a key={l.id}
-                    href={`/listing?id=${l.id}`}
-                    initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                    className="group bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden hover:border-purple-700/50 transition-colors">
-                    <div className="relative bg-gray-800 overflow-hidden flex items-center justify-center">
-                      {l.images?.length > 0 ? (
-                        <ListingImageSlider images={l.images} title={l.title} heightClass="aspect-square w-full" />
-                      ) : (
-                        <div className="aspect-square w-full flex items-center justify-center"><Package className="w-10 h-10 text-gray-600" /></div>
-                      )}
-                      <span className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 text-cyan-300 text-[10px] font-bold"><Eye className="w-3 h-3" />{(l.views || 0).toLocaleString()}</span>
-                    </div>
-                    <div className="p-3">
-                      <p className="text-white font-bold text-sm truncate">{l.title}</p>
-                      <p className="text-gray-500 text-[11px] truncate">by @{l.seller_username || l.seller_email?.split("@")[0] || "gamer"}</p>
-                      <p className="text-purple-400 text-xs font-black mt-0.5">{!l.price || l.is_free ? "FREE" : formatListingPrice(l.price, l.currency)}</p>
-                    </div>
-                  </motion.a>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {listings.map((l, idx) => (
+                  <HomeListingCard key={l.id} listing={l} user={user} profile={profile} index={idx} />
                 ))}
               </div>
             )}
