@@ -532,7 +532,7 @@ function CategoryFeed({ cat, user, userProfile }) {
     const load = async () => {
       try {
         const [l, p] = await Promise.all([
-          base44.entities.Listing.filter({ status: "active" }, "-created_date", 80),
+          base44.entities.Listing.filter({ status: "active" }, "-created_date"),
           base44.entities.CommunityPost.filter({ community_id: cat }, "-created_date", 20),
         ]);
         setListings((Array.isArray(l) ? l : []).filter((listing) => listingMatchesCategory(listing, normalizeCategoryId(cat)) && listing.is_approved !== false));

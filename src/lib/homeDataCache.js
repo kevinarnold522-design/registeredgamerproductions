@@ -17,7 +17,7 @@ export async function getActiveListings() {
     return activeListingsCache.data;
   }
   if (!activeListingsPromise) {
-    activeListingsPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date", 120)
+    activeListingsPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date")
       .then(rows => rows.filter(item => item.is_approved !== false))
       .then(data => {
         activeListingsCache = { time: Date.now(), data };

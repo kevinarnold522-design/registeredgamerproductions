@@ -27,7 +27,7 @@ export default function GamingNewsfeed() {
     const load = async () => {
       const [posts, listings] = await Promise.all([
         base44.entities.CommunityPost.list("-created_date", 120),
-        base44.entities.Listing.filter({ status: "active" }, "-created_date", 120),
+        base44.entities.Listing.filter({ status: "active" }, "-created_date"),
       ]);
       const activePosts = posts.filter(p => p.status === "active");
       const communityListings = listings.filter(l => l.is_approved !== false && (l.community_franchise_id || l.category === "games" || l.category === "modding" || l.category === "premium_mods" || l.modding_subcategory));

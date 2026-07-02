@@ -104,7 +104,8 @@ const COUNTRIES = [
 function getVisibleProfileListings(rows = [], isOwner = false) {
   return rows
     .filter((listing) => isOwner ? listing?.status !== "removed" : listing?.status === "active")
-    .filter((listing) => isOwner || listing?.is_approved !== false);
+    .filter((listing) => isOwner || listing?.is_approved !== false)
+    .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
 }
 
 function getVisibleProfilePosts(rows = [], isOwner = false) {

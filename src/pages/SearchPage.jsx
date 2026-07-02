@@ -45,7 +45,7 @@ export default function SearchPage() {
     const load = async () => {
       setLoading(true);
       if (!query) { setListings([]); setLoading(false); return; }
-      const all = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200);
+      const all = await base44.entities.Listing.filter({ status: "active" }, "-created_date");
       const q = query.toLowerCase();
       setListings(all.filter(l => {
         if (l.is_approved === false) return false;

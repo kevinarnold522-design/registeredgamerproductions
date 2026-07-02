@@ -25,7 +25,7 @@ export default function SubcategoryLandingPage({ user, profile: _profile, cat, s
   useEffect(() => {
     const load = async () => {
       try {
-        const results = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200);
+        const results = await base44.entities.Listing.filter({ status: "active" }, "-created_date");
         setListings((Array.isArray(results) ? results : []).filter((listing) => {
           const matchCategory = listingMatchesCategory(listing, normalizeCategoryId(cat));
           const matchSub = listingMatchesSubcategory(listing, normalizedSub, { allowPrefixMatch: ["premium_mods", "modding"].includes(cat) });

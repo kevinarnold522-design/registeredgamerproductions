@@ -268,7 +268,7 @@ export default function SubcategoryLandingPage() {
       setLoading(true);
       try {
         // Load ALL posts and filter client-side for better matching
-        const allPosts = await base44.entities.CommunityPost.filter({ status: "active" }, "-created_date", 80);
+        const allPosts = await base44.entities.CommunityPost.filter({ status: "active" }, "-created_date");
         const postsData = allPosts.filter(p => {
           // For modding: match section_id OR franchise_id containing the subcategory name
           if (cat === "modding") {
@@ -288,7 +288,7 @@ export default function SubcategoryLandingPage() {
         setPosts(postsData);
         
         // Load ALL active listings first, then filter client-side for modding
-        const allListings = await base44.entities.Listing.filter({ status: "active" }, "-created_date", 80);
+        const allListings = await base44.entities.Listing.filter({ status: "active" }, "-created_date");
         const listingsData = cat === "premium_mods"
           ? allListings.filter(l => {
               const matchGame = listingMatchesSubcategory(l, sub, { allowPrefixMatch: true });

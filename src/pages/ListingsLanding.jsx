@@ -45,8 +45,8 @@ export default function ListingsLanding({ mode = "mine" }) {
       }
 
       const rows = mode === "all"
-        ? await base44.entities.Listing.filter({ status: "active" }, "-created_date", 200)
-        : await base44.entities.Listing.filter({ seller_email: activeUser.email }, "-created_date", 200);
+        ? await base44.entities.Listing.filter({ status: "active" }, "-created_date")
+        : await base44.entities.Listing.filter({ seller_email: activeUser.email }, "-created_date");
       setItems(mode === "all" ? rows.filter(x => x.is_approved !== false) : rows);
       setLoading(false);
     };

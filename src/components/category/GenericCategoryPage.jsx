@@ -131,7 +131,7 @@ export default function GenericCategoryPage({ user, profile, cat, sub, categoryD
 
   useEffect(() => {
     setLoading(true);
-    base44.entities.Listing.filter({ status: "active" }, "-created_date", 200).then((rows) => {
+    base44.entities.Listing.filter({ status: "active" }, "-created_date").then((rows) => {
       const normalizedCat = normalizeCategoryId(cat);
       let cleaned = (Array.isArray(rows) ? rows : [])
         .filter((listing) => listing?.status === "active")

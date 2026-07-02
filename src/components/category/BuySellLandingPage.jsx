@@ -56,7 +56,7 @@ export default function BuySellLandingPage({ user, profile, sub }) {
 
   useEffect(() => {
     const basePromise = base44.entities.Listing.filter({ status: "active", category: "buy_sell" }, "-created_date", 80);
-    const extraPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date", 120)
+    const extraPromise = base44.entities.Listing.filter({ status: "active" }, "-created_date")
       .then((all) => all.filter((x) => Array.isArray(x.newsfeed_categories) && x.newsfeed_categories.includes("buy_sell") && x.category !== "games"))
       .catch(() => []);
 

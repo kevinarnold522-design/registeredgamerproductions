@@ -748,6 +748,69 @@ export default function CreateListing() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5 space-y-3">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-white font-bold flex items-center gap-2">
+                  <FolderOpen className="w-4 h-4 text-cyan-300" /> Listing Templates
+                </h3>
+                <p className="text-gray-500 text-xs mt-1">Load a saved template before filling out the rest of the listing.</p>
+              </div>
+              <div className="flex gap-2 flex-wrap justify-end">
+                {savedFilters.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowLoadFilter((v) => !v)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-900/30 border border-cyan-700/40 text-cyan-300 text-xs font-bold hover:bg-cyan-900/50 transition-colors"
+                  >
+                    <FolderOpen className="w-3 h-3" /> Load Template ({savedFilters.length})
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowSaveFilter((v) => !v)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-900/30 border border-purple-700/40 text-purple-300 text-xs font-bold hover:bg-purple-900/50 transition-colors"
+                >
+                  <Save className="w-3 h-3" /> Save Template
+                </button>
+              </div>
+            </div>
+
+            {showSaveFilter && (
+              <div className="p-4 bg-gray-800 rounded-2xl border border-purple-700/50">
+                <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><Save className="w-4 h-4 text-purple-300" /> Save Current Settings as Template</p>
+                <p className="text-gray-500 text-xs mb-3">Saves your categories, SEO tags, platforms, styling, and placement settings.</p>
+                <div className="flex gap-2">
+                  <input value={filterName} onChange={e => setFilterName(e.target.value)} placeholder="Template name (e.g. Football Life Mods)"
+                    className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
+                  <button type="button" onClick={handleSaveFilter} disabled={!filterName.trim()}
+                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-bold disabled:opacity-50 hover:bg-purple-700 transition-colors">Save</button>
+                  <button type="button" onClick={() => setShowSaveFilter(false)}
+                    className="px-4 py-2 rounded-xl bg-gray-900 text-gray-400 text-sm hover:bg-gray-700 transition-colors">Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {showLoadFilter && (
+              <div className="p-4 bg-gray-800 rounded-2xl border border-cyan-700/40">
+                <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><FolderOpen className="w-4 h-4 text-cyan-300" /> Load Saved Template</p>
+                <div className="space-y-2">
+                  {savedFilters.map(f => (
+                    <div key={f.name} className="flex items-center justify-between p-3 bg-gray-900 rounded-xl">
+                      <span className="text-white text-sm font-semibold">{f.name}</span>
+                      <div className="flex gap-2">
+                        <button type="button" onClick={() => handleLoadFilter(f)}
+                          className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold hover:bg-cyan-700 transition-colors">Load</button>
+                        <button type="button" onClick={() => handleDeleteFilter(f.name)}
+                          className="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 text-xs font-bold hover:bg-red-900/60 transition-colors">Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="bg-gradient-to-br from-purple-900/25 to-pink-900/15 rounded-2xl border border-purple-700/40 p-6 space-y-5">
             <div>
               <h3 className="text-white font-black text-lg">Listing basics</h3>
@@ -1456,39 +1519,6 @@ export default function CreateListing() {
               </div>
             </div>
 
-            {showSaveFilter && (
-              <div className="p-4 bg-gray-800 rounded-2xl border border-purple-700/50">
-                <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><Save className="w-4 h-4 text-purple-300" /> Save Current Settings as Template</p>
-                <p className="text-gray-500 text-xs mb-3">Saves your categories, SEO tags, platforms, styling, and placement settings.</p>
-                <div className="flex gap-2">
-                  <input value={filterName} onChange={e => setFilterName(e.target.value)} placeholder="Template name (e.g. Football Life Mods)"
-                    className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-purple-500" />
-                  <button type="button" onClick={handleSaveFilter} disabled={!filterName.trim()}
-                    className="px-4 py-2 rounded-xl bg-purple-600 text-white text-sm font-bold disabled:opacity-50 hover:bg-purple-700 transition-colors">Save</button>
-                  <button type="button" onClick={() => setShowSaveFilter(false)}
-                    className="px-4 py-2 rounded-xl bg-gray-900 text-gray-400 text-sm hover:bg-gray-700 transition-colors">Cancel</button>
-                </div>
-              </div>
-            )}
-
-            {showLoadFilter && (
-              <div className="p-4 bg-gray-800 rounded-2xl border border-cyan-700/40">
-                <p className="text-white font-bold text-sm mb-3 flex items-center gap-2"><FolderOpen className="w-4 h-4 text-cyan-300" /> Load Saved Template</p>
-                <div className="space-y-2">
-                  {savedFilters.map(f => (
-                    <div key={f.name} className="flex items-center justify-between p-3 bg-gray-900 rounded-xl">
-                      <span className="text-white text-sm font-semibold">{f.name}</span>
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => handleLoadFilter(f)}
-                          className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold hover:bg-cyan-700 transition-colors">Load</button>
-                        <button type="button" onClick={() => handleDeleteFilter(f.name)}
-                          className="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 text-xs font-bold hover:bg-red-900/60 transition-colors">Delete</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Moderation result banner */}
